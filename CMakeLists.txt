@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.5)
+
+set(SOLUTION_NAME LeapCalCpp)
+set(SOLUTION_NAME_LOWER leap-cal-cpp)
+
+file(STRINGS version.txt SOLUTION_NAME_VERSION)
+message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
+
+# Project configuration, specifying version, languages,
+# and the C++ standard to use for the whole project
+project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
+include(dependencies)
+include(lint)
+include(CTest)
+
+# External projects
+if (BUILD_TESTING)
+  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
+# installed as git submodule - if this is your first clone you need to
+# git submodule init
+# git submodule update
+# This is a cmake module and needs no further input from you
+endif()
+
+find_dependencies()
+
+add_subdirectory(src/icrar/${SOLUTION_NAME_LOWER})
+add_subdirectory(src/icrar/leap-cal-lib)
+
+# Install cmake config + version + target files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+  cmake/${SOLUTION_NAME}Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${SOLUTION_NAME}Config.cmake"
+  INSTALL_DESTINATION
+    share/${SOLUTION_NAME_LOWER}/cmake
+)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${SOLUTION_NAME}Version.cmake"
+  COMPATIBILITY
+    AnyNewerVersion
+)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${SOLUTION_NAME}Config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${SOLUTION_NAME}Version.cmake
+  DESTINATION
+    share/${SOLUTION_NAME_LOWER}/cmake
+  COMPONENT
+    dev
+)
+install(EXPORT ${SOLUTION_NAME_LOWER}-targets
+  FILE
+  ${SOLUTION_NAME}Targets.cmake
+  DESTINATION
+    share/${SOLUTION_NAME_LOWER}/cmake
+  COMPONENT
+    dev
+  NAMESPACE
+  ${SOLUTION_NAME_LOWER}::
+)
