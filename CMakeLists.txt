@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 
-set(SOLUTION_NAME LeapCalCpp)
-set(SOLUTION_NAME_LOWER leap-cal-cpp)
+set(SOLUTION_NAME LEAP-Accelerate)
+set(SOLUTION_NAME_LOWER leap-accelerate)
 
 file(STRINGS version.txt SOLUTION_NAME_VERSION)
 message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
@@ -28,8 +28,9 @@ endif()
 
 find_dependencies()
 
-add_subdirectory(src/icrar/${SOLUTION_NAME_LOWER})
-add_subdirectory(src/icrar/leap-cal-lib)
+add_subdirectory(src/icrar/chgcentre-cuda)
+add_subdirectory(src/icrar/leap-accelerate-lib)
+add_subdirectory(src/icrar/leap-accelerate-client)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
