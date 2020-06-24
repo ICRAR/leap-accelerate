@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.8)
 
 set(SOLUTION_NAME LEAP-Accelerate)
 set(SOLUTION_NAME_LOWER leap-accelerate)
@@ -8,11 +8,12 @@ message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX CUDA VERSION ${SOLUTION_NAME_VERSION})
+project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 include(dependencies)
 include(lint)
 include(CTest)
@@ -27,6 +28,10 @@ if (BUILD_TESTING)
 endif()
 
 find_dependencies()
+
+if(CUDA_FOUND)
+	enable_language(CUDA)
+endif()
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)

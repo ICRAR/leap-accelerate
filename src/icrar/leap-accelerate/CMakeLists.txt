@@ -23,6 +23,9 @@ set(cuda_sources
 
 # Libraries
 option(USE_CUDA "Use Cuda" ON)
+option(USE_CASA "Use Casa" OFF)
+option(USE_BOOST "Use Boost" OFF)
+
 #if(USE_CUDA)
 #    if(CUDA_FOUND)
 #        message(STATUS "CUDA found")
@@ -39,6 +42,17 @@ add_library(
     ${private_headers}
     ${public_headers}
 )
+
+if(USE_CUDA)
+    target_link_libraries(${TARGET_NAME} CUDA)
+endif()
+if(USE_CASA)
+    target_link_libraries(${TARGET_NAME} Casacore)
+endif()
+if(USE_BOOST)
+target_link_libraries(${TARGET_NAME} Boost)
+endif()
+
 set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
@@ -70,3 +84,6 @@ install(
   DESTINATION
     include/icrar/${SOLUTION_NAME_LOWER}
 )
+
+unset(USE_CUDA CACHE)
+unset(USE_CASA CACHE)

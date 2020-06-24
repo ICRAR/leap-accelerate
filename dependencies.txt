@@ -1,2 +1,3 @@
 find CUDA
 find Casacore
+find Boost

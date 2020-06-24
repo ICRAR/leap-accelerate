@@ -109,11 +109,13 @@ int main(int argc, char** argv)
         return app.exit(e);
     }
     ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
+    std::istream& input = args.GetInputStream();
 
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
+
     char c;
-    while (args.GetInputStream().get(c))
+    while (input.get(c))
     {
         std::cout << c;
     }
