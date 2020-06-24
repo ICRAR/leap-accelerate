@@ -20,9 +20,30 @@
 *    MA 02111-1307  USA
 */
 
-#include <icrar/leap-accelerate/math/vector.cuh>
+#pragma once
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
-//__global__ void addf(const float* x1, const float* x2, float* y)
+/**
+* @brief Performs vector addition of equal length vectors
+*
+* @tparam T vector value type
+* @param x1 left vector
+* @param x2 right vector
+* @param y out vector
+*/
+template<typename T>
+__global__ void add(const T* x1, const T* x2, T* y)
+{
+    int tid = blockDim.x * blockIdx.x + threadIdx.x;
+    y[tid] = x1[tid] + x2[tid];
+}
+
+//extern "C"
 //{
-//    add(x1, x2, y);
+//    __global__ void addi(const int* x1, const int* x2, int* y);
+//
+//    __global__ void addf(const float* x1, const float* x2, float* y);
+//
+//    __global__ void addd(const double* x1, const double* x2, double* y);
 //}

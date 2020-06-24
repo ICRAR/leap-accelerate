@@ -8,7 +8,7 @@ message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
+project(${SOLUTION_NAME} LANGUAGES CXX CUDA VERSION ${SOLUTION_NAME_VERSION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

@@ -14,7 +14,11 @@ set(private_headers
     helper.h
 )
 set(sources
-    main.cc
+    chgcentre.cc
+)
+
+set(cuda_headers
+    math/vector.cuh
 )
 
 set(cuda_sources
@@ -26,24 +30,30 @@ option(USE_CUDA "Use Cuda" ON)
 option(USE_CASA "Use Casa" OFF)
 option(USE_BOOST "Use Boost" OFF)
 
-#if(USE_CUDA)
-#    if(CUDA_FOUND)
-#        message(STATUS "CUDA found")
-#        enable_language("CUDA")
-#        set(sources ${source} ${cuda_source})
-#    else()
-#        message(STATUS "CUDA not found")
-#    endif()
-#endif()
+if(USE_CUDA AND CUDA_FOUND)
+	list(APPEND public_headers ${cuda_headers})
+    list(APPEND sources ${cuda_sources})
+endif()
 
 add_library(
-  ${TARGET_NAME}
+  ${TARGET_NAME} STATIC
     ${sources}
     ${private_headers}
     ${public_headers}
 )
 
+# Request that particles be built with -std=c++11
+# As this is a public compile feature anything that links to particles
+# will also build with -std=c++11
+target_compile_features(${TARGET_NAME} PUBLIC cxx_std_11)
+
 if(USE_CUDA)
+    # We need to explicitly state that we need all CUDA files in the particle
+    # library to be built with -dc as the member functions could be called by
+    # other libraries and executables
+    set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+    set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
     target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)
@@ -52,8 +62,6 @@ endif()
 if(USE_BOOST)
 target_link_libraries(${TARGET_NAME} Boost)
 endif()
-
-set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 
 target_include_directories(${TARGET_NAME} PUBLIC
