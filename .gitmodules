@@ -4,3 +4,6 @@
 [submodule "cmake-modules"]
 	path = external/cmake-modules
 	url = https://gitlab.com/ska-telescope/cmake-modules.git
+[submodule "CLI11"]
+	path = external/CLI11
+	url = https://github.com/CLIUtils/CLI11.git
