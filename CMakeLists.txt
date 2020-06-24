@@ -8,8 +8,8 @@ message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
-set(CMAKE_CXX_STANDARD 14)
+project(${SOLUTION_NAME} LANGUAGES CXX CUDA VERSION ${SOLUTION_NAME_VERSION})
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
@@ -28,8 +28,7 @@ endif()
 
 find_dependencies()
 
-#add_subdirectory(src/icrar/chgcentre-cuda)
-add_subdirectory(src/icrar/leap-accelerate-lib)
+add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)
 add_subdirectory(src/icrar/leap-accelerate-client)
 

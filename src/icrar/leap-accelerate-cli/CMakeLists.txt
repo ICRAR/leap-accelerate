@@ -6,11 +6,12 @@ set(sources
   main.cc
 )
 
+# TODO: use solution directory macro
 include_directories(../../../external/CLI11/include)
 
 # add the executable
 add_executable (${TARGET_NAME} main.cc)
-target_link_libraries (${TARGET_NAME} LeapAccelerateLib)
+target_link_libraries (${TARGET_NAME} LeapAccelerate)
 
 install (
   TARGETS
