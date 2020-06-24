@@ -6,6 +6,8 @@ set(sources
   main.cc
 )
 
+include_directories(../../../external/CLI11/include)
+
 # add the executable
 add_executable (${TARGET_NAME} main.cc)
 target_link_libraries (${TARGET_NAME} LeapAccelerateLib)

@@ -28,8 +28,9 @@ endif()
 
 find_dependencies()
 
-add_subdirectory(src/icrar/chgcentre-cuda)
+#add_subdirectory(src/icrar/chgcentre-cuda)
 add_subdirectory(src/icrar/leap-accelerate-lib)
+add_subdirectory(src/icrar/leap-accelerate-cli)
 add_subdirectory(src/icrar/leap-accelerate-client)
 
 # Install cmake config + version + target files
