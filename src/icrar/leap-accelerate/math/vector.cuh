@@ -24,6 +24,10 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+#include <array>
+#include <vector>
+#include <stdexcept>
+
 /**
 * @brief Performs vector addition of equal length vectors
 *
@@ -33,17 +37,81 @@
 * @param y out vector
 */
 template<typename T>
-__global__ void add(const T* x1, const T* x2, T* y)
+__device__ void d_add(const T* x1, const T* x2, T* y)
 {
-    int tid = blockDim.x * blockIdx.x + threadIdx.x;
-    y[tid] = x1[tid] + x2[tid];
+    //1D indexing
+    int threadId = blockDim.x * blockIdx.x + threadIdx.x;
+    y[threadId] = x1[threadId] + x2[threadId];
 }
 
-//extern "C"
-//{
-//    __global__ void addi(const int* x1, const int* x2, int* y);
-//
-//    __global__ void addf(const float* x1, const float* x2, float* y);
-//
-//    __global__ void addd(const double* x1, const double* x2, double* y);
-//}
+template<typename T>
+__global__ void add(const T* x1, const T* x2, T* y)
+{
+    d_add(x1, x2, y);
+}
+
+template<typename T, int32_t S>
+__host__ void h_add(std::array<T, S> a, std::array<T, S> b, std::array<T, S>& c)
+{
+    //8-series 128 threads
+    //10-series 240 threads
+    constexpr int blockSize = 1024;
+    int gridSize = (int)ceil((float)S / blockSize);
+
+    int* aBuffer;
+    int* bBuffer;
+    int* cBuffer;
+    cudaMalloc((void**)&aBuffer, sizeof(a));
+    cudaMalloc((void**)&bBuffer, sizeof(b));
+    cudaMalloc((void**)&cBuffer, sizeof(c));
+
+    cudaMemcpy(aBuffer, &a, sizeof(a), cudaMemcpyKind::cudaMemcpyHostToDevice);
+    cudaMemcpy(bBuffer, &b, sizeof(b), cudaMemcpyKind::cudaMemcpyHostToDevice);
+
+    add<<<gridSize, blockSize>>>(aBuffer, bBuffer, cBuffer);
+
+    //cudaDeviceSynchronize();
+
+    cudaMemcpy(&c, cBuffer, sizeof(c), cudaMemcpyKind::cudaMemcpyDeviceToHost);
+
+    cudaFree(aBuffer);
+    cudaFree(bBuffer);
+    cudaFree(cBuffer);
+}
+
+template<typename T>
+__host__ void h_add(std::vector<T> a, std::vector<T> b, std::vector<T>& c)
+{
+    if (a.size() != b.size() && a.size() != c.size())
+    {
+        throw std::runtime_error("argument sizes must be equal");
+    }
+
+    //8-series 128 threads
+    //10-series 240 threads
+    constexpr uint32_t blockSize = 1024;
+    uint32_t S = static_cast<uint32_t>(a.size());
+    uint32_t gridSize = static_cast<uint32_t>(ceil((float)S / blockSize));
+
+    size_t byteSize = a.size() * sizeof(T);
+
+    int* aBuffer;
+    int* bBuffer;
+    int* cBuffer;
+    cudaMalloc((void**)&aBuffer, byteSize);
+    cudaMalloc((void**)&bBuffer, byteSize);
+    cudaMalloc((void**)&cBuffer, byteSize);
+
+    cudaMemcpy(aBuffer, a.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
+    cudaMemcpy(bBuffer, b.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
+
+    add << <gridSize, blockSize >> > (aBuffer, bBuffer, cBuffer);
+
+    //cudaDeviceSynchronize();
+
+    cudaMemcpy(c.data(), cBuffer, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost);
+
+    cudaFree(aBuffer);
+    cudaFree(bBuffer);
+    cudaFree(cBuffer);
+}
