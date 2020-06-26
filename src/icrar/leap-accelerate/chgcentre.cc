@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -20,9 +21,17 @@
  * MA 02111 - 1307  USA
  */
 
-#include <iostream>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 
-int main(int argc, char** argv)
+#include <iostream>
+#include <string>
+#include <optional>
+#include <exception>
+
+/**
+ * Changes the phase centre
+ */
+void chgcentre(std::istream& input)
 {
-    return 0;
+    auto ms = casacore::MeasurementSet();
 }

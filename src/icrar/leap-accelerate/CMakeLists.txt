@@ -26,13 +26,13 @@ set(cuda_sources
 )
 
 # Libraries
-option(USE_CUDA "Use Cuda" ON)
-option(USE_CASA "Use Casa" OFF)
+option(USE_CUDA "Use Cuda" CUDA_FOUND)
+option(USE_CASA "Use Casa" TRUE)
 option(USE_BOOST "Use Boost" OFF)
 
 if(USE_CUDA AND CUDA_FOUND)
-	list(APPEND public_headers ${cuda_headers})
-    list(APPEND sources ${cuda_sources})
+  list(APPEND public_headers ${cuda_headers})
+  list(APPEND sources ${cuda_sources})
 endif()
 
 add_library(
@@ -42,13 +42,13 @@ add_library(
     ${public_headers}
 )
 
-# Request that particles be built with -std=c++11
-# As this is a public compile feature anything that links to particles
+# Request that the target be built with -std=c++11
+# As this is a public compile feature anything that links to the target
 # will also build with -std=c++11
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_11)
 
 if(USE_CUDA)
-    # We need to explicitly state that we need all CUDA files in the particle
+    # We need to explicitly state that we need all CUDA files in the target
     # library to be built with -dc as the member functions could be called by
     # other libraries and executables
     set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
@@ -57,7 +57,8 @@ if(USE_CUDA)
     target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)
-    target_link_libraries(${TARGET_NAME} Casacore)
+    message("Using casa")
+    target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(USE_BOOST)
 target_link_libraries(${TARGET_NAME} Boost)
@@ -95,3 +96,4 @@ install(
 
 unset(USE_CUDA CACHE)
 unset(USE_CASA CACHE)
+unset(USE_BOOST CACHE)

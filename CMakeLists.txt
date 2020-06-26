@@ -10,7 +10,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX CUDA VERSION ${SOLUTION_NAME_VERSION})
+project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -23,35 +23,35 @@ include(CTest)
 
 # External projects
 if (BUILD_TESTING)
-    #add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
-    # installed as git submodule - if this is your first clone you need to
-    # git submodule init
-    # git submodule update
-    # This is a cmake module and needs no further input from you
+  #add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
+  # installed as git submodule - if this is your first clone you need to
+  # git submodule init
+  # git submodule update
+  # This is a cmake module and needs no further input from you
 
-    #${PROJECT_SOURCE_DIR}
-    
-	#find_package(GTest)
-	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-    add_subdirectory(external/gtest-1.8.1)
-    enable_testing()
-    
-	include(GoogleTest)
-    mark_as_advanced(
-        BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-        gmock_build_tests gtest_build_samples gtest_build_tests
-        gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
-    )
-    set_target_properties(gtest PROPERTIES FOLDER external)
-    set_target_properties(gtest_main PROPERTIES FOLDER external)
-    set_target_properties(gmock PROPERTIES FOLDER external)
-    set_target_properties(gmock_main PROPERTIES FOLDER external)
+  #${PROJECT_SOURCE_DIR}
+  
+  #find_package(GTest)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  add_subdirectory(external/gtest-1.8.1)
+  enable_testing()
+  
+  include(GoogleTest)
+  mark_as_advanced(
+      BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+      gmock_build_tests gtest_build_samples gtest_build_tests
+      gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
+  )
+  set_target_properties(gtest PROPERTIES FOLDER external)
+  set_target_properties(gtest_main PROPERTIES FOLDER external)
+  set_target_properties(gmock PROPERTIES FOLDER external)
+  set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
 find_dependencies()
 
 if(CUDA_FOUND)
-	enable_language(CUDA)
+  enable_language(CUDA)
 endif()
 
 add_subdirectory(src/icrar/leap-accelerate)

@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#include <icrar/leap-accelerate/chgcentre.h>
+
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <string>
@@ -111,12 +113,13 @@ int main(int argc, char** argv)
     ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
     std::istream& input = args.GetInputStream();
 
-
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
-    char c;
-    while (input.get(c))
-    {
-        std::cout << c;
-    }
+    chgcentre(input);
+
+    // char c;
+    // while (input.get(c))
+    // {
+    //     std::cout << c;
+    // }
 }
