@@ -30,7 +30,7 @@ option(USE_CUDA "Use Cuda" CUDA_FOUND)
 option(USE_CASA "Use Casa" TRUE)
 option(USE_BOOST "Use Boost" OFF)
 
-if(USE_CUDA AND CUDA_FOUND)
+if(USE_CUDA)
   list(APPEND public_headers ${cuda_headers})
   list(APPEND sources ${cuda_sources})
 endif()

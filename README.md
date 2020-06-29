@@ -32,3 +32,6 @@ TODO:
 local installation to a single bin directory
 
 `./build/linux/bin/LeapAccelerate`
+
+## Debian Dependencies
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10

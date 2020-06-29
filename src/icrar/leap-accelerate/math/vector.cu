@@ -24,8 +24,7 @@
 
 __global__ void addi(const int* x1, const int* x2, int* y)
 {
-    int tid = blockDim.x * blockIdx.x + threadIdx.x;
-    y[tid] = x1[tid] + x2[tid];
+    d_add(x1, x2, y);
 }
 
 

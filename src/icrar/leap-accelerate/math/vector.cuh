@@ -51,12 +51,12 @@ __global__ void add(const T* x1, const T* x2, T* y)
 }
 
 template<typename T, int32_t S>
-__host__ void h_add(std::array<T, S> a, std::array<T, S> b, std::array<T, S>& c)
+__host__ void h_add(const std::array<T, S>& a, const std::array<T, S>& b, std::array<T, S>& c)
 {
     //8-series 128 threads
     //10-series 240 threads
-    constexpr int blockSize = 1024;
-    int gridSize = (int)ceil((float)S / blockSize);
+    constexpr int threadsPerBlock = 1024;
+    int gridSize = (int)ceil((float)S / threadsPerBlock);
 
     int* aBuffer;
     int* bBuffer;
@@ -68,7 +68,7 @@ __host__ void h_add(std::array<T, S> a, std::array<T, S> b, std::array<T, S>& c)
     cudaMemcpy(aBuffer, &a, sizeof(a), cudaMemcpyKind::cudaMemcpyHostToDevice);
     cudaMemcpy(bBuffer, &b, sizeof(b), cudaMemcpyKind::cudaMemcpyHostToDevice);
 
-    add<<<gridSize, blockSize>>>(aBuffer, bBuffer, cBuffer);
+    add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
 
     //cudaDeviceSynchronize();
 
@@ -89,9 +89,9 @@ __host__ void h_add(std::vector<T> a, std::vector<T> b, std::vector<T>& c)
 
     //8-series 128 threads
     //10-series 240 threads
-    constexpr uint32_t blockSize = 1024;
+    constexpr uint32_t threadsPerBlock = 1024;
     uint32_t S = static_cast<uint32_t>(a.size());
-    uint32_t gridSize = static_cast<uint32_t>(ceil((float)S / blockSize));
+    uint32_t gridSize = static_cast<uint32_t>(ceil((float)S / threadsPerBlock));
 
     size_t byteSize = a.size() * sizeof(T);
 
@@ -105,7 +105,7 @@ __host__ void h_add(std::vector<T> a, std::vector<T> b, std::vector<T>& c)
     cudaMemcpy(aBuffer, a.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
     cudaMemcpy(bBuffer, b.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
 
-    add << <gridSize, blockSize >> > (aBuffer, bBuffer, cBuffer);
+    add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
 
     //cudaDeviceSynchronize();
 

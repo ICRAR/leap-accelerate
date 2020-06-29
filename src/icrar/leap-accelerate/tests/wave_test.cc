@@ -26,16 +26,18 @@ namespace icrar
         {
 
         }
+
+        void Wave()
+        {
+            //icrar::helloworld::wave f;
+            //EXPECT_EQ(f.greeting(), "I am waving hello");
+        }
+
+        void FailTest()
+        {
+            ASSERT_EQ(1, 1);
+        }
     };
 
-    TEST_F(WaveTest, MethodWave)
-    {
-        //icrar::helloworld::wave f;
-        //EXPECT_EQ(f.greeting(), "I am waving hello");
-    }
-
-    // Tests that Foo does Xyz.
-    // TEST_F(WaveTest, DoesXyz) {
-      // Exercises the Xyz feature of Foo.
-    // }
+    TEST_F(WaveTest, FailTest) { FailTest(); }
 }

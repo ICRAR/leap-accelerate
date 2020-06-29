@@ -27,9 +27,27 @@
 #include <stdio.h>
 #include <array>
 
-class compute_tests : public testing::Test
+class cuda_tests : public testing::Test
 {
 public:
+    cuda_tests()
+    {
+
+    }
+
+    void SetUp() override
+    {
+        int deviceCount = 0;
+        cudaGetDeviceCount(&deviceCount);
+        ASSERT_NE(deviceCount, 0);
+
+        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
+    }
+
+    void TearDown() override
+    {
+
+    }
 
     void test_array_add()
     {
@@ -41,7 +59,7 @@ public:
         a.fill(6);
         b.fill(10);
 
-        h_add(a, b, c);
+        h_add<int, n>(a, b, c);
 
         std::array<int, n> expected;
         expected.fill(16);
@@ -61,7 +79,7 @@ public:
     }
 };
 
-TEST_F(compute_tests, test_array_add) { test_array_add(); }
-TEST_F(compute_tests, test_vector_add1) { test_vector_add(1); }
-TEST_F(compute_tests, test_vector_add1x) { test_vector_add(10000); }
-TEST_F(compute_tests, test_vector_add1xx) { test_vector_add(1000000); }
+TEST_F(cuda_tests, test_array_add) { test_array_add(); }
+TEST_F(cuda_tests, test_vector_add1) { test_vector_add(1); }
+TEST_F(cuda_tests, test_vector_add1x) { test_vector_add(10000); }
+TEST_F(cuda_tests, test_vector_add1xx) { test_vector_add(1000000); }

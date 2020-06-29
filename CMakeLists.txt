@@ -30,7 +30,6 @@ if (BUILD_TESTING)
   # This is a cmake module and needs no further input from you
 
   #${PROJECT_SOURCE_DIR}
-  
   #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
   add_subdirectory(external/gtest-1.8.1)
@@ -47,6 +46,26 @@ if (BUILD_TESTING)
   set_target_properties(gmock PROPERTIES FOLDER external)
   set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+    # set input and output files
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/config-file.doxygen)
+
+    # request to configure the file
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    message("Doxygen build started")
+
+    # note the option ALL which allows to build the docs together with the application
+    add_custom_target( doxygen ALL
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM )
+else (DOXYGEN_FOUND)
+  message("Doxygen need to be installed to generate the doxygen documentation")
+endif (DOXYGEN_FOUND)
 
 find_dependencies()
 

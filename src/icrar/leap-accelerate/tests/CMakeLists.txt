@@ -3,13 +3,13 @@ set(TEST_TARGET LeapAccelerate.Tests)
 
 add_executable(${TEST_TARGET}
     main.cc
-    #tests.cc
-    #tests.cu
+    wave_test.cc
+    cuda_tests.cu
 )
 
 message(${gtest_SOURCE_DIR})
 
-target_link_libraries(${TEST_TARGET} LeapAccelerate gtest gtest_main)
+target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
 
 add_test(
   NAME ${TEST_TARGET}
