@@ -12,7 +12,7 @@
     "ShowErrorList": true
   },
   {
-    "FileExtensions": ".c;.cpp;.cxx;.cc;.tli;.tlh;.h;.hh;.hpp;.hxx;.hh",
+    "FileExtensions": ".c;.cpp;.cxx;.cc;.tli;.tlh;.h;.hh;.hpp;.hxx;.hh;.cu;.cuh",
     "FilesToIgnore": "resource.h",
     "AssumeFilename": "",
     "CustomExecutable": "",
