@@ -6,7 +6,7 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 * leap-accelerate-cli: a CLI interface for I/O datastream or plasma data access 
 * leap-accelerate-client: a socket client interface for recieving and sending to LEAP-Cal
 
-## Building
+## Build
 
 ### Linux
 
@@ -16,22 +16,34 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 `cmake ../../`
 
-## Testing
+## Test
 
-Testing provided via googletest.
-
-in build directory run:
+Testing provided via googletest. To test using CTest use the following command in build/linux:
 
 `make test`
 
-## Run Server
+To test using the google test runner, use the following command:
 
-`./build/linux/src/icrar/leap-accelerate/`
+`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
 
-TODO:
-local installation to a single bin directory
+## Doxygen
 
-`./build/linux/bin/LeapAccelerate`
+Doxygen is generated with the following target:
+
+`make doxygen`
+
+Generated doxygen is available at the following file location:
+
+`src/out/html/index.html`
+
+## Run CLI
+
+`./src/icrar/leap-accelerate-cli/LeapAccelerateCLI`
+
+or
+
+`./bin/LeapAccelerateCLI`
 
 ## Debian Dependencies
+
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10
