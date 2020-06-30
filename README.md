@@ -43,3 +43,7 @@ Generated doxygen is available at the following file location:
 or
 
 `./bin/LeapAccelerateCLI`
+
+## Debian Dependencies
+
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10
