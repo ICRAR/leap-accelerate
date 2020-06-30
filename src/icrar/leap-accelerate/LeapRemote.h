@@ -21,11 +21,50 @@
  * MA 02111 - 1307  USA
  */
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#pragma once
 
-#include <iostream>
-#include <string>
-#include <optional>
-#include <exception>
+#include <istream>
+#include <ostream>
+#include <future>
+#include <map>
 
-void chgcentre(std::istream& input);
+namespace icrar
+{
+    class LeapRemote
+    {
+        std::istream reader;
+        std::ostream writer;
+
+    public:
+        std::future<void> SendObject(std::string generic_path)
+        {
+            return std::async(std::launch::async, [&]() {
+                writer << generic_path;
+            });
+        }
+
+        std::future<void> SendObject(std::map<std::string, std::string> map)
+        {
+            writer << map;
+        }
+        
+        std::future<std::map<std::string, std::string>> ReceiveObject()
+        {
+            
+        }
+
+        template<typename T>
+        void SendObject(const T& object)
+        {
+
+        }
+        
+        template<typename T>
+        T ReceiveObject()
+        {
+
+        }
+    }
+
+    
+}

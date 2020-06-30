@@ -20,13 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/chgcentre.h>
+#include <icrar/leap-accelerate/PhaseRotate.h>
+
+#include <casacore/measures/Measures/MDirection.h>
 
 #include <CLI/CLI.hpp>
 #include <iostream>
 #include <string>
 #include <optional>
 #include <exception>
+
+using namespace icrar;
 
 enum class InputSource
 {
@@ -78,10 +82,10 @@ public:
             }
             break;
         case InputSource::APACHE_ARROW:
-            throw new std::runtime_error("only stream in and file input is currently supported");
+            throw new std::runtime_error("only stream in and file input are currently supported");
             break;
         default:
-            throw new std::runtime_error("only stream in and file input is currently supported");
+            throw new std::runtime_error("only stream in and file input are currently supported");
             break;
         }
     }
@@ -115,11 +119,9 @@ int main(int argc, char** argv)
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
-    chgcentre(input);
+    auto ms = ParseMeasurementSet(input);
 
-    // char c;
-    // while (input.get(c))
-    // {
-    //     std::cout << c;
-    // }
+    std::vector<casacore::MDirection> directions; //ZenithDirection(ms);
+    
+    PhaseRotate(*ms, directions);
 }

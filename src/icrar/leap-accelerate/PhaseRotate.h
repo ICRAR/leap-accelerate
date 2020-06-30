@@ -21,17 +21,24 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 
 #include <iostream>
 #include <string>
-#include <optional>
-#include <exception>
+#include <memory>
+#include <vector>
 
-/**
- * Changes the phase centre
- */
-void chgcentre(std::istream& input)
+namespace casacore
 {
-    auto ms = casacore::MeasurementSet();
+    //class MeasurementSet;
+    class MDirection;
+}
+
+namespace icrar
+{
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+    
+    void PhaseRotate(casacore::MeasurementSet& ms, std::vector<casacore::MDirection> directions);
 }

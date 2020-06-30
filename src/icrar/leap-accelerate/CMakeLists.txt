@@ -6,15 +6,26 @@ set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    main.h
-    chgcentre.h
     visibility.h
+    band_data.h
+    PhaseRotate.h
+
+    wsclean/banddata.h
+    wsclean/chgcentre.h
+    wsclean/imagecoordinates.h
+    wsclean/multibanddata.h
+    wsclean/progressbar.h
+    wsclean/radeccoord.h
 )
 set(private_headers
     helper.h
 )
 set(sources
-    chgcentre.cc
+    PhaseRotate.cc
+
+    wsclean/chgcentre.cc
+    wsclean/multibanddata.cpp
+    wsclean/progressbar.cpp
 )
 
 set(cuda_headers
