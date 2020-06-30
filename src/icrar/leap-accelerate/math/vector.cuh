@@ -28,6 +28,8 @@
 #include <vector>
 #include <stdexcept>
 
+__constant__ float identity[9];
+
 /**
 * @brief Performs vector addition of equal length vectors
 *
@@ -72,6 +74,7 @@ __host__ void h_add(const std::array<T, S>& a, const std::array<T, S>& b, std::a
 
     //cudaDeviceSynchronize();
 
+    //cudaMemcpytoSymbol()
     cudaMemcpy(&c, cBuffer, sizeof(c), cudaMemcpyKind::cudaMemcpyDeviceToHost);
 
     cudaFree(aBuffer);
