@@ -41,7 +41,7 @@
 #include <memory>
 
 using namespace casacore;
-using Matrixd = Matrix<double>;
+using Matrixd = Matrix<double>
 using Matrixi = Matrix<int>;
 
 namespace icrar
@@ -93,7 +93,7 @@ namespace icrar
      */
     Matrixd PhaseMatrixFuntion(Array a1, Array a2, int refAnt=-1, bool map=false)
     {
-        //TODO array equal
+        //TODO array equal, see invert.py
         //int nAnt = 1 + (a1 == a2) ? 1 : 0;
         int nAnt = 2;
         if(refAnt >= nAnt - 1)
@@ -102,16 +102,17 @@ namespace icrar
         }
 
         Matrixd A = Matrixd(a1.size() + 1, a1.max());
-        A.fill(0);
+        //A.fill(0);
+        A[0] = 1;
 
         Matrixi I = Matrixi(a1.size() + 1);
-        I.fill(1);
-
+        //I.fill(1);
+        I[0] = 1;
         int k = 0;
 
         for(auto it : a1)
-        {
-            
+        
+            if(a1[n] != a2[n])
         }
     }
 
