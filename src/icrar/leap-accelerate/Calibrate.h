@@ -30,5 +30,18 @@ namespace casacore
 namespace icrar
 {
     class MetaData;
+
+    /**
+     * @brief 
+     * 
+     */
+    void LeapRemoteCalibration();
+    
+    /**
+     * @brief 
+     * 
+     * @param direction 
+     * @param meta 
+     */
     void LeapCalibrateFromQueue(const casacore::MVDirection& direction, MetaData& meta);
 }

@@ -23,7 +23,6 @@
 
 #pragma once
 
-
 #include <iostream>
 #include <string>
 #include <memory>
@@ -41,6 +40,14 @@ namespace casacore
 namespace icrar
 {
     class MetaData;
+    class Integration;
+    /**
+     * @brief 
+     * 
+     * @param ms 
+     * @param directions 
+     */
+    void PhaseRotate(casacore::MeasurementSet& ms, std::vector<casacore::MDirection> directions);
 
     /**
      * @brief 
@@ -49,15 +56,7 @@ namespace icrar
      * @param metadata 
      * @param direction 
      */
-    //void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction);
-
-    /**
-     * @brief 
-     * 
-     * @param ms 
-     * @param directions 
-     */
-    void PhaseRotate(casacore::MeasurementSet& ms, std::vector<casacore::MDirection> directions);
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 
     /**
      * @brief 

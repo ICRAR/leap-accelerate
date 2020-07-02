@@ -128,7 +128,7 @@ namespace icrar
      *
      * This function generates and returns the linear matrix for the phase calibration (only)
      */
-    std::pair<Matrixd, Matrixi> PhaseMatrixFuntion(const Arrayd& a1, const Arrayd& a2, int refAnt=-1, bool map=false)
+    std::pair<Matrixd, Matrixi> PhaseMatrixFunction(const Arrayd& a1, const Arrayd& a2, int refAnt=-1, bool map=false)
     {
         //TODO array equal, see invert.py
         //int nAnt = 1 + (a1 == a2) ? 1 : 0;

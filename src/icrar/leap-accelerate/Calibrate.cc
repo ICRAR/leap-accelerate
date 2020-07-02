@@ -31,11 +31,16 @@ using namespace casacore;
 
 namespace icrar
 {
+    void LeapRemoteCalibration(const std::vector<MVDirection>& directions)
+    {
+        //LeapCalibrateFromQueue()
+    }
+
     void LeapCalibrateFromQueue(
         const MVDirection& direction,
         MetaData& metadata)
     {
         icrar::Integration integration;
-        //RotateVisibilities(integration, metadata, direction);
+        RotateVisibilities(integration, metadata, direction);
     }
 }
