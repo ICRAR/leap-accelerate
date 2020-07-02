@@ -19,28 +19,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
-#pragma once
-#include <ostream>
 
-struct visibility
+#include <icrar/leap-accelerate/PhaseRotate.h>
+#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/math/Integration.h>
+
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/casa/Quanta/MVDirection.h>
+
+using namespace casacore;
+
+namespace icrar
 {
-    double frequency;
-    double time;
-    double u;
-    double v;
-    double w;
-    double r;
-    double i;
-    double weight;
-    int a1;
-    int a2;
-    int gcfinx;
-
-    std::ostream& operator<<(std::ostream& os, const visibility& vis)
+    void LeapCalibrateFromQueue(
+        const MVDirection& direction,
+        MetaData& metadata)
     {
-        os << "f:" << frequency
-           << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-           << " => " << r << ", " << i << std::endl;
-
+        icrar::Integration integration;
+        //RotateVisibilities(integration, metadata, direction);
     }
-};
+}

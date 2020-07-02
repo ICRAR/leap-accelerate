@@ -20,27 +20,15 @@
  * MA 02111 - 1307  USA
  */
 #pragma once
-#include <ostream>
 
-struct visibility
+namespace casacore
 {
-    double frequency;
-    double time;
-    double u;
-    double v;
-    double w;
-    double r;
-    double i;
-    double weight;
-    int a1;
-    int a2;
-    int gcfinx;
+    class MVDirection;
+    
+}
 
-    std::ostream& operator<<(std::ostream& os, const visibility& vis)
-    {
-        os << "f:" << frequency
-           << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-           << " => " << r << ", " << i << std::endl;
-
-    }
-};
+namespace icrar
+{
+    class MetaData;
+    void LeapCalibrateFromQueue(const casacore::MVDirection& direction, MetaData& meta);
+}

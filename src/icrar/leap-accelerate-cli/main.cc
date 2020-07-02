@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/PhaseRotate.h>
+#include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 

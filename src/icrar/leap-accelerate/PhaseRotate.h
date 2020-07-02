@@ -23,22 +23,62 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 
 #include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
+#include <complex>
 
 namespace casacore
 {
-    //class MeasurementSet;
+    class MeasurementSet;
     class MDirection;
+    class MVDirection;
+    class MVuvw;
 }
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
-    
+    class MetaData;
+
+    /**
+     * @brief 
+     * 
+     * @param integration 
+     * @param metadata 
+     * @param direction 
+     */
+    //void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction);
+
+    /**
+     * @brief 
+     * 
+     * @param ms 
+     * @param directions 
+     */
     void PhaseRotate(casacore::MeasurementSet& ms, std::vector<casacore::MDirection> directions);
+
+    /**
+     * @brief 
+     * 
+     * @param metadata 
+     * @param direction 
+     */
+    void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
+    
+    /**
+     * @brief Set the Wv object
+     * 
+     * @param metadata 
+     */
+    void SetWv(MetaData& metadata);
+    
+    /**
+     * @brief 
+     * 
+     * @param uvw 
+     * @param metadata 
+     */
+    void CalcUVW(std::vector<casacore::MVuvw>& uvw, MetaData& metadata);
 }

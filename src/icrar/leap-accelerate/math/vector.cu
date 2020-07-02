@@ -29,12 +29,12 @@ __global__ void addi(const int* x1, const int* x2, int* y)
 
 __global__ void addf(const float* x1, const float* x2, float* y)
 {
-   add(x1, x2, y);
+   d_add(x1, x2, y);
 }
 
 __global__ void addd(const double* x1, const double* x2, double* y)
 {
-   add(x1, x2, y);
+   d_add(x1, x2, y);
 }
 
 // extern "C"

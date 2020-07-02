@@ -8,6 +8,7 @@ set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h
     visibility.h
     band_data.h
+    Calibrate.h
     PhaseRotate.h
 
     wsclean/banddata.h
@@ -21,6 +22,8 @@ set(private_headers
     helper.h
 )
 set(sources
+    utils.cc
+    Calibrate.cc
     PhaseRotate.cc
 
     wsclean/chgcentre.cc
@@ -72,9 +75,9 @@ if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(USE_BOOST)
-target_link_libraries(${TARGET_NAME} Boost)
+    target_link_libraries(${TARGET_NAME} Boost)
 endif()
-
+target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

@@ -21,6 +21,8 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #include "PhaseRotate.h"
 #include "icrar/leap-accelerate/wsclean/chgcentre.h"
 
@@ -37,28 +39,62 @@
 #include <optional>
 #include <exception>
 #include <memory>
+#include <vector>
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input)
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::filesystem::path& path);
+
+    template<typename T>
+    void ArrayFill(casacore::Array<T>& value, T v)
     {
-        // don't skip the whitespace while reading
-        std::cin >> std::noskipws;
-
-        // use stream iterators to copy the stream to a string
-        std::istream_iterator<char> it(std::cin);
-        std::istream_iterator<char> end;
-        std::string results = std::string(it, end);
-
-        std::cout << results;
-
-        return std::make_unique<casacore::MeasurementSet>(results);
+        for(auto it = value.begin(); it != value.end(); it++)
+        {
+            *it = v;
+        }
     }
 
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::filesystem::path& path)
+    template<typename T>
+    T ArrayMax(const casacore::Array<T>& value)
     {
-        auto ms = std::make_unique<casacore::MeasurementSet>();
-        ms->openTable(path.generic_string());
-        return ms;
+        T max = 0;
+        for(auto it = value.begin(); it != value.end(); it++)
+        {
+            max = std::max(max, *it);
+        }
+        return max;
+    }
+
+    template <typename IntType>
+    std::vector<IntType> range(IntType start, IntType stop, IntType step)
+    {
+        if (step == IntType(0))
+        {
+            throw std::invalid_argument("step for range must be non-zero");
+        }
+
+        std::vector<IntType> result;
+        IntType i = start;
+        while ((step > 0) ? (i < stop) : (i > stop))
+        {
+            result.push_back(i);
+            i += step;
+        }
+
+        return result;
+    }
+
+    template <typename IntType>
+    std::vector<IntType> range(IntType start, IntType stop)
+    {
+        return range(start, stop, IntType(1));
+    }
+
+    template <typename IntType>
+    std::vector<IntType> range(IntType stop)
+    {
+        return range(IntType(0), stop, IntType(1));
     }
 }
