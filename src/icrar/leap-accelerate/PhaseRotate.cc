@@ -62,7 +62,7 @@ namespace icrar
     {
         MetaData metadata = {};
         metadata.init = True;
-        metadata.channels;// = channels;
+        metadata.channels;// = channels;`
         metadata.num_pols;
         metadata.rows;
 

@@ -19,29 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
-#pragma once
-
-namespace casacore
-{
-    class MVDirection;
-    
-}
 
 namespace icrar
 {
-    class MetaData;
-
-    /**
-     * @brief 
-     * 
-     */
-    void LeapRemoteCalibration(const std::vector<MVDirection>& directions);
     
-    /**
-     * @brief 
-     * 
-     * @param direction 
-     * @param meta 
-     */
-    void LeapCalibrateFromQueue(const casacore::MVDirection& direction, MetaData& meta);
 }

@@ -27,10 +27,48 @@
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
+#include <istream>
+#include <ostream>
+#include <sstream>
+#include <streambuf>
+
 using namespace casacore;
 
 namespace icrar
 {
+    void ServerLeapHandleRemoteMS(std::istream& reader, std::ostream& writer)
+    {
+        std::string ms_filename;
+        try
+        {
+            char len;
+            reader.read(&len, 2);
+            std::vector<char> tmpString = std::vector<char>(len);
+            reader.read(tmpString.data(), len);
+            ms_filename = std::string(tmpString.data());
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
+        LeapHandleRemoteMS(ms_filename);
+    }
+
+    void LeapHandleRemoteMS(std::string ms_filename)
+    {
+        MeasurementSet ms = MeasurementSet(ms_filename);
+        throw std::runtime_error("not implemented");
+
+        MetaData metadata = {};
+
+    }
+
+    void ClientLeapRemoteCalibration(std::string host, short port, std::string ms_path, const std::vector<MVDirection>& directions, int solutionInterval=3600)
+    {
+
+    }
+
     void LeapRemoteCalibration(const std::vector<MVDirection>& directions)
     {
         //LeapCalibrateFromQueue()

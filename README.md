@@ -46,7 +46,7 @@ or
 
 ## Debian Dependencies
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.37-dev-all nvidia-cuda-toolkit-gcc
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.37-dev-all nvidia-cuda-toolkit-gcc libeigen3-dev
 
 ## Minimum Version Compatibility
 
