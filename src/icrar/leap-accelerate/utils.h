@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -23,8 +22,7 @@
 
 #pragma once
 
-#include "PhaseRotate.h"
-#include "icrar/leap-accelerate/wsclean/chgcentre.h"
+#include <icrar/leap-accelerate/MetaData.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -47,54 +45,5 @@ namespace icrar
 
     std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::filesystem::path& path);
 
-    template<typename T>
-    void ArrayFill(casacore::Array<T>& value, T v)
-    {
-        for(auto it = value.begin(); it != value.end(); it++)
-        {
-            *it = v;
-        }
-    }
-
-    template<typename T>
-    T ArrayMax(const casacore::Array<T>& value)
-    {
-        T max = 0;
-        for(auto it = value.begin(); it != value.end(); it++)
-        {
-            max = std::max(max, *it);
-        }
-        return max;
-    }
-
-    template <typename IntType>
-    std::vector<IntType> range(IntType start, IntType stop, IntType step)
-    {
-        if (step == IntType(0))
-        {
-            throw std::invalid_argument("step for range must be non-zero");
-        }
-
-        std::vector<IntType> result;
-        IntType i = start;
-        while ((step > 0) ? (i < stop) : (i > stop))
-        {
-            result.push_back(i);
-            i += step;
-        }
-
-        return result;
-    }
-
-    template <typename IntType>
-    std::vector<IntType> range(IntType start, IntType stop)
-    {
-        return range(start, stop, IntType(1));
-    }
-
-    template <typename IntType>
-    std::vector<IntType> range(IntType stop)
-    {
-        return range(IntType(0), stop, IntType(1));
-    }
+    std::unique_ptr<MetaData> ParseMetaData(const casacore::MeasurementSet& ms);
 }

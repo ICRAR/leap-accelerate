@@ -1,6 +1,6 @@
 
 #include <gtest/gtest.h>
-#include <icrar/leap-accelerate/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
 namespace icrar
 {

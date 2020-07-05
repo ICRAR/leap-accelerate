@@ -3,13 +3,14 @@ set(TARGET_EXPORT leapaccelerate-targest)
 set(TARGET_TEST LeapAccelerateClientExec)
 
 set(sources
-  main.cc
+  Calibrate.cc
   leap_cal_server.cc
   leap_cal_client.cc
   remote_cal.cc
 )
 
 set(private_headers
+  Calibrate.h
   leap_cal_server.h
   leap_cal_client.h
   remote_cal.h

@@ -8,8 +8,15 @@ set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h
     visibility.h
     band_data.h
-    Calibrate.h
-    PhaseRotate.h
+    MetaData.h
+
+    algorithm/PhaseRotate.h
+    algorithm/Invert.h
+)
+set(private_headers
+    math/casacore_helper.h
+    math/eigen_helper.h
+    math/math.h
 
     wsclean/banddata.h
     wsclean/chgcentre.h
@@ -18,13 +25,12 @@ set(public_headers
     wsclean/progressbar.h
     wsclean/radeccoord.h
 )
-set(private_headers
-    helper.h
-)
 set(sources
     utils.cc
-    Calibrate.cc
-    PhaseRotate.cc
+    MetaData.cc
+
+    algorithm/PhaseRotate.cc
+    algorithm/Invert.cc
 
     wsclean/chgcentre.cc
     wsclean/multibanddata.cpp

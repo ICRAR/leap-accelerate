@@ -22,6 +22,7 @@
 
 #include <gtest/gtest.h>
 
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>

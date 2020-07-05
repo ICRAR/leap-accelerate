@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -54,8 +53,8 @@ namespace icrar
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
         std::vector<double> channel_wavelength;
 
-        casacore::Matrix<std::complex<double>> avg_data;
-        casacore::Matrix<double> dd;
+        casacore::Array<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        casacore::Matrix<std::complex<double>> dd;
 
         double phase_centre_ra_rad;
         double phase_centre_dec_rad;
@@ -70,13 +69,43 @@ namespace icrar
             };
         };
 
+        casacore::Matrix<double> A;
+        casacore::Matrix<double> Ad;
+        casacore::Matrix<double> Ad1;
+
+        casacore::Array<double> I1;
+        casacore::Array<double> I;
+
         // void SetDlmRa(double value) { dlm_ra; }
         // double GetDlmRa();
         // void SetDlmdDec(double value);
         // double GetDlmdDec();
     };
 
-    // class Stats
+    /**
+     * @brief 
+     * 
+     * @param metadata 
+     * @param direction 
+     */
+    void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
+    
+    /**
+     * @brief Set the Wv object
+     * 
+     * @param metadata 
+     */
+    void SetWv(MetaData& metadata);
+    
+    /**
+     * @brief 
+     * 
+     * @param uvw 
+     * @param metadata 
+     */
+    void CalcUVW(std::vector<casacore::MVuvw>& uvw, MetaData& metadata);
+
+    //class Stats
     // {
     // public:
     //     bool m_init;

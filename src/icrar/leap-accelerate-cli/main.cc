@@ -20,13 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/PhaseRotate.h>
 #include <icrar/leap-accelerate/utils.h>
+#include <icrar/leap-accelerate/math/Integration.h>
+
+#include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 
 #include <CLI/CLI.hpp>
+
 #include <iostream>
+#include <queue>
 #include <string>
 #include <optional>
 #include <exception>
@@ -121,8 +125,10 @@ int main(int argc, char** argv)
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
     auto ms = ParseMeasurementSet(input);
+    auto metadata = ParseMetaData(*ms);
 
     std::vector<casacore::MDirection> directions; //ZenithDirection(ms);
-    
-    PhaseRotate(*ms, directions);
+    auto queue = std::queue<Integration>();
+
+    PhaseRotate(*metadata, directions, queue);
 }
