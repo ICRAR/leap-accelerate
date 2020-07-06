@@ -16,6 +16,31 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 `cmake ../../`
 
+#### Ubuntu/Debian Dependencies
+
+20.04 LTS
+
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev nvidia-cuda-toolkit libeigen3-dev
+
+18.04 LTS
+
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.66-all-dev nvidia-cuda-toolkit libeigen3-dev
+
+#### Recommended Versions Compatibility
+
+* g++ 9.3.0
+* cuda 10.1
+* boost 1.71.0
+* casacore 3.1.2
+
+#### Minimum Versions Compatibility
+
+* g++ 6.3.0
+* cuda 10.1
+* boost 1.63.0 (1.55.0 available)
+* cmake 3.15.1
+* casacore 3.1.2
+
 ## Test
 
 Testing provided via googletest. To test using CTest use the following command in build/linux:
@@ -44,36 +69,14 @@ or
 
 `./bin/LeapAccelerateCLI`
 
-## Ubuntu/Debian Dependencies
+## Profiling
 
-18.04 LTS
+* gprof
+* google-perftools
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 nvidia-cuda-toolkit libeigen3-dev
+## Deploy
 
-20.04 LTS
-
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev nvidia-cuda-toolkit libeigen3-dev
-
-## Recommended Version Compatibility
-
-* g++ 9.3.0
-* cuda 10.1
-* boost 1.71
-* casacore 3.1.2
-
-## Minimum Version Compatibility
-
-* gcc 6.3.0
-* cuda 10.1
-* boost 1.66.0 (1.63.0 or 1.55.0 available)
-* cmake 3.15.1
-* casacore 3.1.2
-
-module help
-
+* module help
 * module load
 * module list
 
-## Profiling
-gprof
-Perf tools
