@@ -20,26 +20,29 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/math/vector.cuh>
-
 #include <gtest/gtest.h>
 
-#include <stdio.h>
+#include <icrar/leap-accelerate/algorithm/PhaseRotate.cuh>
+
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Sparse>
+
+#include <iostream>
 #include <array>
 
-class cuda_tests : public testing::Test
+class eigen_tests : public testing::Test
 {
 public:
-    cuda_tests()
+    eigen_tests()
     {
 
     }
 
     void SetUp() override
     {
-        int deviceCount = 0;
-        cudaGetDeviceCount(&deviceCount);
-        ASSERT_NE(deviceCount, 0);
+        //int deviceCount = 0;
+        //cudaGetDeviceCount(&deviceCount);
+        //ASSERT_NE(deviceCount, 0);
 
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
@@ -49,37 +52,25 @@ public:
 
     }
 
-    void test_array_add()
+    void test_matrix_eigen()
     {
-        const int n = 1000;
-        std::array<int, n> a;
-        std::array<int, n> b;
-        std::array<int, n> c;
-
-        a.fill(6);
-        b.fill(10);
-
-        //h_add<int, n>(a, b, c);
-
-        std::array<int, n> expected;
-        expected.fill(16);
-        ASSERT_EQ(c, expected);
+        Eigen::Matrix<double, 3, 3> matrix;
     }
 
-    void test_vector_add(const int n)
+    void test_matrix_multiply()
     {
-        std::vector<int> a = std::vector<int>(n, 6);
-        std::vector<int> b = std::vector<int>(n, 10);
-        std::vector<int> c = std::vector<int>(n, 0);
+        Eigen::Matrix<double, 3, 3> m1, m2, m3;
+        m1 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+        m2 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
 
-        //h_add(a, b, c);
+        h_MatrixMultiply(m1, m2, m3);
 
-        std::vector<int> expected = std::vector<int>(n, 16);
-        ASSERT_EQ(c, expected);
+        Eigen::Matrix3d expected;
+        expected << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+
+        ASSERT_EQ(expected, m3);
     }
 };
 
-TEST_F(cuda_tests, test_array_add) { test_array_add(); }
-TEST_F(cuda_tests, test_vector_add1) { test_vector_add(1); }
-TEST_F(cuda_tests, test_vector_add1x) { test_vector_add(10000); }
-TEST_F(cuda_tests, test_vector_add1xx) { test_vector_add(1000000); }
+TEST_F(eigen_tests, test_matrix_eigen) { test_matrix_eigen(); }
+TEST_F(eigen_tests, test_matrix_multiply) { test_matrix_multiply(); }

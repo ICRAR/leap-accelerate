@@ -28,6 +28,10 @@ language: cpp
 sudo: false
 
 # In Linux we cache the gsl binary version
+os:
+  - linux
+dist:
+  - xenial
 cache:
  directories:
   - gsl/2.4

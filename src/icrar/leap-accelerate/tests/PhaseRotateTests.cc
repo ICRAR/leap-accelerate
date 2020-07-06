@@ -2,6 +2,14 @@
 #include <gtest/gtest.h>
 #include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
+#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/math/Integration.h>
+#include <casacore/casa/Quanta/MVDirection.h>
+
+#include <vector>
+
+using namespace casacore;
+
 namespace icrar
 {
     class PhaseRotateTests : public ::testing::Test
@@ -27,12 +35,24 @@ namespace icrar
 
         }
 
-        void PhaseRotate()
+        void RotateVisibilitiesTest()
         {
-            //icrar::helloworld::wave f;
-            //EXPECT_EQ(f.greeting(), "I am waving hello");
+            MetaData metadata;
+            std::vector<casacore::MVDirection> directions;
+            std::queue<Integration> input;
+
+            PhaseRotate(metadata, directions, input);
+        }
+
+        void PhaseRotateTest()
+        {
+            Integration integration;
+            MetaData metadata;
+            casacore::MVDirection direction;
+
+            RotateVisibilities(integration, metadata, direction);
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseRotate) { PhaseRotate(); }
+    TEST_F(PhaseRotateTests, PhaseRotate) { PhaseRotateTest(); }
 }

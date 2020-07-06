@@ -54,7 +54,7 @@ namespace icrar
      * @param directions 
      * @param input 
      */
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MDirection>& directions, std::queue<Integration>& input);
+    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input);
 
     /**
      * @brief 

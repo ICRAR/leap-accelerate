@@ -33,17 +33,22 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <filesystem>
 #include <optional>
 #include <exception>
 #include <memory>
 #include <vector>
 
+#if (__cplusplus >= 202000L)
+#include <filesystem>
+#else
+#include <boost/filesystem.hpp>
+#endif
+
 namespace icrar
 {
     std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
 
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::filesystem::path& path);
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
 
     std::unique_ptr<MetaData> ParseMetaData(const casacore::MeasurementSet& ms);
 }

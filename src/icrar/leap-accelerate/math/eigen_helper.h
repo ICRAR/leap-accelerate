@@ -69,8 +69,8 @@ namespace icrar
         auto v = Eigen::VectorXd(value.size());
     }
 
-    // Eigen::VectorXcd ConvertVector(casacore::CArray<double> v)
-    // {
+    Eigen::VectorXcd ConvertVector(casacore::Array<std::complex<double>> v)
+    {
 
-    // }
+    }
 }

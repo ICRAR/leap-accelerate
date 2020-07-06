@@ -127,7 +127,7 @@ int main(int argc, char** argv)
     auto ms = ParseMeasurementSet(input);
     auto metadata = ParseMetaData(*ms);
 
-    std::vector<casacore::MDirection> directions; //ZenithDirection(ms);
+    std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();
 
     PhaseRotate(*metadata, directions, queue);

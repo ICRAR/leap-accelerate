@@ -47,7 +47,7 @@ __device__ void d_add(const T* x1, const T* x2, T* y)
 }
 
 template<typename T>
-__global__ void add(const T* x1, const T* x2, T* y)
+__global__ void g_add(const T* x1, const T* x2, T* y)
 {
     d_add(x1, x2, y);
 }
@@ -70,7 +70,7 @@ __host__ void h_add(const std::array<T, S>& a, const std::array<T, S>& b, std::a
     cudaMemcpy(aBuffer, &a, sizeof(a), cudaMemcpyKind::cudaMemcpyHostToDevice);
     cudaMemcpy(bBuffer, &b, sizeof(b), cudaMemcpyKind::cudaMemcpyHostToDevice);
 
-    add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
+    g_add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
 
     //cudaDeviceSynchronize();
 
@@ -83,7 +83,7 @@ __host__ void h_add(const std::array<T, S>& a, const std::array<T, S>& b, std::a
 }
 
 template<typename T>
-__host__ void h_add(std::vector<T> a, std::vector<T> b, std::vector<T>& c)
+__host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
 {
     if (a.size() != b.size() && a.size() != c.size())
     {
@@ -108,7 +108,7 @@ __host__ void h_add(std::vector<T> a, std::vector<T> b, std::vector<T>& c)
     cudaMemcpy(aBuffer, a.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
     cudaMemcpy(bBuffer, b.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
 
-    add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
+    g_add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
 
     //cudaDeviceSynchronize();
 

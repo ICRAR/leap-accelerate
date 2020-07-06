@@ -28,6 +28,7 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 
 #include <functional>
+#include <algorithm>
 #include <complex>
 
 namespace icrar
@@ -41,6 +42,17 @@ namespace icrar
         }
         //TODO:
         return casacore::MVuvw();
+    }
+
+    template<typename T> 
+    bool Equal(const casacore::Array<T>& l, const casacore::Array<T>& r)
+    {
+        bool equal = l.shape() == r.shape();
+        if(equal)
+        {
+            equal = std::equal(l.cbegin(), l.cend(), r.cbegin());
+        }
+        return equal;
     }
 
     template<typename T, typename R>

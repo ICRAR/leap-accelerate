@@ -47,7 +47,6 @@
 #include <iterator>
 #include <string>
 #include <queue>
-#include <filesystem>
 #include <optional>
 #include <exception>
 #include <memory>
@@ -65,21 +64,34 @@ namespace icrar
     // TODO: docs
     // leap_remote_calibration
     // leap_calibrate_from_queue
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MDirection>& directions, std::queue<Integration>& input)
+    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input)
     {
+        std::queue<IntegrationResult> output = std::queue<IntegrationResult>();
+        std::vector<std::vector<std::complex<double>>> cal;
+
         for(Integration integration = input.front(); !input.empty(); integration = input.front(), input.pop())
         {
             std::function<Radians(std::complex<double>)> lambda = [](std::complex<double> c) -> Radians { return std::arg(c); };
             casacore::Array<Radians> avg_data = MapCollection(metadata.avg_data, lambda);
 
             //TODO: determine avg_data type
-            //auto cal1 = metadata.Ad1 + avg_data[0][metadata.I1];
+            //auto cal1 = metadata.Ad1 + avg_data(IPosition(0, metadata.I1));
+            // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
+            // for(int n = 0; n < metadata.I; ++n)
+            // {
+            //     //TODO determine dInt
+            //     dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(n)) * cal1;
+            // }
+            // cal.push_back(icrar::Dot(metadata.Ad, dInt.T[0].T) + cal1);
+
+            // rotateVisibilities(integration, metadata, direction);
+            // output.push_back(IntegrationResult(direction, integration.integration_nuumber, std::vector<std::vector<std::complex<double>>>()))
         }
 
-        return std::queue<IntegrationResult>();
+        return output;
     }
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction)
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
         using namespace std::complex_literals;
         auto& data = integration.data;
@@ -120,7 +132,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v * exp(1i * shiftRad);
+                data[channel][baseline] = v;// TODO * std::exp(1i * shiftRad);
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
@@ -130,17 +142,15 @@ namespace icrar
         }
     }
 
-    std::pair<Matrixd, Arrayi> PhaseMatrixFunction(const Arrayd& a1, const Arrayd& a2, int refAnt, bool map)
+    std::pair<Matrix<double>, Array<int32_t>> PhaseMatrixFunction(const Array<int32_t>& a1, const Array<int32_t>& a2, int refAnt, bool map)
     {
-        //TODO array equal, see invert.py
-        //int nAnt = 1 + (a1 == a2) ? 1 : 0;
-        int nAnt = 2;
+        int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrixd A = Matrixd(a1.size() + 1, ArrayMax<double>(a1));
+        Matrixd A = Matrixd(a1.size() + 1, icrar::ArrayMax(a1));
         for(auto v : A)
         {
             v = 0;
