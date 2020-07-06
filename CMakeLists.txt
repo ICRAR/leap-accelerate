@@ -47,11 +47,6 @@ if (BUILD_TESTING)
   set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
-find_package(Casacore)
-if(CASACORE_FOUND)
-    message("casacore is found!")
-endif()
-
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
     # set input and output files
