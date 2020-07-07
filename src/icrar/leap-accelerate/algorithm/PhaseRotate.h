@@ -79,8 +79,8 @@ namespace icrar
      * @return std::pair<Matrixd, Matrixi> 
      */
     std::pair<casacore::Matrix<double>, casacore::Array<int>> PhaseMatrixFunction(
-        const casacore::Array<double>& a1,
-        const casacore::Array<double>& a2,
+        const casacore::Array<std::int32_t>& a1,
+        const casacore::Array<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
 }

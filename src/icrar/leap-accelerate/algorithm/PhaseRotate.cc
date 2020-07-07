@@ -141,7 +141,7 @@ namespace icrar
         }
     }
 
-    std::pair<Matrix<double>, Array<int32_t>> PhaseMatrixFunction(const Array<int32_t>& a1, const Array<int32_t>& a2, int refAnt, bool map)
+    std::pair<Matrix<double>, Array<std::int32_t>> PhaseMatrixFunction(const Array<std::int32_t>& a1, const Array<std::int32_t>& a2, int refAnt, bool map)
     {
         int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;
         if(refAnt >= nAnt - 1)

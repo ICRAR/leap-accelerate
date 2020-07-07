@@ -59,7 +59,7 @@ public:
         a.fill(6);
         b.fill(10);
 
-        //h_add<int, n>(a, b, c);
+        h_add<int, n>(a, b, c);
 
         std::array<int, n> expected;
         expected.fill(16);
@@ -72,7 +72,7 @@ public:
         std::vector<int> b = std::vector<int>(n, 10);
         std::vector<int> c = std::vector<int>(n, 0);
 
-        //h_add(a, b, c);
+        h_add(a, b, c);
 
         std::vector<int> expected = std::vector<int>(n, 16);
         ASSERT_EQ(c, expected);
