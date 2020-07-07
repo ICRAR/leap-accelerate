@@ -1,26 +1,3 @@
-Skip to content
-Learn Git and GitHub without any code!
-Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
-
-
-ICRAR
-/
-shark
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-More
-shark/.travis/install.sh
-@rtobar
-rtobar New higher-level tests
-…
- History
- 1 contributor
-42 lines (38 sloc)  1.25 KB
-  
 #!/bin/bash
 #
 # Travis CI install script
