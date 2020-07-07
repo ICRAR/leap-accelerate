@@ -64,7 +64,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, nvidia-cuda-toolkit-gcc, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
+      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, nvidia-cuda-toolkit, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
     env: COMPILER=g++-8 PYTHON=python3
   # - compiler: clang
   #   addons:
