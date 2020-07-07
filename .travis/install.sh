@@ -34,9 +34,6 @@ cd ${TRAVIS_BUILD_DIR}
 mkdir build
 cd build
 
-CUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda-10.1"
-
 CMAKE_OPTIONS="-DCMAKE_CXX_COMPILER=CMAKE_OPTX_COMPILER=$COMPILER -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
-NS} || fail "cmake failed"
 make all -j2 || fail "make failed"
 cd ..
