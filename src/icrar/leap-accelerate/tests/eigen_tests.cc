@@ -22,8 +22,6 @@
 
 #include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/algorithm/PhaseRotate.cuh>
-
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Sparse>
 
@@ -63,7 +61,7 @@ public:
         m1 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
         m2 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
 
-        h_MatrixMultiply(m1, m2, m3);
+        m3 = m1 * m2;
 
         Eigen::Matrix3d expected;
         expected << 1, 0, 0, 0, 1, 0, 0, 0, 1;
