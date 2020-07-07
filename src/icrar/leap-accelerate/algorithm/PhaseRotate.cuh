@@ -28,6 +28,12 @@
 #include <eigen3/Eigen/Core>
 
 template<typename T>
+__device__ void d_PhaseMatrixFunction()
+{
+    
+}
+
+template<typename T>
 __global__ void g_PhaseMatrixFunction(const T* x1, const T* x2, T* y, int refAnt)
 {
 

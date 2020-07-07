@@ -74,7 +74,7 @@ namespace icrar
             std::function<Radians(std::complex<double>)> lambda = [](std::complex<double> c) -> Radians { return std::arg(c); };
             casacore::Array<Radians> avg_data = MapCollection(metadata.avg_data, lambda);
 
-            //TODO: determine avg_data type
+            //TODO: determine avg_data type from LEAP-Cal
             //auto cal1 = metadata.Ad1 + avg_data(IPosition(0, metadata.I1));
             // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
             // for(int n = 0; n < metadata.I; ++n)
@@ -113,7 +113,6 @@ namespace icrar
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            //Needs checking/completing ...
             const double pi = boost::math::constants::pi<double>();
             double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
             shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
@@ -132,7 +131,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v;// TODO * std::exp(1i * shiftRad);
+                data[channel][baseline] = v * std::exp(1i * shiftRad);
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {

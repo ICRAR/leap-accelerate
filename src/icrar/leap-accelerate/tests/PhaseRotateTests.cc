@@ -35,7 +35,16 @@ namespace icrar
 
         }
 
-        void RotateVisibilitiesTest()
+        void PhaseMatrixFunctionTest(bool useCuda)
+        {
+            const Array<int32_t> a1;
+            const Array<int32_t> a2;
+            int refAnt = 0;
+            bool map = true;
+            PhaseMatrixFunction(a1, a2, refAnt, map);
+        }
+
+        void RotateVisibilitiesTest(bool useCuda)
         {
             MetaData metadata;
             std::vector<casacore::MVDirection> directions;
@@ -44,7 +53,7 @@ namespace icrar
             PhaseRotate(metadata, directions, input);
         }
 
-        void PhaseRotateTest()
+        void PhaseRotateTest(bool useCuda)
         {
             Integration integration;
             MetaData metadata;
@@ -54,5 +63,8 @@ namespace icrar
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseRotate) { PhaseRotateTest(); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestGpu) { RotateVisibilitiesTest(true); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(false); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestGpu) { PhaseRotateTest(true); }
 }
