@@ -36,18 +36,18 @@ cache:
 # and upload it to coveralls
 jobs:
  include:
-  - compiler: gcc
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
-    env: COMPILER=g++-6
-  - compiler: gcc
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python-matplotlib, python-scipy, python-h5py, python-tk]
-    env: COMPILER=g++-6 PYTHON=python
+  # - compiler: gcc
+  #   addons:
+  #    apt:
+  #     sources: ubuntu-toolchain-r-test
+  #     packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
+  #   env: COMPILER=g++-6
+  # - compiler: gcc
+  #   addons:
+  #    apt:
+  #     sources: ubuntu-toolchain-r-test
+  #     packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python-matplotlib, python-scipy, python-h5py, python-tk]
+  #   env: COMPILER=g++-6 PYTHON=python
   - os: linux
     dist:
       - xenial
