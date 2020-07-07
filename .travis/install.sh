@@ -35,5 +35,7 @@ mkdir build
 cd build
 
 CMAKE_OPTIONS="-DCMAKE_CXX_COMPILER=CMAKE_OPTX_COMPILER=$COMPILER -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR} -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
+
+cmake .. ${CMAKE_OPTIONS} || fail "cmake failed"
 make all -j2 || fail "make failed"
 cd ..
