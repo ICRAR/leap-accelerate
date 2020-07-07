@@ -64,7 +64,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python3-matplotlib, python3-scipy, python3-h5py, python3-tk]
+      packages: [g++-8, doxygen, casacore-dev, eigen3-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python3-matplotlib, python3-scipy, python3-h5py, python3-tk]
     env: COMPILER=g++-8 PYTHON=python3
   - compiler: clang
     addons:
