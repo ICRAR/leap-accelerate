@@ -52,8 +52,8 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
-    env: COMPILER=g++-8 PYTHON=python3
+      packages: [g++-7, doxygen, casacore-dev, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
+    env: COMPILER=g++-7 PYTHON=python3
 
 # We "source" it because it exports variables
 before_install:
