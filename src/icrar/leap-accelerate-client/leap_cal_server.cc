@@ -20,19 +20,19 @@
  * MA 02111 - 1307  USA
  */
 
-#include "leap_cal_server.h"
+//#include "leap_cal_server.h"
 
 int main(int argc, char** argv)
 {
-    boost::asio::io_service io_service;
+    // boost::asio::io_service io_service;
 
-    try
-    {
-        io_service.run();
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << "\n";
-    }
+    // try
+    // {
+    //     io_service.run();
+    // }
+    // catch(const std::exception& e)
+    // {
+    //     std::cerr << e.what() << "\n";
+    // }
     return 0;
 }

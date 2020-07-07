@@ -17,7 +17,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
-include(dependencies)
 include(lint)
 include(CTest)
 
@@ -67,8 +66,10 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-#TODO: use find_package
-find_dependencies()
+find_package(CUDA)
+find_package(Casacore)
+find_package(Boost)
+find_package(Eigen3)
 
 if(CUDA_FOUND)
   enable_language(CUDA)
