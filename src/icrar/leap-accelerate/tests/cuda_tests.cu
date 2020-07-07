@@ -49,9 +49,9 @@ public:
 
     }
 
+    template<int n>
     void test_array_add()
     {
-        const int n = 1000;
         std::array<int, n> a;
         std::array<int, n> b;
         std::array<int, n> c;
@@ -79,7 +79,7 @@ public:
     }
 };
 
-TEST_F(cuda_tests, test_array_add) { test_array_add(); }
-TEST_F(cuda_tests, test_vector_add1) { test_vector_add(1); }
-TEST_F(cuda_tests, test_vector_add1x) { test_vector_add(10000); }
-TEST_F(cuda_tests, test_vector_add1xx) { test_vector_add(1000000); }
+TEST_F(cuda_tests, test_gpu_array_add) { test_array_add<1000>(); }
+TEST_F(cuda_tests, test_gpu_vector_add1) { test_vector_add(1); }
+TEST_F(cuda_tests, test_gpu_vector_add1x) { test_vector_add(10000); }
+TEST_F(cuda_tests, test_gpu_vector_add1xx) { test_vector_add(1000000); }

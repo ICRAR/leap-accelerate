@@ -32,5 +32,8 @@ fail() {
 
 cd ${TRAVIS_BUILD_DIR}/build
 
+# TravisCI is unable to run cuda
+GTEST_FILTER="-*Cuda*:*cuda*"
+
 # Run unit tests first
 make CTEST_OUTPUT_ON_FAILURE=1 test || fail "unit tests failed"

@@ -62,7 +62,7 @@ namespace icrar
     };
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestGpu) { RotateVisibilitiesTest(true); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(false); }
-    TEST_F(PhaseRotateTests, PhaseRotateTestGpu) { PhaseRotateTest(true); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(true); }
 }
