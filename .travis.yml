@@ -64,23 +64,23 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, eigen3-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python3-matplotlib, python3-scipy, python3-h5py, python3-tk]
+      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, nvidia-cuda-toolkit-gcc, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
     env: COMPILER=g++-8 PYTHON=python3
-  - compiler: clang
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-7, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
-    env: COMPILER=clang++ LD_LIBRARY_PATH=/usr/local/clang-5.0.0/lib
-  - os: osx
-    osx_image: xcode8.3 # OSX 10.12
-    env: XCODE=8.3
-  - os: osx
-    osx_image: xcode9.1 # OSX 10.12
-    env: XCODE=9.1 PYTHON=venv
-  - os: osx
-    osx_image: xcode10  # OSX 10.13
-    env: XCODE=10
+  # - compiler: clang
+  #   addons:
+  #    apt:
+  #     sources: ubuntu-toolchain-r-test
+  #     packages: [g++-7, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
+  #   env: COMPILER=clang++ LD_LIBRARY_PATH=/usr/local/clang-5.0.0/lib
+  # - os: osx
+  #   osx_image: xcode8.3 # OSX 10.12
+  #   env: XCODE=8.3
+  # - os: osx
+  #   osx_image: xcode9.1 # OSX 10.12
+  #   env: XCODE=9.1 PYTHON=venv
+  # - os: osx
+  #   osx_image: xcode10  # OSX 10.13
+  #   env: XCODE=10
 
 # We "source" it because it exports variables
 before_install:
