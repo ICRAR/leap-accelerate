@@ -36,4 +36,4 @@ cd ${TRAVIS_BUILD_DIR}/build
 GTEST_FILTER="-*Cuda*:*cuda*"
 
 # Run unit tests first
-make CTEST_OUTPUT_ON_FAILURE=1 test || fail "unit tests failed"
+make CTEST_OUTPUT_ON_FAILURE=1 test GTEST_FILTER=${GTEST_FILTER} || fail "unit tests failed"
