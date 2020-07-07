@@ -8,8 +8,6 @@
 
 #include <vector>
 
-using namespace casacore;
-
 namespace icrar
 {
     class PhaseRotateTests : public ::testing::Test
@@ -37,29 +35,29 @@ namespace icrar
 
         void PhaseMatrixFunctionTest(bool useCuda)
         {
-            const Array<int32_t> a1;
-            const Array<int32_t> a2;
-            int refAnt = 0;
-            bool map = true;
-            PhaseMatrixFunction(a1, a2, refAnt, map);
+            // const casacore::Array<int32_t> a1;
+            // const casacore::Array<int32_t> a2;
+            // int refAnt = 0;
+            // bool map = true;
+            // PhaseMatrixFunction(a1, a2, refAnt, map);
         }
 
         void RotateVisibilitiesTest(bool useCuda)
         {
-            MetaData metadata;
-            std::vector<casacore::MVDirection> directions;
-            std::queue<Integration> input;
+            // MetaData metadata;
+            // std::vector<casacore::MVDirection> directions;
+            // std::queue<Integration> input;
 
-            PhaseRotate(metadata, directions, input);
+            // PhaseRotate(metadata, directions, input);
         }
 
         void PhaseRotateTest(bool useCuda)
         {
-            Integration integration;
-            MetaData metadata;
-            casacore::MVDirection direction;
+            // Integration integration;
+            // MetaData metadata;
+            // casacore::MVDirection direction;
 
-            RotateVisibilities(integration, metadata, direction);
+            // RotateVisibilities(integration, metadata, direction);
         }
     };
 
