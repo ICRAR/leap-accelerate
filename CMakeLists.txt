@@ -67,9 +67,9 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+#TODO: use find_package
 find_dependencies()
 
-set(CUDA_FOUND TRUE)
 if(CUDA_FOUND)
   enable_language(CUDA)
 endif()
