@@ -39,8 +39,6 @@ namespace icrar
     class MetaData
     {
     public:
-        MetaData() {}
-
         bool init;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -82,15 +80,6 @@ namespace icrar
         // void SetDlmdDec(double value);
         // double GetDlmdDec();
     };
-
-    struct MetaDataDto
-    {
-        MetaDataDto(int antennas, int baselines, int channels, int polarizations, int stations)
-        : nantennas(antennas), nbaseline(baselines), channels(channels), stations(stations)
-        {
-            
-        }
-    }
 
     /**
      * @brief 
