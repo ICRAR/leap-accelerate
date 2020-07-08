@@ -19,32 +19,20 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
-#pragma once
 
-#include <ostream>
+#include "leap_cal_server.h"
 
-namespace icrar
+int main(int argc, char** argv)
 {
-    struct visibility
+    boost::asio::io_service io_service;
+
+    try
     {
-        double frequency;
-        double time;
-        double u;
-        double v;
-        double w;
-        double r;
-        double i;
-        double weight;
-        int a1;
-        int a2;
-        int gcfinx;
-
-        std::ostream& operator<<(std::ostream& os, const visibility& vis)
-        {
-            os << "f:" << frequency
-            << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-            << " => " << r << ", " << i << std::endl;
-
-        }
-    };
+        io_service.run();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << "\n";
+    }
+    return 0;
 }

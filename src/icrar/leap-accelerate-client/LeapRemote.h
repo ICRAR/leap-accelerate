@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -19,32 +20,51 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
+
 #pragma once
 
+#include <istream>
 #include <ostream>
+#include <future>
+#include <map>
 
 namespace icrar
 {
-    struct visibility
+    class LeapRemote
     {
-        double frequency;
-        double time;
-        double u;
-        double v;
-        double w;
-        double r;
-        double i;
-        double weight;
-        int a1;
-        int a2;
-        int gcfinx;
+        std::istream reader;
+        std::ostream writer;
 
-        std::ostream& operator<<(std::ostream& os, const visibility& vis)
+    public:
+        std::future<void> SendObject(std::string generic_path)
         {
-            os << "f:" << frequency
-            << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-            << " => " << r << ", " << i << std::endl;
+            return std::async(std::launch::async, [&]() {
+                writer << generic_path;
+            });
+        }
+
+        std::future<void> SendObject(std::map<std::string, std::string> map)
+        {
+            writer << map;
+        }
+        
+        std::future<std::map<std::string, std::string>> ReceiveObject()
+        {
+            
+        }
+
+        template<typename T>
+        void SendObject(const T& object)
+        {
 
         }
-    };
+        
+        template<typename T>
+        T ReceiveObject()
+        {
+
+        }
+    }
+
+    
 }

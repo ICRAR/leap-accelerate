@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -21,11 +20,31 @@
  * MA 02111 - 1307  USA
  */
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include "utils.h"
 
-#include <iostream>
-#include <string>
-#include <optional>
-#include <exception>
+#include <icrar/leap-accelerate/MetaData.h>
 
-void chgcentre(std::istream& input);
+using namespace casacore;
+
+namespace icrar
+{
+    std::unique_ptr<MeasurementSet> ParseMeasurementSet(std::istream& input)
+    {
+        // don't skip the whitespace while reading
+        std::cin >> std::noskipws;
+
+        // use stream iterators to copy the stream to a string
+        std::istream_iterator<char> it(std::cin);
+        std::istream_iterator<char> end;
+        std::string results = std::string(it, end);
+
+        std::cout << results;
+
+        return std::make_unique<MeasurementSet>(results);
+    }
+
+    std::unique_ptr<MetaData> ParseMetaData(const MeasurementSet& ms)
+    {
+        return std::make_unique<MetaData>(); //TODO
+    }
+}

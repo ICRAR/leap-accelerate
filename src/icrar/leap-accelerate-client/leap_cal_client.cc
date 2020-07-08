@@ -19,32 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
-#pragma once
-
-#include <ostream>
 
 namespace icrar
 {
-    struct visibility
-    {
-        double frequency;
-        double time;
-        double u;
-        double v;
-        double w;
-        double r;
-        double i;
-        double weight;
-        int a1;
-        int a2;
-        int gcfinx;
-
-        std::ostream& operator<<(std::ostream& os, const visibility& vis)
-        {
-            os << "f:" << frequency
-            << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-            << " => " << r << ", " << i << std::endl;
-
-        }
-    };
+    
 }

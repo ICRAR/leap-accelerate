@@ -6,19 +6,40 @@ set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    main.h
-    chgcentre.h
     visibility.h
+    band_data.h
+    MetaData.h
+
+    algorithm/PhaseRotate.h
+    algorithm/Invert.h
 )
 set(private_headers
-    helper.h
+    math/casacore_helper.h
+    math/eigen_helper.h
+    math/math.h
+
+    wsclean/banddata.h
+    wsclean/chgcentre.h
+    wsclean/imagecoordinates.h
+    wsclean/multibanddata.h
+    wsclean/progressbar.h
+    wsclean/radeccoord.h
 )
 set(sources
-    chgcentre.cc
+    utils.cc
+    MetaData.cc
+
+    algorithm/PhaseRotate.cc
+    algorithm/Invert.cc
+
+    wsclean/chgcentre.cc
+    wsclean/multibanddata.cpp
+    wsclean/progressbar.cpp
 )
 
 set(cuda_headers
     math/vector.cuh
+    algorithm/PhaseRotate.cuh
 )
 
 set(cuda_sources
@@ -61,9 +82,9 @@ if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(USE_BOOST)
-target_link_libraries(${TARGET_NAME} Boost)
+    target_link_libraries(${TARGET_NAME} Boost)
 endif()
-
+target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

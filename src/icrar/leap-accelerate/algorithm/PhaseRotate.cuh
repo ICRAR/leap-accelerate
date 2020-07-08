@@ -20,28 +20,34 @@
 *    MA 02111-1307  USA
 */
 
-#include <icrar/leap-accelerate/math/vector.cuh>
+#pragma once
 
-__global__ void addi(const int* x1, const int* x2, int* y)
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <eigen3/Eigen/Core>
+
+template<typename T>
+__global__ void g_PhaseMatrixFunction(const T* x1, const T* x2, T* y, int refAnt)
 {
-    d_add(x1, x2, y);
+
 }
 
-__global__ void addf(const float* x1, const float* x2, float* y)
+template<typename T, int Rows, int Cols>
+__global__ void g_MatrixMultiply(
+    const Eigen::Matrix<T, Rows, Cols>& v1,
+    const Eigen::Matrix<T, Rows, Cols>& v2,
+    Eigen::Matrix<T, Rows, Cols>& result)
 {
-   d_add(x1, x2, y);
+    result = v1 * v2;
 }
 
-__global__ void addd(const double* x1, const double* x2, double* y)
+template<typename T, int Rows, int Cols>
+__host__ void h_MatrixMultiply(
+    const Eigen::Matrix<T, Rows, Cols>& v1,
+    const Eigen::Matrix<T, Rows, Cols>& v2,
+    Eigen::Matrix<T, Rows, Cols>& result)
 {
-   d_add(x1, x2, y);
+    result = v1 * v2;
+    //g_MatrixMultiply<<<1,1>>>(v1, v2, result);
 }
-
-// extern "C"
-// {
-//    __global__ void addi(const int* x1, const int* x2, int* y);
-
-//    __global__ void addf(const float* x1, const float* x2, float* y);
-
-//    __global__ void addd(const double* x1, const double* x2, double* y);
-// }

@@ -1,11 +1,10 @@
 
-set(TEST_TARGET LeapAccelerate.Tests)
+set(TEST_TARGET LeapAccelerateClient.Tests)
 
 add_executable(${TEST_TARGET}
     main.cc
     cuda_tests.cu
     casacore_tests.cc
-    eigen_tests.cc
     PhaseRotateTests.cc
 )
 

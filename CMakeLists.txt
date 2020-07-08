@@ -55,10 +55,10 @@ if (DOXYGEN_FOUND)
 
     # request to configure the file
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Doxygen build started")
 
     # note the option ALL which allows to build the docs together with the application
-    add_custom_target( doxygen ALL
+    add_custom_target( doxygen
+        #ALL
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
         COMMENT "Generating API documentation with Doxygen"
@@ -69,6 +69,7 @@ endif (DOXYGEN_FOUND)
 
 find_dependencies()
 
+set(CUDA_FOUND TRUE)
 if(CUDA_FOUND)
   enable_language(CUDA)
 endif()

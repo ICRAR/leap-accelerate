@@ -21,30 +21,30 @@
  */
 #pragma once
 
+#include <istream>
 #include <ostream>
+#include <vector>
+#include <string>
+
+namespace casacore
+{
+    class MVDirection;
+    
+}
 
 namespace icrar
 {
-    struct visibility
-    {
-        double frequency;
-        double time;
-        double u;
-        double v;
-        double w;
-        double r;
-        double i;
-        double weight;
-        int a1;
-        int a2;
-        int gcfinx;
+    class MetaData;
 
-        std::ostream& operator<<(std::ostream& os, const visibility& vis)
-        {
-            os << "f:" << frequency
-            << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-            << " => " << r << ", " << i << std::endl;
+    void ServerLeapHandleRemoteMS(std::istream& reader, std::ostream& writer);
+    void LeapHandleRemoteMS(std::string ms_filename);
+    void LeapRemoteCalibration(const std::vector<casacore::MVDirection>& directions);
 
-        }
-    };
+    /**
+     * @brief 
+     * 
+     * @param direction 
+     * @param meta 
+     */
+    void LeapCalibrateFromQueue(const casacore::MVDirection& direction, MetaData& meta);
 }

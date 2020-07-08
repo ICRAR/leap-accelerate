@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -21,17 +20,35 @@
  * MA 02111 - 1307  USA
  */
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#pragma once
 
+#include <icrar/leap-accelerate/MetaData.h>
+
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/measures/Measures/MDirection.h>
+
+#include <casacore/casa/Arrays/Matrix.h>
+
+#include <istream>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <optional>
 #include <exception>
+#include <memory>
+#include <vector>
 
-/**
- * Changes the phase centre
- */
-void chgcentre(std::istream& input)
+#if (__cplusplus >= 202000L)
+#include <filesystem>
+#else
+#include <boost/filesystem.hpp>
+#endif
+
+namespace icrar
 {
-    auto ms = casacore::MeasurementSet();
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+
+    std::unique_ptr<MetaData> ParseMetaData(const casacore::MeasurementSet& ms);
 }

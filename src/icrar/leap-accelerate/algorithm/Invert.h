@@ -19,32 +19,32 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111 - 1307  USA
  */
+
 #pragma once
 
-#include <ostream>
+#include <iostream>
+#include <string>
+#include <memory>
+#include <vector>
+#include <complex>
+#include <queue>
+
+namespace casacore
+{
+    template<typename T>
+    class Matrix;
+}
 
 namespace icrar
 {
-    struct visibility
+    /**
+     * @brief Invert as a function
+     * 
+     * @param A 
+     * @param useGraphics 
+     */
+    void InvertFunction(const casacore::Matrix<double>& A, bool useGraphics=false, int refAnt=-1)
     {
-        double frequency;
-        double time;
-        double u;
-        double v;
-        double w;
-        double r;
-        double i;
-        double weight;
-        int a1;
-        int a2;
-        int gcfinx;
-
-        std::ostream& operator<<(std::ostream& os, const visibility& vis)
-        {
-            os << "f:" << frequency
-            << " t:" << time << " (" << u << ", " << v << ", " << w << ") "
-            << " => " << r << ", " << i << std::endl;
-
-        }
-    };
+        throw std::runtime_error("not implemented"); //TODO
+    }
 }

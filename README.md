@@ -16,6 +16,31 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 `cmake ../../`
 
+#### Ubuntu/Debian Dependencies
+
+20.04 LTS
+
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev nvidia-cuda-toolkit libeigen3-dev
+
+18.04 LTS
+
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.66-all-dev nvidia-cuda-toolkit libeigen3-dev
+
+#### Recommended Versions Compatibility
+
+* g++ 9.3.0
+* cuda 10.1
+* boost 1.71.0
+* casacore 3.1.2
+
+#### Minimum Versions Compatibility
+
+* g++ 6.3.0
+* cuda 10.1
+* boost 1.63.0 (1.55.0 available)
+* cmake 3.15.1
+* casacore 3.1.2
+
 ## Test
 
 Testing provided via googletest. To test using CTest use the following command in build/linux:
@@ -44,6 +69,14 @@ or
 
 `./bin/LeapAccelerateCLI`
 
-## Debian Dependencies
+## Profiling
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10
+* gprof
+* google-perftools
+
+## Deploy
+
+* module help
+* module load
+* module list
+
