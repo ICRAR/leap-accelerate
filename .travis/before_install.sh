@@ -34,5 +34,5 @@ sudo apt-get update
 sudo apt-get -y install cuda
 
 export CUDA_HOME=/usr/local/cuda
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
