@@ -60,6 +60,9 @@ public:
     {
         casacore::Matrix<double> m(5,5);
         ASSERT_EQ(25, m.size());
+
+        // memory tends to be zerod but not always!
+        icrar::ArrayFill(m, 0.0);
         for(auto it = m.begin(); it != m.end(); it++)
         {
             ASSERT_EQ(0.0, *it);

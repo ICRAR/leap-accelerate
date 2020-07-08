@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Travis CI install script
+# Travis CI test script
 #
 # ICRAR - International Centre for Radio Astronomy Research
 # (c) UWA - The University of Western Australia, 2018
@@ -25,14 +25,15 @@
 # MA 02111-1307  USA
 #
 
-wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-ubuntu1804.pin
-sudo mv cuda-ubuntu1804.pin /etc/apt/preferences.d/cuda-repository-pin-600
-wget http://developer.download.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda-repo-ubuntu1804-10-1-local-10.1.243-418.87.00_1.0-1_amd64.deb
-sudo dpkg -i cuda-repo-ubuntu1804-10-1-local-10.1.243-418.87.00_1.0-1_amd64.deb
-sudo apt-key add /var/cuda-repo-10-1-local-10.1.243-418.87.00/7fa2af80.pub
-sudo apt-get update
-sudo apt-get -y install cuda
+fail() {
+	echo -e "$@" 1>&2
+	exit 1
+}
 
-export CUDA_HOME=/usr/local/cuda
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
-export PATH=$PATH:$CUDA_HOME/bin
+cd ${TRAVIS_BUILD_DIR}/build
+
+# TravisCI is unable to run cuda
+GTEST_FILTER="-*Cuda*:*cuda*"
+
+# Run unit tests first
+make CTEST_OUTPUT_ON_FAILURE=1 test GTEST_FILTER=${GTEST_FILTER} || fail "unit tests failed"

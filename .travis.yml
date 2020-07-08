@@ -6,8 +6,6 @@
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
 #
-# Contributed by Rodrigo Tobar
-#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -25,13 +23,10 @@
 #
 
 language: cpp
-sudo: false
 
 # In Linux we cache the gsl binary version
 os:
   - linux
-dist:
-  - xenial
 cache:
  directories:
   - gsl/2.4
@@ -39,41 +34,26 @@ cache:
 # We try with both GNU and LLVM
 # When running with gcc-6 we also collect coverage information
 # and upload it to coveralls
-matrix:
+jobs:
  include:
-  - compiler: gcc
+  # - os: linux
+  #   dist:
+  #     - xenial
+  #   compiler: gcc
+  #   addons:
+  #    apt:
+  #     sources: ubuntu-toolchain-r-test
+  #     packages: [g++-7, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python3-matplotlib, python3-scipy, python3-h5py, python3-tk]
+  #   env: COMPILER=g++-7 PYTHON=python3
+  - os: linux
+    dist:
+      - bionic
+    compiler: gcc
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
-    env: COMPILER=g++-6
-  - compiler: gcc
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-6, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python-matplotlib, python-scipy, python-h5py, python-tk]
-    env: COMPILER=g++-6 PYTHON=python
-  - compiler: gcc
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-7, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest, python3-matplotlib, python3-scipy, python3-h5py, python3-tk]
-    env: COMPILER=g++-7 PYTHON=python3
-  - compiler: clang
-    addons:
-     apt:
-      sources: ubuntu-toolchain-r-test
-      packages: [g++-7, casacore-dev, libhdf5-dev, hdf5-tools, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev, cxxtest]
-    env: COMPILER=clang++ LD_LIBRARY_PATH=/usr/local/clang-5.0.0/lib
-  - os: osx
-    osx_image: xcode8.3 # OSX 10.12
-    env: XCODE=8.3
-  - os: osx
-    osx_image: xcode9.1 # OSX 10.12
-    env: XCODE=9.1 PYTHON=venv
-  - os: osx
-    osx_image: xcode10  # OSX 10.13
-    env: XCODE=10
+      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
+    env: COMPILER=g++-8 PYTHON=python3
 
 # We "source" it because it exports variables
 before_install:

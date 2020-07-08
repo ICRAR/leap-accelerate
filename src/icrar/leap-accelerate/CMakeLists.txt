@@ -18,12 +18,12 @@ set(private_headers
     math/eigen_helper.h
     math/math.h
 
-    wsclean/banddata.h
-    wsclean/chgcentre.h
-    wsclean/imagecoordinates.h
-    wsclean/multibanddata.h
-    wsclean/progressbar.h
-    wsclean/radeccoord.h
+    #wsclean/banddata.h
+    #wsclean/chgcentre.h
+    #wsclean/imagecoordinates.h
+    #wsclean/multibanddata.h
+    #wsclean/progressbar.h
+    #wsclean/radeccoord.h
 )
 set(sources
     utils.cc
@@ -32,9 +32,10 @@ set(sources
     algorithm/PhaseRotate.cc
     algorithm/Invert.cc
 
-    wsclean/chgcentre.cc
-    wsclean/multibanddata.cpp
-    wsclean/progressbar.cpp
+    # TODO: dgesvd_ not avaiable on travisCI
+    #wsclean/chgcentre.cc
+    #wsclean/multibanddata.cpp
+    #wsclean/progressbar.cpp
 )
 
 set(cuda_headers
@@ -78,7 +79,6 @@ if(USE_CUDA)
     target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)
-    message("Using casa")
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(USE_BOOST)

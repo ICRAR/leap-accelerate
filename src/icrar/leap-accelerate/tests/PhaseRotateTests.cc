@@ -8,8 +8,6 @@
 
 #include <vector>
 
-using namespace casacore;
-
 namespace icrar
 {
     class PhaseRotateTests : public ::testing::Test
@@ -35,24 +33,36 @@ namespace icrar
 
         }
 
-        void RotateVisibilitiesTest()
+        void PhaseMatrixFunctionTest(bool useCuda)
         {
-            MetaData metadata;
-            std::vector<casacore::MVDirection> directions;
-            std::queue<Integration> input;
-
-            PhaseRotate(metadata, directions, input);
+            // const casacore::Array<int32_t> a1;
+            // const casacore::Array<int32_t> a2;
+            // int refAnt = 0;
+            // bool map = true;
+            // PhaseMatrixFunction(a1, a2, refAnt, map);
         }
 
-        void PhaseRotateTest()
+        void RotateVisibilitiesTest(bool useCuda)
         {
-            Integration integration;
-            MetaData metadata;
-            casacore::MVDirection direction;
+            // MetaData metadata;
+            // std::vector<casacore::MVDirection> directions;
+            // std::queue<Integration> input;
 
-            RotateVisibilities(integration, metadata, direction);
+            // PhaseRotate(metadata, directions, input);
+        }
+
+        void PhaseRotateTest(bool useCuda)
+        {
+            // Integration integration;
+            // MetaData metadata;
+            // casacore::MVDirection direction;
+
+            // RotateVisibilities(integration, metadata, direction);
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseRotate) { PhaseRotateTest(); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(false); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(true); }
 }

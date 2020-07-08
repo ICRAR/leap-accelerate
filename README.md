@@ -1,5 +1,7 @@
 # LEAP Accelerate
 
+[![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
+
 Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 * leap-accelerate: a shared library for gpu accelerated direction centering and phase calibration
@@ -20,11 +22,13 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 20.04 LTS
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev nvidia-cuda-toolkit libeigen3-dev
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libeigen3-dev
+* nvidia-cuda-toolkit-gcc
 
 18.04 LTS
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.66-all-dev nvidia-cuda-toolkit libeigen3-dev
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libeigen3-dev
+* nvidia-cuda-toolkit
 
 #### Recommended Versions Compatibility
 
@@ -79,4 +83,3 @@ or
 * module help
 * module load
 * module list
-

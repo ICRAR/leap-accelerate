@@ -17,7 +17,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
-include(dependencies)
 include(lint)
 include(CTest)
 
@@ -31,7 +30,7 @@ if (BUILD_TESTING)
 
   #${PROJECT_SOURCE_DIR}
   #find_package(GTest)
-  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+  set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
   add_subdirectory(external/gtest-1.8.1)
   enable_testing()
   
@@ -57,7 +56,7 @@ if (DOXYGEN_FOUND)
     configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
     # note the option ALL which allows to build the docs together with the application
-    add_custom_target( doxygen
+    add_custom_target(doxygen
         #ALL
         COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
@@ -67,9 +66,11 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_dependencies()
+find_package(CUDA)
+find_package(Casacore)
+find_package(Boost)
+find_package(Eigen3)
 
-set(CUDA_FOUND TRUE)
 if(CUDA_FOUND)
   enable_language(CUDA)
 endif()
