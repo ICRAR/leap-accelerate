@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
+
 # LEAP Accelerate
 
 Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
