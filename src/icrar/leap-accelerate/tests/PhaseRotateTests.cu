@@ -2,6 +2,8 @@
 #include <gtest/gtest.h>
 #include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
+#include <icrar/leap-accelerate/math/vector.cuh>
+
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -44,6 +46,7 @@ namespace icrar
 
         void RotateVisibilitiesTest(bool useCuda)
         {
+            printCudaVersion();
             // MetaData metadata;
             // std::vector<casacore::MVDirection> directions;
             // std::queue<Integration> input;

@@ -23,7 +23,23 @@
 #include "vector.h"
 #include <icrar/leap-accelerate/math/vector.cuh>
 
+void printCudaVersion()
+{
+    std::cout << "CUDA Compiled version: " << __CUDACC_VER__ << std::endl;
 
+    int runtime_ver;
+    cudaRuntimeGetVersion(&runtime_ver);
+    std::cout << "CUDA Runtime version: " << runtime_ver << std::endl;
+
+    int driver_ver;
+    cudaDriverGetVersion(&driver_ver);
+    std::cout << "CUDA Driver version: " << driver_ver << std::endl;
+}
+
+void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c)
+{
+   h_add(a, b, c);
+}
 
 // __global__ void h_add(const int* x1, const int* x2, int* y)
 // {

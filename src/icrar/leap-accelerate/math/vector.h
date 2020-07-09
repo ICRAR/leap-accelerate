@@ -20,8 +20,16 @@
 *    MA 02111-1307  USA
 */
 
-void h_add(const int* x1, const int* x2, int* y);
+#include <casacore/casa/Arrays/Array.h>
 
-void h_add(const float* x1, const float* x2, float* y);
+// C++ style interface
 
-void h_add(const double* x1, const double* x2, double* y);
+void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
+
+// C Style interface
+
+// __global__ void h_add(const int* x1, const int* x2, int* y, int n);
+
+// __global__ void h_add(const float* x1, const float* x2, float* y, int n);
+
+// __global__ void h_add(const double* x1, const double* x2, double* y, int n);

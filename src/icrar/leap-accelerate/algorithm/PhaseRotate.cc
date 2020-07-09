@@ -78,7 +78,11 @@ namespace icrar
 
             //casacore::Array<double> cal1 = h_multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1));
             
-            //h_add<double>(cal1, cal1, cal1);
+            auto a = casacore::Array<double>(IPosition(5));
+            auto b = casacore::Array<double>(IPosition(5));
+            auto c = casacore::Array<double>(IPosition(5));
+            //hello();
+            //h_add(a, b, c);
 
             // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
             // for(int n = 0; n < metadata.I; ++n)

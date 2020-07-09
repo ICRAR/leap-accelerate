@@ -14,6 +14,7 @@ set(public_headers
     algorithm/Invert.h
 )
 set(private_headers
+
     math/casacore_helper.h
     math/eigen_helper.h
     math/math.h
@@ -40,7 +41,10 @@ set(sources
 
 set(cuda_headers
     cuda/helper_cuda.cuh
+
+    math/vector.h
     math/vector.cuh
+
     algorithm/PhaseRotate.cuh
 )
 
@@ -53,17 +57,16 @@ option(USE_CUDA "Use Cuda" CUDA_FOUND)
 option(USE_CASA "Use Casa" TRUE)
 option(USE_BOOST "Use Boost" OFF)
 
-if(USE_CUDA)
-  list(APPEND public_headers ${cuda_headers})
-  list(APPEND sources ${cuda_sources})
-endif()
-
 add_library(
   ${TARGET_NAME} STATIC
     ${sources}
+    ${cuda_sources}
     ${private_headers}
     ${public_headers}
+    ${cuda_headers}
 )
+
+#set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 # Request that the target be built with -std=c++11
 # As this is a public compile feature anything that links to the target
@@ -74,10 +77,19 @@ if(USE_CUDA)
     # We need to explicitly state that we need all CUDA files in the target
     # library to be built with -dc as the member functions could be called by
     # other libraries and executables
+    set_property(TARGET ${TARGET_NAME} CUDA_STANDARD 11)
     set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+    set_target_properties(${THE_TARGET} PROPERTIES COMPILE_FLAGS -lcuda -lcudart)
+
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
-    target_link_libraries(${TARGET_NAME} CUDA)
+    
+    link_directories(
+      /usr/local/cuda/targets/x86_64-linu/lib/
+    )
+    
+    target_link_libraries(${TARGET_NAME} PUBLIC CUDA)
 endif()
 if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})

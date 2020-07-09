@@ -110,7 +110,8 @@ __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vecto
     h_add(a.data(), b.data(), c.data(), a.size());
 }
 
-__host__ void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c)
+template<typename T>
+__host__ void h_add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
 {
     if (a.shape() != b.shape() && a.shape() != c.shape())
     {
@@ -119,3 +120,5 @@ __host__ void h_add(const casacore::Array<double>& a, const casacore::Array<doub
 
     h_add(a.data(), b.data(), c.data(), a.shape()[0]);
 }
+
+void printCudaVersion();
