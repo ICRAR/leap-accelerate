@@ -20,8 +20,8 @@
 *    MA 02111-1307  USA
 */
 
-#include "vector.h"
-#include <icrar/leap-accelerate/math/vector.cuh>
+#include "cuda_info.h"
+#include <iostream>
 
 void printCudaVersion()
 {
@@ -35,32 +35,3 @@ void printCudaVersion()
     cudaDriverGetVersion(&driver_ver);
     std::cout << "CUDA Driver version: " << driver_ver << std::endl;
 }
-
-void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c)
-{
-   h_add(a, b, c);
-}
-
-// __global__ void h_add(const int* x1, const int* x2, int* y)
-// {
-//     d_add(x1, x2, y);
-// }
-
-// __global__ void h_add(const float* x1, const float* x2, float* y)
-// {
-//    d_add(x1, x2, y);
-// }
-
-// __global__ void h_add(const double* x1, const double* x2, double* y)
-// {
-//    d_add(x1, x2, y);
-// }
-
-// extern "C"
-// {
-//    __global__ void addi(const int* x1, const int* x2, int* y);
-
-//    __global__ void addf(const float* x1, const float* x2, float* y);
-
-//    __global__ void addd(const double* x1, const double* x2, double* y);
-// }

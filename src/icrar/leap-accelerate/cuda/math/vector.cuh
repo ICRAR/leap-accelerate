@@ -120,5 +120,3 @@ __host__ void h_add(const casacore::Array<T>& a, const casacore::Array<T>& b, ca
 
     h_add(a.data(), b.data(), c.data(), a.shape()[0]);
 }
-
-void printCudaVersion();

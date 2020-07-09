@@ -40,16 +40,23 @@ set(sources
 )
 
 set(cuda_headers
+    cuda/cuda_info.h
     cuda/helper_cuda.cuh
+    cuda/helper_string.cuh
 
-    math/vector.h
-    math/vector.cuh
+    cuda/math/vector.h
+    cuda/math/vector.cuh
+    cuda/math/matrix.h
+    cuda/math/matrix.cuh
 
     algorithm/PhaseRotate.cuh
 )
 
 set(cuda_sources
-    math/vector.cu
+    cuda/cuda_info.cu
+
+    cuda/math/vector.cu
+    cuda/math/matrix.cu
 )
 
 # Libraries
@@ -81,15 +88,9 @@ if(USE_CUDA)
     set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
     set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-    set_target_properties(${THE_TARGET} PROPERTIES COMPILE_FLAGS -lcuda -lcudart)
-
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
     
-    link_directories(
-      /usr/local/cuda/targets/x86_64-linu/lib/
-    )
-    
-    target_link_libraries(${TARGET_NAME} PUBLIC CUDA)
+    target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})

@@ -30,8 +30,8 @@
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
-//#include <icrar/leap-accelerate/math/matrix.cuh>
-#include <icrar/leap-accelerate/math/vector.h>
+#include <icrar/leap-accelerate/cuda/math/matrix.h>
+#include <icrar/leap-accelerate/cuda/math/vector.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -60,9 +60,6 @@ using Radians = double;
 
 namespace icrar
 {
-    // TODO: docs
-    // leap_remote_calibration
-    // leap_calibrate_from_queue
     std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input)
     {
         std::queue<IntegrationResult> output = std::queue<IntegrationResult>();
@@ -81,8 +78,7 @@ namespace icrar
             auto a = casacore::Array<double>(IPosition(5));
             auto b = casacore::Array<double>(IPosition(5));
             auto c = casacore::Array<double>(IPosition(5));
-            //hello();
-            //h_add(a, b, c);
+            h_add(a, b, c);
 
             // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
             // for(int n = 0; n < metadata.I; ++n)

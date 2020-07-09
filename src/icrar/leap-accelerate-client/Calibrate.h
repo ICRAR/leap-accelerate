@@ -34,7 +34,7 @@ namespace casacore
 
 namespace icrar
 {
-    class MetaData;
+    struct MetaData;
 
     void ServerLeapHandleRemoteMS(std::istream& reader, std::ostream& writer);
     void LeapHandleRemoteMS(std::string ms_filename);

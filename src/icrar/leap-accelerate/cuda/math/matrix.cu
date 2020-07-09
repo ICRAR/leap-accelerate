@@ -20,16 +20,16 @@
 *    MA 02111-1307  USA
 */
 
-#include <casacore/casa/Arrays/Array.h>
+#include "matrix.h"
+#include "matrix.cuh"
 
-// C++ style interface
+namespace icrar
+{
+    void h_matrix(const casacore::Matrix<double>& a, const casacore::Matrix<double>& b, casacore::Matrix<double>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<float>& a, const casacore::Matrix<float>& b, casacore::Matrix<float>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<int>& a, const casacore::Matrix<int>& b, casacore::Matrix<int>& c) { h_multiply(a, b, c); }
 
-void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
-
-// C Style interface
-
-// __global__ void h_add(const int* x1, const int* x2, int* y, int n);
-
-// __global__ void h_add(const float* x1, const float* x2, float* y, int n);
-
-// __global__ void h_add(const double* x1, const double* x2, double* y, int n);
+    void h_matrix(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_multiply(a, b, c); }
+}
