@@ -21,20 +21,21 @@
 */
 
 #pragma once
-//#include <cuda_runtime.h>
-//#include <device_launch_parameters.h>
 
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/eigen_helper.h>
-
 #include <casacore/casa/Arrays/Matrix.h>
+#include <eigen3/Eigen/Core>
 
 namespace icrar
 {
     template<typename T>
     void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
-
+        //TODO: convert to cuda
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> eb = ConvertMatrix(b);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ec = ea * eb;
+        c = ConvertMatrix(ec);
     }
 
     template<typename T>
@@ -48,6 +49,11 @@ namespace icrar
     template<typename T>
     void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
+        //TODO: convert to cuda
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> eb = ConvertVector(b);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> ec = ea * eb;
+        c = ConvertVector(ec);
     }
 
     template<typename T>
