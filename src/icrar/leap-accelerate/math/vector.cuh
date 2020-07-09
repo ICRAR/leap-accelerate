@@ -23,12 +23,13 @@
 #pragma once
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+
+#include <casacore/casa/Arrays/Array.h>
 
 #include <array>
 #include <vector>
 #include <stdexcept>
-
-__constant__ float identity[9];
 
 /**
 * @brief Performs vector addition of equal length vectors
@@ -43,7 +44,9 @@ __device__ void d_add(const T* x1, const T* x2, T* y)
 {
     //1D indexing
     int threadId = blockDim.x * blockIdx.x + threadIdx.x;
-    y[threadId] = x1[threadId] + x2[threadId];
+    //if(threadId < 0) {
+        y[threadId] = x1[threadId] + x2[threadId];
+    //}
 }
 
 template<typename T>
@@ -52,35 +55,49 @@ __global__ void g_add(const T* x1, const T* x2, T* y)
     d_add(x1, x2, y);
 }
 
-template<typename T, int32_t S>
-__host__ void h_add(const std::array<T, S>& a, const std::array<T, S>& b, std::array<T, S>& c)
+template<typename T>
+__host__ void h_add(const T* a, const T* b, T* c, unsigned int n)
 {
-    //8-series 128 threads
-    //10-series 240 threads
     constexpr int threadsPerBlock = 1024;
-    int gridSize = (int)ceil((float)S / threadsPerBlock);
+    int gridSize = (int)ceil((float)n / threadsPerBlock);
 
-    int* aBuffer;
-    int* bBuffer;
-    int* cBuffer;
-    cudaMalloc((void**)&aBuffer, sizeof(a));
-    cudaMalloc((void**)&bBuffer, sizeof(b));
-    cudaMalloc((void**)&cBuffer, sizeof(c));
+    size_t byteSize = n * sizeof(T);
 
-    cudaMemcpy(aBuffer, &a, sizeof(a), cudaMemcpyKind::cudaMemcpyHostToDevice);
-    cudaMemcpy(bBuffer, &b, sizeof(b), cudaMemcpyKind::cudaMemcpyHostToDevice);
+    int* d_a;
+    int* d_b;
+    int* d_c;
+    cudaMalloc((void**)&d_a, byteSize);
+    cudaMalloc((void**)&d_b, byteSize);
+    cudaMalloc((void**)&d_c, byteSize);
 
-    g_add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
+    checkCudaErrors(cudaMemcpy(d_a, a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+    checkCudaErrors(cudaMemcpy(d_b, b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
 
-    //cudaDeviceSynchronize();
+    g_add<<<gridSize, threadsPerBlock>>>(d_a, d_b, d_c);
+
+    cudaDeviceSynchronize();
 
     //cudaMemcpytoSymbol()
-    cudaMemcpy(&c, cBuffer, sizeof(c), cudaMemcpyKind::cudaMemcpyDeviceToHost);
+    checkCudaErrors(cudaMemcpy(c, d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
 
-    cudaFree(aBuffer);
-    cudaFree(bBuffer);
-    cudaFree(cBuffer);
+    checkCudaErrors(cudaFree(d_a));
+    checkCudaErrors(cudaFree(d_b));
+    checkCudaErrors(cudaFree(d_c));
 }
+
+template<typename T, std::int32_t N>
+__host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
+{
+    h_add(a.data(), b.data(), c.data(), a.size());
+}
+
+// template<typename T, std::int32_t N>
+// __host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
+// {
+//     std::array<T, N> result;
+//     h_add(a.data(), b.data(), result.data(), a.size());
+//     return result;
+// }
 
 template<typename T>
 __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
@@ -90,31 +107,15 @@ __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vecto
         throw std::runtime_error("argument sizes must be equal");
     }
 
-    //8-series 128 threads
-    //10-series 240 threads
-    constexpr uint32_t threadsPerBlock = 1024;
-    uint32_t S = static_cast<uint32_t>(a.size());
-    uint32_t gridSize = static_cast<uint32_t>(ceil((float)S / threadsPerBlock));
+    h_add(a.data(), b.data(), c.data(), a.size());
+}
 
-    size_t byteSize = a.size() * sizeof(T);
+__host__ void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c)
+{
+    if (a.shape() != b.shape() && a.shape() != c.shape())
+    {
+        throw std::runtime_error("argument shapes must be equal");
+    }
 
-    int* aBuffer;
-    int* bBuffer;
-    int* cBuffer;
-    cudaMalloc((void**)&aBuffer, byteSize);
-    cudaMalloc((void**)&bBuffer, byteSize);
-    cudaMalloc((void**)&cBuffer, byteSize);
-
-    cudaMemcpy(aBuffer, a.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
-    cudaMemcpy(bBuffer, b.data(), byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice);
-
-    g_add<<<gridSize, threadsPerBlock>>>(aBuffer, bBuffer, cBuffer);
-
-    //cudaDeviceSynchronize();
-
-    cudaMemcpy(c.data(), cBuffer, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost);
-
-    cudaFree(aBuffer);
-    cudaFree(bBuffer);
-    cudaFree(cBuffer);
+    h_add(a.data(), b.data(), c.data(), a.shape()[0]);
 }

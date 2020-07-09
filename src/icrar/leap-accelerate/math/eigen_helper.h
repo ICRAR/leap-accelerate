@@ -28,10 +28,11 @@
 
 namespace icrar
 {
-    Eigen::MatrixXd ConvertMatrix(casacore::Matrix<double> value)
+    template<typename T>
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
-        auto m = Eigen::MatrixXd(shape[0], shape[1]);
+        auto m = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
 
         auto it = value.begin();
         for(int row = 0; row < shape[0]; ++row)
@@ -45,32 +46,31 @@ namespace icrar
         return m;
     }
 
-    casacore::Matrix<double> ConvertMatrix(Eigen::MatrixXd value)
+    template<typename T>
+    casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& value)
     {
-        Eigen::MatrixXd m(value.rows(), value.cols());
-        for(int row = 0; row < value.rows(); ++row)
-        {
-            for(int col = 0; col < value.cols(); ++col)
-            {
-                m(row, col) = 0;
-            }
-        }
-        return casacore::Matrix<double>(casacore::IPosition(value.rows(), value.cols()), m.data());
+        // auto m = casacore::Matrix<T>(value.rows(), value.cols());
+        // for(int row = 0; row < value.rows(); ++row)
+        // {
+        //     for(int col = 0; col < value.cols(); ++col)
+        //     {
+        //         m(row, col) = 0;
+        //     }
+        // }
+        return casacore::Matrix<T>(casacore::IPosition(value.rows(), value.cols()), value.data());
     }
 
-
-    Eigen::MatrixXcd ConvertMatrix(casacore::Matrix<std::complex<double>> v)
+    template<typename T>
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
-
+        auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        return v;
     }
 
-    Eigen::VectorXd ConvertVector(casacore::Array<double> value)
+    template<typename T>
+    casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
-        auto v = Eigen::VectorXd(value.size());
-    }
-
-    Eigen::VectorXcd ConvertVector(casacore::Array<std::complex<double>> v)
-    {
-
+        auto v = casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
+        return v;
     }
 }

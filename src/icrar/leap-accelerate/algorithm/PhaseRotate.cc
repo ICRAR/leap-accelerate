@@ -30,6 +30,9 @@
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
+//#include <icrar/leap-accelerate/math/matrix.cuh>
+#include <icrar/leap-accelerate/math/vector.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -52,10 +55,6 @@
 #include <memory>
 
 using namespace casacore;
-using Arrayd = Array<double>;
-using Arrayi = Array<int>;
-using Matrixd = Matrix<double>;
-using Matrixi = Matrix<int>;
 
 using Radians = double;
 
@@ -71,11 +70,16 @@ namespace icrar
 
         for(Integration integration = input.front(); !input.empty(); integration = input.front(), input.pop())
         {
-            std::function<Radians(std::complex<double>)> lambda = [](std::complex<double> c) -> Radians { return std::arg(c); };
-            casacore::Array<Radians> avg_data = MapCollection(metadata.avg_data, lambda);
+            std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+            {
+                return std::arg(c);
+            };
+            casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
 
-            //TODO: determine avg_data type from LEAP-Cal
-            //auto cal1 = metadata.Ad1 + avg_data(IPosition(0, metadata.I1));
+            //casacore::Array<double> cal1 = h_multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1));
+            
+            //h_add<double>(cal1, cal1, cal1);
+
             // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
             // for(int n = 0; n < metadata.I; ++n)
             // {
@@ -131,7 +135,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v * std::exp(1i * shiftRad);
+                data[channel][baseline] = v; //TODO * std::exp(1i * shiftRad);
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
@@ -149,13 +153,13 @@ namespace icrar
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrixd A = Matrixd(a1.size() + 1, icrar::ArrayMax(a1));
+        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1));
         for(auto v : A)
         {
             v = 0;
         }
 
-        Matrixi I = Matrixi(a1.size() + 1, a1.size() + 1);
+        Matrix<int> I = Matrix<int>(a1.size() + 1, a1.size() + 1);
         for(auto v : I)
         {
             v = 1;

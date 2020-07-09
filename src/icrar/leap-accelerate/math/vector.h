@@ -20,31 +20,8 @@
 *    MA 02111-1307  USA
 */
 
-#include "vector.h"
-#include <icrar/leap-accelerate/math/vector.cuh>
+void h_add(const int* x1, const int* x2, int* y);
 
+void h_add(const float* x1, const float* x2, float* y);
 
-
-// __global__ void h_add(const int* x1, const int* x2, int* y)
-// {
-//     d_add(x1, x2, y);
-// }
-
-// __global__ void h_add(const float* x1, const float* x2, float* y)
-// {
-//    d_add(x1, x2, y);
-// }
-
-// __global__ void h_add(const double* x1, const double* x2, double* y)
-// {
-//    d_add(x1, x2, y);
-// }
-
-// extern "C"
-// {
-//    __global__ void addi(const int* x1, const int* x2, int* y);
-
-//    __global__ void addf(const float* x1, const float* x2, float* y);
-
-//    __global__ void addd(const double* x1, const double* x2, double* y);
-// }
+void h_add(const double* x1, const double* x2, double* y);

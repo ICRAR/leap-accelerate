@@ -67,13 +67,13 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 find_package(CUDA)
-find_package(Casacore)
-find_package(Boost)
-find_package(Eigen3)
-
 if(CUDA_FOUND)
   enable_language(CUDA)
 endif()
+
+find_package(Casacore)
+find_package(Boost)
+find_package(Eigen3)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)

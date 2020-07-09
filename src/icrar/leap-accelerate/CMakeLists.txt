@@ -39,6 +39,7 @@ set(sources
 )
 
 set(cuda_headers
+    cuda/helper_cuda.cuh
     math/vector.cuh
     algorithm/PhaseRotate.cuh
 )
