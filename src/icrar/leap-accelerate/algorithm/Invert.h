@@ -46,5 +46,9 @@ namespace icrar
     void InvertFunction(const casacore::Matrix<double>& A, bool useGraphics=false, int refAnt=-1)
     {
         throw std::runtime_error("not implemented"); //TODO
+
+        //Xenial build test
+        // test g++ 6
+        //
     }
 }
