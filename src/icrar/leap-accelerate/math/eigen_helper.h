@@ -106,7 +106,10 @@ namespace icrar
     Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
         auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
-        //TODO
+        for(int i = 0; i < value.size(); ++i)
+        {
+            v(i) = value(casacore::IPosition(i));
+        }
         return v;
     }
 
