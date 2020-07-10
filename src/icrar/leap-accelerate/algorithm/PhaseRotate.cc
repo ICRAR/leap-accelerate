@@ -185,9 +185,8 @@ namespace icrar
             A(IPosition(k,refAnt)) = 1;
             k++;
             
-            throw std::runtime_error("slicing not implemented");
-            //A = A[:k];
-            //I = I[:k];
+            A = A(Slice(0), Slice(k));
+            I = I(Slice(0), Slice(k));
         }
 
         return std::make_pair(A, I);
