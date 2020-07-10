@@ -26,9 +26,9 @@
 #
 
 sudo apt-get install software-properties-common
-sudo add-apt-repository -s ppa:kernsuite/kern-3
-sudo apt-add-repository multiverse
-sudo apt-add-repository restricted
+sudo add-apt-repository -y -s ppa:kernsuite/kern-3
+sudo apt-add-repository -y multiverse
+sudo apt-add-repository -y restricted
 sudo apt-get update
 sudo apt-get install casacore-dev
 
