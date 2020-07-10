@@ -25,6 +25,12 @@
 # MA 02111-1307  USA
 #
 
+sudo apt-get install software-properties-common
+sudo add-apt-repository -s ppa:kernsuite/kern-3
+sudo apt-add-repository multiverse
+sudo apt-add-repository restricted
+sudo apt-get update
+
 wget https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64.deb
 sudo apt-key add /var/cuda-repo-<version>/7fa2af80.pub
@@ -35,8 +41,3 @@ export CUDA_HOME=/usr/local/cuda
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
 
-sudo apt-get install software-properties-common
-sudo add-apt-repository -s ppa:kernsuite/kern-3
-sudo apt-add-repository multiverse
-sudo apt-add-repository restricted
-sudo apt-get update
