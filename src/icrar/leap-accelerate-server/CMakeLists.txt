@@ -1,17 +1,17 @@
-set(TARGET_NAME LeapAccelerateClient)
+set(TARGET_NAME LeapAccelerateServer)
 set(TARGET_EXPORT leapaccelerate-targest)
-set(TARGET_TEST LeapAccelerateClientExec)
+set(TARGET_TEST LeapAccelerateServerExec)
 
 set(sources
-  Calibrate.cc
-  leap_cal_client.cc
-  remote_cal.cc
+  #Calibrate.cc
+  leap_cal_server.cc
+  #remote_cal.cc
 )
 
 set(private_headers
-  Calibrate.h
-  leap_cal_client.h
-  remote_cal.h
+  #Calibrate.h
+  leap_cal_server.h
+  #remote_cal.h
 )
 
 find_package(Threads)
