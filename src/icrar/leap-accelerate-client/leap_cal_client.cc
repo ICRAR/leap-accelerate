@@ -20,7 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
-namespace icrar
+
+int main(int argc, char** argv)
 {
-    
+    return 0;
 }

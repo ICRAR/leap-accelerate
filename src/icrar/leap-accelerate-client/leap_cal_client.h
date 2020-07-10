@@ -22,7 +22,7 @@
 
 #pragma once
 
-//#include <boost/asio>
+#include <boost/asio.hpp>
 
 namespace icrar
 {

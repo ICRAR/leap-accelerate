@@ -76,8 +76,9 @@ find_package(Boost)
 find_package(Eigen3 REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)
-add_subdirectory(src/icrar/leap-accelerate-cli)
 add_subdirectory(src/icrar/leap-accelerate-client)
+add_subdirectory(src/icrar/leap-accelerate-server)
+add_subdirectory(src/icrar/leap-accelerate-cli)
 
 # Install cmake config + version + target files
 include(CMakePackageConfigHelpers)
