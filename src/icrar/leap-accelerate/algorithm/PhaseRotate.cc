@@ -93,7 +93,7 @@ namespace icrar
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
-        using namespace std::complex_literals;
+        using namespace std::literals::complex_literals;
         auto& data = integration.data;
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
@@ -131,7 +131,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v; //TODO * std::exp(1i * shiftRad);
+                data[channel][baseline] = v * std::exp(1i * shiftRad);
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
