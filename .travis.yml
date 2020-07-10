@@ -37,17 +37,6 @@ cache:
 jobs:
  include:
   - os: linux
-  dist:
-    - xenial
-  compiler: gcc
-  before_install:
-    - source .travis/before_install_xenial.sh
-  addons:
-   apt:
-    sources: ubuntu-toolchain-r-test
-    packages: [g++-6, doxygen, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-log-dev]
-  env: COMPILER=g++-6 PYTHON=python3
-  - os: linux
     dist:
       - xenial
     compiler: gcc
