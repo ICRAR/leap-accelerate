@@ -39,7 +39,7 @@ sudo apt-key add /var/cuda-repo-<version>/7fa2af80.pub
 sudo apt-get update
 sudo apt-get install cuda
 
-export CUDA_HOME=/usr/local/cuda
+export CUDA_HOME=/usr/local/cuda-9.0
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
 
