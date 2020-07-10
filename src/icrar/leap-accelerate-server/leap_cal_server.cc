@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-//#include "leap_cal_server.h"
+#include "leap_cal_server.h"
 
 int main(int argc, char** argv)
 {
