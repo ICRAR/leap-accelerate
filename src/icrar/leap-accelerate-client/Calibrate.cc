@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
+#include <icrar/leap-accelerate/icrar_optional.hpp>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -33,7 +35,6 @@
 #include <ostream>
 #include <sstream>
 #include <streambuf>
-#include <optional>
 
 using namespace casacore;
 
@@ -67,7 +68,7 @@ namespace icrar
 
     }
 
-    void ClientLeapRemoteCalibration(std::string host, short port, std::string ms_path, const std::vector<MVDirection>& directions, std::optional<int> overrideStations, int solutionInterval=3600)
+    void ClientLeapRemoteCalibration(std::string host, short port, std::string ms_path, const std::vector<MVDirection>& directions, icrar::optional<int> overrideStations, int solutionInterval=3600)
     {
         
     }
@@ -77,11 +78,11 @@ namespace icrar
         return MetaData();
     }
 
-    void LeapRemoteCalibration(std::istream& input, std::ostream& output, std::optional<int> overrideStations)
+    void LeapRemoteCalibration(std::istream& input, std::ostream& output, icrar::optional<int> overrideStations)
     {
         MetaData metadata = ReadMetaData(input);
 
-        if(overrideStations.has_value())
+        if(overrideStations)
         {
             metadata.stations = overrideStations.value();
         }

@@ -23,6 +23,19 @@
 #include "vector.h"
 #include "vector.cuh"
 
+// template<typename T, int N>
+// void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
+// {
+//     h_add(a.data(), b.data(), c.data(), a.size());
+// }
+
+//template void h_add<int, 1>(const std::array<int, 1>& a, const std::array<int, 1>& b, std::array<int, 1>& c) { h_add(a, b, c); }
+//template void h_add<int, 1000>(const std::array<int, 1000>& a, const std::array<int, 1000>& b, std::array<int, 1000>& c) { h_add(a, b, c); }
+
+void h_add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c) { h_add(a, b, c); }
+void h_add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { h_add(a, b, c); }
+void h_add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { h_add(a, b, c); }
+
 void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_add(a, b, c); }
 void h_add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_add(a, b, c); }
 void h_add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_add(a, b, c); }

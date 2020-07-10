@@ -22,7 +22,17 @@
 
 #include <casacore/casa/Arrays/Array.h>
 
+#include <vector>
+#include <array>
+
 // C++ Style interface (templates not supported)
+
+// template<typename T, int N>
+// void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c);
+
+void h_add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c);
+void h_add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c);
+void h_add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c);
 
 void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
 void h_add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);

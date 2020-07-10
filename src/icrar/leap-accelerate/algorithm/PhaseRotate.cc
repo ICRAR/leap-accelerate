@@ -50,7 +50,6 @@
 #include <iterator>
 #include <string>
 #include <queue>
-#include <optional>
 #include <exception>
 #include <memory>
 

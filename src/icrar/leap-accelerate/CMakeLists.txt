@@ -98,7 +98,7 @@ endif()
 if(USE_BOOST)
     target_link_libraries(${TARGET_NAME} Boost)
 endif()
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
