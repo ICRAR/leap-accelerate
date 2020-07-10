@@ -1,4 +1,0 @@
-find CUDA
-find Casacore
-find Boost
-find Eigen3
