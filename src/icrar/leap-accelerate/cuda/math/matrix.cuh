@@ -21,11 +21,8 @@
 */
 
 #pragma once
-//#include <cuda_runtime.h>
-//#include <device_launch_parameters.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/math/eigen_helper.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 

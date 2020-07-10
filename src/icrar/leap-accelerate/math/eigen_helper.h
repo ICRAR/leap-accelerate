@@ -49,14 +49,6 @@ namespace icrar
     template<typename T>
     casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& value)
     {
-        // auto m = casacore::Matrix<T>(value.rows(), value.cols());
-        // for(int row = 0; row < value.rows(); ++row)
-        // {
-        //     for(int col = 0; col < value.cols(); ++col)
-        //     {
-        //         m(row, col) = 0;
-        //     }
-        // }
         return casacore::Matrix<T>(casacore::IPosition(value.rows(), value.cols()), value.data());
     }
 
