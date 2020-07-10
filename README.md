@@ -61,7 +61,7 @@ Testing provided via googletest. To test using CTest use the following command i
 
 To test using the google test runner, use the following command:
 
-`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
+`ctest --verbose`
 
 ## Doxygen
 
