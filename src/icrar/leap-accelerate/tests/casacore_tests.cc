@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/eigen_helper.h>
 #include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
@@ -93,27 +94,30 @@ public:
     void test_matrix_casa_to_eigen_dynamic()
     {
         //Convert to dynamic eigen matrix and back
-        auto shape = casacore::IPosition(std::vector<int>({5,5}));
+        auto shape = casacore::IPosition(5,5);
         Eigen::MatrixXd exm(shape[0], shape[1]);
-        for(int row = 0; row < shape[0]; ++row)
+        for(int row = 0; row < exm.rows(); ++row)
         {
-            for(int col = 0; col < shape[1]; ++col)
+            for(int col = 0; col < exm.cols(); ++col)
             {
                 exm(row, col) = 1;
             }
         }
+
         casacore::Matrix<double> cm(shape, exm.data());
         for(auto it = cm.begin(); it != cm.end(); ++it)
         {
             ASSERT_EQ(1.0, *it);
         }
 
-
-        // casacore::Matrix<double> m2(casacore::IPosition(25, 1));
-        // for(auto it = m2.begin(); it != m2.end(); it++)
-        // {
-        //     ASSERT_EQ(1.0, *it);
-        // }
+        auto em = icrar::ConvertMatrix(cm);
+        for(int row = 0; row < em.rows(); ++row)
+        {
+            for(int col = 0; col < em.cols(); ++col)
+            {
+                ASSERT_EQ(1.0, em(row,col));
+            }
+        }
     }
 };
 

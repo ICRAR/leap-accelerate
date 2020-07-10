@@ -53,7 +53,7 @@ namespace icrar
         std::vector<double> channel_wavelength;
 
         casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        casacore::Matrix<std::complex<double>> dd;
+        casacore::Matrix<double> dd;
 
         double phase_centre_ra_rad;
         double phase_centre_dec_rad;

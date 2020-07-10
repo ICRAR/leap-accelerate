@@ -24,6 +24,8 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Quanta/MVuvw.h>
+
 #include <eigen3/Eigen/Core>
 
 namespace icrar
@@ -53,16 +55,37 @@ namespace icrar
     }
 
     template<typename T>
+    Eigen::Matrix<T, 3, 3> ConvertMatrix3x3(const casacore::Matrix<T>& value)
+    {
+        auto m = Eigen::Matrix<T, 3, 3>();
+
+        auto it = value.begin();
+        for(int row = 0; row < 3; ++row)
+        {
+            for(int col = 0; col < 3; ++col)
+            {
+                m(row, col) = *it;
+                it++;
+            }
+        }
+        return m;
+    }
+
+    template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
         auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        //TODO
         return v;
     }
 
     template<typename T>
     casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
-        auto v = casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
-        return v;
+        return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
+
+    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value);
+
+    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value);
 }

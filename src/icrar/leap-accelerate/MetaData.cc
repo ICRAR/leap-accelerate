@@ -39,7 +39,7 @@ namespace icrar
         for(int n = 0; n < size; n++)
         {
             auto uvw = icrar::Dot(uvws[n], metadata.dd);
-            uvws.push_back(uvw); 
+            uvws.push_back(uvw);
         }
     }
 
