@@ -45,8 +45,8 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-7, doxygen, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-log-dev]
-    env: COMPILER=g++-7 PYTHON=python3
+      packages: [g++-6, doxygen, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-log-dev]
+    env: COMPILER=g++-6 PYTHON=python3
   - os: linux
     dist:
       - bionic
