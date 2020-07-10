@@ -26,12 +26,16 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 20.04 LTS
 
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libeigen3-dev
-* nvidia-cuda-toolkit-gcc
+* https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
+
+or
+
+* sudo apt-get install nvidia-cuda-toolkit-gcc
 
 18.04 LTS
 
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libeigen3-dev
-* nvidia-cuda-toolkit
+* https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
 
 #### Recommended Versions Compatibility
 
@@ -43,7 +47,7 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 #### Minimum Versions Compatibility
 
 * g++ 6.3.0
-* cuda 10.1
+* cuda 9.0
 * boost 1.63.0 (1.55.0 available)
 * cmake 3.15.1
 * casacore 3.1.2
