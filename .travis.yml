@@ -45,7 +45,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-7, doxygen, libhdf5-dev, libboost-all-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
+      packages: [g++-7, doxygen, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-program-options-dev, libboost-log-dev]
     env: COMPILER=g++-7 PYTHON=python3
   - os: linux
     dist:
