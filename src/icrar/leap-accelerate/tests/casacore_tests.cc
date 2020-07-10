@@ -23,6 +23,7 @@
 #include <gtest/gtest.h>
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/eigen_helper.h>
 #include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
@@ -44,16 +45,49 @@ public:
 
     void SetUp() override
     {
-        //int deviceCount = 0;
-        //cudaGetDeviceCount(&deviceCount);
-        //ASSERT_NE(deviceCount, 0);
 
-        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
 
     void TearDown() override
     {
 
+    }
+
+    void test_column_major()
+    {
+        int nrows = 4;
+        int ncolumns = 2;
+        casacore::Matrix<double> m = casacore::Matrix<double>(nrows, ncolumns);
+        ASSERT_EQ(nrows, m.nrow());
+        ASSERT_EQ(ncolumns, m.ncolumn());
+
+        double inc = 0.0;
+        for(double& v : m)
+        {
+            v = inc;
+            inc += 1.0;
+        }
+
+        inc = 0.0;
+        //column major iteration
+        for(int col = 0; col < ncolumns; col++)
+        {
+            for(int row = 0; row < nrows; row++)
+            {
+                ASSERT_EQ(inc, m(row,col));
+                inc++;
+            }
+        }
+
+        ASSERT_EQ(0.0, m(0,0));
+        ASSERT_EQ(1.0, m(1,0));
+        ASSERT_EQ(2.0, m(2,0));
+        ASSERT_EQ(3.0, m(3,0));
+
+        ASSERT_EQ(4.0, m(0,1));
+        ASSERT_EQ(5.0, m(1,1));
+        ASSERT_EQ(6.0, m(2,1));
+        ASSERT_EQ(7.0, m(3,1));
     }
 
     void test_matrix_casa()
@@ -77,46 +111,65 @@ public:
     void test_matrix_casa_to_eigen()
     {
         casacore::Matrix<double> m(5,5);
-        icrar::ArrayFill(m, 1.0);
-
-        //Convert to eigen matrix and back
-        Eigen::Matrix<double,5,5> em(m.data());
-        //em(0,0) = 0;
-        auto shape = casacore::IPosition(std::vector<int>({5,5}));
-        casacore::Matrix<double> cm(shape, em.data());
-        for(auto it = cm.begin(); it != cm.end(); ++it)
+        double inc = 0.0;
+        for(double& v : m)
         {
-            ASSERT_EQ(1.0, *it);
+            v = inc;
+            inc += 1.0;
+        }
+        
+        //Convert to eigen matrix and back
+        Eigen::Matrix<double, 5, 5> em = icrar::ConvertMatrix<double, 5, 5>(m);
+        casacore::Matrix<double> cm = icrar::ConvertMatrix<double, 5, 5>(em);
+        
+
+        inc = 0.0;
+        for(int col = 0; col < em.cols(); ++col)
+        {
+            for(int row = 0; row < em.rows(); ++row)
+            {
+                ASSERT_EQ(inc, m(row,col));
+                ASSERT_EQ(inc, em(row,col));
+                ASSERT_EQ(inc, cm(row,col));
+                inc += 1.0;
+            }
+        }
+
+        inc = 0.0;
+        for(double& v : cm)
+        {
+            ASSERT_EQ(inc, v);
+            inc += 1.0;
         }
     }
 
     void test_matrix_casa_to_eigen_dynamic()
     {
         //Convert to dynamic eigen matrix and back
-        auto shape = casacore::IPosition(std::vector<int>({5,5}));
+        auto shape = casacore::IPosition(std::vector<int>{5,5});
         Eigen::MatrixXd exm(shape[0], shape[1]);
-        for(int row = 0; row < shape[0]; ++row)
+        double inc = 0.0;
+        for(int col = 0; col < exm.cols(); ++col)
         {
-            for(int col = 0; col < shape[1]; ++col)
+            for(int row = 0; row < exm.rows(); ++row)
             {
-                exm(row, col) = 1;
+                exm(row, col) = inc;
+                inc += 1.0;
             }
         }
-        casacore::Matrix<double> cm(shape, exm.data());
+
+        casacore::Matrix<double> cm = icrar::ConvertMatrix<double>(exm);
+        
+        inc =  0.0;
         for(auto it = cm.begin(); it != cm.end(); ++it)
         {
-            ASSERT_EQ(1.0, *it);
+            ASSERT_EQ(inc, *it);
+            inc += 1.0;
         }
-
-
-        // casacore::Matrix<double> m2(casacore::IPosition(25, 1));
-        // for(auto it = m2.begin(); it != m2.end(); it++)
-        // {
-        //     ASSERT_EQ(1.0, *it);
-        // }
     }
 };
 
+TEST_F(casacore_tests, test_column_major) { test_column_major(); }
 TEST_F(casacore_tests, test_matrix_casa) { test_matrix_casa(); }
 TEST_F(casacore_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
 TEST_F(casacore_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
