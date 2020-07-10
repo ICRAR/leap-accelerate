@@ -54,9 +54,9 @@
 #include <exception>
 #include <memory>
 
-using namespace casacore;
-
 using Radians = double;
+
+using namespace casacore;
 
 namespace icrar
 {
@@ -104,7 +104,7 @@ namespace icrar
             SetDD(metadata, direction);
             SetWv(metadata);
             // Zero a vector for averaging in time and freq
-            metadata.avg_data = Matrix<DComplex>(integration.baselines, metadata.num_pols);
+            metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.init = false;
         }
         CalcUVW(uvw, metadata);
@@ -135,13 +135,16 @@ namespace icrar
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
-                    metadata.avg_data(IPosition(baseline)) += data[channel][baseline];
+                    metadata.avg_data(casacore::IPosition(baseline)) += data[channel][baseline];
                 }
             }
         }
     }
 
-    std::pair<Matrix<double>, Array<std::int32_t>> PhaseMatrixFunction(const Array<std::int32_t>& a1, const Array<std::int32_t>& a2, int refAnt, bool map)
+    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
+        const Array<std::int32_t>& a1,
+        const Array<std::int32_t>& a2,
+        int refAnt, bool map)
     {
         int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;
         if(refAnt >= nAnt - 1)
@@ -182,7 +185,7 @@ namespace icrar
             A(IPosition(k,refAnt)) = 1;
             k++;
             
-            throw std::runtime_error("matrix slice needs implementation");
+            throw std::runtime_error("slicing not implemented");
             //A = A[:k];
             //I = I[:k];
         }

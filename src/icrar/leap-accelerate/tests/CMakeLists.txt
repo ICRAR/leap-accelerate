@@ -3,10 +3,11 @@ set(TEST_TARGET LeapAccelerate.Tests)
 
 add_executable(${TEST_TARGET}
     main.cc
-    cuda_tests.cu
     casacore_tests.cc
     eigen_tests.cc
     PhaseRotateTests.cc
+
+    cuda/cuda_tests.cu
 )
 
 message(${gtest_SOURCE_DIR})

@@ -22,9 +22,10 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/math/eigen_helper.h>
+
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
-
 #include <casacore/casa/Quanta/MVuvw.h>
 
 #include <functional>
@@ -34,14 +35,17 @@
 namespace icrar
 {
     template<typename T>
-    casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<std::complex<T>>& v2)
+    casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
         if(v2.shape() == casacore::IPosition(3,3))
         {
             throw std::runtime_error("matrix must be 3x3");
         }
-        //TODO:
-        return casacore::MVuvw();
+
+        auto left = ConvertVector3(v1);
+        auto right = ConvertMatrix3x3(v2);
+        auto result = left * right;
+        return ConvertUVW(result);
     }
 
     template<typename T> 

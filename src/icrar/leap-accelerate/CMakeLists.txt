@@ -33,6 +33,8 @@ set(sources
     algorithm/PhaseRotate.cc
     algorithm/Invert.cc
 
+    math/eigen_helper.cc
+
     # TODO: dgesvd_ not avaiable on travisCI
     #wsclean/chgcentre.cc
     #wsclean/multibanddata.cpp
