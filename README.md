@@ -16,7 +16,10 @@ Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
 
 `mdir linux && cd linux`
 
-`cmake ../../`
+`export CUDA_HOME=/usr/local/cuda`
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
+`export PATH=$PATH:$CUDA_HOME/bin`
+`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda"`
 
 #### Ubuntu/Debian Dependencies
 

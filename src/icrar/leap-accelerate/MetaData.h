@@ -36,11 +36,8 @@
 
 namespace icrar
 {
-    class MetaData
+    struct MetaData
     {
-    public:
-        MetaData() {}
-
         bool init;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -55,7 +52,7 @@ namespace icrar
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
         std::vector<double> channel_wavelength;
 
-        casacore::Array<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
         casacore::Matrix<std::complex<double>> dd;
 
         double phase_centre_ra_rad;
@@ -75,8 +72,8 @@ namespace icrar
         casacore::Matrix<double> Ad;
         casacore::Matrix<double> Ad1;
 
-        casacore::Array<double> I1;
-        casacore::Array<double> I;
+        casacore::Array<int> I1;
+        casacore::Array<int> I;
 
         // void SetDlmRa(double value) { dlm_ra; }
         // double GetDlmRa();
@@ -84,7 +81,7 @@ namespace icrar
         // double GetDlmdDec();
     };
 
-    class MetaDataDto
+    class MetaDataVerified
     {
         int m_antennas;
         int m_baseline;
@@ -92,7 +89,7 @@ namespace icrar
         int m_stations;
 
     public:
-        MetaDataDto(int antennas, int baselines, int channels, int polarizations, int stations)
+        MetaDataVerified(int antennas, int baselines, int channels, int polarizations, int stations)
         : m_antennas(antennas)
         , m_baseline(baselines)
         , m_channels(channels)

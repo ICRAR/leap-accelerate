@@ -20,7 +20,10 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/math/vector.cuh>
+#include <cuda_runtime.h>
+
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/math/vector.cuh>
 
 #include <gtest/gtest.h>
 
@@ -38,9 +41,8 @@ public:
     void SetUp() override
     {
         int deviceCount = 0;
-        cudaGetDeviceCount(&deviceCount);
-        ASSERT_NE(deviceCount, 0);
-
+        checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+        ASSERT_EQ(1, deviceCount);
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
 
@@ -79,7 +81,8 @@ public:
     }
 };
 
-TEST_F(cuda_tests, test_gpu_array_add) { test_array_add<1000>(); }
-TEST_F(cuda_tests, test_gpu_vector_add1) { test_vector_add(1); }
-TEST_F(cuda_tests, test_gpu_vector_add1x) { test_vector_add(10000); }
-TEST_F(cuda_tests, test_gpu_vector_add1xx) { test_vector_add(1000000); }
+TEST_F(cuda_tests, test_gpu_array_add0) { test_array_add<1>(); }
+TEST_F(cuda_tests, test_gpu_array_add3) { test_array_add<1000>(); }
+TEST_F(cuda_tests, test_gpu_vector_add0) { test_vector_add(1); }
+TEST_F(cuda_tests, test_gpu_vector_add4) { test_vector_add(10000); }
+TEST_F(cuda_tests, test_gpu_vector_add6) { test_vector_add(1000000); }

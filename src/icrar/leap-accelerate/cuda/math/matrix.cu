@@ -20,28 +20,16 @@
 *    MA 02111-1307  USA
 */
 
-#include <icrar/leap-accelerate/math/vector.cuh>
+#include "matrix.h"
+#include "matrix.cuh"
 
-__global__ void addi(const int* x1, const int* x2, int* y)
+namespace icrar
 {
-    d_add(x1, x2, y);
+    void h_matrix(const casacore::Matrix<double>& a, const casacore::Matrix<double>& b, casacore::Matrix<double>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<float>& a, const casacore::Matrix<float>& b, casacore::Matrix<float>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<int>& a, const casacore::Matrix<int>& b, casacore::Matrix<int>& c) { h_multiply(a, b, c); }
+
+    void h_matrix(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_multiply(a, b, c); }
+    void h_matrix(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_multiply(a, b, c); }
 }
-
-__global__ void addf(const float* x1, const float* x2, float* y)
-{
-   d_add(x1, x2, y);
-}
-
-__global__ void addd(const double* x1, const double* x2, double* y)
-{
-   d_add(x1, x2, y);
-}
-
-// extern "C"
-// {
-//    __global__ void addi(const int* x1, const int* x2, int* y);
-
-//    __global__ void addf(const float* x1, const float* x2, float* y);
-
-//    __global__ void addd(const double* x1, const double* x2, double* y);
-// }

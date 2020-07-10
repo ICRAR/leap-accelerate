@@ -10,7 +10,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
+project(${SOLUTION_NAME} LANGUAGES CUDA CXX VERSION ${SOLUTION_NAME_VERSION})
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -67,13 +67,13 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 find_package(CUDA)
-find_package(Casacore)
-find_package(Boost)
-find_package(Eigen3)
-
 if(CUDA_FOUND)
   enable_language(CUDA)
 endif()
+
+find_package(Casacore)
+find_package(Boost)
+find_package(Eigen3)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-cli)

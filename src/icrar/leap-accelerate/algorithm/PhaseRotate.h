@@ -43,7 +43,7 @@ namespace casacore
 
 namespace icrar
 {
-    class MetaData;
+    struct MetaData;
     class Integration;
     class IntegrationResult;
 
