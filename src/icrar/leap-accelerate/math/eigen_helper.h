@@ -48,7 +48,7 @@ namespace icrar
         return m;
     }
 
-    template<typename T, std::int64_t R, std::int64_t C>
+    template<typename T, int R, int C>
     Eigen::Matrix<T, R, C> ConvertMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
