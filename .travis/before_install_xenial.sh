@@ -30,6 +30,7 @@ sudo add-apt-repository -s ppa:kernsuite/kern-3
 sudo apt-add-repository multiverse
 sudo apt-add-repository restricted
 sudo apt-get update
+sudo apt-get install casacore-dev
 
 wget https://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64.deb
