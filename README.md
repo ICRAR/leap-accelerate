@@ -37,6 +37,11 @@ or
 * sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libeigen3-dev
 * https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
 
+16.04 LTS
+
+* https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
+* sudo apt-get install gcc g++ gdb doxygen casacore-dev libboost1.58-all-dev libeigen3-dev
+
 #### Recommended Versions Compatibility
 
 * g++ 9.3.0
