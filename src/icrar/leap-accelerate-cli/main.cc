@@ -27,7 +27,8 @@
 #include <casacore/measures/Measures/MDirection.h>
 
 #include <CLI/CLI.hpp>
-#include <icrar/leap-accelerate/icrar_optional.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <iostream>
 #include <queue>
@@ -46,13 +47,13 @@ enum class InputSource
 struct Arguments
 {
     InputSource source = InputSource::STREAM;
-    icrar::optional<std::string> fileName;
+    boost::optional<std::string> fileName;
 };
 
 class ArgumentsValidated
 {
     InputSource source;
-    icrar::optional<std::string> fileName;
+    boost::optional<std::string> fileName;
 
     /**
      * Resources
@@ -104,7 +105,7 @@ int main(int argc, char** argv)
 {
     CLI::App app { "LEAP-Accelerate" };
     
-    icrar::optional<std::string> ss;
+    boost::optional<std::string> ss;
 
     //Parse Arguments
     Arguments rawArgs;

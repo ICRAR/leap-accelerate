@@ -20,15 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-//#include <cuda_runtime.h>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/cuda/math/vector.cuh>
 
 #include <gtest/gtest.h>
 
 #include <stdio.h>
 #include <array>
+#include <vector>
 
 class cuda_tests : public testing::Test
 {
@@ -40,11 +42,10 @@ public:
 
     void SetUp() override
     {
-        // int deviceCount = 0;
-        // checkCudaErrors(cudaGetDeviceCount(&deviceCount));
-        // ASSERT_EQ(1, deviceCount);
-
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
+        int deviceCount = 0;
+        checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+        ASSERT_EQ(1, deviceCount);
     }
 
     void TearDown() override
@@ -55,30 +56,30 @@ public:
     template<int n>
     void test_array_add()
     {
-        // std::array<int, n> a;
-        // std::array<int, n> b;
-        // std::array<int, n> c;
+        std::array<int, n> a;
+        std::array<int, n> b;
+        std::array<int, n> c;
 
-        // a.fill(6);
-        // b.fill(10);
+        a.fill(6);
+        b.fill(10);
 
-        // h_add<int, n>(a, b, c);
+        h_add<int, n>(a, b, c);
 
-        // std::array<int, n> expected;
-        // expected.fill(16);
-        // ASSERT_EQ(c, expected);
+        std::array<int, n> expected;
+        expected.fill(16);
+        ASSERT_EQ(c, expected);
     }
 
     void test_vector_add(const int n)
     {
-        // std::vector<int> a = std::vector<int>(n, 6);
-        // std::vector<int> b = std::vector<int>(n, 10);
-        // std::vector<int> c = std::vector<int>(n, 0);
+        std::vector<int> a = std::vector<int>(n, 6);
+        std::vector<int> b = std::vector<int>(n, 10);
+        std::vector<int> c = std::vector<int>(n, 0);
 
-        // h_add(a, b, c);
+        h_add(a, b, c);
 
-        // std::vector<int> expected = std::vector<int>(n, 16);
-        // ASSERT_EQ(c, expected);
+        std::vector<int> expected = std::vector<int>(n, 16);
+        ASSERT_EQ(c, expected);
     }
 };
 

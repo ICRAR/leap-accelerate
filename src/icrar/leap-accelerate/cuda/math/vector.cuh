@@ -86,7 +86,10 @@ __host__ void h_add(const T* a, const T* b, T* c, unsigned int n)
 }
 
 template<typename T, std::int32_t N>
-void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c);
+__host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
+{
+    h_add(a.data(), b.data(), c.data(), a.size());
+}
 
 template<typename T, std::int32_t N>
 __host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)

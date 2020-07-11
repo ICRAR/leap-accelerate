@@ -33,7 +33,7 @@ set(sources
     algorithm/PhaseRotate.cc
     algorithm/Invert.cc
 
-    # TODO: dgesvd_ not avaiable on travisCI
+    # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
     #wsclean/chgcentre.cc
     #wsclean/multibanddata.cpp
     #wsclean/progressbar.cpp

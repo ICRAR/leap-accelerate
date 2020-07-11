@@ -100,6 +100,7 @@ namespace icrar
         if(metadata.init)
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
+            
             SetDD(metadata, direction);
             SetWv(metadata);
             // Zero a vector for averaging in time and freq
@@ -130,7 +131,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v; //TODO * std::exp(1i * shiftRad);
+                data[channel][baseline] = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
@@ -181,11 +182,15 @@ namespace icrar
             A(IPosition(k,refAnt)) = 1;
             k++;
             
-            throw std::runtime_error("matrix slice needs implementation");
-            //A = A[:k];
-            //I = I[:k];
+            A = A(Slice(0),Slice(k));
+            I = I(Slice(0),Slice(k));
         }
 
         return std::make_pair(A, I);
+    }
+
+    std::complex<double> exp()
+    {
+
     }
 }
