@@ -188,9 +188,4 @@ namespace icrar
 
         return std::make_pair(A, I);
     }
-
-    std::complex<double> exp()
-    {
-
-    }
 }

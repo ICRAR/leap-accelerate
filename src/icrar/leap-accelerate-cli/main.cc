@@ -76,7 +76,7 @@ public:
             inputStream = &std::cin;
             break;
         case InputSource::FILENAME:
-            if (fileName)
+            if (fileName.is_initialized())
             {
                 fileStream = std::ifstream(args.fileName.value());
                 inputStream = &fileStream;
