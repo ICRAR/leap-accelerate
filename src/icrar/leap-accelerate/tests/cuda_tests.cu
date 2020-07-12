@@ -24,7 +24,7 @@
 #include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/cuda/math/vector.cuh>
+#include <icrar/leap-accelerate/math/cuda/vector.cuh>
 
 #include <gtest/gtest.h>
 

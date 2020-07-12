@@ -42,7 +42,7 @@ namespace icrar
             throw std::runtime_error("matrix must be 3x3");
         }
 
-        auto left = ConvertVector3(v1);
+        auto left = icrar::ConvertVector3(v1);
         auto right = ConvertMatrix3x3(v2);
         auto result = left * right;
         return ConvertUVW(result);

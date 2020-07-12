@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 
 #include <icrar/leap-accelerate/MetaData.h>

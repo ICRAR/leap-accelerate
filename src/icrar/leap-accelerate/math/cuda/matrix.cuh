@@ -31,7 +31,7 @@ namespace icrar
     template<typename T>
     void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
-
+        //TODO
     }
 
     template<typename T>
@@ -45,6 +45,7 @@ namespace icrar
     template<typename T>
     void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
+        //TODO
     }
 
     template<typename T>

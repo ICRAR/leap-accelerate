@@ -18,13 +18,6 @@ set(private_headers
     math/casacore_helper.h
     math/eigen_helper.h
     math/math.h
-
-    #wsclean/banddata.h
-    #wsclean/chgcentre.h
-    #wsclean/imagecoordinates.h
-    #wsclean/multibanddata.h
-    #wsclean/progressbar.h
-    #wsclean/radeccoord.h
 )
 set(sources
     utils.cc
@@ -34,8 +27,11 @@ set(sources
     algorithm/Invert.cc
 
     math/eigen_helper.cc
+    math/cpu/vector.cc
+    math/cpu/matrix.cc
 
-    # TODO: dgesvd_ not avaiable on travisCI
+
+    # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
     #wsclean/chgcentre.cc
     #wsclean/multibanddata.cpp
     #wsclean/progressbar.cpp
@@ -46,10 +42,10 @@ set(cuda_headers
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
 
-    cuda/math/vector.h
-    cuda/math/vector.cuh
-    cuda/math/matrix.h
-    cuda/math/matrix.cuh
+    math/cuda/vector.h
+    math/cuda/vector.cuh
+    math/cuda/matrix.h
+    math/cuda/matrix.cuh
 
     algorithm/PhaseRotate.cuh
 )
@@ -57,8 +53,8 @@ set(cuda_headers
 set(cuda_sources
     cuda/cuda_info.cu
 
-    cuda/math/vector.cu
-    cuda/math/matrix.cu
+    math/cuda/vector.cu
+    math/cuda/matrix.cu
 )
 
 # Libraries
@@ -100,7 +96,7 @@ endif()
 if(USE_BOOST)
     target_link_libraries(${TARGET_NAME} Boost)
 endif()
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

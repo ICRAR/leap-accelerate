@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <gtest/gtest.h>
 
@@ -46,7 +46,7 @@ public:
     }
 
     template<unsigned int n>
-    void test_array_add()
+    void test_array_add(bool useGpu)
     {
         std::array<int, n> a;
         std::array<int, n> b;
@@ -62,7 +62,7 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_vector_add(const int n)
+    void test_vector_add(const int n, bool useGpu)
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
@@ -75,8 +75,8 @@ public:
     }
 };
 
-TEST_F(vector_tests, test_gpu_array_add0) { test_array_add<1>(); }
-TEST_F(vector_tests, test_gpu_array_add3) { test_array_add<1000>(); }
-TEST_F(vector_tests, test_gpu_vector_add0) { test_vector_add(1); }
-TEST_F(vector_tests, test_gpu_vector_add4) { test_vector_add(10000); }
-TEST_F(vector_tests, test_gpu_vector_add6) { test_vector_add(1000000); }
+TEST_F(vector_tests, test_gpu_array_add0) { test_array_add<1>(true); }
+TEST_F(vector_tests, test_gpu_array_add3) { test_array_add<1000>(true); }
+TEST_F(vector_tests, test_gpu_vector_add0) { test_vector_add(1, true); }
+TEST_F(vector_tests, test_gpu_vector_add4) { test_vector_add(10000, true); }
+TEST_F(vector_tests, test_gpu_vector_add6) { test_vector_add(1000000, true); }

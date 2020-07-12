@@ -30,8 +30,8 @@
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
-#include <icrar/leap-accelerate/math/matrix.h>
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/math/cpu/matrix.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -73,7 +73,7 @@ namespace icrar
             };
             casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
 
-            casacore::Array<double> cal1 = h_multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1));
+            casacore::Array<double> cal1 = icrar::cpu::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1));
         
 
             // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());

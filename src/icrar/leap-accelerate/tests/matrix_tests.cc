@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <gtest/gtest.h>
 
