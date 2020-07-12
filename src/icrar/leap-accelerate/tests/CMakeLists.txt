@@ -1,16 +1,28 @@
 
 set(TEST_TARGET LeapAccelerate.Tests)
 
-add_executable(${TEST_TARGET}
-    main.cc
-    casacore_tests.cc
-    eigen_tests.cc
-    PhaseRotateTests.cc
+set(sources
+  main.cc
+  casacore_tests.cc
+  eigen_tests.cc
+  PhaseRotateTests.cc
 
-    cuda/cuda_tests.cu
+  vector_tests.cc
+  matrix_tests.cc
 )
 
-message(${gtest_SOURCE_DIR})
+set(cuda_sources
+  cuda_tests.cu
+)
+
+# Only CUDA 10+ is capable of compiling gtest
+if(CUDA_VERSION_MAJOR GREATER 9)
+  list(APPEND sources ${cuda_sources})
+endif()
+
+add_executable(${TEST_TARGET}    
+  ${sources}
+)
 
 target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
 

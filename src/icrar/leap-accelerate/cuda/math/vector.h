@@ -22,11 +22,28 @@
 
 #include <casacore/casa/Arrays/Array.h>
 
+#include <vector>
+#include <array>
+
 // C++ Style interface (templates not supported)
 
-void h_add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
-void h_add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
-void h_add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+namespace icrar
+{
+namespace cuda
+{
+    void add(size_t n, const double* a, const double* b, double* c);
+    void add(size_t n, const float* a, const float* b, float* c);
+    void add(size_t n, const int* a, const int* b, int* c);
+
+    void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c);
+    void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c);
+    void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c);
+
+    void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
+    void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
+    void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+}
+}
 
 // __global__ void h_add(const int* x1, const int* x2, int* y, int n);
 

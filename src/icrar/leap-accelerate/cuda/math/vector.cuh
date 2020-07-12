@@ -56,7 +56,7 @@ __global__ void g_add(const T* x1, const T* x2, T* y)
 }
 
 template<typename T>
-__host__ void h_add(const T* a, const T* b, T* c, unsigned int n)
+__host__ void h_addp(const T* a, const T* b, T* c, size_t n)
 {
     constexpr int threadsPerBlock = 1024;
     int gridSize = (int)ceil((float)n / threadsPerBlock);
@@ -88,16 +88,16 @@ __host__ void h_add(const T* a, const T* b, T* c, unsigned int n)
 template<typename T, std::int32_t N>
 __host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
 {
-    h_add(a.data(), b.data(), c.data(), a.size());
+    h_addp(a.data(), b.data(), c.data(), a.size());
 }
 
-// template<typename T, std::int32_t N>
-// __host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
-// {
-//     std::array<T, N> result;
-//     h_add(a.data(), b.data(), result.data(), a.size());
-//     return result;
-// }
+template<typename T, std::int32_t N>
+__host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
+{
+    std::array<T, N> result;
+    h_addp(a.data(), b.data(), result.data(), a.size());
+    return result;
+}
 
 template<typename T>
 __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
@@ -107,7 +107,7 @@ __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vecto
         throw std::runtime_error("argument sizes must be equal");
     }
 
-    h_add(a.data(), b.data(), c.data(), a.size());
+    h_addp(a.data(), b.data(), c.data(), a.size());
 }
 
 template<typename T>
@@ -118,5 +118,5 @@ __host__ void h_add(const casacore::Array<T>& a, const casacore::Array<T>& b, ca
         throw std::runtime_error("argument shapes must be equal");
     }
 
-    h_add(a.data(), b.data(), c.data(), a.shape()[0]);
+    h_addp(a.data(), b.data(), c.data(), a.shape()[0]);
 }

@@ -26,6 +26,8 @@
 // C++ Style interface (templates not supported)
 namespace icrar
 {
+namespace cuda
+{
     casacore::Array<double> h_multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b);
     casacore::Array<float> h_multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b);
     casacore::Array<int> h_multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b);
@@ -33,4 +35,5 @@ namespace icrar
     void h_multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
     void h_multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
     void h_multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+}
 }
