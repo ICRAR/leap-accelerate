@@ -43,7 +43,7 @@ namespace cpu
     template<typename T>
     void add(size_t n, const T* x1, const T* x2, T* y)
     {
-        for(size_t i; i < n; i++)
+        for(size_t i = 0; i < n; i++)
         {
             y[i] = x1[i] + x2[i];
         }

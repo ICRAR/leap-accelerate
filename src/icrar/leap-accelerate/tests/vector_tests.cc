@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 #include <gtest/gtest.h>
 
@@ -55,7 +56,14 @@ public:
         a.fill(6);
         b.fill(10);
 
-        icrar::cuda::add(n, a.data(), b.data(), c.data());
+        if(useGpu)
+        {
+            icrar::cuda::add(n, a.data(), b.data(), c.data());
+        }
+        else
+        {
+            icrar::cpu::add(n, a.data(), b.data(), c.data());
+        }
 
         std::array<int, n> expected;
         expected.fill(16);
@@ -66,14 +74,28 @@ public:
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
-        std::vector<int> c = std::vector<int>(n, 0);
+        std::vector<int> c = std::vector<int>(n, 2);
 
-        icrar::cuda::add(a, b, c);
+        if(useGpu)
+        {
+            icrar::cuda::add(a, b, c);
+        }
+        else
+        {
+            icrar::cpu::add(a, b, c);
+        }
+
 
         std::vector<int> expected = std::vector<int>(n, 16);
         ASSERT_EQ(c, expected);
     }
 };
+
+TEST_F(vector_tests, test_cpu_array_add0) { test_array_add<1>(false); }
+TEST_F(vector_tests, test_cpu_array_add3) { test_array_add<1000>(false); }
+TEST_F(vector_tests, test_cpu_vector_add0) { test_vector_add(1, false); }
+TEST_F(vector_tests, test_cpu_vector_add4) { test_vector_add(10000, false); }
+TEST_F(vector_tests, test_cpu_vector_add6) { test_vector_add(1000000, false); }
 
 TEST_F(vector_tests, test_gpu_array_add0) { test_array_add<1>(true); }
 TEST_F(vector_tests, test_gpu_array_add3) { test_array_add<1000>(true); }
