@@ -25,7 +25,7 @@
 
 void printCudaVersion()
 {
-    std::cout << "CUDA Compiled version: " << __CUDACC_VER__ << std::endl;
+    std::cout << "CUDA Compiled version: " << __CUDACC_VER_MAJOR__ << __CUDACC_VER_MINOR__ << __CUDACC_VER_BUILD__ << std::endl;
 
     int runtime_ver;
     cudaRuntimeGetVersion(&runtime_ver);

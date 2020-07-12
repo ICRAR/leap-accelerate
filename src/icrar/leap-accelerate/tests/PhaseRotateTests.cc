@@ -28,7 +28,7 @@ namespace icrar
 
         void SetUp() override
         {
-            printCudaVersion();
+
         }
 
         void TearDown() override
