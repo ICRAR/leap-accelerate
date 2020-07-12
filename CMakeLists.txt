@@ -73,7 +73,7 @@ endif()
 
 find_package(Casacore)
 find_package(Boost)
-find_package(Eigen3)
+find_package(Eigen3 REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)

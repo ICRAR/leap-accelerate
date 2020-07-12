@@ -50,7 +50,6 @@
 #include <iterator>
 #include <string>
 #include <queue>
-#include <optional>
 #include <exception>
 #include <memory>
 
@@ -101,6 +100,7 @@ namespace icrar
         if(metadata.init)
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
+            
             SetDD(metadata, direction);
             SetWv(metadata);
             // Zero a vector for averaging in time and freq
@@ -131,7 +131,7 @@ namespace icrar
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
 
-                data[channel][baseline] = v * std::exp(1i * shiftRad);
+                data[channel][baseline] = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {

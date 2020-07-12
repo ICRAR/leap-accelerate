@@ -39,16 +39,33 @@ namespace icrar
 {
     /**
      * @brief Invert as a function
+     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
+     * 
+     * This function generates and returns the inverse of the linear matrix to solve for the phase calibration (only)
+     * given a MS. 
+     * The MS is used to fill the columns of the matrix, based on the baselines in the MS (and RefAnt if given)
+     * 
+     * The output will be the inverse matrix to cross with the observation vector.
      * 
      * @param A 
      * @param useGraphics 
      */
-    void InvertFunction(const casacore::Matrix<double>& A, bool useGraphics=false, int refAnt=-1)
+    void InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
     {
-        throw std::runtime_error("not implemented"); //TODO
+        throw std::runtime_error("not implemented");
+        // try:
+        //     print('Inverting Cal Matrix')
+        //     print("IF A:", type(A), A.shape, A.dtype)
+        //     (u,s,vh)=np.linalg.svd(A,full_matrices=False)
+        //     sd=np.zeros((len(s),1)) #A.shape[1]))
+        //     for n in range(len(s)):
+        //         if s[n]/s[0]>1e-6:
+        //         sd[n][0]=1./s[n]   # Why is this 1D?
 
-        //Xenial build test
-        // test g++ 6
-        //
+        //     Ad=np.dot(vh.T,(sd*u.T))
+        //     I=np.dot(Ad,A)
+        // except:
+        //     print('Failed to generate inverted matrix')
+        // return Ad
     }
 }
