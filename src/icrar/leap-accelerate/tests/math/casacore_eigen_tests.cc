@@ -35,10 +35,10 @@
 #include <iostream>
 #include <array>
 
-class casacore_tests : public testing::Test
+class casacore_eigen_tests : public testing::Test
 {
 public:
-    casacore_tests()
+    casacore_eigen_tests()
     {
 
     }
@@ -169,7 +169,7 @@ public:
     }
 };
 
-TEST_F(casacore_tests, test_column_major) { test_column_major(); }
-TEST_F(casacore_tests, test_matrix_casa) { test_matrix_casa(); }
-TEST_F(casacore_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
-TEST_F(casacore_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
+TEST_F(casacore_eigen_tests, test_column_major) { test_column_major(); }
+TEST_F(casacore_eigen_tests, test_matrix_casa) { test_matrix_casa(); }
+TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
+TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }

@@ -23,20 +23,27 @@
 #include "matrix.h"
 #include "matrix.cuh"
 
+#include "vector.h"
+#include "vector.cuh"
+
 namespace icrar
 {
 namespace cuda
 {
-    void h_matrix(const int m, const int n, double* mat, double* vec, double* out) { h_matrix(m, n, mat, vec, out); }
-    void h_matrix(const int m, const int n, float* mat, float* vec, float* out) { h_matrix(m, n, mat, vec, out); }
-    void h_matrix(const int m, const int n, int* mat, int* vec, int* out) { h_matrix(m, n, mat, vec, out); }
-    
-    void h_matrix(const casacore::Matrix<double>& a, const casacore::Matrix<double>& b, casacore::Matrix<double>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<float>& a, const casacore::Matrix<float>& b, casacore::Matrix<float>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<int>& a, const casacore::Matrix<int>& b, casacore::Matrix<int>& c) { h_multiply(a, b, c); }
+    void add(size_t m, size_t n, const double* a, const double* b, double* c) { h_addp(m * n, a, b, c); }
+    void add(size_t m, size_t n, const float* a, const float* b, float* c) { h_addp(m * n, a, b, c); }
+    void add(size_t m, size_t n, const int* a, const int* b, int* c) { h_addp(m * n, a, b, c); }
 
-    void h_matrix(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_multiply(a, b, c); }
+    void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c) { h_add(a, b, c); }
+    void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { h_add(a, b, c); }
+    void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { h_add(a, b, c); }
+
+    void add(const Eigen::VectorXd& a, const Eigen::VectorXd& b, Eigen::VectorXd& c) { h_add<double, -1, 1>(a, b, c); }
+    void add(const Eigen::VectorXf& a, const Eigen::VectorXf& b, Eigen::VectorXf& c) { h_add<float, -1, 1>(a, b, c); }
+    void add(const Eigen::VectorXi& a, const Eigen::VectorXi& b, Eigen::VectorXi& c) { h_add<int, -1, 1>(a, b, c); }
+
+    void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_add(a, b, c); }
+    void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_add(a, b, c); }
+    void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_add(a, b, c); }    
 }
 }

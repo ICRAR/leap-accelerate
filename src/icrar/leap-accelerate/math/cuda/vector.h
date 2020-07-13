@@ -22,6 +22,8 @@
 
 #include <casacore/casa/Arrays/Array.h>
 
+#include <eigen3/Eigen/Core>
+
 #include <vector>
 #include <array>
 
@@ -39,8 +41,13 @@ namespace cuda
     void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c);
     void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c);
 
+    void add(const Eigen::VectorXd& a, const Eigen::VectorXd& b, Eigen::VectorXd& c);
+    void add(const Eigen::VectorXf& a, const Eigen::VectorXf& b, Eigen::VectorXf& c);
+    void add(const Eigen::VectorXi& a, const Eigen::VectorXi& b, Eigen::VectorXi& c);
+
     void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
     void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
     void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+
 }
 }

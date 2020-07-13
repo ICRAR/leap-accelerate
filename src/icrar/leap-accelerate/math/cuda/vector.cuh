@@ -21,102 +21,128 @@
 */
 
 #pragma once
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
+#include <eigen3/Eigen/Core>
 #include <casacore/casa/Arrays/Array.h>
 
 #include <array>
 #include <vector>
 #include <stdexcept>
 
-/**
-* @brief Performs vector addition of equal length vectors
-*
-* @tparam T vector value type
-* @param x1 left vector
-* @param x2 right vector
-* @param y out vector
-*/
-template<typename T>
-__device__ void d_add(const T* x1, const T* x2, T* y)
+
+namespace icrar
 {
-    //1D indexing
-    int threadId = blockDim.x * blockIdx.x + threadIdx.x;
-    //if(threadId < 0) {
-        y[threadId] = x1[threadId] + x2[threadId];
-    //}
-}
-
-template<typename T>
-__global__ void g_add(const T* x1, const T* x2, T* y)
+namespace cuda
 {
-    d_add(x1, x2, y);
-}
-
-template<typename T>
-__host__ void h_addp(const T* a, const T* b, T* c, size_t n)
-{
-    constexpr int threadsPerBlock = 1024;
-    int gridSize = (int)ceil((float)n / threadsPerBlock);
-
-    size_t byteSize = n * sizeof(T);
-
-    int* d_a;
-    int* d_b;
-    int* d_c;
-    cudaMalloc((void**)&d_a, byteSize);
-    cudaMalloc((void**)&d_b, byteSize);
-    cudaMalloc((void**)&d_c, byteSize);
-
-    checkCudaErrors(cudaMemcpy(d_a, a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-    checkCudaErrors(cudaMemcpy(d_b, b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-
-    g_add<<<gridSize, threadsPerBlock>>>(d_a, d_b, d_c);
-
-    cudaDeviceSynchronize();
-
-    //cudaMemcpytoSymbol()
-    checkCudaErrors(cudaMemcpy(c, d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
-
-    checkCudaErrors(cudaFree(d_a));
-    checkCudaErrors(cudaFree(d_b));
-    checkCudaErrors(cudaFree(d_c));
-}
-
-template<typename T, std::int32_t N>
-__host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
-{
-    h_addp(a.data(), b.data(), c.data(), a.size());
-}
-
-template<typename T, std::int32_t N>
-__host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
-{
-    std::array<T, N> result;
-    h_addp(a.data(), b.data(), result.data(), a.size());
-    return result;
-}
-
-template<typename T>
-__host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
-{
-    if (a.size() != b.size() && a.size() != c.size())
+    /**
+    * @brief Performs vector addition of equal length vectors
+    *
+    * @tparam T vector value type
+    * @param n number of elements/vector length
+    * @param x1 left vector
+    * @param x2 right vector
+    * @param y out vector
+    */
+    template<typename T>
+    __device__ void d_add(size_t n, const T* x1, const T* x2, T* y)
     {
-        throw std::runtime_error("argument sizes must be equal");
+        //1D indexing
+        int threadId = blockDim.x * blockIdx.x + threadIdx.x;
+        if(threadId < n)
+        {
+            y[threadId] = x1[threadId] + x2[threadId];
+        }
     }
 
-    h_addp(a.data(), b.data(), c.data(), a.size());
-}
-
-template<typename T>
-__host__ void h_add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
-{
-    if (a.shape() != b.shape() && a.shape() != c.shape())
+    template<typename T>
+    __global__ void g_add(size_t n, const T* x1, const T* x2, T* y)
     {
-        throw std::runtime_error("argument shapes must be equal");
+        d_add(n, x1, x2, y);
     }
 
-    h_addp(a.data(), b.data(), c.data(), a.shape()[0]);
+    template<typename T>
+    __host__ void h_addp(size_t n, const T* a, const T* b, T* c)
+    {
+        // total thread count may be greater than required
+        constexpr int threadsPerBlock = 1024;
+        int gridSize = (int)ceil((float)n / threadsPerBlock);
+        size_t byteSize = n * sizeof(T);
+
+        T* d_a;
+        T* d_b;
+        T* d_c;
+        cudaMalloc((void**)&d_a, byteSize);
+        cudaMalloc((void**)&d_b, byteSize);
+        cudaMalloc((void**)&d_c, byteSize);
+
+        checkCudaErrors(cudaMemcpy(d_a, a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_b, b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        
+        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_b, d_c);
+
+        cudaDeviceSynchronize();
+
+        //cudaMemcpytoSymbol()
+        checkCudaErrors(cudaMemcpy(c, d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+
+        checkCudaErrors(cudaFree(d_a));
+        checkCudaErrors(cudaFree(d_b));
+        checkCudaErrors(cudaFree(d_c));
+    }
+
+    template<typename T, std::int32_t N>
+    __host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
+    {
+        h_addp(a.size(), a.data(), b.data(), c.data());
+    }
+
+    template<typename T, std::int32_t N>
+    __host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
+    {
+        std::array<T, N> result;
+        h_addp(a.size(), a.data(), b.data(), result.data());
+        return result;
+    }
+
+    template<typename T>
+    __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
+    {
+        if (a.size() != b.size() && a.size() != c.size())
+        {
+            throw std::runtime_error("argument sizes must be equal");
+        }
+
+        h_addp(a.size(), a.data(), b.data(), c.data());
+    }
+
+    template<typename T, Eigen::Index M, Eigen::Index N>
+    __host__ void h_add(const Eigen::Matrix<T, M, N>& a, const Eigen::Matrix<T, M, N>& b, Eigen::Matrix<T, M, N>& c)
+    {
+        Eigen::Index aSize = a.rows() * a.cols();
+        Eigen::Index bSize = b.rows() * b.cols();
+        Eigen::Index cSize = c.rows() * c.cols();
+
+        if (aSize != bSize && aSize != cSize)
+        {
+            throw std::runtime_error("argument shapes must be equal");
+        }
+
+        h_addp(aSize, a.data(), b.data(), c.data());
+    }
+
+    template<typename T>
+    __host__ void h_add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
+    {
+        if (a.shape() != b.shape() && a.shape() != c.shape())
+        {
+            throw std::runtime_error("argument shapes must be equal");
+        }
+
+        h_addp(a.shape()[0], a.data(), b.data(), c.data());
+    }
+}
 }

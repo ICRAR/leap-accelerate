@@ -20,8 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include <cuda_runtime.h>
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/vector.cuh>
@@ -30,12 +29,11 @@
 
 #include <stdio.h>
 #include <array>
-#include <vector>
 
-class cuda_tests : public testing::Test
+class cuda_vector_tests : public testing::Test
 {
 public:
-    cuda_tests()
+    cuda_vector_tests()
     {
 
     }
@@ -63,28 +61,29 @@ public:
         a.fill(6);
         b.fill(10);
 
-        h_add<int, n>(a, b, c);
+        icrar::cuda::h_add<int, n>(a, b, c);
 
         std::array<int, n> expected;
         expected.fill(16);
         ASSERT_EQ(c, expected);
     }
 
+    template<typename T>
     void test_vector_add(const int n)
     {
-        std::vector<int> a = std::vector<int>(n, 6);
-        std::vector<int> b = std::vector<int>(n, 10);
-        std::vector<int> c = std::vector<int>(n, 0);
+        std::vector<T> a = std::vector<T>(n, 6);
+        std::vector<T> b = std::vector<T>(n, 10);
+        std::vector<T> c = std::vector<T>(n, 0);
 
-        h_add(a, b, c);
+        icrar::cuda::h_add(a, b, c);
 
-        std::vector<int> expected = std::vector<int>(n, 16);
+        std::vector<T> expected = std::vector<T>(n, 16);
         ASSERT_EQ(c, expected);
     }
 };
 
-TEST_F(cuda_tests, test_gpu_array_add0) { test_array_add<1>(); }
-TEST_F(cuda_tests, test_gpu_array_add3) { test_array_add<1000>(); }
-TEST_F(cuda_tests, test_gpu_vector_add0) { test_vector_add(1); }
-TEST_F(cuda_tests, test_gpu_vector_add4) { test_vector_add(10000); }
-TEST_F(cuda_tests, test_gpu_vector_add6) { test_vector_add(1000000); }
+TEST_F(cuda_vector_tests, test_gpu_array_add0) { test_array_add<1>(); }
+TEST_F(cuda_vector_tests, test_gpu_array_add3) { test_array_add<1000>(); }
+TEST_F(cuda_vector_tests, test_gpu_vector_add0) { test_vector_add<double>(1); }
+TEST_F(cuda_vector_tests, test_gpu_vector_add4) { test_vector_add<double>(10000); }
+TEST_F(cuda_vector_tests, test_gpu_vector_add6) { test_vector_add<double>(1000000); }

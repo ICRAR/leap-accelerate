@@ -46,6 +46,8 @@ set(cuda_headers
     math/cuda/vector.cuh
     math/cuda/matrix.h
     math/cuda/matrix.cuh
+    math/cuda/matrix_multiply.cuh
+    math/cuda/matrix_transpose.cuh
 
     algorithm/cuda/PhaseRotate.cuh
 )
@@ -89,7 +91,9 @@ if(USE_CUDA)
     set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
+    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
     
+
     target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)

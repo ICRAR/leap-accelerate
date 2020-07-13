@@ -20,24 +20,8 @@
 *    MA 02111-1307  USA
 */
 
-#include <casacore/casa/Arrays/Array.h>
-#include <casacore/casa/Arrays/Matrix.h>
+#pragma once
 
-// C++ Style interface (templates not supported)
-namespace icrar
-{
-namespace cuda
-{
-    void multiply(const int m, const int n, double* mat, double* vec, double* out);
-    void multiply(const int m, const int n, float* mat, float* vec, float* out);
-    void multiply(const int m, const int n, int* mat, int* vec, int* out);
+#include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_transpose.h>
 
-    casacore::Array<double> multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b);
-    casacore::Array<float> multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b);
-    casacore::Array<int> multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b);
-
-    void multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
-    void multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
-    void multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
-}
-}
