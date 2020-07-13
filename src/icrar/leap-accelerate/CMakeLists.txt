@@ -62,7 +62,7 @@ set(cuda_sources
 # Libraries
 option(USE_CUDA "Use Cuda" CUDA_FOUND)
 option(USE_CASA "Use Casa" TRUE)
-option(USE_BOOST "Use Boost" OFF)
+option(USE_BOOST "Use Boost" TRUE)
 
 add_library(
   ${TARGET_NAME} STATIC
