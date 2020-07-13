@@ -82,7 +82,7 @@ namespace icrar
     {
         MetaData metadata = ReadMetaData(input);
 
-        if(overrideStations)
+        if(overrideStations.is_initialized())
         {
             metadata.stations = overrideStations.value();
         }

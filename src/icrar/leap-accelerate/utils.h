@@ -29,6 +29,9 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 
+#include <boost/optional.hpp>
+#include <boost/filesystem.hpp>
+
 #include <istream>
 #include <iostream>
 #include <iterator>
@@ -36,14 +39,6 @@
 #include <exception>
 #include <memory>
 #include <vector>
-
-#if (__cplusplus >= 202000L)
-#include <optional>
-#include <filesystem>
-#else
-//#include <boost/optional.hpp>
-//#include <boost/filesystem.hpp>
-#endif
 
 namespace icrar
 {
