@@ -25,6 +25,8 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
+#include <boost/optional.hpp>
+
 #include <vector>
 #include <array>
 #include <complex>
@@ -37,6 +39,7 @@ namespace icrar
     public:
         std::vector<std::vector<std::complex<double>>> data;
         std::vector<casacore::MVuvw> uvw;
+        int integration_number;
 
         union
         {
@@ -55,13 +58,13 @@ namespace icrar
     {
         casacore::MVDirection m_direction;
         int m_integration_number;
-        std::vector<std::vector<std::complex<double>>> m_data;
+        boost::optional<std::vector<casacore::Array<double>>> m_data;
 
     public:
         IntegrationResult(
             casacore::MVDirection direction,
             int integration_number,
-            std::vector<std::vector<std::complex<double>>> data)
+            boost::optional<std::vector<casacore::Array<double>>> data)
             : m_direction(direction)
             , m_integration_number(integration_number)
             , m_data(data)
@@ -73,12 +76,12 @@ namespace icrar
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<std::vector<std::complex<double>>> m_data;
+        std::vector<casacore::Array<double>> m_data;
 
     public:
         CalibrationResult(
             casacore::MVDirection direction,
-            std::vector<std::vector<std::complex<double>>> data)
+            std::vector<casacore::Array<double>> data)
             : m_direction(direction)
             , m_data(data)
         {

@@ -22,7 +22,7 @@
 
 #include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/Integration.h>
-#include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 
@@ -130,5 +130,5 @@ int main(int argc, char** argv)
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();
 
-    PhaseRotate(*metadata, directions, queue);
+    RemoteCalibration(*metadata, directions);
 }

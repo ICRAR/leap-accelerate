@@ -44,9 +44,3 @@ namespace cuda
     void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
 }
 }
-
-// __global__ void h_add(const int* x1, const int* x2, int* y, int n);
-
-// __global__ void h_add(const float* x1, const float* x2, float* y, int n);
-
-// __global__ void h_add(const double* x1, const double* x2, double* y, int n);

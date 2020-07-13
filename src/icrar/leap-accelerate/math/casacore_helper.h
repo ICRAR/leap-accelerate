@@ -35,6 +35,13 @@
 namespace icrar
 {
     template<typename T>
+    casacore::Matrix<T> Transpose(const casacore::Matrix<T> matrix)
+    {
+        auto m = ConvertMatrix(matrix);
+        return ConvertMatrix(m.Transpose());
+    }
+
+    template<typename T>
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
         if(v2.shape() == casacore::IPosition(3,3))

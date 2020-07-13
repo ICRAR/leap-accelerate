@@ -23,7 +23,7 @@
 #include "Calibrate.h"
 
 #include <icrar/leap-accelerate/MetaData.h>
-#include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>

@@ -27,6 +27,10 @@ namespace icrar
 {
 namespace cuda
 {
+    void h_matrix(const int m, const int n, double* mat, double* vec, double* out) { h_matrix(m, n, mat, vec, out); }
+    void h_matrix(const int m, const int n, float* mat, float* vec, float* out) { h_matrix(m, n, mat, vec, out); }
+    void h_matrix(const int m, const int n, int* mat, int* vec, int* out) { h_matrix(m, n, mat, vec, out); }
+    
     void h_matrix(const casacore::Matrix<double>& a, const casacore::Matrix<double>& b, casacore::Matrix<double>& c) { h_multiply(a, b, c); }
     void h_matrix(const casacore::Matrix<float>& a, const casacore::Matrix<float>& b, casacore::Matrix<float>& c) { h_multiply(a, b, c); }
     void h_matrix(const casacore::Matrix<int>& a, const casacore::Matrix<int>& b, casacore::Matrix<int>& c) { h_multiply(a, b, c); }

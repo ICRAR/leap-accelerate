@@ -46,6 +46,9 @@ namespace icrar
     struct MetaData;
     class Integration;
     class IntegrationResult;
+    class CalibrationResult;
+
+    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
      * @brief 
@@ -54,7 +57,12 @@ namespace icrar
      * @param directions 
      * @param input 
      */
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input);
+    void PhaseRotate(
+        MetaData& metadata,
+        const casacore::MVDirection& directions,
+        std::queue<Integration>& input,
+        std::queue<IntegrationResult>& output_integrations,
+        std::queue<CalibrationResult>& output_calibrations);
 
     /**
      * @brief 

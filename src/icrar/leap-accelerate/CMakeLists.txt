@@ -10,8 +10,8 @@ set(public_headers
     band_data.h
     MetaData.h
 
-    algorithm/PhaseRotate.h
-    algorithm/Invert.h
+    algorithm/cpu/PhaseRotate.h
+    algorithm/cpu/Invert.h
 )
 set(private_headers
 
@@ -23,8 +23,8 @@ set(sources
     utils.cc
     MetaData.cc
 
-    algorithm/PhaseRotate.cc
-    algorithm/Invert.cc
+    algorithm/cpu/PhaseRotate.cc
+    algorithm/cpu/Invert.cc
 
     math/eigen_helper.cc
     math/cpu/vector.cc
@@ -47,7 +47,7 @@ set(cuda_headers
     math/cuda/matrix.h
     math/cuda/matrix.cuh
 
-    algorithm/PhaseRotate.cuh
+    algorithm/cuda/PhaseRotate.cuh
 )
 
 set(cuda_sources
@@ -55,6 +55,8 @@ set(cuda_sources
 
     math/cuda/vector.cu
     math/cuda/matrix.cu
+
+    algorithm/cuda/PhaseRotate.cu
 )
 
 # Libraries

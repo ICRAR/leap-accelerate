@@ -43,6 +43,12 @@ namespace icrar
         }
     }
 
+    /**
+     * @brief 
+     * TODO: rename to CalcDD or UpdateDD
+     * @param metadata 
+     * @param direction 
+     */
     void SetDD(MetaData& metadata, const MVDirection& direction)
     {
         metadata.dlm_ra = direction.get()[0] - metadata.phase_centre_ra_rad;
@@ -63,6 +69,7 @@ namespace icrar
 
     /**
      * @brief Set the wavelength from meta data
+     * TODO: rename to CalcWv or UpdateWv
      * 
      * @param metadata 
      */
