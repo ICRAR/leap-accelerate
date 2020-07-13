@@ -29,9 +29,6 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <boost/optional.hpp>
-#include <boost/filesystem.hpp>
-
 #include <istream>
 #include <iostream>
 #include <iterator>
