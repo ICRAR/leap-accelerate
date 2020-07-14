@@ -72,4 +72,4 @@ public:
     }
 };
 
-TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }
+// TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }

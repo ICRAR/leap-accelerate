@@ -31,8 +31,6 @@
 #ifndef COMMON_HELPER_CUDA_H_
 #define COMMON_HELPER_CUDA_H_
 
-#pragma once
-
 #include "helper_string.cuh"
 
 #include <stdint.h>

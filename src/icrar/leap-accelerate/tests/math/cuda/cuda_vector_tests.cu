@@ -75,49 +75,50 @@ public:
     {
         std::vector<T> a = std::vector<T>(n, 6);
         std::vector<T> b = std::vector<T>(n, 10);
-        std::vector<T> c = std::vector<T>(n, 0);
 
-        icrar::cuda::h_add(a, b, c);
+        std::vector<T> out = std::vector<T>(n, 0);
+        icrar::cuda::h_add(a, b, out);
 
         std::vector<T> expected = std::vector<T>(n, 16);
-        ASSERT_EQ(c, expected);
+        ASSERT_EQ(out, expected);
     }
 
     template<typename T>
-    void multi_add(size_t n, const T* a, const T* b, T* c)
+    void test_device_vector(const int n)
     {
-        // total thread count may be greater than required
-        constexpr int threadsPerBlock = 1024;
-        int gridSize = (int)ceil((float)n / threadsPerBlock);
-        size_t byteSize = n * sizeof(T);
+        auto out = std::vector<T>(n, 0);
 
-        T* d_a;
-        T* d_b;
-        T* d_c;
-        cudaMalloc((void**)&d_a, byteSize);
-        cudaMalloc((void**)&d_b, byteSize);
-        cudaMalloc((void**)&d_c, byteSize);
+        auto d_out = icrar::cuda::device_vector<T>(out);
 
-        checkCudaErrors(cudaMemcpy(d_a, a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-        checkCudaErrors(cudaMemcpy(d_b, b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
-        
-        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_b, d_c);
-        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_c, d_b);
-        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_b, d_c);
+        d_out.ToHost(out.data());
+        std::vector<T> expected = std::vector<T>(n, 0);
+        ASSERT_EQ(out, expected);
+    }
 
-        cudaDeviceSynchronize();
+    template<typename T>
+    void test_device_vector_add(const int n)
+    {
+        auto a = std::vector<T>(n, 6);
+        auto b = std::vector<T>(n, 10);
+        auto out = std::vector<T>(n, 0);
 
-        //cudaMemcpytoSymbol()
-        checkCudaErrors(cudaMemcpy(c, d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        auto d_a = icrar::cuda::device_vector<T>(a);
+        auto d_b = icrar::cuda::device_vector<T>(b);
+        auto d_out = icrar::cuda::device_vector<T>(out);
+        icrar::cuda::h_add(d_a, d_b, d_out);
 
-        checkCudaErrors(cudaFree(d_a));
-        checkCudaErrors(cudaFree(d_b));
-        checkCudaErrors(cudaFree(d_c));
+        d_out.ToHost(out.data());
+        std::vector<T> expected = std::vector<T>(n, 16);
+        ASSERT_EQ(out, expected);
     }
 };
 
 TEST_F(cuda_vector_tests, test_gpu_array_add0) { test_array_add<1>(); }
 TEST_F(cuda_vector_tests, test_gpu_array_add3) { test_array_add<1000>(); }
+
 TEST_F(cuda_vector_tests, test_gpu_vector_add0) { test_vector_add<double>(1); }
 TEST_F(cuda_vector_tests, test_gpu_vector_add4) { test_vector_add<double>(10000); }
 TEST_F(cuda_vector_tests, test_gpu_vector_add6) { test_vector_add<double>(1000000); }
+
+TEST_F(cuda_vector_tests, test_device_vector) { test_device_vector<double>(10); }
+TEST_F(cuda_vector_tests, test_device_vector_add) { test_device_vector_add<double>(10); }

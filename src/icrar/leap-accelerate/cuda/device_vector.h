@@ -30,7 +30,7 @@
 #include <vector>
 
 #ifdef DEBUG_CUDA_ERRORS
-void DebugCudaErrors()
+static void DebugCudaErrors()
 {
     //Synchronize to make sure that any currently executing or queued for execution operations
     //that may cause errors are complete before we query the last error.
@@ -41,7 +41,7 @@ void DebugCudaErrors()
     CHECK_CUDA_ERROR_CODE(cudaGetLastError());
 }
 #else
-void DebugCudaErrors() {}
+static void DebugCudaErrors() {}
 #endif
 
 
@@ -108,6 +108,26 @@ namespace cuda
             }
         }
 
+        __host__ __device__ T* Get()
+        {
+            return m_buffer;
+        }
+
+        __host__ __device__ const T* Get() const
+        {
+            return m_buffer;
+        }
+
+        __host__ __device__ size_t GetCount() const
+        {
+            return m_count;
+        }
+
+        __host__ __device__ size_t GetSize() const
+        {
+            return m_count * sizeof(T);
+        }
+
         /**
          * @brief Performs a synchronous copy of data into the device buffer
          * 
@@ -132,6 +152,12 @@ namespace cuda
         {
             size_t bytes = m_count * sizeof(T);
             checkCudaErrors(cudaMemcpy(result, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        }
+
+        __host__ void ToHostASync(T* result) const
+        {
+            size_t bytes = m_count * sizeof(T);
+            checkCudaErrors(cudaMemcpyAsync(result, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
 }

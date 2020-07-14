@@ -41,10 +41,10 @@ public:
 
     void SetUp() override
     {
+        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         ASSERT_EQ(1, deviceCount);
-        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
 
     void TearDown() override

@@ -52,7 +52,7 @@ namespace cuda
         int threadId = blockDim.x * blockIdx.x + threadIdx.x;
         if(threadId < N)
         {
-            c(threadId) = a(threadId) + b(threadId);
+            c(threadId, 0) = a(threadId, 0) + b(threadId, 0);
         }
     }
 
@@ -62,22 +62,23 @@ namespace cuda
         const Eigen::Matrix<T, N, 1>& b,
         Eigen::Matrix<T, N, 1>& c)
     {
-        // total thread count may be greater than required
-        constexpr int threadsPerBlock = 1024;
-        int gridSize = (int)ceil((float)N / threadsPerBlock);
         size_t byteSize = sizeof(a);
 
         Eigen::Matrix<T, N, 1>* d_a;
         Eigen::Matrix<T, N, 1>* d_b;
         Eigen::Matrix<T, N, 1>* d_c;
 
-        cudaMalloc((void**)&d_a, byteSize);
-        cudaMalloc((void**)&d_b, byteSize);
-        cudaMalloc((void**)&d_c, byteSize);
+        checkCudaErrors(cudaMalloc((void**)&d_a, sizeof(a)));
+        checkCudaErrors(cudaMalloc((void**)&d_b, sizeof(b)));
+        checkCudaErrors(cudaMalloc((void**)&d_c, sizeof(c)));
 
         checkCudaErrors(cudaMemcpy((void*)d_a, (void*)&a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
         checkCudaErrors(cudaMemcpy((void*)d_b, (void*)&b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy((void*)d_c, (void*)&c, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
         
+        // total thread count may be greater than required
+        constexpr int threadsPerBlock = 1024;
+        int gridSize = (int)ceil((float)N / threadsPerBlock);
         g_add<T, N><<<gridSize, threadsPerBlock>>>(*d_a, *d_b, *d_c);
 
         checkCudaErrors(cudaDeviceSynchronize());
