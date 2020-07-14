@@ -32,33 +32,62 @@
 #include <vector>
 #include <stdexcept>
 
-/**
-* @brief Performs vector addition of equal length vectors
-*
-* @tparam T vector value type
-* @param n number of elements/vector length
-* @param x1 left vector
-* @param x2 right vector
-* @param y out vector
-*/
-template<typename T>
-__device__ void d_add(
-    const Eigen::Matrix<T, Eigen::Dynamic, 1>* a,
-    const Eigen::Matrix<T, Eigen::Dynamic, 1>* b,
-    Eigen::Matrix<T, Eigen::Dynamic, 1> c)
+namespace icrar
 {
-    int threadId = blockDim.x * blockIdx.x + threadIdx.x;
-    if(threadId < n)
+namespace cuda
+{
+    /**
+    * @brief Performs vector addition of equal length vectors
+    *
+    * @tparam T vector value type
+    * @param n number of elements/vector length
+    * @param x1 left vector
+    * @param x2 right vector
+    * @param y out vector
+    */
+    template<typename T, size_t N>
+    __global__
+    void g_add(const Eigen::Matrix<T, N, 1>& a, const Eigen::Matrix<T, N, 1>& b, Eigen::Matrix<T, N, 1>& c)
     {
-        a(threadId, 1) = x1(threadId, 1) + x2(threadId, 1);
+        int threadId = blockDim.x * blockIdx.x + threadIdx.x;
+        if(threadId < N)
+        {
+            c(threadId) = a(threadId) + b(threadId);
+        }
+    }
+
+    template<typename T, size_t N>
+    __host__ void h_add(
+        const Eigen::Matrix<T, N, 1>& a,
+        const Eigen::Matrix<T, N, 1>& b,
+        Eigen::Matrix<T, N, 1>& c)
+    {
+        // total thread count may be greater than required
+        constexpr int threadsPerBlock = 1024;
+        int gridSize = (int)ceil((float)N / threadsPerBlock);
+        size_t byteSize = sizeof(a);
+
+        Eigen::Matrix<T, N, 1>* d_a;
+        Eigen::Matrix<T, N, 1>* d_b;
+        Eigen::Matrix<T, N, 1>* d_c;
+
+        cudaMalloc((void**)&d_a, byteSize);
+        cudaMalloc((void**)&d_b, byteSize);
+        cudaMalloc((void**)&d_c, byteSize);
+
+        checkCudaErrors(cudaMemcpy((void*)d_a, (void*)&a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy((void*)d_b, (void*)&b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        
+        g_add<T, N><<<gridSize, threadsPerBlock>>>(*d_a, *d_b, *d_c);
+
+        checkCudaErrors(cudaDeviceSynchronize());
+
+        //cudaMemcpytoSymbol()
+        checkCudaErrors(cudaMemcpy((void*)&c, (void*)d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+
+        checkCudaErrors(cudaFree(d_a));
+        checkCudaErrors(cudaFree(d_b));
+        checkCudaErrors(cudaFree(d_c));
     }
 }
-
-template<typename T>
-__global__ void d_add(
-    const Eigen::Matrix<T, Eigen::Dynamic, 1>* a,
-    const Eigen::Matrix<T, Eigen::Dynamic, 1>* b,
-    Eigen::Matrix<T, Eigen::Dynamic, 1> c)
-{
-    d_add(n, x1, x2, y);
 }

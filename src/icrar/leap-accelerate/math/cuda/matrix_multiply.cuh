@@ -40,15 +40,16 @@ namespace cuda
     //////////////////
     // Matrix - Matrix
     template<typename T>
-    __global__ void d_multiply_matrix(const int m, const int n, const T *a, const T* b, T* c)
+    __global__ void g_multiply_matrix(const int m, const int n, const int k, const T *a, const T* b, T* c)
     {
 
     }
 
     template<typename T>
-    __host__ void h_multiply_matrix(const int m, const int n, const T *a, const T* b, T* c)
+    __host__ void h_multiply_matrix(const int m, const int n, const int k, const T *a, const T* b, T* c)
     {
-        d_multiply_matrix<<<1,1>>>(m, n, a, b, c);
+        //TODO: use kernel
+        //d_multiply_matrix<<<1,1>>>(m, n, a, b, c);
     }
 
     template<typename T>
@@ -57,13 +58,19 @@ namespace cuda
         const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& b,
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& c)
     {
-        c = a * b; //TODO: use kernel
+        if(a.cols() != b.rows() || a.rows() != c.rows() || b.cols() != c.cols())
+        {
+            throw std::runtime_error("matrix dimensions invalid");
+        }
+
+        //c = a * b; //TODO use cuda
+        h_multiply_matrix(a.rows(), a.cols(), b.cols(), a.data(), b.data(), c.data());
     }
 
     template<typename T>
     __host__ void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
-        //TODO
+        throw std::runtime_error("not implemented");
     }
 
     template<typename T>
@@ -91,7 +98,7 @@ namespace cuda
      * @return __global__ 
      */
     template<typename T>
-    __device__ void d_multiply_vector(const int m, const int n, const T* mat, const T* in, T* out)
+    __device__ void d_multiply_vector(const size_t m, const size_t n, const T* mat, const T* in, T* out)
     {
         // https://github.com/uysalere/cuda-matrix-vector-multiplication/blob/master/mult_kernels.cu
         __shared__ int blockElt;
@@ -141,9 +148,15 @@ namespace cuda
     }
 
     template<typename T>
-    __global__ void g_multiply_vector(const int m, const int n, const T* mat, const T* vec, T* out)
+    __global__ void g_multiply_vector(const size_t m, const size_t n, const T* mat, const T* vec, T* out)
     {
-        g_multiply_vector(m, n, mat, vec, out);
+        //d_multiply_vector(m, n, mat, vec, out);
+    }
+
+    template<typename T>
+    __host__ void h_multiply_vector(const size_t m, const size_t n, const T* mat, const T* vec, T* out)
+    {
+        //g_multiply_vector(m, n, mat, vec, out);
     }
 
     template<typename T>
@@ -152,17 +165,19 @@ namespace cuda
         const Eigen::Matrix<T, Eigen::Dynamic, 1>& b,
         Eigen::Matrix<T, Eigen::Dynamic, 1>& c)
     {
-        c = a * b; //TODO: use kernel
+        if(a.cols() != b.rows() || b.cols() != c.cols())
+        {
+            throw std::runtime_error("matrix dimensions invalid");
+        }
+
+        //c = a * b;
+        h_multiply_vector(a.rows(), a.cols(), a.data(), b.data(), c.data());
     }
 
     template<typename T>
     __host__ void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
-        Eigen::Matrix<T, Eigen::Dynamic, 1> eb = ConvertVector(b);
-        Eigen::Matrix<T, Eigen::Dynamic, 1> ec = ConvertVector(c);
-        h_multiply(ea, eb, ec);
-        c = ConvertVector(ec);
+        h_multiply_vector(a.shape()[0], a.shape()[1], a.data(), b.data(), c.data());
     }
 
     template<typename T>

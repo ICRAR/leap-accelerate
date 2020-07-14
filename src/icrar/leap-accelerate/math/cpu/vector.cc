@@ -23,6 +23,8 @@
 #include "vector.h"
 #include "vector.hpp"
 
+#include <eigen3/Eigen/Core>
+
 namespace icrar
 {
 namespace cpu
@@ -35,8 +37,12 @@ namespace cpu
     void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { add(a, b, c); }
     void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { add(a, b, c); }
 
+    void add(const Eigen::VectorXd& a, const Eigen::VectorXd& b, Eigen::VectorXd& c) { c = a + b; }
+    void add(const Eigen::VectorXf& a, const Eigen::VectorXf& b, Eigen::VectorXf& c) { c = a + b; }
+    void add(const Eigen::VectorXi& a, const Eigen::VectorXi& b, Eigen::VectorXi& c) { c = a + b; }
+
     void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { add(a, b, c); }
     void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { add(a, b, c); }
-    void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { add(a, b, c); }    
+    void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { add(a, b, c); }
 }
 }

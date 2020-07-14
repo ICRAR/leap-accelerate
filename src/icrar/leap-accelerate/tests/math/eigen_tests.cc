@@ -50,6 +50,22 @@ public:
 
     }
 
+    void test_matrix_size()
+    {
+        Eigen::Matrix<double, 1, 3> m13;
+        ASSERT_EQ(3 * 8, sizeof(m13));
+
+        Eigen::Matrix<double, 3, 1> m31;
+        ASSERT_EQ(3 * 8, sizeof(m31));
+
+        Eigen::Matrix<double, 3, 3> m33;
+        ASSERT_EQ(9 * 8, sizeof(m33));
+
+        //dynamically sized matrix uses a pointer
+        //Eigen::Matrix<double, -1, -1> m33d(3,3);
+        //ASSERT_EQ(9 * 8, sizeof(m33d));
+    }
+
     void test_matrix_eigen()
     {
         Eigen::Matrix<double, 3, 3> matrix;
@@ -70,5 +86,6 @@ public:
     }
 };
 
+TEST_F(eigen_tests, test_matrix_size) { test_matrix_size(); }
 TEST_F(eigen_tests, test_matrix_eigen) { test_matrix_eigen(); }
 TEST_F(eigen_tests, test_matrix_multiply) { test_matrix_multiply(); }

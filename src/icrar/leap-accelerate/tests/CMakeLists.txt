@@ -13,8 +13,9 @@ set(sources
 )
 
 set(cuda_sources
-  math/cuda/vector_tests.cu
-  math/cuda/matrix_tests.cu
+  math/cuda/cuda_vector_tests.cu
+  math/cuda/cuda_matrix_tests.cu
+  math/cuda/cuda_vector_eigen_tests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest

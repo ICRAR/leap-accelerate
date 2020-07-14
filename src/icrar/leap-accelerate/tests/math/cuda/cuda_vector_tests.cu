@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/vector.cuh>
 
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+
 #include <gtest/gtest.h>
 
 #include <stdio.h>
@@ -79,6 +81,38 @@ public:
 
         std::vector<T> expected = std::vector<T>(n, 16);
         ASSERT_EQ(c, expected);
+    }
+
+    template<typename T>
+    void multi_add(size_t n, const T* a, const T* b, T* c)
+    {
+        // total thread count may be greater than required
+        constexpr int threadsPerBlock = 1024;
+        int gridSize = (int)ceil((float)n / threadsPerBlock);
+        size_t byteSize = n * sizeof(T);
+
+        T* d_a;
+        T* d_b;
+        T* d_c;
+        cudaMalloc((void**)&d_a, byteSize);
+        cudaMalloc((void**)&d_b, byteSize);
+        cudaMalloc((void**)&d_c, byteSize);
+
+        checkCudaErrors(cudaMemcpy(d_a, a, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        checkCudaErrors(cudaMemcpy(d_b, b, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+        
+        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_b, d_c);
+        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_c, d_b);
+        g_add<<<gridSize, threadsPerBlock>>>(n, d_a, d_b, d_c);
+
+        cudaDeviceSynchronize();
+
+        //cudaMemcpytoSymbol()
+        checkCudaErrors(cudaMemcpy(c, d_c, byteSize, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+
+        checkCudaErrors(cudaFree(d_a));
+        checkCudaErrors(cudaFree(d_b));
+        checkCudaErrors(cudaFree(d_c));
     }
 };
 

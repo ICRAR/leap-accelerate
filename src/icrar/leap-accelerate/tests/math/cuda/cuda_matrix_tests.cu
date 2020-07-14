@@ -31,10 +31,10 @@
 #include <stdio.h>
 #include <array>
 
-class matrix_tests : public testing::Test
+class cuda_matrix_tests : public testing::Test
 {
 public:
-    matrix_tests()
+    cuda_matrix_tests()
     {
 
     }
@@ -116,7 +116,7 @@ public:
     }
 };
 
-TEST_F(matrix_tests, test_matrix_add) { test_matrix_add<double>(); }
-TEST_F(matrix_tests, test_matrix_matrix_multiply) { test_matrix_matrix_multiply<double>(); }
-TEST_F(matrix_tests, test_matrix_vector_multiply) { test_matrix_vector_multiply<double>(); }
-TEST_F(matrix_tests, test_scalear_matrix_multiply) { test_scalear_matrix_multiply<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_add) { test_matrix_add<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply) { test_matrix_matrix_multiply<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_vector_multiply) { test_matrix_vector_multiply<double>(); }
+TEST_F(cuda_matrix_tests, test_scalear_matrix_multiply) { test_scalear_matrix_multiply<double>(); }
