@@ -31,6 +31,10 @@ namespace cuda
     void add(size_t n, const float* a, const float* b, float* c) { h_addp(n, a, b, c); }
     void add(size_t n, const int* a, const int* b, int* c) { h_addp(n, a, b, c); }
 
+    void add(const device_vector<double>& a, const device_vector<double>& b, device_vector<double>& c) { h_add(a, b, c); }
+    void add(const device_vector<float>& a, const device_vector<float>& b, device_vector<float>& c) { h_add(a, b, c); }
+    void add(const device_vector<int>& a, const device_vector<int>& b, device_vector<int>& c) { h_add(a, b, c); }
+
     void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c) { h_add(a, b, c); }
     void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { h_add(a, b, c); }
     void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { h_add(a, b, c); }

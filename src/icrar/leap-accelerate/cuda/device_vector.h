@@ -148,16 +148,21 @@ namespace cuda
             DebugCudaErrors();
         }
 
-        __host__ void ToHost(T* result) const
+        __host__ void ToHost(T* out) const
         {
             size_t bytes = m_count * sizeof(T);
-            checkCudaErrors(cudaMemcpy(result, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpy(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
 
-        __host__ void ToHostASync(T* result) const
+        __host__ void ToHost(std::vector<T>& out) const
+        {
+            ToHost(out.data());
+        } 
+
+        __host__ void ToHostASync(T* out) const
         {
             size_t bytes = m_count * sizeof(T);
-            checkCudaErrors(cudaMemcpyAsync(result, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+            checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
 }

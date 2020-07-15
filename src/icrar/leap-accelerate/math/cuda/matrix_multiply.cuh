@@ -31,6 +31,7 @@ namespace
 {
     const unsigned int BLOCK_HEIGHT = 1024;
     const unsigned int BLOCK_WIDTH = 64;
+    const unsigned int BLOCK_SIZE = 16;
 }
 
 namespace icrar
@@ -39,17 +40,44 @@ namespace cuda
 {
     //////////////////
     // Matrix - Matrix
+    
+    /**
+     * @brief 
+     * 
+     * @tparam T 
+     * @param m 
+     * @param n 
+     * @param k 
+     * @param a GPU device pointer to a m X n matrix (A)
+     * @param b GPU device pointer to a n X k matrix (B)
+     * @param c GPU device output purpose pointer to a m X k matrix (C)
+     * @return __global__ 
+     */
     template<typename T>
     __global__ void g_multiply_matrix(const int m, const int n, const int k, const T *a, const T* b, T* c)
     {
+        int row = blockIdx.y * blockDim.y + threadIdx.y;
+        int col = blockIdx.y * blockDim.y + threadIdx.y;
 
+        int sum = 0;
+        if (col < k && row < m)
+        {
+            for(int i = 0; i < n; i++) 
+            {
+                sum += a[row * n + i] * b[i * k + col];
+            }
+            c[row * k + col] = sum;
+        }
     }
 
     template<typename T>
     __host__ void h_multiply_matrix(const int m, const int n, const int k, const T *a, const T* b, T* c)
     {
-        //TODO: use kernel
-        //d_multiply_matrix<<<1,1>>>(m, n, a, b, c);
+        unsigned int grid_rows = (m + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        unsigned int grid_cols = (k + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        auto dimGrid = dim3(grid_cols, grid_rows);
+        auto dimBlock = dim3(BLOCK_SIZE, BLOCK_SIZE);
+        g_multiply_matrix<<<dimGrid, dimBlock>>>(m, n, k, a, b, c);
     }
 
     template<typename T>
@@ -63,8 +91,8 @@ namespace cuda
             throw std::runtime_error("matrix dimensions invalid");
         }
 
-        //c = a * b; //TODO use cuda
-        h_multiply_matrix(a.rows(), a.cols(), b.cols(), a.data(), b.data(), c.data());
+        c = a * b; //TODO use CUBlas
+        //h_multiply_matrix(a.rows(), a.cols(), b.cols(), a.data(), b.data(), c.data());
     }
 
     template<typename T>
@@ -156,7 +184,7 @@ namespace cuda
     template<typename T>
     __host__ void h_multiply_vector(const size_t m, const size_t n, const T* mat, const T* vec, T* out)
     {
-        //g_multiply_vector(m, n, mat, vec, out);
+        g_multiply_vector(m, n, mat, vec, out);
     }
 
     template<typename T>
@@ -170,8 +198,8 @@ namespace cuda
             throw std::runtime_error("matrix dimensions invalid");
         }
 
-        //c = a * b;
-        h_multiply_vector(a.rows(), a.cols(), a.data(), b.data(), c.data());
+        c = a * b; //TODO: Use CuBLAS
+        //h_multiply_vector(a.rows(), a.cols(), a.data(), b.data(), c.data());
     }
 
     template<typename T>

@@ -84,8 +84,9 @@ public:
     }
 
     template<typename T>
-    void test_device_vector(const int n)
+    void test_device_vector()
     {
+        const int n = 10;
         auto out = std::vector<T>(n, 0);
 
         auto d_out = icrar::cuda::device_vector<T>(out);
@@ -100,15 +101,19 @@ public:
     {
         auto a = std::vector<T>(n, 6);
         auto b = std::vector<T>(n, 10);
+        auto c = std::vector<T>(n, 7);
         auto out = std::vector<T>(n, 0);
 
         auto d_a = icrar::cuda::device_vector<T>(a);
         auto d_b = icrar::cuda::device_vector<T>(b);
+        auto d_c = icrar::cuda::device_vector<T>(c);
         auto d_out = icrar::cuda::device_vector<T>(out);
+
         icrar::cuda::h_add(d_a, d_b, d_out);
+        icrar::cuda::h_add(d_c, d_out, d_out);
 
         d_out.ToHost(out.data());
-        std::vector<T> expected = std::vector<T>(n, 16);
+        std::vector<T> expected = std::vector<T>(n, 23);
         ASSERT_EQ(out, expected);
     }
 };
@@ -120,5 +125,6 @@ TEST_F(cuda_vector_tests, test_gpu_vector_add0) { test_vector_add<double>(1); }
 TEST_F(cuda_vector_tests, test_gpu_vector_add4) { test_vector_add<double>(10000); }
 TEST_F(cuda_vector_tests, test_gpu_vector_add6) { test_vector_add<double>(1000000); }
 
-TEST_F(cuda_vector_tests, test_device_vector) { test_device_vector<double>(10); }
-TEST_F(cuda_vector_tests, test_device_vector_add) { test_device_vector_add<double>(10); }
+TEST_F(cuda_vector_tests, test_device_vector) { test_device_vector<double>(); }
+TEST_F(cuda_vector_tests, test_device_vector_add0) { test_device_vector_add<double>(1); }
+TEST_F(cuda_vector_tests, test_device_vector_add4) { test_device_vector_add<double>(10000); }

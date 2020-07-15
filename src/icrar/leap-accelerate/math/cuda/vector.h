@@ -20,8 +20,8 @@
 *    MA 02111-1307  USA
 */
 
+#include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <casacore/casa/Arrays/Array.h>
-
 #include <eigen3/Eigen/Core>
 
 #include <vector>
@@ -36,6 +36,10 @@ namespace cuda
     void add(size_t n, const double* a, const double* b, double* c);
     void add(size_t n, const float* a, const float* b, float* c);
     void add(size_t n, const int* a, const int* b, int* c);
+
+    void add(const device_vector<double>& a, const device_vector<double>& b, device_vector<double>& c);
+    void add(const device_vector<float>& a, const device_vector<float>& b, device_vector<float>& c);
+    void add(const device_vector<int>& a, const device_vector<int>& b, device_vector<int>& c);
 
     void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c);
     void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c);

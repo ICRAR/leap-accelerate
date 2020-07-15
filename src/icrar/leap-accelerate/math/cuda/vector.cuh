@@ -65,9 +65,14 @@ namespace cuda
     }
 
     template<typename T>
-    __global__ void g_add(const device_vector<T>& x1, const device_vector<T>& x2, device_vector<T>& out)
+    __host__ void h_add(const device_vector<T>& x1, const device_vector<T>& x2, device_vector<T>& out)
     {
-        d_add(x1.GetCount(), x1.Get(), x2.Get(), out.Get());
+        constexpr int threadsPerBlock = 1024;
+        size_t n = x1.GetCount();
+        size_t byteSize = x1.GetSize();
+
+        int gridSize = (int)ceil((float)n / threadsPerBlock);
+        g_add<<<gridSize, threadsPerBlock>>>(x1.GetCount(), x1.Get(), x2.Get(), out.Get());
     }
 
     template<typename T>
@@ -98,19 +103,6 @@ namespace cuda
         checkCudaErrors(cudaFree(d_a));
         checkCudaErrors(cudaFree(d_b));
         checkCudaErrors(cudaFree(d_c));
-    }
-
-    template<typename T>
-    __host__ void h_add(const device_vector<T>& x1, const device_vector<T>& x2, device_vector<T>& out)
-    {
-        constexpr int threadsPerBlock = 1024;
-        size_t n = x1.GetCount();
-        size_t byteSize = x1.GetSize();
-
-        int gridSize = (int)ceil((float)n / threadsPerBlock);
-        
-        //TODO: use better kernel signature?
-        g_add<<<gridSize, threadsPerBlock>>>(x1.GetCount(), x1.Get(), x2.Get(), out.Get());
     }
 
     template<typename T, std::int32_t N>
