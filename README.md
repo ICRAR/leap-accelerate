@@ -84,6 +84,7 @@ or
 
 ## Profiling
 
+* nvprof
 * gprof
 * google-perftools
 
