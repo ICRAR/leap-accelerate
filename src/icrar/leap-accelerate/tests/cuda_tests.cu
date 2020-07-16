@@ -20,7 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
-#include <cuda_runtime.h>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/math/vector.cuh>
@@ -29,6 +30,7 @@
 
 #include <stdio.h>
 #include <array>
+#include <vector>
 
 class cuda_tests : public testing::Test
 {
@@ -40,10 +42,10 @@ public:
 
     void SetUp() override
     {
+        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
         int deviceCount = 0;
         checkCudaErrors(cudaGetDeviceCount(&deviceCount));
         ASSERT_EQ(1, deviceCount);
-        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
     }
 
     void TearDown() override

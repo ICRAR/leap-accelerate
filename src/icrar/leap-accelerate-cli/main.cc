@@ -22,17 +22,17 @@
 
 #include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/Integration.h>
-
 #include <icrar/leap-accelerate/algorithm/PhaseRotate.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 
 #include <CLI/CLI.hpp>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 
 #include <iostream>
 #include <queue>
 #include <string>
-#include <optional>
 #include <exception>
 
 using namespace icrar;
@@ -47,13 +47,13 @@ enum class InputSource
 struct Arguments
 {
     InputSource source = InputSource::STREAM;
-    std::optional<std::string> fileName;
+    boost::optional<std::string> fileName;
 };
 
 class ArgumentsValidated
 {
     InputSource source;
-    std::optional<std::string> fileName;
+    boost::optional<std::string> fileName;
 
     /**
      * Resources
@@ -76,7 +76,7 @@ public:
             inputStream = &std::cin;
             break;
         case InputSource::FILENAME:
-            if (fileName.has_value())
+            if (fileName.is_initialized())
             {
                 fileStream = std::ifstream(args.fileName.value());
                 inputStream = &fileStream;
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
 {
     CLI::App app { "LEAP-Accelerate" };
     
-    std::optional<std::string> ss;
+    boost::optional<std::string> ss;
 
     //Parse Arguments
     Arguments rawArgs;

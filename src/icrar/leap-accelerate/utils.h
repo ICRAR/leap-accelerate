@@ -33,16 +33,9 @@
 #include <iostream>
 #include <iterator>
 #include <string>
-#include <optional>
 #include <exception>
 #include <memory>
 #include <vector>
-
-#if (__cplusplus >= 202000L)
-#include <filesystem>
-#else
-//#include <boost/filesystem.hpp>
-#endif
 
 namespace icrar
 {

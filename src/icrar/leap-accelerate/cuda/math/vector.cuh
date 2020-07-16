@@ -91,13 +91,13 @@ __host__ void h_add(const std::array<T, N>& a, const std::array<T, N>& b, std::a
     h_add(a.data(), b.data(), c.data(), a.size());
 }
 
-// template<typename T, std::int32_t N>
-// __host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
-// {
-//     std::array<T, N> result;
-//     h_add(a.data(), b.data(), result.data(), a.size());
-//     return result;
-// }
+template<typename T, std::int32_t N>
+__host__ std::array<T, N> h_add(const std::array<T, N>& a, const std::array<T, N>& b)
+{
+    std::array<T, N> result;
+    h_add(a.data(), b.data(), result.data(), a.size());
+    return result;
+}
 
 template<typename T>
 __host__ void h_add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)

@@ -33,7 +33,7 @@ set(sources
     algorithm/PhaseRotate.cc
     algorithm/Invert.cc
 
-    # TODO: dgesvd_ not avaiable on travisCI
+    # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
     #wsclean/chgcentre.cc
     #wsclean/multibanddata.cpp
     #wsclean/progressbar.cpp
@@ -98,7 +98,7 @@ endif()
 if(USE_BOOST)
     target_link_libraries(${TARGET_NAME} Boost)
 endif()
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
