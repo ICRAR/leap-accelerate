@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -29,28 +31,9 @@
 #include <complex>
 #include <queue>
 
-namespace casacore
-{
-    template<typename T>
-    class Matrix;
-}
-
 namespace icrar
 {
-    /**
-     * @brief Invert as a function
-     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
-     * 
-     * This function generates and returns the inverse of the linear matrix to solve for the phase calibration (only)
-     * given a MS. 
-     * The MS is used to fill the columns of the matrix, based on the baselines in the MS (and RefAnt if given)
-     * 
-     * The output will be the inverse matrix to cross with the observation vector.
-     * 
-     * @param A 
-     * @param useGraphics 
-     */
-    void InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
+    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
     {
         throw std::runtime_error("not implemented");
         // try:
@@ -67,5 +50,6 @@ namespace icrar
         // except:
         //     print('Failed to generate inverted matrix')
         // return Ad
+        return casacore::Matrix<double>();
     }
 }

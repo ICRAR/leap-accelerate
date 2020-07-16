@@ -22,24 +22,33 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/MetaData.h>
-
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
-#include <casacore/measures/Measures/MDirection.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <istream>
 #include <iostream>
-#include <iterator>
 #include <string>
-#include <exception>
 #include <memory>
 #include <vector>
+#include <complex>
+#include <queue>
+
+namespace casacore
+{
+    template<typename T>
+    class Matrix;
+}
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
-
-    //std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+    /**
+     * @brief Invert as a function
+     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
+     * 
+     * This function generates and returns the inverse of the linear matrix to solve for the phase calibration (only)
+     * given a MS. 
+     * The MS is used to fill the columns of the matrix, based on the baselines in the MS (and RefAnt if given)
+     * 
+     * The output will be the inverse matrix to cross with the observation vector.
+     * 
+     * @param A 
+     * @param useGraphics 
+     */
+    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1);
 }

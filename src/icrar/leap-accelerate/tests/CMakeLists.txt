@@ -3,13 +3,14 @@ set(TEST_TARGET LeapAccelerate.Tests)
 
 set(sources
   main.cc
-  PhaseRotateTests.cc
   
   math/casacore_eigen_tests.cc
   math/eigen_tests.cc
-
+  
   math/vector_tests.cc
   math/matrix_tests.cc
+  
+  algorithm/PhaseRotateTests.cc
 )
 
 set(cuda_sources

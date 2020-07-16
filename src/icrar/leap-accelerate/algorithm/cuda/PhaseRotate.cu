@@ -21,11 +21,11 @@
  * MA 02111 - 1307  USA
  */
 
-#include "PhaseRotate.cuh"
+#include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
 
-#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>

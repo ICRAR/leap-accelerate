@@ -10,8 +10,9 @@ set(public_headers
     band_data.h
     MetaData.h
 
+    math/cpu/Invert.h
+    
     algorithm/cpu/PhaseRotate.h
-    algorithm/cpu/Invert.h
 )
 set(private_headers
 
@@ -23,13 +24,13 @@ set(sources
     utils.cc
     MetaData.cc
 
-    algorithm/cpu/PhaseRotate.cc
-    algorithm/cpu/Invert.cc
-
     math/eigen_helper.cc
+
+    math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc
-
+    
+    algorithm/cpu/PhaseRotate.cc
 
     # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
     #wsclean/chgcentre.cc
@@ -49,7 +50,7 @@ set(cuda_headers
     math/cuda/matrix_multiply.cuh
     math/cuda/matrix_transpose.cuh
 
-    algorithm/cuda/PhaseRotate.cuh
+    algorithm/cuda/PhaseRotate.h
 )
 
 set(cuda_sources

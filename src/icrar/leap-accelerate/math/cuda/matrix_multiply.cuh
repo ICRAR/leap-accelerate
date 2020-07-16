@@ -98,7 +98,12 @@ namespace cuda
     template<typename T>
     __host__ void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
-        throw std::runtime_error("not implemented");
+        if(a.shape()[1] != b.shape()[0] || a.shape()[0] != c.shape()[0] || b.shape()[1] != c.shape()[1])
+        {
+            throw std::runtime_error("matrix dimensions invalid");
+        }
+
+        m_multiply_matrix(a.shape()[0], a.shape()[1], b.shape()[1], a.data(), b.data(), c.data());
     }
 
     template<typename T>

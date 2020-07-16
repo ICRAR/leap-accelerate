@@ -60,6 +60,8 @@ using namespace casacore;
 
 namespace icrar
 {
+namespace cpu
+{
     void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions)
     {
         auto input_queues = std::vector<std::queue<Integration>>(directions.size());
@@ -68,7 +70,7 @@ namespace icrar
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
     }
 
@@ -88,7 +90,7 @@ namespace icrar
 
             if(integration.is_initialized())
             {
-                RotateVisibilities(integration.get(), metadata, direction);
+                icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
@@ -214,4 +216,5 @@ namespace icrar
 
         return std::make_pair(A, I);
     }
+}
 }

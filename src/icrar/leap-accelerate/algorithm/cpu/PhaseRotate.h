@@ -47,7 +47,12 @@ namespace icrar
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
+}
 
+namespace icrar
+{
+namespace cpu
+{
     void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
@@ -91,4 +96,5 @@ namespace icrar
         const casacore::Array<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
+}
 }

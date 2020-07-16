@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/math/cpu/Invert.h>
+
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -38,6 +41,10 @@ namespace icrar
 {
     struct MetaData
     {
+        MetaData();
+        MetaData(std::istream& input);
+        MetaData(const casacore::MeasurementSet& ms);
+
         bool init;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -50,6 +57,9 @@ namespace icrar
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
+
+        int solution_interval;
+
         std::vector<double> channel_wavelength;
 
         casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
@@ -77,6 +87,7 @@ namespace icrar
 
         casacore::Matrix<double> A;
         casacore::Matrix<double> Ad;
+        casacore::Matrix<double> A1;
         casacore::Matrix<double> Ad1;
 
         casacore::Array<int> I1;

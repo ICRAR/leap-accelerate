@@ -42,9 +42,4 @@ namespace icrar
 
         return std::make_unique<MeasurementSet>(results);
     }
-
-    std::unique_ptr<MetaData> ParseMetaData(const MeasurementSet& ms)
-    {
-        return std::make_unique<MetaData>(); //TODO
-    }
 }
