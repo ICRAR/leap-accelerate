@@ -65,13 +65,24 @@ namespace icrar
             int refAnt = 0;
             bool map = true;
 
-            if(useCuda)
+            try
             {
-                icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
+                if(useCuda)
+                {
+                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
+                else
+                {
+                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
             }
-            else
+            catch(std::invalid_argument& e)
             {
-                icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
+                
+            }
+            catch(...)
+            {
+                FAIL() << "Excpected std::invalid_argument";
             }
         }
     };

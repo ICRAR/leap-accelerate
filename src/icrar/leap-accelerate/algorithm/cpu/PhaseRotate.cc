@@ -171,11 +171,16 @@ namespace cpu
         const Array<std::int32_t>& a2,
         int refAnt, bool map)
     {
-        int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;
+        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
+        unique.insert(a2.cbegin(), a2.cend());
+        int nAnt = unique.size();
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
         }
+
+        //std::cerr << a1.shape() << std::endl;
+        //throw std::runtime_error("stopping");
 
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1));
         for(auto v : A)

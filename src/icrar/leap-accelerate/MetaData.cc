@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
 using namespace casacore;
@@ -38,28 +40,73 @@ namespace icrar
 
     MetaData::MetaData(const casacore::MeasurementSet& ms)
     {
+        //See https://github.com/OxfordSKA/OSKAR/blob/master/oskar/ms/src/oskar_ms_open.cpp
+        auto msc = casacore::MSColumns(ms);
+        auto msmc = casacore::MSMainColumns(ms);
+
         this->init = true;
-        this->channels = 0; //TODO ms.channels;
-        this->num_pols = 0;
         this->stations = 0;
-        this->rows = 0;
+        this->solution_interval = 3601;
+
+        this->rows = ms.polarization().nrow();
+        this->num_pols = 0;
+        if(ms.polarization().nrow() > 0)
+        {
+            this->num_pols = msc.polarization().numCorr().get(0);
+        }
+
+        this->channels = 0;
         this->freq_start_hz = 0;
         this->freq_inc_hz = 0;
-        this->solution_interval = 3601;
+        if(ms.spectralWindow().nrow() > 0)
+        {
+            this->channels = msc.spectralWindow().numChan().get(0);
+            this->freq_start_hz = msc.spectralWindow().refFrequency().get(0);
+            this->freq_inc_hz = msc.spectralWindow().chanWidth().get(0)(IPosition(1,0));
+        }
+        this->stations = ms.antenna().nrow();
+        if(ms.nrow() > 0)
+        {
+            auto time_inc_sec = msc.interval().get(0);
+        }
+
         this->phase_centre_ra_rad = 0;
         this->phase_centre_dec_rad = 0;
+        if(ms.field().nrow() > 0)
+        {
+            Vector<MDirection> dir;
+            msc.field().phaseDirMeasCol().get(0, dir, true);
+            if(dir.size() > 0)
+            {
+                Vector<double> v = dir(0).getAngle().getValue();
+                this->phase_centre_ra_rad = v(0);
+                this->phase_centre_dec_rad = v(1);
+            }
+        }
 
-        casacore::Matrix<std::int32_t> a1;
-        casacore::Matrix<std::int32_t> a2;
+        Vector<double> range(2, 0.0);
+        if(msc.observation().nrow() > 0)
+        {
+            msc.observation().timeRange().get(0, range);
+        }
+        //start_time = range[0];
+        //end_time = range[1];
+
+
+        casacore::Vector<double> time = msmc.time().getColumn();
+        //msmc.time();
+        casacore::Vector<std::int32_t> a1 = msmc.antenna1().getColumn();
+        casacore::Vector<std::int32_t> a2 = msmc.antenna2().getColumn();
+
 
         casacore::Matrix<double> A;
         casacore::Array<std::int32_t> I;
         casacore::Matrix<double> A1;
         casacore::Array<std::int32_t> I1;
-        std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
-        std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad = InvertFunction(A, -1);
-        casacore::Matrix<double> Ad1 = InvertFunction(A1, 0);
+        // std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
+        // std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
+        // casacore::Matrix<double> Ad = InvertFunction(A, -1);
+        // casacore::Matrix<double> Ad1 = InvertFunction(A1, 0);
 
         this->A = A;
         this->Ad = Ad;

@@ -6,9 +6,10 @@ set(sources
   
   math/casacore_eigen_tests.cc
   math/eigen_tests.cc
-  
   math/vector_tests.cc
   math/matrix_tests.cc
+  
+  model/MetaDataTests.cc
   
   algorithm/PhaseRotateTests.cc
 )
@@ -24,7 +25,9 @@ if(CUDA_VERSION_MAJOR GREATER 9)
   list(APPEND sources ${cuda_sources})
 endif()
 
-add_executable(${TEST_TARGET}    
+#configure_file("test_data")
+
+add_executable(${TEST_TARGET}
   ${sources}
 )
 

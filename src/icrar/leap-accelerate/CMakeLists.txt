@@ -11,6 +11,7 @@ set(public_headers
     MetaData.h
 
     math/cpu/Invert.h
+    math/cpu/svd.h
     
     algorithm/cpu/PhaseRotate.h
 )
@@ -101,9 +102,10 @@ if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(USE_BOOST)
-    target_link_libraries(${TARGET_NAME} Boost)
+    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
-target_link_libraries(${TARGET_NAME})
+target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME} GSL::gsl)
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

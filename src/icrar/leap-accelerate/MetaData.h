@@ -37,6 +37,11 @@
 #include <vector>
 #include <complex>
 
+namespace casacore
+{
+    class MeasurementSet;
+}
+
 namespace icrar
 {
     struct MetaData
@@ -46,7 +51,6 @@ namespace icrar
         MetaData(const casacore::MeasurementSet& ms);
 
         bool init;
-        std::vector<casacore::MVuvw> oldUVW;
 
         int nantennas;
         int nbaseline;
@@ -61,6 +65,7 @@ namespace icrar
         int solution_interval;
 
         std::vector<double> channel_wavelength;
+        std::vector<casacore::MVuvw> oldUVW;
 
         casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
         casacore::Matrix<double> dd;
@@ -126,7 +131,7 @@ namespace icrar
     void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
     
     /**
-     * @brief Set the Wv object
+     * @brief 
      * 
      * @param metadata 
      */

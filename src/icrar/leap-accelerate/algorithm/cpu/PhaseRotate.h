@@ -53,6 +53,12 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief 
+     * 
+     * @param metadata 
+     * @param directions 
+     */
     void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
@@ -87,7 +93,7 @@ namespace cpu
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 
      * @param a2 
-     * @param refAnt 
+     * @param refAnt the reference antenna (0, 1), -1 
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */

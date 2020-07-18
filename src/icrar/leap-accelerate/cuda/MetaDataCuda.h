@@ -38,13 +38,12 @@
 
 namespace icrar
 {
-    struct MetaData
+    struct MetaDataCuda
     {
         bool init;
-        std::vector<casacore::MVuvw> oldUVW;
 
-        int nantennas;
-        int nbaseline;
+        //int nantennas;
+        //int nbaseline;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -53,9 +52,6 @@ namespace icrar
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
         std::vector<double> channel_wavelength;
-
-        Eigen::Matrix<std::complex<double>, -1, -1> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        Eigen::Matrix<double, -1, -1> dd;
 
         union
         {
@@ -77,16 +73,22 @@ namespace icrar
             };
         };
 
+        
+    };
+
+    struct Buffers
+    {
+        std::vector<casacore::MVuvw> oldUVW;
+
+        Eigen::Matrix<std::complex<double>, -1, -1> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        Eigen::Matrix<double, -1, -1> dd;
+
+
         Eigen::Matrix<double, -1, -1> A;
         Eigen::Matrix<double, -1, -1> Ad;
         Eigen::Matrix<double, -1, -1> Ad1;
 
         Eigen::VectorXf I1;
         Eigen::VectorXf I;
-
-        // void SetDlmRa(double value) { dlm_ra; }
-        // double GetDlmRa();
-        // void SetDlmdDec(double value);
-        // double GetDlmdDec();
     };
 }
