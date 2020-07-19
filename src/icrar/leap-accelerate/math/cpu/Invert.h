@@ -37,6 +37,8 @@ namespace casacore
 
 namespace icrar
 {
+namespace cpu
+{
     /**
      * @brief Invert as a function
      * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
@@ -47,8 +49,9 @@ namespace icrar
      * 
      * The output will be the inverse matrix to cross with the observation vector.
      * 
-     * @param A 
-     * @param useGraphics 
+     * @param A
+     * @param refAnt
      */
     casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1);
+}
 }

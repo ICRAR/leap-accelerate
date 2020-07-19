@@ -36,6 +36,7 @@ namespace icrar
 {
     class Integration;
     class IntegrationResult;
+    class CalibrationResult;
     class MetaData;
 }
 
@@ -43,7 +44,12 @@ namespace icrar
 {
 namespace cuda
 { 
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input);
+    std::queue<IntegrationResult> PhaseRotate(
+        MetaData& metadata,
+        const casacore::MVDirection& directions,
+        std::queue<Integration>& input,
+        std::queue<IntegrationResult>& output_integrations,
+        std::queue<CalibrationResult>& output_calibrations);
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 

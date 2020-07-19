@@ -179,9 +179,6 @@ namespace cpu
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        //std::cerr << a1.shape() << std::endl;
-        //throw std::runtime_error("stopping");
-
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1));
         for(auto v : A)
         {

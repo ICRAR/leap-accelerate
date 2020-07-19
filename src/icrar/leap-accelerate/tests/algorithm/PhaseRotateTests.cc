@@ -35,7 +35,7 @@ namespace icrar
 
         void TearDown() override
         {
-
+            
         }
 
         void PhaseRotateTest(bool useCuda)
@@ -47,7 +47,14 @@ namespace icrar
             std::queue<IntegrationResult> output_integrations;
             std::queue<CalibrationResult> output_calibrations;
 
-            //icrar::cpu::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations); //TODO: exception
+            if(useCuda)
+            {
+                icrar::cuda::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations); //TODO: exception
+            }
+            else
+            {
+                icrar::cpu::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations); //TODO: exception
+            }
         }
 
         void RotateVisibilitiesTest(bool useCuda)
@@ -55,12 +62,20 @@ namespace icrar
             Integration integration;
             MetaData metadata;
             casacore::MVDirection direction;
-            //icrar::cpu::RotateVisibilities(integration, metadata, direction); //TODO: segfault
+
+            if(useCuda)
+            {
+                icrar::cuda::RotateVisibilities(integration, metadata, direction);
+            }
+            else
+            {
+                icrar::cpu::RotateVisibilities(integration, metadata, direction); //TODO: segfault
+            }
         }
 
         void PhaseMatrixFunctionTest(bool useCuda)
         {
-            const casacore::Array<int32_t> a1;
+            const casacore::Array<int32_t> a1; //TODO: populate
             const casacore::Array<int32_t> a2;
             int refAnt = 0;
             bool map = true;

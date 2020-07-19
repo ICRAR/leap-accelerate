@@ -33,6 +33,8 @@
 
 namespace icrar
 {
+namespace cpu
+{
     casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
     {
         throw std::runtime_error("not implemented");
@@ -52,4 +54,5 @@ namespace icrar
         // return Ad
         return casacore::Matrix<double>();
     }
+}
 }
