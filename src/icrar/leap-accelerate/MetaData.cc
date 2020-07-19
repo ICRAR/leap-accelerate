@@ -95,8 +95,9 @@ namespace icrar
 
         casacore::Vector<double> time = msmc.time().getColumn();
         //msmc.time();
-        casacore::Vector<std::int32_t> a1 = msmc.antenna1().getColumn();
-        casacore::Vector<std::int32_t> a2 = msmc.antenna2().getColumn();
+
+        casacore::Vector<std::int32_t> a1 = msmc.antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
+        casacore::Vector<std::int32_t> a2 = msmc.antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
 
         //Start calculations
 

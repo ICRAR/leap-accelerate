@@ -102,10 +102,10 @@ namespace icrar
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(false); }
-    TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(true); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
+    // TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(false); }
+    // TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(true); }
+    // TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
+    // TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionTestCpu) { PhaseMatrixFunctionTest(false); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionTestCuda) { PhaseMatrixFunctionTest(true); }
 }

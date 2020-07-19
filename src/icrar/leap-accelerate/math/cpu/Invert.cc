@@ -20,9 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <icrar/leap-accelerate/math/eigen_helper.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
+
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/LU>
 
 #include <iostream>
 #include <string>
@@ -37,7 +40,10 @@ namespace cpu
 {
     casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
     {
-        throw std::runtime_error("not implemented");
+        auto Ae = ConvertMatrix(A);
+        Ae.inverse();
+        return ConvertMatrix(Ae);
+
         // try:
         //     print('Inverting Cal Matrix')
         //     print("IF A:", type(A), A.shape, A.dtype)

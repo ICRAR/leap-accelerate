@@ -105,7 +105,7 @@ namespace cpu
                 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(n)) * cal1;
+                    dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(1, n)) * cal1;
                 }
                 cal.push_back(icrar::cpu::multiply(metadata.Ad, dInt) + cal1);
                 break;
@@ -160,17 +160,23 @@ namespace cpu
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
-                    metadata.avg_data(casacore::IPosition(baseline)) += data[channel][baseline];
+                    metadata.avg_data(casacore::IPosition(1, baseline)) += data[channel][baseline];
                 }
             }
         }
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
-        const Array<std::int32_t>& a1,
-        const Array<std::int32_t>& a2,
-        int refAnt, bool map)
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const Vector<std::int32_t>& a1,
+        const Vector<std::int32_t>& a2,
+        int refAnt,
+        bool map)
     {
+        if(a1.size() != a2.size())
+        {
+            throw std::invalid_argument("a1 and a2 must be equal size");
+        }
+
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
@@ -185,7 +191,7 @@ namespace cpu
             v = 0;
         }
 
-        Matrix<int> I = Matrix<int>(a1.size() + 1, a1.size() + 1);
+        Vector<int> I = Vector<int>(a1.size() + 1);
         for(auto v : I)
         {
             v = 1;
@@ -195,13 +201,13 @@ namespace cpu
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(IPosition(n)) != a2(IPosition(n)))
+            if(a1(IPosition(1, n)) != a2(IPosition(1, n)))
             {
-                if((refAnt < 0) | ((refAnt >= 0) & ((a1(IPosition(n))==refAnt) | (a2(IPosition(n)) == refAnt))))
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n))==refAnt) || (a2(IPosition(1, n)) == refAnt))))
                 {
-                    A(IPosition(k, a1(IPosition(n)))) = 1;
-                    A(IPosition(k, a2(IPosition(n)))) = -1;
-                    I(IPosition(k)) = n;
+                    A(IPosition(2, k, a1(IPosition(1, n)))) = 1;
+                    A(IPosition(2, k, a2(IPosition(1, n)))) = -1;
+                    I(IPosition(1, k)) = n;
                     k++;
                 }
             }
@@ -209,11 +215,11 @@ namespace cpu
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(IPosition(k,refAnt)) = 1;
+            A(IPosition(2, k, refAnt)) = 1;
             k++;
             
-            A = A(Slice(0), Slice(k));
-            I = I(Slice(0), Slice(k));
+            //A = A(Slice(0, k), Slice(0, 127)); TODO
+            //I = I(Slice(0, k)); TODO
         }
 
         return std::make_pair(A, I);
