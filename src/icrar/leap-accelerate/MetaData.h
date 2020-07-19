@@ -37,6 +37,11 @@
 #include <vector>
 #include <complex>
 
+namespace casacore
+{
+    class MeasurementSet;
+}
+
 namespace icrar
 {
     struct MetaData
