@@ -66,14 +66,21 @@ namespace icrar
 
             ASSERT_EQ(98, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
+            ASSERT_EQ(128, meta.Ad1.shape()[0]);
+            ASSERT_EQ(98, meta.Ad1.shape()[1]);
+            
             ASSERT_EQ(98, meta.I1.shape()[0]);
             ASSERT_EQ(0, meta.I1.shape()[1]);
 
 
             ASSERT_EQ(4754, meta.A.shape()[0]);
             ASSERT_EQ(128, meta.A.shape()[1]);
+            ASSERT_EQ(128, meta.Ad.shape()[0]);
+            ASSERT_EQ(4754, meta.Ad.shape()[1]);
+
             ASSERT_EQ(4754, meta.I.shape()[0]);
             ASSERT_EQ(0, meta.I.shape()[1]);
+
         }
     };
 
