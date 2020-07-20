@@ -26,24 +26,9 @@
 #include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
 #include <vector>
-
-#ifdef DEBUG_CUDA_ERRORS
-static void DebugCudaErrors()
-{
-    //Synchronize to make sure that any currently executing or queued for execution operations
-    //that may cause errors are complete before we query the last error.
-    //The synchronize may return an error code if pending operations encounter errors but will
-    //not return an error code for operations that have already completed.
-    CHECK_CUDA_ERROR_CODE(cudaDeviceSynchronize());
-    //Query the most recent error and check the result
-    CHECK_CUDA_ERROR_CODE(cudaGetLastError());
-}
-#else
-static void DebugCudaErrors() {}
-#endif
-
 
 namespace icrar
 {

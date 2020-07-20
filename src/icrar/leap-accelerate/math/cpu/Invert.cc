@@ -43,33 +43,28 @@ namespace cpu
 {
     Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
     {
-        throw std::runtime_error("segfault");
         return A.completeOrthogonalDecomposition().pseudoInverse();
+    }
+
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A)
+    {
+        return ConvertMatrix(PseudoInverse(ConvertMatrix(A)));
     }
 
     Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A)
     {
         Eigen::MatrixXd u;
-        Eigen::MatrixXd s;
+        Eigen::MatrixXd sp; //pseudoinverse sigma
         Eigen::MatrixXd v;
-        std::tie(u, s, v) = SVDDiag(A);
+        std::tie(u, sp, v) = SVDSigmaP(A);
 
-        return v * (s * u.transpose());
+        // U' = Ut
+        // V' = Vt
+        // M = U * Sigma * Vt
 
-        // try:
-        //     print('Inverting Cal Matrix')
-        //     print("IF A:", type(A), A.shape, A.dtype)
-        //     (u,s,vh)=np.linalg.svd(A,full_matrices=False)
-        //     sd=np.zeros((len(s),1)) #A.shape[1]))
-        //     for n in range(len(s)):
-        //         if s[n]/s[0]>1e-6:
-        //         sd[n][0]=1./s[n]   # Why is this 1D?
-
-        //     Ad=np.dot(vh.T,(sd*u.T))
-        //     I=np.dot(Ad,A)
-        // except:
-        //     print('Failed to generate inverted matrix')
-        // return Ad
+        // MM' = I where M' = V * Sigma' * U'
+        // M' = V * Sigma' * Ut
+        return v * (sp * u.transpose());
     }
 
     casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A)

@@ -186,13 +186,13 @@ namespace cpu
         }
 
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
-        for(auto v : A)
+        for(double& v : A)
         {
             v = 0;
         }
 
         Vector<int> I = Vector<int>(a1.size() + 1);
-        for(auto v : I)
+        for(int& v : I)
         {
             v = 1;
         }
@@ -222,6 +222,7 @@ namespace cpu
             Atemp = A(Slice(0, k), Slice(0, 127));
             A.resize(0,0);
             A = Atemp;
+
             //I = I(Slice(0, k)); TODO
         }
 

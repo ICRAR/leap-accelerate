@@ -32,6 +32,8 @@
 
 #include <cuda_runtime.h>
 
+#include <gtest/gtest.h>
+
 #include <utility>
 #include <sstream>
 #include <iostream>

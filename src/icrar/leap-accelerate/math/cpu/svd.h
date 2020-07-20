@@ -33,9 +33,29 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Calculates the singular value decomposition values u, eigen values, v
+     * 
+     * @param mat 
+     * @return std::tuple<Eigen::MatrixXd, Eigen::VectorXd, Eigen::MatrixXd> s sigma v
+     */
     std::tuple<Eigen::MatrixXd, Eigen::VectorXd, Eigen::MatrixXd> SVD(const Eigen::MatrixXd& mat);
 
-    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDDiag(const Eigen::MatrixXd& mat);
+    /**
+     * @brief * @brief SVD returning U, Sigma, V
+     * 
+     * @param mat 
+     * @return std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> 
+     */
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDSigma(const Eigen::MatrixXd& mat);
+
+    /**
+     * @brief SVD returning U, Sigma Psuedoinverse, V
+     * 
+     * @param mat 
+     * @return std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> 
+     */
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDSigmaP(const Eigen::MatrixXd& mat);
 
     std::tuple<Eigen::MatrixXd, Eigen::SparseMatrix<double>, Eigen::MatrixXd> SVDSparse(const Eigen::MatrixXd& mat);
 

@@ -43,6 +43,10 @@ namespace cpu
 {
     Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A);
 
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A);
+
+    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A);
+
     /**
      * @brief Invert as a function
      * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
@@ -56,7 +60,5 @@ namespace cpu
      * @param A
      */
     casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A);
-
-    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A);
 }
 }

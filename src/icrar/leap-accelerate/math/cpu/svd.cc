@@ -58,7 +58,7 @@ namespace cpu
         return std::make_tuple(u, sd, v);
     }
 
-    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDDiag(const Eigen::MatrixXd& mat)
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDSigma(const Eigen::MatrixXd& mat)
     {
         Eigen::MatrixXd u;
         Eigen::VectorXd s; //sigma
@@ -72,6 +72,22 @@ namespace cpu
         }
 
         return std::make_tuple(u, sd, v);
+    }
+
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDSigmaP(const Eigen::MatrixXd& mat)
+    {
+        Eigen::MatrixXd u;
+        Eigen::VectorXd s; //sigma
+        Eigen::MatrixXd v;
+        
+        std::tie(u, s, v) = SVD(mat);
+        Eigen::MatrixXd sd = Eigen::MatrixXd::Zero(mat.rows(), mat.cols()); //sigma diagonal matrix
+        for(int i = 0; i < s.size(); i++)
+        {
+            sd(i,i) = 1.0/s(i);
+        }
+
+        return std::make_tuple(u, sd.transpose(), v);
     }
 
 #ifdef GSL_ENABLED
