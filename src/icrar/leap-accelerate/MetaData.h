@@ -90,10 +90,11 @@ namespace icrar
             };
         };
 
-        casacore::Matrix<double> A;
-        casacore::Matrix<double> Ad;
-        casacore::Matrix<double> A1;
-        casacore::Matrix<double> Ad1;
+        casacore::Matrix<double> A; // Antennas all PhaseMatrix
+        casacore::Matrix<double> Ad; // A inverse
+        
+        casacore::Matrix<double> A1; // Antennas with baseline PhaseMatrix
+        casacore::Matrix<double> Ad1; //A1 inverse
 
         casacore::Array<int> I1;
         casacore::Array<int> I;
