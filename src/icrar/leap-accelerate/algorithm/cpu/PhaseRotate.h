@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -29,18 +32,14 @@
 #include <complex>
 #include <queue>
 
+
+
 namespace casacore
 {
     class MeasurementSet;
     class MDirection;
     class MVDirection;
     class MVuvw;
-    template<typename T>
-    class Array;
-    template<typename T>
-    class Matrix;
-    template<typename T>
-    class Vector;
 }
 
 namespace icrar

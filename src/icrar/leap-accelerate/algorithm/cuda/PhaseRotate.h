@@ -27,7 +27,8 @@
 
 #include <eigen3/Eigen/Core>
 
-
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 #include <queue>
 
@@ -37,12 +38,6 @@ namespace casacore
     class MDirection;
     class MVDirection;
     class MVuvw;
-    template<typename T>
-    class Array;
-    template<typename T>
-    class Matrix;
-    template<typename T>
-    class Vector;
 }
 
 namespace icrar
