@@ -39,6 +39,8 @@ namespace casacore
     class Array;
     template<typename T>
     class Matrix;
+    template<typename T>
+    class Vector;
 }
 
 namespace icrar
@@ -91,9 +93,9 @@ namespace cpu
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
-    std::pair<casacore::Matrix<double>, casacore::Array<int>> PhaseMatrixFunction(
-        const casacore::Array<std::int32_t>& a1,
-        const casacore::Array<std::int32_t>& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<int>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
 }
