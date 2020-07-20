@@ -62,12 +62,7 @@ namespace cpu
         Eigen::MatrixXd v;
         
         std::tie(u, s, v) = SVD(mat);
-        if(s.size() > mat.cols() || s.size() > mat.rows())
-        {
-            throw std::runtime_error("too many eigen values");
-        }
-
-        auto sd = Eigen::MatrixXd(mat.rows(), mat.cols()); //sigma diagonal matrix
+        Eigen::MatrixXd sd = Eigen::MatrixXd::Zero(mat.rows(), mat.cols()); //sigma diagonal matrix
         for(int i = 0; i < s.size(); i++)
         {
             sd(i,i) = s(i);

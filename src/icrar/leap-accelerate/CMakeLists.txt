@@ -105,7 +105,7 @@ endif()
 if(USE_BOOST)
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} GSL::gsl)
 
 target_include_directories(${TARGET_NAME} PUBLIC
