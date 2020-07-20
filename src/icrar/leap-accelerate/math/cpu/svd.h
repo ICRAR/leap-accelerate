@@ -24,6 +24,7 @@
 
 #include <gsl/gsl_linalg.h>
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/SVD>
 
 #include <utility>
@@ -32,29 +33,12 @@ namespace icrar
 {
 namespace cpu
 {
-    std::pair<Eigen::MatrixXd, Eigen::MatrixXd> SVD(Eigen::MatrixXd& mat)
-    {
-        Eigen::MatrixXd matU(mat.size(), mat.size());
-        gsl_matrix_view mat_view = gsl_matrix_view_array(mat.data(), mat.rows(), mat.cols());
-        gsl_matrix_view mat_u = gsl_matrix_view_array(mat.data(), mat.rows(), mat.cols());
+    std::tuple<Eigen::MatrixXd, Eigen::VectorXd, Eigen::MatrixXd> SVD(const Eigen::MatrixXd& mat);
 
-        gsl_matrix* mat1 = &mat_view.matrix;
-        gsl_matrix* mat2 = &mat_u.matrix;
-        gsl_vector* vec1 = gsl_vector_alloc(mat.rows());
-        gsl_vector* vec2 = gsl_vector_alloc(mat.cols());
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> SVDDiag(const Eigen::MatrixXd& mat);
 
-        gsl_linalg_SV_decomp(mat1, mat2, vec1, vec2);
+    std::tuple<Eigen::MatrixXd, Eigen::SparseMatrix<double>, Eigen::MatrixXd> SVDSparse(const Eigen::MatrixXd& mat);
 
-        gsl_vector_free(vec2);
-        gsl_vector_free(vec1);
-
-        return std::make_pair(mat, matU);
-    }
-
-    std::pair<Eigen::MatrixXd, Eigen::MatrixXd> SVD_slow(const Eigen::MatrixXd& mat)
-    {
-        auto bdc = Eigen::BDCSVD<Eigen::MatrixXd>(mat, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        return std::make_pair(bdc.matrixU(), bdc.matrixV());
-    }
+    std::pair<Eigen::MatrixXd, Eigen::MatrixXd> SVD_gsl(Eigen::MatrixXd& mat);
 }
 }

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <eigen3/Eigen/Core>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -39,6 +41,8 @@ namespace icrar
 {
 namespace cpu
 {
+    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A);
+
     /**
      * @brief Invert as a function
      * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
@@ -50,8 +54,9 @@ namespace cpu
      * The output will be the inverse matrix to cross with the observation vector.
      * 
      * @param A
-     * @param refAnt
      */
-    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1);
+    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A);
+
+    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A);
 }
 }

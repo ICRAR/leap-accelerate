@@ -46,6 +46,7 @@ namespace icrar
 
         this->init = true;
         this->stations = 0;
+        this->nantennas = 0;
         this->solution_interval = 3601;
 
         this->rows = ms.polarization().nrow();
@@ -96,6 +97,7 @@ namespace icrar
         casacore::Vector<double> time = msmc.time().getColumn();
         //msmc.time();
 
+        this->nantennas = 4853; //TODO
         casacore::Vector<std::int32_t> a1 = msmc.antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
         casacore::Vector<std::int32_t> a2 = msmc.antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
 
@@ -106,10 +108,10 @@ namespace icrar
         casacore::Matrix<double> A1;
         casacore::Array<std::int32_t> I1;
         std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
-        casacore::Matrix<double> Ad = icrar::cpu::InvertFunction(A, 0);
+        casacore::Matrix<double> Ad = icrar::cpu::RightInvert(A);
 
         std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad1 = icrar::cpu::InvertFunction(A1, -1);
+        casacore::Matrix<double> Ad1 = icrar::cpu::RightInvert(A1);
 
         this->A = A;
         this->Ad = Ad;

@@ -27,6 +27,7 @@ set(sources
 
     math/eigen_helper.cc
 
+    math/cpu/svd.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc

@@ -185,7 +185,7 @@ namespace cpu
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1));
+        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
         for(auto v : A)
         {
             v = 0;
@@ -203,7 +203,7 @@ namespace cpu
         {
             if(a1(IPosition(1, n)) != a2(IPosition(1, n)))
             {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n))==refAnt) || (a2(IPosition(1, n)) == refAnt))))
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n)) == refAnt) || (a2(IPosition(1, n)) == refAnt))))
                 {
                     A(IPosition(2, k, a1(IPosition(1, n)))) = 1;
                     A(IPosition(2, k, a2(IPosition(1, n)))) = -1;
@@ -218,7 +218,10 @@ namespace cpu
             A(IPosition(2, k, refAnt)) = 1;
             k++;
             
-            //A = A(Slice(0, k), Slice(0, 127)); TODO
+            auto Atemp = casacore::Matrix<double>(k, 127);
+            Atemp = A(Slice(0, k), Slice(0, 127));
+            A.resize(0,0);
+            A = Atemp;
             //I = I(Slice(0, k)); TODO
         }
 

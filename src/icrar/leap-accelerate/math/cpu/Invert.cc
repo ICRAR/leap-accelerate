@@ -20,7 +20,10 @@
  * MA 02111 - 1307  USA
  */
 
+#include "Invert.h"
+
 #include <icrar/leap-accelerate/math/eigen_helper.h>
+#include <icrar/leap-accelerate/math/cpu/svd.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 
@@ -38,11 +41,19 @@ namespace icrar
 {
 namespace cpu
 {
-    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
+    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
     {
-        auto Ae = ConvertMatrix(A);
-        Ae.inverse();
-        return ConvertMatrix(Ae);
+        throw std::runtime_error("segfault");
+        return A.completeOrthogonalDecomposition().pseudoInverse();
+    }
+
+    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A)
+    {
+        Eigen::MatrixXd u;
+        Eigen::VectorXd s;
+        Eigen::MatrixXd vh;
+        std::tie(u, s, vh) = SVDDiag(A);
+        return vh.transpose() * (s * u.transpose());
 
         // try:
         //     print('Inverting Cal Matrix')
@@ -58,7 +69,11 @@ namespace cpu
         // except:
         //     print('Failed to generate inverted matrix')
         // return Ad
-        return casacore::Matrix<double>();
+    }
+
+    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A)
+    {
+        return ConvertMatrix(RightInvert(ConvertMatrix(A)));
     }
 }
 }

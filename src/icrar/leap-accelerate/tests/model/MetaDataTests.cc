@@ -52,17 +52,22 @@ namespace icrar
             auto meta = MetaData(*ms);
 
             ASSERT_EQ(meta.init, true);
-            ASSERT_EQ(meta.nantennas, 0);
-            ASSERT_EQ(meta.channels, 48);
-            ASSERT_EQ(meta.num_pols, 4);
-            ASSERT_EQ(meta.stations, 128);
-            ASSERT_EQ(meta.rows, 1);
-            ASSERT_EQ(meta.freq_start_hz, 1.39195e+08);
-            ASSERT_EQ(meta.freq_inc_hz, 640000);
-            ASSERT_EQ(meta.solution_interval, 3601);
+            ASSERT_EQ(4853, meta.nantennas);
+            ASSERT_EQ(48, meta.channels);
+            ASSERT_EQ(4, meta.num_pols);
+            ASSERT_EQ(128, meta.stations);
+            ASSERT_EQ(1, meta.rows);
+            ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
+            ASSERT_EQ(640000, meta.freq_inc_hz);
+            ASSERT_EQ(3601, meta.solution_interval);
 
-            ASSERT_NEAR(meta.phase_centre_ra_rad, 5.759587e-01, PRECISION);
-            ASSERT_NEAR(meta.phase_centre_dec_rad, 1.047198e-01, PRECISION);
+            ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
+            ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
+
+            ASSERT_EQ(4854, meta.A.shape()[0]);
+            ASSERT_EQ(128, meta.A.shape()[1]);
+            ASSERT_EQ(128, meta.Ad.shape()[0]);
+            ASSERT_EQ(4854, meta.Ad.shape()[1]);
 
             ASSERT_EQ(98, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
@@ -72,13 +77,7 @@ namespace icrar
             ASSERT_EQ(98, meta.I1.shape()[0]);
             ASSERT_EQ(0, meta.I1.shape()[1]);
 
-
-            ASSERT_EQ(4754, meta.A.shape()[0]);
-            ASSERT_EQ(128, meta.A.shape()[1]);
-            ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(4754, meta.Ad.shape()[1]);
-
-            ASSERT_EQ(4754, meta.I.shape()[0]);
+            ASSERT_EQ(4854, meta.I.shape()[0]);
             ASSERT_EQ(0, meta.I.shape()[1]);
 
         }
