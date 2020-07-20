@@ -24,7 +24,11 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Array.h>
+
 #include <eigen3/Eigen/Core>
+
+#include <cuda_runtime.h>
 
 #include <vector>
 #include <array>
+#include <set>

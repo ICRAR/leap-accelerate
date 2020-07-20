@@ -68,6 +68,7 @@ set(cuda_sources
 option(USE_CUDA "Use Cuda" CUDA_FOUND)
 option(USE_CASA "Use Casa" TRUE)
 option(USE_BOOST "Use Boost" OFF)
+option(USE_GSL "Use GSL" OFF)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -76,6 +77,11 @@ add_library(
     ${private_headers}
     ${public_headers}
     ${cuda_headers}
+)
+
+target_precompile_headers(${TARGET_NAME}
+  PRIVATE
+    [[pch.h]]
 )
 
 #set(CUDA_PROPAGATE_HOST_FLAGS ON)
@@ -106,7 +112,7 @@ if(USE_BOOST)
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 #target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
-target_link_libraries(${TARGET_NAME} GSL::gsl)
+#target_link_libraries(${TARGET_NAME} GSL::gsl)
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -140,3 +146,4 @@ install(
 unset(USE_CUDA CACHE)
 unset(USE_CASA CACHE)
 unset(USE_BOOST CACHE)
+unset(USE_GSL CACHE)

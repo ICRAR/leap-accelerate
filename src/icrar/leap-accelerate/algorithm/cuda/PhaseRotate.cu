@@ -21,7 +21,6 @@
  * MA 02111 - 1307  USA
  */
 
-#include "../../pch.h"
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/MetaData.h>

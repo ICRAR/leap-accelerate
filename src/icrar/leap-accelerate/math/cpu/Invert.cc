@@ -50,10 +50,11 @@ namespace cpu
     Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A)
     {
         Eigen::MatrixXd u;
-        Eigen::VectorXd s;
-        Eigen::MatrixXd vh;
-        std::tie(u, s, vh) = SVDDiag(A);
-        return vh.transpose() * (s * u.transpose());
+        Eigen::MatrixXd s;
+        Eigen::MatrixXd v;
+        std::tie(u, s, v) = SVDDiag(A);
+
+        return v * (s * u.transpose());
 
         // try:
         //     print('Inverting Cal Matrix')

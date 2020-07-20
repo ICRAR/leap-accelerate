@@ -22,7 +22,10 @@
 
 #include "svd.h"
 
+#ifdef GSL_ENABLED
 #include <gsl/gsl_linalg.h>
+#endif
+
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/SparseCore>
 #include <eigen3/Eigen/SVD>
@@ -71,6 +74,7 @@ namespace cpu
         return std::make_tuple(u, sd, v);
     }
 
+#ifdef GSL_ENABLED
     std::pair<Eigen::MatrixXd, Eigen::MatrixXd> SVD_gsl(Eigen::MatrixXd& mat)
     {
         Eigen::MatrixXd matU(mat.size(), mat.size());
@@ -89,5 +93,6 @@ namespace cpu
 
         return std::make_pair(mat, matU);
     }
+#endif
 }
 }
