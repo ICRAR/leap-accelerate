@@ -100,14 +100,14 @@ namespace cuda
         // output_calibrations.push(CalibrationResult(direction, cal));
     }
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction)
     {
         throw std::runtime_error("not implemented"); //TODO
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
-        const Array<std::int32_t>& a1,
-        const Array<std::int32_t>& a2,
+    std::pair<Matrix<double>, Vector<std::int32_t>> PhaseMatrixFunction(
+        const Vector<std::int32_t>& a1,
+        const Vector<std::int32_t>& a2,
         int refAnt, bool map)
     {
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
