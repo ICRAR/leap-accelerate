@@ -21,7 +21,15 @@
 */
 
 #include "cuda_info.h"
+#include "helper_cuda.cuh"
+
 #include <iostream>
+
+int GetCudaDeviceCount()
+{
+    int deviceCount = 0;
+    checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+}
 
 void printCudaVersion()
 {

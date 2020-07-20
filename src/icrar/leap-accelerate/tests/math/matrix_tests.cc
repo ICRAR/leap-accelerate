@@ -20,6 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
+//#include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <gtest/gtest.h>
@@ -37,7 +38,10 @@ public:
 
     void SetUp() override
     {
-
+        // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
+        int deviceCount = 0;
+        checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+        ASSERT_EQ(1, deviceCount);
     }
 
     void TearDown() override
