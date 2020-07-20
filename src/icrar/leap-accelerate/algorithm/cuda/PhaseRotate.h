@@ -27,10 +27,23 @@
 
 #include <eigen3/Eigen/Core>
 
-#include <casacore/casa/Arrays/Array.h>
-#include <casacore/casa/Quanta/MVDirection.h>
+
 
 #include <queue>
+
+namespace casacore
+{
+    class MeasurementSet;
+    class MDirection;
+    class MVDirection;
+    class MVuvw;
+    template<typename T>
+    class Array;
+    template<typename T>
+    class Matrix;
+    template<typename T>
+    class Vector;
+}
 
 namespace icrar
 {
@@ -47,9 +60,9 @@ namespace cuda
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 
-    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Array<std::int32_t>& a1,
-        const casacore::Array<std::int32_t>& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt,
         bool map);
 }

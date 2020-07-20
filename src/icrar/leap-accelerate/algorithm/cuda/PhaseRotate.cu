@@ -55,19 +55,19 @@ namespace icrar
 {
 namespace cuda
 { 
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input)
+    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<MVDirection>& directions, std::queue<Integration>& input)
     {
         throw std::runtime_error("not implemented"); //TODO
     }
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction)
     {
         throw std::runtime_error("not implemented"); //TODO
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
-        const Array<std::int32_t>& a1,
-        const Array<std::int32_t>& a2,
+    std::pair<Matrix<double>, Vector<std::int32_t>> PhaseMatrixFunction(
+        const Vector<std::int32_t>& a1,
+        const Vector<std::int32_t>& a2,
         int refAnt, bool map)
     {
         throw std::runtime_error("not implemented"); //TODO
