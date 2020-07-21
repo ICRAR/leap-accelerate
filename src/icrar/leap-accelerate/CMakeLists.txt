@@ -63,7 +63,7 @@ set(cuda_sources
 )
 
 # Libraries
-option(USE_CUDA "Use Cuda" CUDA_FOUND)
+option(USE_CUDA "Use Cuda" TRUE)
 option(USE_CASA "Use Casa" TRUE)
 option(USE_BOOST "Use Boost" OFF)
 
@@ -96,8 +96,10 @@ if(USE_CUDA)
     
     target_link_libraries(${TARGET_NAME} CUDA)
 endif()
-include_directories("/usr/local/cuda/include")
+#include_directories("/usr/local/cuda/include")
+
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
 
 
 if(USE_CASA)

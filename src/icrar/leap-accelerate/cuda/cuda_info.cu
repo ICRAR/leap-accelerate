@@ -20,8 +20,11 @@
 *    MA 02111-1307  USA
 */
 
+#include <cuda_runtime.h>
+
 #include "cuda_info.h"
 #include "helper_cuda.cuh"
+
 
 #include <iostream>
 
@@ -29,6 +32,7 @@ int GetCudaDeviceCount()
 {
     int deviceCount = 0;
     checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+    return deviceCount;
 }
 
 void printCudaVersion()

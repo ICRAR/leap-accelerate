@@ -45,7 +45,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-6, doxygen, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-log-dev]
+      packages: [g++-6, doxygen, libeigen3-dev, libboost1.58-all-dev]
     env: COMPILER=g++-6 PYTHON=python3
   - os: linux
     dist:
@@ -56,7 +56,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, libboost-all-dev, libboost-filesystem-dev, libboost-log-dev]
+      packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, libboost1.65-all-dev]
     env: COMPILER=g++-8 PYTHON=python3
 
 # We "source" it because it exports variables
