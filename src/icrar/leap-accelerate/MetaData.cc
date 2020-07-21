@@ -49,17 +49,17 @@ namespace icrar
         this->phase_centre_ra_rad = 0;
         this->phase_centre_dec_rad = 0;
 
-        casacore::Matrix<std::int32_t> a1;
-        casacore::Matrix<std::int32_t> a2;
+        casacore::Vector<std::int32_t> a1;
+        casacore::Vector<std::int32_t> a2;
 
         casacore::Matrix<double> A;
-        casacore::Array<std::int32_t> I;
+        casacore::Vector<std::int32_t> I;
         casacore::Matrix<double> A1;
-        casacore::Array<std::int32_t> I1;
+        casacore::Vector<std::int32_t> I1;
         std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
+        casacore::Matrix<double> Ad = InvertFunction(A, 0);
         std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad = InvertFunction(A, -1);
-        casacore::Matrix<double> Ad1 = InvertFunction(A1, 0);
+        casacore::Matrix<double> Ad1 = InvertFunction(A1, -1);
 
         this->A = A;
         this->Ad = Ad;

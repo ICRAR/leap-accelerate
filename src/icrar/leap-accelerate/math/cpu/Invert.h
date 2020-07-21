@@ -22,18 +22,14 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
 #include <complex>
 #include <queue>
-
-namespace casacore
-{
-    template<typename T>
-    class Matrix;
-}
 
 namespace icrar
 {

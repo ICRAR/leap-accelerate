@@ -166,9 +166,9 @@ namespace cpu
         }
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Array<std::int32_t>> PhaseMatrixFunction(
-        const Array<std::int32_t>& a1,
-        const Array<std::int32_t>& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const Vector<std::int32_t>& a1,
+        const Vector<std::int32_t>& a2,
         int refAnt, bool map)
     {
         int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;

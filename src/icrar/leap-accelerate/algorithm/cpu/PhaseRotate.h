@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -29,16 +32,14 @@
 #include <complex>
 #include <queue>
 
+
+
 namespace casacore
 {
     class MeasurementSet;
     class MDirection;
     class MVDirection;
     class MVuvw;
-    template<typename T>
-    class Array;
-    template<typename T>
-    class Matrix;
 }
 
 namespace icrar
@@ -91,9 +92,9 @@ namespace cpu
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
-    std::pair<casacore::Matrix<double>, casacore::Array<int>> PhaseMatrixFunction(
-        const casacore::Array<std::int32_t>& a1,
-        const casacore::Array<std::int32_t>& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<int>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
 }
