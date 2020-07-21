@@ -129,7 +129,7 @@ namespace cuda
         __host__ void SetDataAsync(const T* data)
         {
             size_t bytes = m_count * sizeof(T);
-            checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+            checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
             DebugCudaErrors();
         }
 

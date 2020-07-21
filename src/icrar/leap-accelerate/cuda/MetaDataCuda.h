@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/MetaData.h>
+
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
 
@@ -45,10 +47,10 @@ namespace cuda
 {
     struct Constants
     {
-        bool init;
+        //bool init;
 
-        //int nantennas;
-        //int nbaseline;
+        int nantennas;
+        //int nbaselines;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -83,6 +85,8 @@ namespace cuda
 
     struct MetaDataCudaHost
     {
+        MetaDataCudaHost(MetaData& metadata);
+
         Constants constants;
 
         std::vector<casacore::MVuvw> oldUVW;
@@ -101,9 +105,11 @@ namespace cuda
 
     struct MetaDataCudaDevice
     {
+        MetaDataCudaDevice(MetaDataCudaDevice& metadata);
+
         Constants constants;
 
-        std::vector<casacore::MVuvw> oldUVW;
+        icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
 
         icrar::cuda::device_matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
         icrar::cuda::device_matrix<double> dd;
