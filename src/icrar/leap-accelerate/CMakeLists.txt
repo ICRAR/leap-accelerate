@@ -96,6 +96,7 @@ if(USE_CUDA)
     
 
     target_link_libraries(${TARGET_NAME} CUDA)
+    target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 endif()
 if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
