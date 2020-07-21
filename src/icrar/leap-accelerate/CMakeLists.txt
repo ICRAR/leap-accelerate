@@ -95,8 +95,9 @@ if(USE_CUDA)
     target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
     
 
-    target_link_libraries(${TARGET_NAME} CUDA)
+    include_directories("/usr/local/cuda/include")
     target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+    target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 if(USE_CASA)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
