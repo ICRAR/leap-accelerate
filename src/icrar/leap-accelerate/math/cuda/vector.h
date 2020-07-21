@@ -20,6 +20,8 @@
 *    MA 02111-1307  USA
 */
 
+#pragma once
+
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <casacore/casa/Arrays/Array.h>
 #include <eigen3/Eigen/Core>
