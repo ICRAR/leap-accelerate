@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/vector_eigen.cuh>
 
+#define __CUDACC_VER__ __CUDACC_VER_MAJOR__
 #include <eigen3/Eigen/Core>
 
 #include <gtest/gtest.h>

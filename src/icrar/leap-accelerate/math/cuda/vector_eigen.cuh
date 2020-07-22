@@ -27,6 +27,8 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
 #include <casacore/casa/Arrays/Array.h>
+
+#define __CUDACC_VER__ __CUDACC_VER_MAJOR__
 #include <eigen3/Eigen/Core>
 
 #include <array>

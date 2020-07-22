@@ -65,7 +65,7 @@ set(cuda_sources
 # Libraries
 option(CUDA_ENABLED "Cuda Enabled" TRUE)
 option(CASA_ENABLED "Casa Enabled" TRUE)
-option(BOOST_ENABLED "Use Boost" TRUE)
+option(BOOST_ENABLED "Boost Enabled" TRUE)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -106,7 +106,6 @@ endif()
 if(BOOST_ENABLED)
     #target_link_libraries(${TARGET_NAME} Boost)
 endif()
-target_link_libraries(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

@@ -25,6 +25,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+#define __CUDACC_VER__ __CUDACC_VER_MAJOR__
 #include <eigen3/Eigen/Core>
 
 #include <casacore/casa/Arrays/Vector.h>
