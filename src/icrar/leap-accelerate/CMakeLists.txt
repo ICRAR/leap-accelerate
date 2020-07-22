@@ -79,10 +79,12 @@ add_library(
     ${cuda_headers}
 )
 
-target_precompile_headers(${TARGET_NAME}
-  PRIVATE
-    [[pch.h]]
-)
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  target_precompile_headers(${TARGET_NAME}
+    PRIVATE
+      [[pch.h]]
+  )
+endif()
 
 #set(CUDA_PROPAGATE_HOST_FLAGS ON)
 

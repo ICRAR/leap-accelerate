@@ -31,10 +31,12 @@ add_executable(${TEST_TARGET}
   ${sources}
 )
 
-target_precompile_headers(${TEST_TARGET}
-  PRIVATE
-    [[pch.h]]
-)
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  target_precompile_headers(${TEST_TARGET}
+    PRIVATE
+      [[pch.h]]
+  )
+endif()
 
 target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
 
