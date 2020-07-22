@@ -84,6 +84,11 @@ find_package(Casacore REQUIRED)
 find_package(Boost)
 find_package(Eigen3 REQUIRED)
 
+# Our FindCasacore doesn't understand REQUIRED, so we need to manually check
+if (NOT CASACORE_FOUND)
+    message(FATAL_ERROR "Casacore not found, cannot proceed")
+endif()
+
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)
