@@ -2,6 +2,5 @@ build/
 .vs/
 .vscode/
 Testing/
-test_data/
 
 *.orig
