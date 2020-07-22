@@ -6,12 +6,17 @@ set(sources
   main.cc
 )
 
-# TODO: use solution directory macro
-include_directories(../../../external/CLI11/include)
+include_directories(${CMAKE_SOURCE_DIR}/external/CLI11/include)
 
 # add the executable
 add_executable (${TARGET_NAME} main.cc)
 target_link_libraries (${TARGET_NAME} LeapAccelerate)
+set_target_properties(${TARGET_NAME}
+  PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 install (
   TARGETS
