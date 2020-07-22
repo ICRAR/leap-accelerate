@@ -104,7 +104,6 @@ namespace icrar
         //Start calculations
         casacore::Matrix<double> A1;
         casacore::Array<std::int32_t> I1;
-
         std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
         casacore::Matrix<double> Ad1 = icrar::cpu::PseudoInverse(A1);
 
