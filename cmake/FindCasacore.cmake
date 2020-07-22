@@ -48,18 +48,18 @@ if (NOT CASACORE_FOUND)
     )
 
   set (CASACORE_HEADERS
-    casa/Arrays.h
-    tables/Tables.h
-    mirlib/miriad.h
-    scimath/Fitting.h
-    measures/Measures.h
-    fits/FITS.h
-    coordinates/Coordinates.h
-    components/ComponentModels.h
-    lattices/Lattices.h
-    ms/MeasurementSets.h
-    images/Images.h
-    msfits/MSFits.h
+    casacore/casa/Arrays.h
+    casacore/tables/Tables.h
+    casacore/mirlib/miriad.h
+    casacore/scimath/Fitting.h
+    casacore/measures/Measures.h
+    casacore/fits/FITS.h
+    casacore/coordinates/Coordinates.h
+    casacore/components/ComponentModels.h
+    casacore/lattices/Lattices.h
+    casacore/ms/MeasurementSets.h
+    casacore/images/Images.h
+    casacore/msfits/MSFits.h
     )
   
   ##_____________________________________________________________________________
@@ -67,7 +67,7 @@ if (NOT CASACORE_FOUND)
   
   find_path (CASACORE_INCLUDES ${CASACORE_HEADERS}
     HINTS ${CASACORE_ROOT_DIR}
-    PATH_SUFFIXES include include/casacore
+    PATH_SUFFIXES include
     )
 
   ##_____________________________________________________________________________
