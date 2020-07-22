@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Array.h>
 
