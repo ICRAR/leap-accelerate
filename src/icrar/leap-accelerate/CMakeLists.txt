@@ -109,6 +109,7 @@ endif()
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
+  target_include_directories(${TARGET_NAME} PUBLIC ${CASACORE_INCLUDES})
 endif()
 if(BOOST_ENABLED)
   target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
