@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <eigen3/Eigen/Core>
 
 #include <iostream>
@@ -30,12 +32,6 @@
 #include <vector>
 #include <complex>
 #include <queue>
-
-namespace casacore
-{
-    template<typename T>
-    class Matrix;
-}
 
 namespace icrar
 {

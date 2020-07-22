@@ -69,6 +69,51 @@ public:
 
     }
 
+    void test_svd()
+    {
+    //     auto m = Eigen::MatrixXd(7, 5);
+    //     m <<
+    //     1, 1, 1, 0, 0,
+    //     2, 2, 2, 0, 0,
+    //     1, 1, 1, 0, 0,
+    //     5, 5, 5, 0, 0,
+    //     0, 0, 0, 2, 2,
+    //     0, 0, 0, 3, 3,
+    //     0, 0, 0, 1, 1;
+
+    //     Eigen::MatrixXd matU;
+    //     Eigen::DiagonalMatrix<double, Eigen::Dynamic> s;
+    //     Eigen::MatrixXd matV;
+    //     std::tie(matU, s, matV) = icrar::cpu::SVD(m);
+    //     {
+    //         auto expectedU = Eigen::MatrixXd(7, 5);
+    //         expectedU <<
+    //         0.179605, 7.90796e-17, 0.898027, 0.356143, 0.114959,
+    //         0.359211, -1.96067e-16, 0.273465, -0.883008, -0.0668068,
+    //         0.179605, 1.20406e-17, 0.136732, 0.0542259, -0.418932,
+    //         0.898027, 6.02029e-17, -0.316338, 0.27113, 0.0875174,
+    //         -0, 0.534522, -0, -0.093522, 0.755102,
+    //         -0, 0.801784, -0, 0.077935, -0.462585,
+    //         -0, 0.267261, -0, -0.046761, -0.122449;
+
+    //         ASSERT_MEQ(matU, expectedU, TOLERANCE);
+    //     }
+
+    //     {
+    //         auto expectedV = Eigen::MatrixXd(5, 5);
+    //         expectedV <<
+    //         0.57735, 0, -0.707107, 0, -0.408248,
+    //         0.57735, 0, 0, 0, 0.816497,
+    //         0.57735, 0, 0.707107, 0, -0.408248,
+    //         0, 0.707107, 0, -0.707107, 0,
+    //         0, 0.707107, 0, 0.707107, 0;
+
+    //         ASSERT_MEQ(matV, expectedV, TOLERANCE);
+    //     }
+
+        //TODO: re-form original matrix
+    }
+
     void test_transpose()
     {
         auto m1 = Eigen::MatrixXd(3, 3);
@@ -227,6 +272,7 @@ public:
     }
 };
 
+TEST_F(matrix_tests, DISABLED_test_cpu_svd) { test_svd(); }
 TEST_F(matrix_tests, test_transpose) { test_transpose(); }
 TEST_F(matrix_tests, test_square_invert) { test_square_invert(); }
 TEST_F(matrix_tests, test_pseudo_inverse_33) { test_pseudo_inverse_33(); }
@@ -234,4 +280,4 @@ TEST_F(matrix_tests, test_pseudo_inverse_32) { test_pseudo_inverse_32(); }
 TEST_F(matrix_tests, test_svd33) { test_svd33(); }
 TEST_F(matrix_tests, test_svd42_min) { test_svd42_min(); }
 TEST_F(matrix_tests, test_svd32) { test_svd32(); }
-//TEST_F(matrix_tests, test_right_invert) { test_right_invert(); }
+TEST_F(matrix_tests, DISABLED_test_right_invert) { test_right_invert(); }

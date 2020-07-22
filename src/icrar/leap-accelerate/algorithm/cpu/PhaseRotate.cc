@@ -223,7 +223,10 @@ namespace cpu
             A.resize(0,0);
             A = Atemp;
 
-            //I = I(Slice(0, k)); TODO
+            auto Itemp = casacore::Vector<int>(k);
+            Itemp = I(Slice(0, k));
+            I.resize(0);
+            I = Itemp;
         }
 
         return std::make_pair(A, I);

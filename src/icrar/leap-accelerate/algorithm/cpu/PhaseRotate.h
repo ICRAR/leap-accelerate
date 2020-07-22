@@ -22,11 +22,17 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
+
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <complex>
 #include <queue>
+
+
 
 namespace casacore
 {

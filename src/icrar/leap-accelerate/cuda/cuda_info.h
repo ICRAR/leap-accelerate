@@ -21,6 +21,13 @@
 */
 
 /**
+ * @brief Gets the number of available Cuda Devices
+ * 
+ * @return int 
+ */
+int GetCudaDeviceCount();
+
+/**
  * @brief Prints running cuda device info to the output log.
  */
 void printCudaVersion();

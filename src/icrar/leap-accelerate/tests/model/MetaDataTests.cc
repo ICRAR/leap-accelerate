@@ -64,19 +64,17 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            ASSERT_EQ(4854, meta.A.shape()[0]);
-            ASSERT_EQ(128, meta.A.shape()[1]);
-            ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(4854, meta.Ad.shape()[1]);
-            ASSERT_EQ(4854, meta.I.shape()[0]);
-            ASSERT_EQ(0, meta.I.shape()[1]);
+            ASSERT_EQ(4754, meta.A.shape()[0]); //4854?
+            ASSERT_EQ(127, meta.A.shape()[1]); //128?
+            ASSERT_EQ(127, meta.Ad.shape()[0]); //128?
+            ASSERT_EQ(4754, meta.Ad.shape()[1]); //4854?
+            ASSERT_EQ(4754, meta.I.shape()[0]); //4854?
 
-            ASSERT_EQ(98, meta.A1.shape()[0]);
+            ASSERT_EQ(4854, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(98, meta.Ad1.shape()[1]);
-            ASSERT_EQ(98, meta.I1.shape()[0]);
-            ASSERT_EQ(0, meta.I1.shape()[1]);
+            ASSERT_EQ(4854, meta.Ad1.shape()[1]);
+            ASSERT_EQ(4854, meta.I1.shape()[0]);
 
 
 
