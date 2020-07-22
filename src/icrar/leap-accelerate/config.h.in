@@ -1,0 +1,2 @@
+/// Whether this library is compiled with CUDA support
+#cmakedefine USE_CUDA
