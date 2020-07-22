@@ -31,7 +31,6 @@
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <icrar/leap-accelerate/math/cpu/matrix.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
