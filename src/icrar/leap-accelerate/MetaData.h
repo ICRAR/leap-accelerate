@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/cpu/Invert.h>
 
+#include <casacore/ms/MeasurementSets.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -36,11 +37,6 @@
 #include <memory>
 #include <vector>
 #include <complex>
-
-namespace casacore
-{
-    class MeasurementSet;
-}
 
 namespace icrar
 {
