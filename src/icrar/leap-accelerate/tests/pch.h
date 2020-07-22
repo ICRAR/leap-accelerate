@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "icrar/leap-accelerate/config.h"
+
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Array.h>
 
@@ -30,7 +32,9 @@
 #include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/SVD>
 
+#ifdef USE_CUDA
 #include <cuda_runtime.h>
+#endif // USE_CUDA
 
 #include <gtest/gtest.h>
 
