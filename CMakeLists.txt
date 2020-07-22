@@ -73,9 +73,15 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_package(CUDA)
-if(CUDA_FOUND)
-  enable_language(CUDA)
+option(USE_CUDA "Enable CUDA support" TRUE)
+if (USE_CUDA)
+    find_package(CUDA)
+    if (NOT CUDA_FOUND)
+        message(FATAL_ERROR
+            "CUDA couldn't be found.\n"
+            "Set USE_CUDA=OFF if you still want to build without CUDA support")
+    endif()
+    enable_language(CUDA)
 endif()
 
 find_package(GSL)
