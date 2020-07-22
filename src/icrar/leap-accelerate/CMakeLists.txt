@@ -108,7 +108,9 @@ endif()
 if(BOOST_ENABLED)
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
-target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
+
 target_link_libraries(${TARGET_NAME} GSL::gsl)
 
 target_include_directories(${TARGET_NAME} PUBLIC
