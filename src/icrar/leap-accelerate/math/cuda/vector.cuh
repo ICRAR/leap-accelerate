@@ -27,7 +27,12 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
+
 #include <casacore/casa/Arrays/Array.h>
 
 #include <array>

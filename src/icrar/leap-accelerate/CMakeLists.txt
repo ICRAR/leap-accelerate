@@ -65,9 +65,9 @@ set(cuda_sources
 )
 
 # Libraries
-option(USE_CUDA "Use Cuda" CUDA_FOUND)
-option(USE_CASA "Use Casa" TRUE)
-option(USE_BOOST "Use Boost" OFF)
+option(CUDA_ENABLED "Cuda Enabled" TRUE)
+option(CASA_ENABLED "Casa Enabled" TRUE)
+option(BOOST_ENABLED "Boost Enabled" TRUE)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -85,24 +85,27 @@ add_library(
 # will also build with -std=c++11
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_11)
 
-if(USE_CUDA)
-    # We need to explicitly state that we need all CUDA files in the target
-    # library to be built with -dc as the member functions could be called by
-    # other libraries and executables
-    set_property(TARGET ${TARGET_NAME} CUDA_STANDARD 11)
-    set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
-    
-
-    target_link_libraries(${TARGET_NAME} CUDA)
+if(USE_CUDA_EXTRA)
+  # We need to explicitly state that we need all CUDA files in the target
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 11)
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
+  #target_link_libraries(${TARGET_NAME} CUDA)
 endif()
-if(USE_CASA)
+
+if(CUDA_ENABLED)
+  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+endif()
+
+if(CASA_ENABLED)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
-if(USE_BOOST)
+if(BOOST_ENABLED)
     target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
@@ -137,6 +140,6 @@ install(
     include/icrar/${SOLUTION_NAME_LOWER}
 )
 
-unset(USE_CUDA CACHE)
-unset(USE_CASA CACHE)
-unset(USE_BOOST CACHE)
+unset(CUDA_ENABLED CACHE)
+unset(CASA_ENABLED CACHE)
+unset(BOOST_ENABLED CACHE)

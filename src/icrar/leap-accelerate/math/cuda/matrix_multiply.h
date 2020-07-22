@@ -21,6 +21,7 @@
 */
 
 #pragma once
+
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Matrix.h>
 

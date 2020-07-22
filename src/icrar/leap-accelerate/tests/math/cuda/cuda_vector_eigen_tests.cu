@@ -25,6 +25,10 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/vector_eigen.cuh>
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
 
 #include <gtest/gtest.h>
@@ -72,4 +76,4 @@ public:
     }
 };
 
-// TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }
+TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }

@@ -69,7 +69,7 @@ public:
 
     }
 
-    void test_svd0()
+    void test_svd()
     {
     //     auto m = Eigen::MatrixXd(7, 5);
     //     m <<
@@ -254,10 +254,10 @@ public:
     }
 };
 
-//TEST_F(matrix_tests, test_cpu_svd) { test_svd(); }
+TEST_F(matrix_tests, DISABLED_test_cpu_svd) { test_svd(); }
 TEST_F(matrix_tests, test_transpose) { test_transpose(); }
 TEST_F(matrix_tests, test_square_invert) { test_square_invert(); }
 TEST_F(matrix_tests, test_pseudo_invert) { test_pseudo_invert(); }
 TEST_F(matrix_tests, test_svd33) { test_svd33(); }
 TEST_F(matrix_tests, test_svdmin) { test_svdmin(); }
-TEST_F(matrix_tests, test_right_invert) { test_right_invert(); }
+TEST_F(matrix_tests, DISABLED_test_right_invert) { test_right_invert(); }
