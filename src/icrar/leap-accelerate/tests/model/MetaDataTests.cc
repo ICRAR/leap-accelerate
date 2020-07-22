@@ -35,7 +35,7 @@ namespace icrar
 
         void TestMeasurementSet()
         {
-            std::string filename = "/mnt/d/dev/icrar/leap-accelerate/test_data/1197638568-32.ms";
+            std::string filename = "/mnt/d/dev/icrar/leap-accelerate/testdata/1197638568-32.ms";
             auto ms = std::make_unique<casacore::MeasurementSet>(filename);
             auto msmc = std::make_unique<casacore::MSMainColumns>(*ms);
             casacore::Vector<double> time = msmc->time().getColumn();
@@ -47,7 +47,7 @@ namespace icrar
 
         void TestReadFromFile()
         {
-            std::string filename = "/mnt/d/dev/icrar/leap-accelerate/test_data/1197638568-32.ms";
+            std::string filename = "/mnt/d/dev/icrar/leap-accelerate/testdata/1197638568-32.ms";
             auto ms = std::make_unique<casacore::MeasurementSet>(filename);
             auto meta = MetaData(*ms);
 

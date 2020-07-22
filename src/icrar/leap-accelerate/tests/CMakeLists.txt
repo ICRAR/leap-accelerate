@@ -25,7 +25,7 @@ if(CUDA_VERSION_MAJOR GREATER 9)
   list(APPEND sources ${cuda_sources})
 endif()
 
-#configure_file("test_data")
+#configure_file("testdata")
 
 add_executable(${TEST_TARGET}
   ${sources}
