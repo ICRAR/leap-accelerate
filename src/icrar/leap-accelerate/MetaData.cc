@@ -41,8 +41,8 @@ namespace icrar
     MetaData::MetaData(const casacore::MeasurementSet& ms)
     {
         //See https://github.com/OxfordSKA/OSKAR/blob/master/oskar/ms/src/oskar_ms_open.cpp
-        auto msc = casacore::MSColumns(ms);
-        auto msmc = casacore::MSMainColumns(ms);
+        auto msc = casacore::MSColumns(const_cast<casacore::MeasurementSet&>(ms)); // NOTE: only xenial casacore is not const qualified
+        auto msmc = casacore::MSMainColumns(const_cast<casacore::MeasurementSet&>(ms)); // NOTE: only xenial casacore is not const qualified
 
         this->init = true;
         this->stations = 0;
