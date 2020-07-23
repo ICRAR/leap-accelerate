@@ -40,18 +40,9 @@ namespace icrar
 
     MetaData::MetaData(const casacore::MeasurementSet& ms)
     {
-        //See https://github.com/OxfordSKA/OSKAR/blob/master/oskar/ms/src/oskar_ms_open.cpp
-
-        //casacore::MeasurementSet& cms = const_cast<casacore::MeasurementSet&>(ms);
-
-        //auto cms = casacore::MeasurementSet();
-
-        void* pms = (void*)&ms;
-        casacore::MSColumns& msc = *(casacore::MSColumns*)pms;
-        
-        // = casacore::MSColumns(cms); // NOTE: only xenial casacore is not const qualified
-        casacore::MSMainColumns& msmc = *(casacore::MSMainColumns*)pms;
-        // = casacore::MSMainColumns(cms); // NOTE: only xenial casacore is not const qualified
+        auto rms = casacore::MeasurementSet(ms);
+        auto msc = std::make_unique<casacore::MSColumns>(rms);
+        auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
         this->init = true;
         this->stations = 0;
@@ -62,7 +53,7 @@ namespace icrar
         this->num_pols = 0;
         if(ms.polarization().nrow() > 0)
         {
-            this->num_pols = msc.polarization().numCorr().get(0);
+            this->num_pols = msc->polarization().numCorr().get(0);
         }
 
         this->channels = 0;
@@ -70,14 +61,14 @@ namespace icrar
         this->freq_inc_hz = 0;
         if(ms.spectralWindow().nrow() > 0)
         {
-            this->channels = msc.spectralWindow().numChan().get(0);
-            this->freq_start_hz = msc.spectralWindow().refFrequency().get(0);
-            this->freq_inc_hz = msc.spectralWindow().chanWidth().get(0)(IPosition(1,0));
+            this->channels = msc->spectralWindow().numChan().get(0);
+            this->freq_start_hz = msc->spectralWindow().refFrequency().get(0);
+            this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
         this->stations = ms.antenna().nrow();
         if(ms.nrow() > 0)
         {
-            auto time_inc_sec = msc.interval().get(0);
+            auto time_inc_sec = msc->interval().get(0);
         }
 
         this->phase_centre_ra_rad = 0;
@@ -85,7 +76,7 @@ namespace icrar
         if(ms.field().nrow() > 0)
         {
             Vector<MDirection> dir;
-            msc.field().phaseDirMeasCol().get(0, dir, true);
+            msc->field().phaseDirMeasCol().get(0, dir, true);
             if(dir.size() > 0)
             {
                 Vector<double> v = dir(0).getAngle().getValue();
@@ -95,20 +86,20 @@ namespace icrar
         }
 
         Vector<double> range(2, 0.0);
-        if(msc.observation().nrow() > 0)
+        if(msc->observation().nrow() > 0)
         {
-            msc.observation().timeRange().get(0, range);
+            msc->observation().timeRange().get(0, range);
         }
         //start_time = range[0];
         //end_time = range[1];
 
 
-        casacore::Vector<double> time = msmc.time().getColumn();
+        casacore::Vector<double> time = msmc->time().getColumn();
         //msmc.time();
 
         this->nantennas = 4853; //TODO
-        casacore::Vector<std::int32_t> a1 = msmc.antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
-        casacore::Vector<std::int32_t> a2 = msmc.antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
 
         //Start calculations
         casacore::Matrix<double> A1;

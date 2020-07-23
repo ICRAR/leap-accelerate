@@ -43,8 +43,11 @@ namespace cpu
 {
     Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
     {
-        //return A.completeOrthogonalDecomposition().pseudoInverse();
-        return A;
+        #if EIGEN_VERSION_AT_LEAST(3,3,0)
+            return A.completeOrthogonalDecomposition().pseudoInverse();
+        #else
+            return A;
+        #endif
     }
 
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A)
