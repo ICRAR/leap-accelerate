@@ -68,7 +68,7 @@ set(cuda_sources
 option(CUDA_ENABLED "Cuda Enabled" TRUE)
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(BOOST_ENABLED "Boost Enabled" TRUE)
-option(USE_GSL "Use GSL" OFF)
+option(GSL_ENABLED "GSL Enabled" OFF)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -111,15 +111,17 @@ if(CUDA_ENABLED)
 endif()
 
 if(CASA_ENABLED)
-    target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(BOOST_ENABLED)
-    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 
 #target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
 
-#target_link_libraries(${TARGET_NAME} GSL::gsl)
+if(GSL_ENABLED)
+  target_link_libraries(${TARGET_NAME} GSL::gsl)
+endif()
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -153,4 +155,4 @@ install(
 unset(CUDA_ENABLED CACHE)
 unset(CASA_ENABLED CACHE)
 unset(BOOST_ENABLED CACHE)
-unset(USE_GSL CACHE)
+unset(GSL_ENABLED CACHE)
