@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
-#include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -41,8 +41,17 @@ namespace icrar
     MetaData::MetaData(const casacore::MeasurementSet& ms)
     {
         //See https://github.com/OxfordSKA/OSKAR/blob/master/oskar/ms/src/oskar_ms_open.cpp
-        auto msc = casacore::MSColumns(const_cast<casacore::MeasurementSet&>(ms)); // NOTE: only xenial casacore is not const qualified
-        auto msmc = casacore::MSMainColumns(const_cast<casacore::MeasurementSet&>(ms)); // NOTE: only xenial casacore is not const qualified
+
+        //casacore::MeasurementSet& cms = const_cast<casacore::MeasurementSet&>(ms);
+
+        //auto cms = casacore::MeasurementSet();
+
+        void* pms = (void*)&ms;
+        casacore::MSColumns& msc = *(casacore::MSColumns*)pms;
+        
+        // = casacore::MSColumns(cms); // NOTE: only xenial casacore is not const qualified
+        casacore::MSMainColumns& msmc = *(casacore::MSMainColumns*)pms;
+        // = casacore::MSMainColumns(cms); // NOTE: only xenial casacore is not const qualified
 
         this->init = true;
         this->stations = 0;
