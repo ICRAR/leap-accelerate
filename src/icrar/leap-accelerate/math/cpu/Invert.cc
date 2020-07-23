@@ -23,7 +23,6 @@
 #include "Invert.h"
 
 #include <icrar/leap-accelerate/math/eigen_helper.h>
-#include <icrar/leap-accelerate/math/cpu/svd.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 
@@ -41,35 +40,26 @@ namespace icrar
 {
 namespace cpu
 {
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
+    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& a)
     {
-        return A.completeOrthogonalDecomposition().pseudoInverse();
+        return a.completeOrthogonalDecomposition().pseudoInverse();
     }
 
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A)
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
     {
-        return ConvertMatrix(PseudoInverse(ConvertMatrix(A)));
+        return ConvertMatrix(PseudoInverse(ConvertMatrix(a)));
     }
 
-    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A)
+    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& a, double epsilon)
     {
-        Eigen::MatrixXd u;
-        Eigen::MatrixXd sp; //pseudoinverse sigma
-        Eigen::MatrixXd v;
-        std::tie(u, sp, v) = SVDSigmaP(A);
-
-        // U' = Ut
-        // V' = Vt
-        // M = U * Sigma * Vt
-
-        // MM' = I where M' = V * Sigma' * U'
-        // M' = V * Sigma' * Ut
-        return v * (sp * u.transpose());
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd(a ,Eigen::ComputeThinU | Eigen::ComputeThinV);
+        double tolerance = epsilon * std::max(a.cols(), a.rows()) *svd.singularValues().array().abs()(0);
+        return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
     }
 
-    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A)
+    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a,  double epsilon)
     {
-        return ConvertMatrix(RightInvert(ConvertMatrix(A)));
+        return ConvertMatrix(SVDPseudoInverse(ConvertMatrix(a), epsilon));
     }
 }
 }

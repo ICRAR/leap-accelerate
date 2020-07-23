@@ -11,7 +11,6 @@ set(public_headers
     MetaData.h
 
     math/cpu/Invert.h
-    math/cpu/svd.h
     
     algorithm/cpu/PhaseRotate.h
 )
@@ -26,8 +25,6 @@ set(sources
     MetaData.cc
 
     math/eigen_helper.cc
-
-    math/cpu/svd.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc

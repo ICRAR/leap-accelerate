@@ -32,6 +32,7 @@
 #include <vector>
 #include <complex>
 #include <queue>
+#include <limits>
 
 namespace icrar
 {
@@ -41,7 +42,7 @@ namespace cpu
 
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A);
 
-    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A);
+    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& A,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
 
     /**
      * @brief Invert as a function
@@ -55,6 +56,6 @@ namespace cpu
      * 
      * @param A
      */
-    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A);
+    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& A,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
 }
 }
