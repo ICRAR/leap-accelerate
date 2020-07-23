@@ -42,7 +42,14 @@ namespace cpu
 
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A);
 
-    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& A,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
+    /**
+     * @brief Calculates the PseudoInverse matrix of size N * M for a given M * N matrix.
+     * Satisfies the equation A = A * Ah * A
+     * @param A 
+     * @param epsilon 
+     * @return Eigen::MatrixXd 
+     */
+    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& A, double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
 
     /**
      * @brief Invert as a function
