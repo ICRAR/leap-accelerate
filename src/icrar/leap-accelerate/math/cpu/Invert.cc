@@ -40,13 +40,13 @@ namespace icrar
 {
 namespace cpu
 {
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
+    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& a)
     {
-		#if EIGEN_VERSION_AT_LEAST(3,3,0)
-        return A.completeOrthogonalDecomposition().pseudoInverse();
+        #if EIGEN_VERSION_AT_LEAST(3,3,0)
+        return a.completeOrthogonalDecomposition().pseudoInverse();
         #else
-		throw std::runtime_error("completeOrthogonalDecomposition missing, use SVDPseudoInverse instead");
-		#endif
+        throw std::runtime_error("completeOrthogonalDecomposition missing, use SVDPseudoInverse instead");
+        #endif
     }
 
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
