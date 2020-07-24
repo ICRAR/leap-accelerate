@@ -57,7 +57,7 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-8, doxygen, casacore-dev, libeigen3-dev, libgsl-dev, libboost1.65-all-dev]
-    env: COMPILER=g++-8 CUDA=9 PYTHON=python3
+    env: COMPILER=g++-8 CUDA=10 PYTHON=python3
 
 # We "source" it because it exports variables
 install:
