@@ -33,6 +33,11 @@ cmake ../ && sudo make install
 cd ../../
 export EIGEN3_DIR=/usr/local/include/
 
+if [ -n "$NO_CUDA" ]; then
+	echo "Skipping CUDA installation"
+	return
+fi
+
 # CUDA 10.0
 wget http://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64
 sudo dpkg -i cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64
