@@ -24,42 +24,13 @@
 
 #include <icrar/leap-accelerate/math/eigen_helper.h>
 
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
-
-#include <iostream>
-#include <string>
-#include <memory>
-#include <vector>
-#include <complex>
-#include <queue>
-
 namespace icrar
 {
 namespace cpu
 {
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& a)
-    {
-        #if EIGEN_VERSION_AT_LEAST(3,3,0)
-        return a.completeOrthogonalDecomposition().pseudoInverse();
-        #else
-        throw std::runtime_error("completeOrthogonalDecomposition missing, use SVDPseudoInverse instead");
-        #endif
-    }
-
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
     {
         return ConvertMatrix(PseudoInverse(ConvertMatrix(a)));
-    }
-
-    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& a, double epsilon)
-    {
-        // See https://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
-        Eigen::JacobiSVD<Eigen::MatrixXd> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
-        double tolerance = epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs()(0);
-        return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
     }
 
     casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a,  double epsilon)

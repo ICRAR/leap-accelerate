@@ -25,6 +25,7 @@
 #include <casacore/casa/Arrays/Matrix.h>
 
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/LU>
 
 #include <iostream>
 #include <string>
@@ -38,31 +39,52 @@ namespace icrar
 {
 namespace cpu
 {
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A);
-
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& A);
-
     /**
      * @brief Calculates the PseudoInverse matrix of size N * M for a given M * N matrix.
      * Satisfies the equation A = A * Ah * A
      * @param A 
      * @param epsilon 
-     * @return Eigen::MatrixXd 
+     * @return Matrix_T
      */
-    Eigen::MatrixXd SVDPseudoInverse(const Eigen::MatrixXd& A, double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
+    template<typename Matrix_T>
+    Matrix_T SVDPseudoInverse(const Matrix_T& a, double epsilon = std::numeric_limits<typename Matrix_T::Scalar>::epsilon())
+    {
+        // See https://eigen.tuxfamily.org/bz/show_bug.cgi?id=257
+        Eigen::BDCSVD<Matrix_T> svd(a, Eigen::ComputeThinU | Eigen::ComputeThinV);
+        double tolerance = epsilon * std::max(a.cols(), a.rows()) * svd.singularValues().array().abs()(0);
+        return svd.matrixV() * (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
+    }
 
     /**
      * @brief Invert as a function
      * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
      * 
      * This function generates and returns the inverse of the linear matrix to solve for the phase calibration (only)
-     * given a MS. 
+     * given a MS.
      * The MS is used to fill the columns of the matrix, based on the baselines in the MS (and RefAnt if given)
      * 
      * The output will be the inverse matrix to cross with the observation vector.
      * 
      * @param A
      */
-    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& A,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
+    template<typename Matrix_T>
+    Matrix_T PseudoInverse(const Matrix_T& a)
+    {
+        #if EIGEN_VERSION_AT_LEAST(3,3,0)
+        return a.completeOrthogonalDecomposition().pseudoInverse();
+        #else
+        return SVDPseudoInverse(a);
+        #endif
+    }
+
+    /**
+     * @see PseudoInverse
+     */
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a);
+
+    /**
+     * @see SVDPseudoInverse
+     */
+    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
 }
 }

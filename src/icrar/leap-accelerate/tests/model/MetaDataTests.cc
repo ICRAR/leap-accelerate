@@ -64,6 +64,7 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
+            //TODO: verify these values
             ASSERT_EQ(4754, meta.A.shape()[0]); //4854?
             ASSERT_EQ(127, meta.A.shape()[1]); //128?
             ASSERT_EQ(127, meta.Ad.shape()[0]); //128?
