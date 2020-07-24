@@ -184,9 +184,9 @@ public:
     }
 };
 
-TEST_F(matrix_tests, test_transpose) { test_transpose(); }
-TEST_F(matrix_tests, test_square_invert) { test_square_invert(); }
-TEST_F(matrix_tests, test_pseudo_inverse_33) { test_pseudo_inverse_33(); }
-TEST_F(matrix_tests, test_pseudo_inverse_32) { test_pseudo_inverse_32(); }
-TEST_F(matrix_tests, test_svd42) { test_svd42(); }
-TEST_F(matrix_tests, test_svd_pseudo_inverse_32) { test_svd_pseudo_inverse_32(); }
+TEST_F(matrix_tests, test_cpu_transpose) { test_transpose(); }
+TEST_F(matrix_tests, test_cpu_square_invert) { test_square_invert(); }
+TEST_F(matrix_tests, test_cpu_pseudo_inverse_33) { test_pseudo_inverse_33(); }
+TEST_F(matrix_tests, test_cpu_pseudo_inverse_32) { test_pseudo_inverse_32(); }
+TEST_F(matrix_tests, test_cpu_svd42) { test_svd42(); }
+TEST_F(matrix_tests, test_cpu_svd_pseudo_inverse_32) { test_svd_pseudo_inverse_32(); }

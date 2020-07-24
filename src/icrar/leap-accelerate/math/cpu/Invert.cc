@@ -33,7 +33,7 @@ namespace cpu
         return ConvertMatrix(PseudoInverse(ConvertMatrix(a)));
     }
 
-    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a,  double epsilon)
+    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a, double epsilon)
     {
         return ConvertMatrix(SVDPseudoInverse(ConvertMatrix(a), epsilon));
     }

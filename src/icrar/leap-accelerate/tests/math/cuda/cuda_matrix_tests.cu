@@ -72,7 +72,7 @@ public:
     }
 
     template<typename T>
-    void test_matrix_matrix_multiply()
+    void test_matrix_matrix_multiply_33()
     {
         using MatrixXT = Eigen::Matrix<T, -1, -1>;
 
@@ -104,8 +104,35 @@ public:
         ASSERT_EQ(c(2,2), 1);
     }
 
+        template<typename T>
+    void test_matrix_matrix_multiply_32()
+    {
+        using MatrixXT = Eigen::Matrix<T, -1, -1>;
+
+        auto a = MatrixXT(2,2);
+        a << 1, 2,
+             3, 4;
+
+        auto b = MatrixXT(3,2);
+        b << 5, 6, 7,
+             8, 9, 10;
+
+        auto expected = MatrixXT(3,3); 
+
+        icrar::cuda::h_multiply(a, b, c);
+
+        MatrixXT expected = a * b;
+
+        ASSERT_EQ(expected(0,0), 21);
+        ASSERT_EQ(expected(0,1), 24);
+        ASSERT_EQ(expected(0,2), 27);
+        ASSERT_EQ(expected(1,0), 47);
+        ASSERT_EQ(expected(1,1), 54);
+        ASSERT_EQ(expected(1,2), 61);
+    }
+
     template<typename T>
-    void test_matrix_vector_multiply()
+    void test_matrix_vector_multiply_33()
     {
         using MatrixXT = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
@@ -131,6 +158,7 @@ public:
 };
 
 TEST_F(cuda_matrix_tests, test_matrix_add) { test_matrix_add<double>(); }
-TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply) { test_matrix_matrix_multiply<double>(); }
-TEST_F(cuda_matrix_tests, test_matrix_vector_multiply) { test_matrix_vector_multiply<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply_33) { test_matrix_matrix_multiply_33<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply_32) { test_matrix_matrix_multiply_32<double>(); }
+TEST_F(cuda_matrix_tests, test_matrix_vector_multiply_33) { test_matrix_vector_multiply_33<double>(); }
 TEST_F(cuda_matrix_tests, test_scalear_matrix_multiply) { test_scalear_matrix_multiply<double>(); }
