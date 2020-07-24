@@ -26,7 +26,6 @@
 #include <icrar/leap-accelerate/math/cpu/Invert.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
-
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
