@@ -25,6 +25,7 @@
 #include <casacore/casa/Arrays/Matrix.h>
 
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 #include <eigen3/Eigen/LU>
 
 #include <iostream>
