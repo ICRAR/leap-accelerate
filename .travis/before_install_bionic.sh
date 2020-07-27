@@ -28,7 +28,7 @@
 #Eigen 3.3.7
 wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.bz2
 tar -xvjf 3.3.7.tar.bz2
-cd eigen-eigen-323c052e1731 && cmake && sudo make install
+cd eigen-eigen-323c052e1731 && cmake . && sudo make install
 export EIGEN3_DIR=/usr/local/include/
 
 # CUDA 10.0
