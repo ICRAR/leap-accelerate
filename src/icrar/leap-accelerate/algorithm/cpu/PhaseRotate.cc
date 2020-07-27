@@ -186,10 +186,10 @@ namespace cpu
         }
 
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
-        std::fill(A.begin(), A.end(), 0);
+        A = 0.0;
 
         Vector<int> I = Vector<int>(a1.size() + 1);
-        std::fill(I.begin(), I.end(), 1);
+        I = 1;
 
         int k = 0;
 
