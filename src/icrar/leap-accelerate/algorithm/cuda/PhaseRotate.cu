@@ -21,7 +21,6 @@
  * MA 02111 - 1307  USA
  */
 
-#include "../../pch.h"
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/MetaData.h>
@@ -31,7 +30,6 @@
 #include <icrar/leap-accelerate/math/Integration.h>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>

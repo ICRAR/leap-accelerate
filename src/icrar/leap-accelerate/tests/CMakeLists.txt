@@ -25,11 +25,18 @@ if(CUDA_VERSION_MAJOR GREATER 9)
   list(APPEND sources ${cuda_sources})
 endif()
 
-#configure_file("test_data")
+#configure_file("testdata")
 
 add_executable(${TEST_TARGET}
   ${sources}
 )
+
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  target_precompile_headers(${TEST_TARGET}
+    PRIVATE
+      [[pch.h]]
+  )
+endif()
 
 target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
 

@@ -20,23 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include "MetaDataCuda.h"
 
-#include <casacore/ms/MeasurementSets.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
-
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/SVD>
-
-#include <cuda_runtime.h>
-
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <array>
-#include <set>
+namespace icrar
+{
+namespace cuda
+{
+    
+}
+}

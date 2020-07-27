@@ -31,6 +31,7 @@
 #endif
 #include <eigen3/Eigen/Core>
 
+#include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
@@ -38,7 +39,6 @@
 
 namespace casacore
 {
-    class MeasurementSet;
     class MDirection;
     class MVDirection;
     class MVuvw;

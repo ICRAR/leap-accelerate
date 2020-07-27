@@ -11,7 +11,6 @@ set(public_headers
     MetaData.h
 
     math/cpu/Invert.h
-    math/cpu/svd.h
     
     algorithm/cpu/PhaseRotate.h
 )
@@ -26,8 +25,6 @@ set(sources
     MetaData.cc
 
     math/eigen_helper.cc
-
-    math/cpu/svd.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc
@@ -68,6 +65,7 @@ set(cuda_sources
 option(CUDA_ENABLED "Cuda Enabled" TRUE)
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(BOOST_ENABLED "Boost Enabled" TRUE)
+option(GSL_ENABLED "GSL Enabled" OFF)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -78,12 +76,19 @@ add_library(
     ${cuda_headers}
 )
 
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  target_precompile_headers(${TARGET_NAME}
+    PRIVATE
+      [[pch.h]]
+  )
+endif()
+
 #set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 # Request that the target be built with -std=c++11
 # As this is a public compile feature anything that links to the target
 # will also build with -std=c++11
-target_compile_features(${TARGET_NAME} PUBLIC cxx_std_11)
+target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
 
 if(USE_CUDA_EXTRA)
   # We need to explicitly state that we need all CUDA files in the target
@@ -103,15 +108,17 @@ if(CUDA_ENABLED)
 endif()
 
 if(CASA_ENABLED)
-    target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(BOOST_ENABLED)
-    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+  target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
 
 #target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
 
-target_link_libraries(${TARGET_NAME} GSL::gsl)
+if(GSL_ENABLED)
+  target_link_libraries(${TARGET_NAME} GSL::gsl)
+endif()
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -145,3 +152,4 @@ install(
 unset(CUDA_ENABLED CACHE)
 unset(CASA_ENABLED CACHE)
 unset(BOOST_ENABLED CACHE)
+unset(GSL_ENABLED CACHE)

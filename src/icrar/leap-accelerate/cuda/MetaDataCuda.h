@@ -22,6 +22,11 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/MetaData.h>
+
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+#include <icrar/leap-accelerate/cuda/device_matrix.h>
+
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -38,12 +43,14 @@
 
 namespace icrar
 {
-    struct MetaDataCuda
+namespace cuda
+{
+    struct Constants
     {
-        bool init;
+        //bool init;
 
-        //int nantennas;
-        //int nbaseline;
+        int nantennas;
+        //int nbaselines;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -76,19 +83,44 @@ namespace icrar
         
     };
 
-    struct Buffers
+    struct MetaDataCudaHost
     {
+        MetaDataCudaHost(MetaData& metadata);
+
+        Constants constants;
+
         std::vector<casacore::MVuvw> oldUVW;
 
-        Eigen::Matrix<std::complex<double>, -1, -1> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        Eigen::Matrix<double, -1, -1> dd;
+        Eigen::MatrixXcd avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        Eigen::MatrixXd dd;
 
+        Eigen::MatrixXd A;
+        Eigen::VectorXd I;
+        Eigen::MatrixXd Ad;
 
-        Eigen::Matrix<double, -1, -1> A;
-        Eigen::Matrix<double, -1, -1> Ad;
-        Eigen::Matrix<double, -1, -1> Ad1;
-
-        Eigen::VectorXf I1;
-        Eigen::VectorXf I;
+        Eigen::MatrixXd A1;
+        Eigen::VectorXd I1;
+        Eigen::MatrixXd Ad1;
     };
+
+    struct MetaDataCudaDevice
+    {
+        MetaDataCudaDevice(MetaDataCudaDevice& metadata);
+
+        Constants constants;
+
+        icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
+
+        icrar::cuda::device_matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        icrar::cuda::device_matrix<double> dd;
+        
+        icrar::cuda::device_matrix<double> A;
+        icrar::cuda::device_vector<double> I;
+        icrar::cuda::device_matrix<double> Ad;
+        
+        icrar::cuda::device_matrix<double> A1;
+        icrar::cuda::device_vector<double> I1;
+        icrar::cuda::device_matrix<double> Ad1;
+    };
+}
 }

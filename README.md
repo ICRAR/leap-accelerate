@@ -3,7 +3,9 @@
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
 [![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
-Acceleration module for LEAP using GPU acceleration. LEAP-Accelerate includes:
+LEAP Calibration project using GPU acceleration.
+
+LEAP-Accelerate includes:
 
 * leap-accelerate: a shared library for gpu accelerated direction centering and phase calibration
 * leap-accelerate-cli: a CLI interface for I/O datastream or plasma data access 

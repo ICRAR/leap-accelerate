@@ -23,57 +23,19 @@
 #include "Invert.h"
 
 #include <icrar/leap-accelerate/math/eigen_helper.h>
-#include <icrar/leap-accelerate/math/cpu/svd.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
-
-#include <iostream>
-#include <string>
-#include <memory>
-#include <vector>
-#include <complex>
-#include <queue>
 
 namespace icrar
 {
 namespace cpu
 {
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A)
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
     {
-        throw std::runtime_error("segfault");
-        return A.completeOrthogonalDecomposition().pseudoInverse();
+        return ConvertMatrix(PseudoInverse(ConvertMatrix(a)));
     }
 
-    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A)
+    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a, double epsilon)
     {
-        Eigen::MatrixXd u;
-        Eigen::VectorXd s;
-        Eigen::MatrixXd vh;
-        std::tie(u, s, vh) = SVDDiag(A);
-        return vh.transpose() * (s * u.transpose());
-
-        // try:
-        //     print('Inverting Cal Matrix')
-        //     print("IF A:", type(A), A.shape, A.dtype)
-        //     (u,s,vh)=np.linalg.svd(A,full_matrices=False)
-        //     sd=np.zeros((len(s),1)) #A.shape[1]))
-        //     for n in range(len(s)):
-        //         if s[n]/s[0]>1e-6:
-        //         sd[n][0]=1./s[n]   # Why is this 1D?
-
-        //     Ad=np.dot(vh.T,(sd*u.T))
-        //     I=np.dot(Ad,A)
-        // except:
-        //     print('Failed to generate inverted matrix')
-        // return Ad
-    }
-
-    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A)
-    {
-        return ConvertMatrix(RightInvert(ConvertMatrix(A)));
+        return ConvertMatrix(SVDPseudoInverse(ConvertMatrix(a), epsilon));
     }
 }
 }

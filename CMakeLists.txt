@@ -11,9 +11,15 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_FLAGS_DEBUG "-O1 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
+
+#add_definitions(-DUseCasacoreNamespace)
+
+add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
@@ -42,9 +48,9 @@ if (BUILD_TESTING)
       gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
   )
   set_target_properties(gtest PROPERTIES FOLDER external)
-  set_target_properties(gtest_main PROPERTIES FOLDER external)
+  #set_target_properties(gtest_main PROPERTIES FOLDER external)
   set_target_properties(gmock PROPERTIES FOLDER external)
-  set_target_properties(gmock_main PROPERTIES FOLDER external)
+  #set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
 
 find_package(Doxygen)
@@ -64,7 +70,7 @@ if (DOXYGEN_FOUND)
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM )
 else (DOXYGEN_FOUND)
-  message("Doxygen need to be installed to generate the doxygen documentation")
+  message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
 find_package(CUDA)
@@ -74,7 +80,7 @@ endif()
 
 find_package(GSL)
 find_package(LAPACK)
-find_package(Casacore)
+find_package(Casacore REQUIRED)
 find_package(Boost)
 find_package(Eigen3 REQUIRED)
 

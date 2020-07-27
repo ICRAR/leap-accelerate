@@ -20,23 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <casacore/ms/MeasurementSets.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
-
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/SVD>
-
-#include <cuda_runtime.h>
-
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <array>
-#include <set>
+#ifdef DEBUG_CUDA_ERRORS
+static void DebugCudaErrors()
+{
+    //Synchronize to make sure that any currently executing or queued for execution operations
+    //that may cause errors are complete before we query the last error.
+    //The synchronize may return an error code if pending operations encounter errors but will
+    //not return an error code for operations that have already completed.
+    CHECK_CUDA_ERROR_CODE(cudaDeviceSynchronize());
+    //Query the most recent error and check the result
+    CHECK_CUDA_ERROR_CODE(cudaGetLastError());
+}
+#else
+static void DebugCudaErrors() {}
+#endif

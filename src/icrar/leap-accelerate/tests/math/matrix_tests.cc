@@ -22,7 +22,6 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 
-#include <icrar/leap-accelerate/math/cpu/svd.h>
 #include <icrar/leap-accelerate/math/cpu/Invert.h>
 
 #include <eigen3/Eigen/Core>
@@ -69,51 +68,6 @@ public:
 
     }
 
-    void test_svd()
-    {
-    //     auto m = Eigen::MatrixXd(7, 5);
-    //     m <<
-    //     1, 1, 1, 0, 0,
-    //     2, 2, 2, 0, 0,
-    //     1, 1, 1, 0, 0,
-    //     5, 5, 5, 0, 0,
-    //     0, 0, 0, 2, 2,
-    //     0, 0, 0, 3, 3,
-    //     0, 0, 0, 1, 1;
-
-    //     Eigen::MatrixXd matU;
-    //     Eigen::DiagonalMatrix<double, Eigen::Dynamic> s;
-    //     Eigen::MatrixXd matV;
-    //     std::tie(matU, s, matV) = icrar::cpu::SVD(m);
-    //     {
-    //         auto expectedU = Eigen::MatrixXd(7, 5);
-    //         expectedU <<
-    //         0.179605, 7.90796e-17, 0.898027, 0.356143, 0.114959,
-    //         0.359211, -1.96067e-16, 0.273465, -0.883008, -0.0668068,
-    //         0.179605, 1.20406e-17, 0.136732, 0.0542259, -0.418932,
-    //         0.898027, 6.02029e-17, -0.316338, 0.27113, 0.0875174,
-    //         -0, 0.534522, -0, -0.093522, 0.755102,
-    //         -0, 0.801784, -0, 0.077935, -0.462585,
-    //         -0, 0.267261, -0, -0.046761, -0.122449;
-
-    //         ASSERT_MEQ(matU, expectedU, TOLERANCE);
-    //     }
-
-    //     {
-    //         auto expectedV = Eigen::MatrixXd(5, 5);
-    //         expectedV <<
-    //         0.57735, 0, -0.707107, 0, -0.408248,
-    //         0.57735, 0, 0, 0, 0.816497,
-    //         0.57735, 0, 0.707107, 0, -0.408248,
-    //         0, 0.707107, 0, -0.707107, 0,
-    //         0, 0.707107, 0, 0.707107, 0;
-
-    //         ASSERT_MEQ(matV, expectedV, TOLERANCE);
-    //     }
-
-        //TODO: re-form original matrix
-    }
-
     void test_transpose()
     {
         auto m1 = Eigen::MatrixXd(3, 3);
@@ -152,7 +106,7 @@ public:
         ASSERT_MEQ(m1d, expected_m1d, TOLERANCE);
     }
 
-    void test_pseudo_invert()
+    void test_pseudo_inverse_33()
     {
         auto m1 = Eigen::MatrixXd(3, 3);
         m1 <<
@@ -171,93 +125,74 @@ public:
         ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
     }
 
-    void test_svd33()
+    void test_pseudo_inverse_32()
     {
-        auto m1 = Eigen::MatrixXd(3, 3);
+        auto m1 = Eigen::MatrixXd(3, 2);
         m1 <<
-        3, 0, 2,
-        2, 0, -2,
-        0, 1, 1;
+        0.5, 0.5,
+        -1, -1,
+        -0.5, -0.5;
 
-        Eigen::MatrixXd u;
-        Eigen::VectorXd s;
-        Eigen::MatrixXd v;
-        std::tie(u, s, v) = icrar::cpu::SVD(m1);
+        auto m1d = icrar::cpu::PseudoInverse(m1);
 
-        // M = U * Sigma * Vt
-        auto sig = Eigen::DiagonalMatrix<double, -1>(s);
-        ASSERT_MEQ(m1, u * sig * v.transpose(), TOLERANCE);
+        auto expected_m1d = Eigen::MatrixXd(2, 3);
+        expected_m1d <<
+        0.166667, -0.333333, -0.166667,
+        0.166667, -0.333333, -0.166667;
+
+        ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQ(m1, m1 * m1d * m1, TOLERANCE);
     }
 
-    void test_svdmin()
+    void test_svd42()
     {
-        auto m1 = Eigen::MatrixXd(4, 3);
+        auto m1 = Eigen::MatrixXd(4, 2);
         m1 <<
-        3, 0, 2,
-        2, 0, -2,
-        0, 1, 1,
-        -3, 1, 2;
+        2, 4,
+        1, 3,
+        0, 0,
+        0, 0;
 
         auto bdc = Eigen::BDCSVD<Eigen::MatrixXd>(m1, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
         Eigen::MatrixXd u = bdc.matrixU();
         Eigen::MatrixXd v = bdc.matrixV();
 
-        ASSERT_EQ(4, u.rows());
-        ASSERT_EQ(4, u.cols());
-        ASSERT_EQ(3, v.rows());
-        ASSERT_EQ(3, v.cols());
+        ASSERT_EQ(m1.rows(), u.rows());
+        ASSERT_EQ(m1.rows(), u.cols());
+        ASSERT_EQ(m1.cols(), v.rows());
+        ASSERT_EQ(m1.cols(), v.cols());
     }
 
-    void test_svd34()
+    void test_svd_pseudo_inverse_32()
     {
-        auto m1 = Eigen::MatrixXd(4, 3);
+        auto m1 = Eigen::MatrixXd(3, 2);
         m1 <<
-        3, 0, 2,
-        2, 0, -2,
-        0, 1, 1,
-        -3, 1, 2;
+        0.5, 0.5,
+        -1, -1,
+        -0.5, -0.5;
 
-        Eigen::MatrixXd u;
-        Eigen::MatrixXd s;
-        Eigen::MatrixXd v;
-        std::tie(u, s, v) = icrar::cpu::SVDDiag(m1);
+        auto m1d = icrar::cpu::SVDPseudoInverse(m1);
 
-        // M = U * Sigma * Vt
-        ASSERT_EQ(2, u.rows());
-        ASSERT_EQ(2, u.cols());
-        ASSERT_EQ(2, s.rows());
-        ASSERT_EQ(3, s.cols());
-        ASSERT_EQ(3, v.rows());
-        ASSERT_EQ(3, v.cols());
-
-        ASSERT_MEQ(m1, u * s * v.transpose(), TOLERANCE);
-    }
-
-    void test_right_invert()
-    {
-        auto m1 = Eigen::MatrixXd(3, 3);
-        m1 <<
-        3, 0, 2,
-        2, 0, -2,
-        0, 1, 1;
-
-        auto m1d = icrar::cpu::RightInvert(m1);
-
-        auto expected_m1d = Eigen::MatrixXd(3, 3);
+        auto expected_m1d = Eigen::MatrixXd(2, 3);
         expected_m1d <<
-        0.2, 0.2, 0,
-        -0.2, 0.3, 1,
-        0.2, -0.3, 0;
-        
+        0.166667, -0.333333, -0.166667,
+        0.166667, -0.333333, -0.166667;
+
         ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQ(m1, m1 * m1d * m1, TOLERANCE);
+    }
+
+    [[deprecated]]
+    void test_deprecated()
+    {
+
     }
 };
 
-TEST_F(matrix_tests, DISABLED_test_cpu_svd) { test_svd(); }
-TEST_F(matrix_tests, test_transpose) { test_transpose(); }
-TEST_F(matrix_tests, test_square_invert) { test_square_invert(); }
-TEST_F(matrix_tests, test_pseudo_invert) { test_pseudo_invert(); }
-TEST_F(matrix_tests, test_svd33) { test_svd33(); }
-TEST_F(matrix_tests, test_svdmin) { test_svdmin(); }
-TEST_F(matrix_tests, DISABLED_test_right_invert) { test_right_invert(); }
+TEST_F(matrix_tests, test_cpu_transpose) { test_transpose(); }
+TEST_F(matrix_tests, test_cpu_square_invert) { test_square_invert(); }
+TEST_F(matrix_tests, test_cpu_pseudo_inverse_33) { test_pseudo_inverse_33(); }
+TEST_F(matrix_tests, test_cpu_pseudo_inverse_32) { test_pseudo_inverse_32(); }
+TEST_F(matrix_tests, test_cpu_svd42) { test_svd42(); }
+TEST_F(matrix_tests, test_cpu_svd_pseudo_inverse_32) { test_svd_pseudo_inverse_32(); }
