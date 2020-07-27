@@ -96,12 +96,13 @@ if(USE_CUDA_EXTRA)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
   #target_link_libraries(${TARGET_NAME} CUDA)
-endif()
-
-if(CUDA_ENABLED)
+  endif()
+  
+  if(CUDA_ENABLED)
   target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
   target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-endif()
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe=--diag_suppress=esa_on_defaulted_function_ignored>)
+  endif()
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})

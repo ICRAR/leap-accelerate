@@ -33,6 +33,11 @@ namespace cuda
         
     }
 
+    const Constants& MetaDataCudaHost::GetConstants() const
+    {
+        return m_constants;
+    }
+
     void MetaDataCudaHost::CalcUVW(std::vector<casacore::MVuvw>& uvws)
     {
         this->oldUVW = uvws;
@@ -47,30 +52,30 @@ namespace cuda
 
     void MetaDataCudaHost::SetDD(const casacore::MVDirection& direction)
     {
-        this->constants.dlm_ra = direction.get()[0] - this->constants.phase_centre_ra_rad;
-        this->constants.dlm_dec = direction.get()[1] - this->constants.phase_centre_dec_rad;
+        m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
+        m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
 
-        this->dd(0,0) = cos(this->constants.dlm_ra) * cos(this->constants.dlm_dec);
-        this->dd(0,1) = -sin(this->constants.dlm_ra);
-        this->dd(0,2) = cos(this->constants.dlm_ra) * sin(this->constants.dlm_dec);
+        this->dd(0,0) = cos(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
+        this->dd(0,1) = -sin(m_constants.dlm_ra);
+        this->dd(0,2) = cos(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
         
-        this->dd(1,0) = sin(this->constants.dlm_ra) * cos(this->constants.dlm_dec);
-        this->dd(1,1) = cos(this->constants.dlm_ra);
-        this->dd(1,2) = sin(this->constants.dlm_ra) * sin(this->constants.dlm_dec);
+        this->dd(1,0) = sin(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
+        this->dd(1,1) = cos(m_constants.dlm_ra);
+        this->dd(1,2) = sin(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
 
-        this->dd(2,0) = -sin(this->constants.dlm_dec);
+        this->dd(2,0) = -sin(m_constants.dlm_dec);
         this->dd(2,1) = 0;
-        this->dd(2,2) = cos(this->constants.dlm_dec);
+        this->dd(2,2) = cos(m_constants.dlm_dec);
     }
 
     void MetaDataCudaHost::SetWv()
     {
         double speed_of_light = 299792458.0;
-        this->constants.channel_wavelength = range(
-            this->constants.freq_start_hz,
-            this->constants.freq_inc_hz,
-            this->constants.freq_start_hz + this->constants.freq_inc_hz * this->constants.channels);
-        for(double& v : this->constants.channel_wavelength)
+        m_constants.channel_wavelength = range(
+            m_constants.freq_start_hz,
+            m_constants.freq_inc_hz,
+            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels);
+        for(double& v : m_constants.channel_wavelength)
         {
             v = speed_of_light / v;
         }

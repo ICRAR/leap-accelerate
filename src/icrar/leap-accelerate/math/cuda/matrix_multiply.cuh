@@ -88,6 +88,18 @@ namespace cuda
     {
         if(a.cols() != b.rows() || a.rows() != c.rows() || b.cols() != c.cols())
         {
+            if(a.cols() != b.rows())
+            {
+                throw std::runtime_error("a.cols does not match b.rows");
+            }
+            if(a.rows() != c.rows())
+            {
+                throw std::runtime_error("a.rows does not match c.rows");
+            }
+            if(b.cols() != c.cols())
+            {
+                throw std::runtime_error("b.cols does not match c.cols");
+            }
             throw std::runtime_error("matrix dimensions invalid");
         }
 
@@ -208,15 +220,15 @@ namespace cuda
     }
 
     template<typename T>
-    __host__ void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
+    __host__ void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Vector<T>& c)
     {
         h_multiply_vector(a.shape()[0], a.shape()[1], a.data(), b.data(), c.data());
     }
 
     template<typename T>
-    __host__ casacore::Array<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b)
+    __host__ casacore::Array<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Vector<T>& b)
     {
-        auto c = casacore::Array<T>();
+        auto c = casacore::Vector<T>();
         h_multiply(a, b, c);
         return c;
     }

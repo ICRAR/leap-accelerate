@@ -145,20 +145,21 @@ namespace icrar
      */
     void SetDD(MetaData& metadata, const MVDirection& direction)
     {
+        const int I2D = 2;
         metadata.dlm_ra = direction.get()[0] - metadata.phase_centre_ra_rad;
         metadata.dlm_dec = direction.get()[1] - metadata.phase_centre_dec_rad;
 
-        metadata.dd(IPosition(0,0)) = cos(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(0,1)) = -sin(metadata.dlm_ra);
-        metadata.dd(IPosition(0,2)) = cos(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,0,0)) = cos(metadata.dlm_ra) * cos(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,0,1)) = -sin(metadata.dlm_ra);
+        metadata.dd(IPosition(I2D,0,2)) = cos(metadata.dlm_ra) * sin(metadata.dlm_dec);
         
-        metadata.dd(IPosition(1,0)) = sin(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(1,1)) = cos(metadata.dlm_ra);
-        metadata.dd(IPosition(1,2)) = sin(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,1,0)) = sin(metadata.dlm_ra) * cos(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,1,1)) = cos(metadata.dlm_ra);
+        metadata.dd(IPosition(I2D,1,2)) = sin(metadata.dlm_ra) * sin(metadata.dlm_dec);
 
-        metadata.dd(IPosition(2,0)) = -sin(metadata.dlm_dec);
-        metadata.dd(IPosition(2,1)) = 0;
-        metadata.dd(IPosition(2,2)) = cos(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,2,0)) = -sin(metadata.dlm_dec);
+        metadata.dd(IPosition(I2D,2,1)) = 0;
+        metadata.dd(IPosition(I2D,2,2)) = cos(metadata.dlm_dec);
     }
 
     /**

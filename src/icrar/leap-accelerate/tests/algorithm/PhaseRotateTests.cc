@@ -62,9 +62,11 @@ namespace icrar
 
         void RotateVisibilitiesTest(bool useCuda)
         {
-            Integration integration;
-            MetaData metadata;
-            casacore::MVDirection direction;
+            std::string filepath = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            auto ms = casacore::MeasurementSet(filepath);
+            auto metadata = MetaData(ms);
+            auto direction = casacore::MVDirection(-0.7129444556035118, -0.365286407171852);
+            auto integration = Integration();
 
             if(useCuda)
             {
@@ -73,14 +75,14 @@ namespace icrar
             }
             else
             {
-                icrar::cpu::RotateVisibilities(integration, metadata, direction); //TODO: segfault
+                icrar::cpu::RotateVisibilities(integration, metadata, direction);
             }
         }
 
         void PhaseMatrixFunctionTest(bool useCuda)
         {
-            const casacore::Array<int32_t> a1;
-            const casacore::Array<int32_t> a2;
+            const casacore::Vector<int32_t> a1;
+            const casacore::Vector<int32_t> a2;
             int refAnt = 0;
             bool map = true;
 

@@ -81,8 +81,9 @@ namespace cuda
 
     class MetaDataCudaHost
     {
+    private:
+        Constants m_constants;
     public:
-        Constants constants;
 
         bool init = false; //set to true after rotateVisibilities
 
@@ -100,6 +101,8 @@ namespace cuda
         Eigen::MatrixXd Ad1;
 
         MetaDataCudaHost(MetaData& metadata);
+
+        const Constants& GetConstants() const;
 
         void CalcUVW(std::vector<casacore::MVuvw>& uvws);
         void SetDD(const casacore::MVDirection& direction);

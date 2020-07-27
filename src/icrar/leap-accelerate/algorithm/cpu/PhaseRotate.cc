@@ -185,13 +185,13 @@ namespace cpu
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
+        casacore::Matrix<double> A = casacore::Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
         for(double& v : A)
         {
             v = 0;
         }
 
-        Vector<int> I = Vector<int>(a1.size() + 1);
+        casacore::Vector<int> I = casacore::Vector<int>(a1.size() + 1);
         for(int& v : I)
         {
             v = 1;

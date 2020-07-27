@@ -84,7 +84,7 @@ namespace cuda
             metadata.SetDD(direction);
             metadata.SetWv();
             // Zero a vector for averaging in time and freq
-            metadata.avg_data = Eigen::MatrixXcd(integration.baselines, metadata.constants.num_pols);
+            metadata.avg_data = Eigen::MatrixXcd(integration.baselines, metadata.GetConstants().num_pols);
             metadata.init = false;
         }
         metadata.CalcUVW(uvw);
@@ -95,7 +95,7 @@ namespace cuda
             // For baseline
             const double pi = boost::math::constants::pi<double>();
             double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
+            shiftFactor = shiftFactor + 2 * pi * (metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
             shiftFactor = shiftFactor -2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
 
             if(baseline % 1000 == 1)
@@ -104,9 +104,9 @@ namespace cuda
             }
 
             // Loop over channels
-            for(int channel = 0; channel < metadata.constants.channels; channel++)
+            for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
-                double shiftRad = shiftFactor / metadata.constants.channel_wavelength[channel];
+                double shiftRad = shiftFactor / metadata.GetConstants().channel_wavelength[channel];
                 double rs = sin(shiftRad);
                 double rc = cos(shiftRad);
                 std::complex<double> v = data[channel][baseline];
