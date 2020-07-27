@@ -14,8 +14,8 @@ project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS_RELEASE "-O2 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-O1 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
 
 #add_definitions(-DUseCasacoreNamespace)
 
