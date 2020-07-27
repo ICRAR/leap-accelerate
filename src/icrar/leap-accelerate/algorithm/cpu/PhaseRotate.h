@@ -25,7 +25,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <iostream>
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -40,6 +40,12 @@ namespace casacore
     class MDirection;
     class MVDirection;
     class MVuvw;
+    template<typename T>
+    class Array;
+    template<typename T>
+    class Matrix;
+    template<typename T>
+    class Vector;
 }
 
 namespace icrar
@@ -54,6 +60,12 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief 
+     * 
+     * @param metadata 
+     * @param directions 
+     */
     void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
@@ -88,11 +100,11 @@ namespace cpu
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 
      * @param a2 
-     * @param refAnt 
+     * @param refAnt the reference antenna (0, 1), -1 
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
-    std::pair<casacore::Matrix<double>, casacore::Vector<int>> PhaseMatrixFunction(
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,

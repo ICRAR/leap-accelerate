@@ -23,36 +23,8 @@
 #pragma once
 
 #include <casacore/casa/Arrays/Matrix.h>
-
+#include <casacore/casa/Arrays/Array.h>
 #include <eigen3/Eigen/Core>
 
-#include <iostream>
-#include <string>
-#include <memory>
 #include <vector>
-#include <complex>
-#include <queue>
-
-namespace icrar
-{
-namespace cpu
-{
-    Eigen::MatrixXd PseudoInverse(const Eigen::MatrixXd& A);
-
-    /**
-     * @brief Invert as a function
-     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
-     * 
-     * This function generates and returns the inverse of the linear matrix to solve for the phase calibration (only)
-     * given a MS. 
-     * The MS is used to fill the columns of the matrix, based on the baselines in the MS (and RefAnt if given)
-     * 
-     * The output will be the inverse matrix to cross with the observation vector.
-     * 
-     * @param A
-     */
-    casacore::Matrix<double> RightInvert(const casacore::Matrix<double>& A);
-
-    Eigen::MatrixXd RightInvert(const Eigen::MatrixXd& A);
-}
-}
+#include <array>

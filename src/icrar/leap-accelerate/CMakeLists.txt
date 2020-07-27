@@ -11,6 +11,7 @@ set(public_headers
     MetaData.h
 
     math/cpu/Invert.h
+    math/cpu/svd.h
     
     algorithm/cpu/PhaseRotate.h
 )
@@ -26,6 +27,7 @@ set(sources
 
     math/eigen_helper.cc
 
+    math/cpu/svd.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc
@@ -104,8 +106,12 @@ if(CASA_ENABLED)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
 if(BOOST_ENABLED)
-    #target_link_libraries(${TARGET_NAME} Boost)
+    target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 endif()
+
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
+
+target_link_libraries(${TARGET_NAME} GSL::gsl)
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>

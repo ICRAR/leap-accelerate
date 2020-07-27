@@ -118,6 +118,13 @@ namespace icrar
         }
     }
 
+    /**
+     * @brief Returns the largest value within the array
+     * 
+     * @tparam T 
+     * @param value 
+     * @return T 
+     */
     template<typename T>
     T ArrayMax(const casacore::Array<T>& value)
     {

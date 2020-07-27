@@ -51,7 +51,6 @@ namespace icrar
         MetaData(const casacore::MeasurementSet& ms);
 
         bool init;
-        std::vector<casacore::MVuvw> oldUVW;
 
         int nantennas;
         int nbaseline;
@@ -66,6 +65,7 @@ namespace icrar
         int solution_interval;
 
         std::vector<double> channel_wavelength;
+        std::vector<casacore::MVuvw> oldUVW;
 
         casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
         casacore::Matrix<double> dd;
@@ -90,10 +90,11 @@ namespace icrar
             };
         };
 
-        casacore::Matrix<double> A;
-        casacore::Matrix<double> Ad;
-        casacore::Matrix<double> A1;
-        casacore::Matrix<double> Ad1;
+        casacore::Matrix<double> A; // Antennas all PhaseMatrix
+        casacore::Matrix<double> Ad; // A inverse
+        
+        casacore::Matrix<double> A1; // Antennas with baseline PhaseMatrix
+        casacore::Matrix<double> Ad1; //A1 inverse
 
         casacore::Array<int> I1;
         casacore::Array<int> I;
@@ -131,7 +132,7 @@ namespace icrar
     void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
     
     /**
-     * @brief Set the Wv object
+     * @brief 
      * 
      * @param metadata 
      */
