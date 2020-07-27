@@ -102,10 +102,14 @@ namespace icrar
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
 
         //Start calculations
-        auto [A1, I1] = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
+        casacore::Matrix<double> A1;
+        casacore::Array<std::int32_t> I1;
+        std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
         casacore::Matrix<double> Ad1 = icrar::cpu::PseudoInverse(A1);
 
-        auto [A, I] = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
+        casacore::Matrix<double> A;
+        casacore::Array<std::int32_t> I;
+        std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
         casacore::Matrix<double> Ad = icrar::cpu::PseudoInverse(A);
 
         this->A = A;
