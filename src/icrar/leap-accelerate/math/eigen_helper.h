@@ -92,6 +92,11 @@ namespace icrar
     template<typename T>
     Eigen::Matrix<T, 3, 3> ConvertMatrix3x3(const casacore::Matrix<T>& value)
     {
+        if(value.shape() == casacore::IPosition(3,3))
+        {
+            throw std::runtime_error("matrix must be 3x3");
+        }
+
         auto m = Eigen::Matrix<T, 3, 3>();
 
         auto it = value.begin();

@@ -55,20 +55,26 @@ namespace icrar
 namespace icrar
 {
 namespace cuda
-{ 
+{
+    class MetaDataCudaHost;
+    class MetaDataCudaDevice;
+
     std::queue<IntegrationResult> PhaseRotate(
-        MetaData& metadata,
-        const casacore::MVDirection& directions,
+        MetaDataCudaHost& metadata,
+        const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
+    void RotateVisibilities(
+        Integration& integration,
+        MetaDataCudaHost& metadata,
+        const casacore::MVDirection& direction);
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Vector<std::int32_t>& a1,
-        const casacore::Vector<std::int32_t>& a2,
-        int refAnt,
-        bool map);
+         const casacore::Vector<std::int32_t>& a1,
+         const casacore::Vector<std::int32_t>& a2,
+         int refAnt,
+         bool map);
 }
 }

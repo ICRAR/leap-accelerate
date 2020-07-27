@@ -30,11 +30,6 @@ set(sources
     math/cpu/matrix.cc
     
     algorithm/cpu/PhaseRotate.cc
-
-    # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
-    #wsclean/chgcentre.cc
-    #wsclean/multibanddata.cpp
-    #wsclean/progressbar.cpp
 )
 
 set(cuda_headers
@@ -54,6 +49,7 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
+    cuda/MetaDataCuda.cu
 
     math/cuda/vector.cu
     math/cuda/matrix.cu

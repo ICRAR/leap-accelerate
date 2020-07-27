@@ -5,6 +5,8 @@
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/Integration.h>
@@ -49,7 +51,8 @@ namespace icrar
 
             if(useCuda)
             {
-                icrar::cuda::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations); //TODO: exception
+                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                icrar::cuda::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations); //TODO: exception
             }
             else
             {
@@ -65,7 +68,8 @@ namespace icrar
 
             if(useCuda)
             {
-                icrar::cuda::RotateVisibilities(integration, metadata, direction);
+                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                icrar::cuda::RotateVisibilities(integration, metadatahost, direction);
             }
             else
             {
@@ -75,7 +79,7 @@ namespace icrar
 
         void PhaseMatrixFunctionTest(bool useCuda)
         {
-            const casacore::Array<int32_t> a1; //TODO: populate
+            const casacore::Array<int32_t> a1;
             const casacore::Array<int32_t> a2;
             int refAnt = 0;
             bool map = true;
@@ -97,15 +101,15 @@ namespace icrar
             }
             catch(...)
             {
-                FAIL() << "Excpected std::invalid_argument";
+                FAIL() << "Expected std::invalid_argument";
             }
         }
     };
 
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(false); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(true); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCpu) { PhaseMatrixFunctionTest(false); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCuda) { PhaseMatrixFunctionTest(true); }
 }

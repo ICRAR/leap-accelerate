@@ -104,7 +104,7 @@ public:
         ASSERT_EQ(c(2,2), 1);
     }
 
-        template<typename T>
+    template<typename T>
     void test_matrix_matrix_multiply_32()
     {
         using MatrixXT = Eigen::Matrix<T, -1, -1>;
@@ -117,9 +117,9 @@ public:
         b << 5, 6, 7,
              8, 9, 10;
 
-        auto expected = MatrixXT(3,3); 
+        auto c = MatrixXT(3,2);
 
-        icrar::cuda::h_multiply(a, b, c);
+        icrar::cuda::h_multiply<T>(a, b, c);
 
         MatrixXT expected = a * b;
 
@@ -129,6 +129,14 @@ public:
         ASSERT_EQ(expected(1,0), 47);
         ASSERT_EQ(expected(1,1), 54);
         ASSERT_EQ(expected(1,2), 61);
+
+        //TODO
+        ASSERT_EQ(c(0,0), 21);
+        ASSERT_EQ(c(0,1), 24);
+        ASSERT_EQ(c(0,2), 27);
+        ASSERT_EQ(c(1,0), 47);
+        ASSERT_EQ(c(1,1), 54);
+        ASSERT_EQ(c(1,2), 61);
     }
 
     template<typename T>

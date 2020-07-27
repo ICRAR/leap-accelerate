@@ -47,8 +47,6 @@ namespace cuda
 {
     struct Constants
     {
-        //bool init;
-
         int nantennas;
         //int nbaselines;
         int channels; // The number of channels of the current observation
@@ -79,20 +77,19 @@ namespace cuda
                 double dlm_dec;
             };
         };
-
-        
     };
 
-    struct MetaDataCudaHost
+    class MetaDataCudaHost
     {
-        MetaDataCudaHost(MetaData& metadata);
-
+    public:
         Constants constants;
+
+        bool init = false; //set to true after rotateVisibilities
 
         std::vector<casacore::MVuvw> oldUVW;
 
         Eigen::MatrixXcd avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        Eigen::MatrixXd dd;
+        Eigen::Matrix3d dd;
 
         Eigen::MatrixXd A;
         Eigen::VectorXd I;
@@ -101,18 +98,23 @@ namespace cuda
         Eigen::MatrixXd A1;
         Eigen::VectorXd I1;
         Eigen::MatrixXd Ad1;
+
+        MetaDataCudaHost(MetaData& metadata);
+
+        void CalcUVW(std::vector<casacore::MVuvw>& uvws);
+        void SetDD(const casacore::MVDirection& direction);
+        void SetWv();
     };
 
-    struct MetaDataCudaDevice
+    class MetaDataCudaDevice
     {
-        MetaDataCudaDevice(MetaDataCudaDevice& metadata);
-
+    public:
         Constants constants;
 
         icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
 
         icrar::cuda::device_matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        icrar::cuda::device_matrix<double> dd;
+        Eigen::Matrix3d dd;
         
         icrar::cuda::device_matrix<double> A;
         icrar::cuda::device_vector<double> I;
@@ -121,6 +123,8 @@ namespace cuda
         icrar::cuda::device_matrix<double> A1;
         icrar::cuda::device_vector<double> I1;
         icrar::cuda::device_matrix<double> Ad1;
+
+        MetaDataCudaDevice(MetaDataCudaDevice& metadata);
     };
 }
 }

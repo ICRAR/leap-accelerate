@@ -167,8 +167,8 @@ namespace cpu
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const Vector<std::int32_t>& a1,
-        const Vector<std::int32_t>& a2,
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt,
         bool map)
     {
