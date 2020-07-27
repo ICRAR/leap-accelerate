@@ -113,11 +113,11 @@ public:
         a << 1, 2,
              3, 4;
 
-        auto b = MatrixXT(3,2);
+        auto b = MatrixXT(2,3);
         b << 5, 6, 7,
              8, 9, 10;
 
-        auto expected = MatrixXT(3,3); 
+        auto c = MatrixXT(2,3);
 
         icrar::cuda::h_multiply(a, b, c);
 
