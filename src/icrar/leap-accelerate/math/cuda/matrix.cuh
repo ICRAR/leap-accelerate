@@ -20,16 +20,7 @@
 *    MA 02111-1307  USA
 */
 
-#include "matrix.h"
-#include "matrix.cuh"
+#pragma once
 
-namespace icrar
-{
-    void h_matrix(const casacore::Matrix<double>& a, const casacore::Matrix<double>& b, casacore::Matrix<double>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<float>& a, const casacore::Matrix<float>& b, casacore::Matrix<float>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<int>& a, const casacore::Matrix<int>& b, casacore::Matrix<int>& c) { h_multiply(a, b, c); }
-
-    void h_matrix(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { h_multiply(a, b, c); }
-    void h_matrix(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { h_multiply(a, b, c); }
-}
+#include <icrar/leap-accelerate/math/cuda/matrix_multiply.cuh>
+#include <icrar/leap-accelerate/math/cuda/matrix_transpose.cuh>

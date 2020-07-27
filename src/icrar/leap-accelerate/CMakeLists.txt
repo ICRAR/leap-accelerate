@@ -10,28 +10,27 @@ set(public_headers
     band_data.h
     MetaData.h
 
-    algorithm/PhaseRotate.h
-    algorithm/Invert.h
+    math/cpu/Invert.h
+    
+    algorithm/cpu/PhaseRotate.h
 )
 set(private_headers
 
     math/casacore_helper.h
     math/eigen_helper.h
     math/math.h
-
-    #wsclean/banddata.h
-    #wsclean/chgcentre.h
-    #wsclean/imagecoordinates.h
-    #wsclean/multibanddata.h
-    #wsclean/progressbar.h
-    #wsclean/radeccoord.h
 )
 set(sources
     utils.cc
     MetaData.cc
 
-    algorithm/PhaseRotate.cc
-    algorithm/Invert.cc
+    math/eigen_helper.cc
+
+    math/cpu/Invert.cc
+    math/cpu/vector.cc
+    math/cpu/matrix.cc
+    
+    algorithm/cpu/PhaseRotate.cc
 
     # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
     #wsclean/chgcentre.cc
@@ -44,25 +43,29 @@ set(cuda_headers
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
 
-    cuda/math/vector.h
-    cuda/math/vector.cuh
-    cuda/math/matrix.h
-    cuda/math/matrix.cuh
+    math/cuda/vector.h
+    math/cuda/vector.cuh
+    math/cuda/matrix.h
+    math/cuda/matrix.cuh
+    math/cuda/matrix_multiply.cuh
+    math/cuda/matrix_transpose.cuh
 
-    algorithm/PhaseRotate.cuh
+    algorithm/cuda/PhaseRotate.h
 )
 
 set(cuda_sources
     cuda/cuda_info.cu
 
-    cuda/math/vector.cu
-    cuda/math/matrix.cu
+    math/cuda/vector.cu
+    math/cuda/matrix.cu
+
+    algorithm/cuda/PhaseRotate.cu
 )
 
 # Libraries
-option(USE_CUDA "Use Cuda" CUDA_FOUND)
-option(USE_CASA "Use Casa" TRUE)
-option(USE_BOOST "Use Boost" OFF)
+option(CUDA_ENABLED "Cuda Enabled" TRUE)
+option(CASA_ENABLED "Casa Enabled" TRUE)
+option(BOOST_ENABLED "Boost Enabled" TRUE)
 
 add_library(
   ${TARGET_NAME} STATIC
@@ -80,25 +83,29 @@ add_library(
 # will also build with -std=c++11
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_11)
 
-if(USE_CUDA)
-    # We need to explicitly state that we need all CUDA files in the target
-    # library to be built with -dc as the member functions could be called by
-    # other libraries and executables
-    set_property(TARGET ${TARGET_NAME} CUDA_STANDARD 11)
-    set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-    set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-    target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
-    
-    target_link_libraries(${TARGET_NAME} CUDA)
+if(USE_CUDA_EXTRA)
+  # We need to explicitly state that we need all CUDA files in the target
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 11)
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
+  #target_link_libraries(${TARGET_NAME} CUDA)
 endif()
-if(USE_CASA)
+
+if(CUDA_ENABLED)
+  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+endif()
+
+if(CASA_ENABLED)
     target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
 endif()
-if(USE_BOOST)
-    target_link_libraries(${TARGET_NAME} Boost)
+if(BOOST_ENABLED)
+    #target_link_libraries(${TARGET_NAME} Boost)
 endif()
-target_link_libraries(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
@@ -129,6 +136,6 @@ install(
     include/icrar/${SOLUTION_NAME_LOWER}
 )
 
-unset(USE_CUDA CACHE)
-unset(USE_CASA CACHE)
-unset(USE_BOOST CACHE)
+unset(CUDA_ENABLED CACHE)
+unset(CASA_ENABLED CACHE)
+unset(BOOST_ENABLED CACHE)

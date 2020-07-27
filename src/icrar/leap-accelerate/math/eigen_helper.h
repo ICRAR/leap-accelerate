@@ -24,7 +24,14 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Quanta/MVuvw.h>
+
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
+#include <vector>
 
 namespace icrar
 {
@@ -35,9 +42,62 @@ namespace icrar
         auto m = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
 
         auto it = value.begin();
-        for(int row = 0; row < shape[0]; ++row)
+        for(int col = 0; col < shape[1]; ++col)
         {
-            for(int col = 0; col < shape[1]; ++col)
+            for(int row = 0; row < shape[0]; ++row)
+            {
+                //eigen column major format
+                m(row, col) = *it;
+                it++;
+            }
+        }
+        return m;
+    }
+
+    template<typename T, int R, int C>
+    Eigen::Matrix<T, R, C> ConvertMatrix(const casacore::Matrix<T>& value)
+    {
+        auto shape = value.shape();
+        if(shape[0] != R || shape[1] != C)
+        {
+            throw std::invalid_argument("matrix shape does not match template");
+        }
+
+        auto m = Eigen::Matrix<T, R, C>();
+
+        auto it = value.begin();
+        for(int col = 0; col < C; ++col)
+        {
+            for(int row = 0; row < R; ++row)
+            {
+                m(row, col) = *it;
+                it++;
+            }
+        }
+        return m;
+    }
+
+    template<typename T, int R, int C>
+    casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, R, C>& value)
+    {
+        return casacore::Matrix<T>(casacore::IPosition(std::vector<int>{R, C}), value.data());
+    }
+
+    template<typename T>
+    casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& value)
+    {
+        return casacore::Matrix<T>(casacore::IPosition(std::vector<int>{(int)value.rows(), (int)value.cols()}), value.data());
+    }
+
+    template<typename T>
+    Eigen::Matrix<T, 3, 3> ConvertMatrix3x3(const casacore::Matrix<T>& value)
+    {
+        auto m = Eigen::Matrix<T, 3, 3>();
+
+        auto it = value.begin();
+        for(int row = 0; row < 3; ++row)
+        {
+            for(int col = 0; col < 3; ++col)
             {
                 m(row, col) = *it;
                 it++;
@@ -47,22 +107,23 @@ namespace icrar
     }
 
     template<typename T>
-    casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& value)
-    {
-        return casacore::Matrix<T>(casacore::IPosition(value.rows(), value.cols()), value.data());
-    }
-
-    template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
         auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        for(int i = 0; i < value.size(); ++i)
+        {
+            v(i) = value(casacore::IPosition(i));
+        }
         return v;
     }
 
     template<typename T>
     casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
-        auto v = casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
-        return v;
+        return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
+
+    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value);
+
+    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value);
 }

@@ -22,18 +22,14 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Matrix.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
 #include <vector>
 #include <complex>
 #include <queue>
-
-namespace casacore
-{
-    template<typename T>
-    class Matrix;
-}
 
 namespace icrar
 {
@@ -50,22 +46,5 @@ namespace icrar
      * @param A 
      * @param useGraphics 
      */
-    void InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
-    {
-        throw std::runtime_error("not implemented");
-        // try:
-        //     print('Inverting Cal Matrix')
-        //     print("IF A:", type(A), A.shape, A.dtype)
-        //     (u,s,vh)=np.linalg.svd(A,full_matrices=False)
-        //     sd=np.zeros((len(s),1)) #A.shape[1]))
-        //     for n in range(len(s)):
-        //         if s[n]/s[0]>1e-6:
-        //         sd[n][0]=1./s[n]   # Why is this 1D?
-
-        //     Ad=np.dot(vh.T,(sd*u.T))
-        //     I=np.dot(Ad,A)
-        // except:
-        //     print('Failed to generate inverted matrix')
-        // return Ad
-    }
+    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1);
 }

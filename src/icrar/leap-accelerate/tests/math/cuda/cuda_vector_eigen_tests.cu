@@ -20,29 +20,36 @@
  * MA 02111 - 1307  USA
  */
 
+#include <cuda_runtime.h>
+
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/math/cuda/vector_eigen.cuh>
+
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
+#include <eigen3/Eigen/Core>
+
 #include <gtest/gtest.h>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Sparse>
-
-#include <iostream>
+#include <stdio.h>
 #include <array>
 
-class eigen_tests : public testing::Test
+class cuda_vector_eigen_tests : public testing::Test
 {
 public:
-    eigen_tests()
+    cuda_vector_eigen_tests()
     {
 
     }
 
     void SetUp() override
     {
-        //int deviceCount = 0;
-        //cudaGetDeviceCount(&deviceCount);
-        //ASSERT_NE(deviceCount, 0);
-
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
+        int deviceCount = 0;
+        checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+        ASSERT_EQ(1, deviceCount);
     }
 
     void TearDown() override
@@ -50,25 +57,23 @@ public:
 
     }
 
-    void test_matrix_eigen()
+    void test_vector_add()
     {
-        Eigen::Matrix<double, 3, 3> matrix;
-    }
+        constexpr int N = 10;
+        auto a = Eigen::Matrix<double, N, 1>();
+        a << 6,6,6,6,6, 6,6,6,6,6;
 
-    void test_matrix_multiply()
-    {
-        Eigen::Matrix<double, 3, 3> m1, m2, m3;
-        m1 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
-        m2 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+        auto b = Eigen::Matrix<double, N, 1>();
+        b << 10,10,10,10,10, 10,10,10,10,10;
 
-        m3 = m1 * m2;
+        auto c = Eigen::Matrix<double, N, 1>();
 
-        Eigen::Matrix3d expected;
-        expected << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+        icrar::cuda::h_add<double, N>(a, b, c);
 
-        ASSERT_EQ(expected, m3);
+        auto expected = Eigen::Matrix<double, N, 1>();
+        expected << 16,16,16,16,16, 16,16,16,16,16;
+        ASSERT_EQ(c, expected);
     }
 };
 
-TEST_F(eigen_tests, test_matrix_eigen) { test_matrix_eigen(); }
-TEST_F(eigen_tests, test_matrix_multiply) { test_matrix_multiply(); }
+TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }

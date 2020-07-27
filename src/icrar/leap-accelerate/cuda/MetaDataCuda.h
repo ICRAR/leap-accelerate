@@ -22,14 +22,13 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/math/cpu/Invert.h>
-
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
+
+#include <eigen3/Eigen/Core>
 
 #include <iostream>
 #include <string>
@@ -37,19 +36,10 @@
 #include <vector>
 #include <complex>
 
-namespace casacore
-{
-    class MeasurementSet;
-}
-
 namespace icrar
 {
     struct MetaData
     {
-        MetaData();
-        MetaData(std::istream& input);
-        MetaData(const casacore::MeasurementSet& ms);
-
         bool init;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -62,13 +52,10 @@ namespace icrar
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
-
-        int solution_interval;
-
         std::vector<double> channel_wavelength;
 
-        casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        casacore::Matrix<double> dd;
+        Eigen::Matrix<std::complex<double>, -1, -1> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
+        Eigen::Matrix<double, -1, -1> dd;
 
         union
         {
@@ -90,78 +77,16 @@ namespace icrar
             };
         };
 
-        casacore::Matrix<double> A;
-        casacore::Matrix<double> Ad;
-        casacore::Matrix<double> A1;
-        casacore::Matrix<double> Ad1;
+        Eigen::Matrix<double, -1, -1> A;
+        Eigen::Matrix<double, -1, -1> Ad;
+        Eigen::Matrix<double, -1, -1> Ad1;
 
-        casacore::Array<int> I1;
-        casacore::Array<int> I;
+        Eigen::VectorXf I1;
+        Eigen::VectorXf I;
 
         // void SetDlmRa(double value) { dlm_ra; }
         // double GetDlmRa();
         // void SetDlmdDec(double value);
         // double GetDlmdDec();
     };
-
-    class MetaDataVerified
-    {
-        int m_antennas;
-        int m_baseline;
-        int m_channels;
-        int m_stations;
-
-    public:
-        MetaDataVerified(int antennas, int baselines, int channels, int polarizations, int stations)
-        : m_antennas(antennas)
-        , m_baseline(baselines)
-        , m_channels(channels)
-        , m_stations(stations)
-        {
-
-        }
-    };
-
-    /**
-     * @brief 
-     * 
-     * @param metadata 
-     * @param direction 
-     */
-    void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
-    
-    /**
-     * @brief Set the Wv object
-     * 
-     * @param metadata 
-     */
-    void SetWv(MetaData& metadata);
-    
-    /**
-     * @brief 
-     * 
-     * @param uvw 
-     * @param metadata 
-     */
-    void CalcUVW(std::vector<casacore::MVuvw>& uvw, MetaData& metadata);
-
-    //class Stats
-    // {
-    // public:
-    //     bool m_init;
-    //     int m_channels; // The number of channels of the current observation
-    //     int m_num_pols; // The number of polarizations used by the current observation
-    //     int m_stations; // The number of stations used by the current observation
-    //     int m_rows;
-
-    //     int solution_interval; // Solve for every 'interval' cycles
-    //     double phase_centre_ra_rad; // The RA phase centre in radians
-    //     double phase_centre_dec_rad; // The DEC phase centre in radians
-
-    //     Matrixd A;
-    //     Matrixd Ad;
-    //     Matrixd Ad1;
-    //     Matrixd I1;
-    //     Matrixd I;
-    // };
 }

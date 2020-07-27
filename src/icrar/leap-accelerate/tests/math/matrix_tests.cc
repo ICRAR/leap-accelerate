@@ -20,22 +20,18 @@
  * MA 02111 - 1307  USA
  */
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/cuda/math/vector.cuh>
+//#include <icrar/leap-accelerate/cuda/cuda_info.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <gtest/gtest.h>
 
-#include <stdio.h>
 #include <array>
 #include <vector>
 
-class cuda_tests : public testing::Test
+class matrix_tests : public testing::Test
 {
 public:
-    cuda_tests()
+    matrix_tests()
     {
 
     }
@@ -53,7 +49,7 @@ public:
 
     }
 
-    template<int n>
+    template<unsigned int n>
     void test_array_add()
     {
         std::array<int, n> a;
@@ -63,7 +59,7 @@ public:
         a.fill(6);
         b.fill(10);
 
-        h_add<int, n>(a, b, c);
+        icrar::cuda::add(n, a.data(), b.data(), c.data());
 
         std::array<int, n> expected;
         expected.fill(16);
@@ -76,15 +72,15 @@ public:
         std::vector<int> b = std::vector<int>(n, 10);
         std::vector<int> c = std::vector<int>(n, 0);
 
-        h_add(a, b, c);
+        icrar::cuda::add(a, b, c);
 
         std::vector<int> expected = std::vector<int>(n, 16);
         ASSERT_EQ(c, expected);
     }
 };
 
-TEST_F(cuda_tests, test_gpu_array_add0) { test_array_add<1>(); }
-TEST_F(cuda_tests, test_gpu_array_add3) { test_array_add<1000>(); }
-TEST_F(cuda_tests, test_gpu_vector_add0) { test_vector_add(1); }
-TEST_F(cuda_tests, test_gpu_vector_add4) { test_vector_add(10000); }
-TEST_F(cuda_tests, test_gpu_vector_add6) { test_vector_add(1000000); }
+TEST_F(matrix_tests, test_gpu_array_add0) { test_array_add<1>(); }
+TEST_F(matrix_tests, test_gpu_array_add3) { test_array_add<1000>(); }
+TEST_F(matrix_tests, test_gpu_vector_add0) { test_vector_add(1); }
+TEST_F(matrix_tests, test_gpu_vector_add4) { test_vector_add(10000); }
+TEST_F(matrix_tests, test_gpu_vector_add6) { test_vector_add(1000000); }

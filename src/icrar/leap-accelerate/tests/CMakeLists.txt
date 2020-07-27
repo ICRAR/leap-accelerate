@@ -3,13 +3,20 @@ set(TEST_TARGET LeapAccelerate.Tests)
 
 set(sources
   main.cc
-  casacore_tests.cc
-  eigen_tests.cc
-  PhaseRotateTests.cc
+  
+  math/casacore_eigen_tests.cc
+  math/eigen_tests.cc
+  
+  math/vector_tests.cc
+  math/matrix_tests.cc
+  
+  algorithm/PhaseRotateTests.cc
 )
 
 set(cuda_sources
-  cuda_tests.cu
+  math/cuda/cuda_vector_tests.cu
+  math/cuda/cuda_matrix_tests.cu
+  math/cuda/cuda_vector_eigen_tests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest

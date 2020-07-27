@@ -20,17 +20,26 @@
 *    MA 02111-1307  USA
 */
 
+#pragma once
+
 #include <casacore/casa/Arrays/Array.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
 // C++ Style interface (templates not supported)
 namespace icrar
 {
-    casacore::Array<double> h_multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b);
-    casacore::Array<float> h_multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b);
-    casacore::Array<int> h_multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b);
+namespace cuda
+{
+    void multiply(const int m, const int n, double* mat, double* vec, double* out);
+    void multiply(const int m, const int n, float* mat, float* vec, float* out);
+    void multiply(const int m, const int n, int* mat, int* vec, int* out);
 
-    void h_multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
-    void h_multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
-    void h_multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+    casacore::Array<double> multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b);
+    casacore::Array<float> multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b);
+    casacore::Array<int> multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b);
+
+    void multiply(const casacore::Matrix<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c);
+    void multiply(const casacore::Matrix<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c);
+    void multiply(const casacore::Matrix<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c);
+}
 }

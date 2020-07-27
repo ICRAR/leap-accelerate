@@ -20,26 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <icrar/leap-accelerate/MetaData.h>
-
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
-#include <casacore/measures/Measures/MDirection.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <istream>
-#include <iostream>
-#include <iterator>
-#include <string>
-#include <exception>
-#include <memory>
-#include <vector>
+#include "eigen_helper.h"
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value)
+    {
+        return Eigen::RowVector3d(value.get().data());
+    }
 
-    //std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value)
+    {
+        return casacore::MVuvw(value[0], value[1], value[2]);
+    }
 }

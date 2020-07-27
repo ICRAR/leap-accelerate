@@ -28,8 +28,10 @@
 
 namespace icrar
 {
+namespace cpu
+{
     template<typename T>
-    void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
+    void multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
         //TODO: convert to cuda
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
@@ -39,15 +41,15 @@ namespace icrar
     }
 
     template<typename T>
-    casacore::Matrix<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b)
+    casacore::Matrix<T> multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b)
     {
         casacore::Matrix<T> c;
-        h_multiply(a, b, c);
+        multiply(a, b, c);
         return c;
     }
 
     template<typename T>
-    void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
+    void multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
         //TODO: convert to cuda
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
@@ -57,10 +59,11 @@ namespace icrar
     }
 
     template<typename T>
-    casacore::Array<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b)
+    casacore::Array<T> multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b)
     {
         auto c = casacore::Array<T>();
-        h_multiply(a, b, c);
+        multiply(a, b, c);
         return c;
     }
+}
 }

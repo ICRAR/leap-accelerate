@@ -31,6 +31,49 @@ using namespace casacore;
 
 namespace icrar
 {
+    MetaData::MetaData()
+    {
+        
+    }
+
+    MetaData::MetaData(const casacore::MeasurementSet& ms)
+    {
+        this->init = true;
+        this->channels = 0; //TODO ms.channels;
+        this->num_pols = 0;
+        this->stations = 0;
+        this->rows = 0;
+        this->freq_start_hz = 0;
+        this->freq_inc_hz = 0;
+        this->solution_interval = 3601;
+        this->phase_centre_ra_rad = 0;
+        this->phase_centre_dec_rad = 0;
+
+        casacore::Vector<std::int32_t> a1;
+        casacore::Vector<std::int32_t> a2;
+
+        casacore::Matrix<double> A;
+        casacore::Vector<std::int32_t> I;
+        casacore::Matrix<double> A1;
+        casacore::Vector<std::int32_t> I1;
+        std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
+        casacore::Matrix<double> Ad = InvertFunction(A, 0);
+        std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
+        casacore::Matrix<double> Ad1 = InvertFunction(A1, -1);
+
+        this->A = A;
+        this->Ad = Ad;
+        this->A1 = A1;
+        this->Ad1 = Ad1;
+        this->I1 = I1;
+        this->I = I;
+    }
+
+    MetaData::MetaData(std::istream& input)
+    {
+        throw std::runtime_error("not implemented");
+    }
+
     void CalcUVW(std::vector<MVuvw>& uvws, MetaData& metadata)
     {
         metadata.oldUVW = uvws;
@@ -39,10 +82,16 @@ namespace icrar
         for(int n = 0; n < size; n++)
         {
             auto uvw = icrar::Dot(uvws[n], metadata.dd);
-            uvws.push_back(uvw); 
+            uvws.push_back(uvw);
         }
     }
 
+    /**
+     * @brief 
+     * TODO: rename to CalcDD or UpdateDD
+     * @param metadata 
+     * @param direction 
+     */
     void SetDD(MetaData& metadata, const MVDirection& direction)
     {
         metadata.dlm_ra = direction.get()[0] - metadata.phase_centre_ra_rad;
@@ -63,6 +112,7 @@ namespace icrar
 
     /**
      * @brief Set the wavelength from meta data
+     * TODO: rename to CalcWv or UpdateWv
      * 
      * @param metadata 
      */

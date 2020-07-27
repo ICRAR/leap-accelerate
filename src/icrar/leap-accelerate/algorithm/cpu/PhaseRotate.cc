@@ -30,8 +30,8 @@
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
-#include <icrar/leap-accelerate/math/matrix.h>
-#include <icrar/leap-accelerate/cuda/math/vector.h>
+#include <icrar/leap-accelerate/math/cpu/matrix.h>
+#include <icrar/leap-accelerate/math/cuda/vector.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -44,6 +44,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 
 #include <boost/math/constants/constants.hpp>
+#include <boost/optional.hpp>
 
 #include <istream>
 #include <iostream>
@@ -53,46 +54,70 @@
 #include <exception>
 #include <memory>
 
-using namespace casacore;
-
 using Radians = double;
+
+using namespace casacore;
 
 namespace icrar
 {
-    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input)
+namespace cpu
+{
+    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions)
     {
-        std::queue<IntegrationResult> output = std::queue<IntegrationResult>();
-        std::vector<std::vector<std::complex<double>>> cal;
+        auto input_queues = std::vector<std::queue<Integration>>(directions.size());
+        auto output_integrations = std::vector<std::queue<IntegrationResult>>(directions.size());
+        auto output_calibrations = std::vector<std::queue<CalibrationResult>>(directions.size());
 
-        for(Integration integration = input.front(); !input.empty(); integration = input.front(), input.pop())
+        for(int i = 0; i < directions.size(); ++i)
         {
-            std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+        }
+    }
+
+    void PhaseRotate(
+        MetaData& metadata,
+        const casacore::MVDirection& direction,
+        std::queue<Integration>& input,
+        std::queue<IntegrationResult>& output_integrations,
+        std::queue<CalibrationResult>& output_calibrations)
+    {
+        auto cal = std::vector<casacore::Array<double>>();
+
+        while(true)
+        {
+            boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
+            input.pop();
+
+            if(integration.is_initialized())
             {
-                return std::arg(c);
-            };
-            casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
-
-            casacore::Array<double> cal1 = h_multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1));
-        
-
-            // auto dInt = casacore::Array<double>(avg_data(IPosition(metadata.I)).shape());
-            // for(int n = 0; n < metadata.I; ++n)
-            // {
-            //     //TODO determine dInt
-            //     dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(n)) * cal1;
-            // }
-            // cal.push_back(icrar::Dot(metadata.Ad, dInt.T[0].T) + cal1);
-
-            // rotateVisibilities(integration, metadata, direction);
-            // output.push_back(IntegrationResult(direction, integration.integration_nuumber, std::vector<std::vector<std::complex<double>>>()))
+                icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
+                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+            }
+            else
+            {
+                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+                {
+                    return std::arg(c);
+                };
+                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
+                casacore::Array<double> cal1 = icrar::cpu::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
+                casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
+                
+                for(int n = 0; n < metadata.I.size(); ++n)
+                {
+                    dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(n)) * cal1;
+                }
+                cal.push_back(icrar::cpu::multiply(metadata.Ad, dInt) + cal1);
+                break;
+            }
         }
 
-        return output;
+        output_calibrations.push(CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
-        using namespace std::complex_literals;
+        using namespace std::literals::complex_literals;
         auto& data = integration.data;
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
@@ -104,7 +129,7 @@ namespace icrar
             SetDD(metadata, direction);
             SetWv(metadata);
             // Zero a vector for averaging in time and freq
-            metadata.avg_data = Matrix<DComplex>(integration.baselines, metadata.num_pols);
+            metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.init = false;
         }
         CalcUVW(uvw, metadata);
@@ -135,13 +160,16 @@ namespace icrar
                 if(data[channel][baseline].real() == NAN
                 || data[channel][baseline].imag() == NAN)
                 {
-                    metadata.avg_data(IPosition(baseline)) += data[channel][baseline];
+                    metadata.avg_data(casacore::IPosition(baseline)) += data[channel][baseline];
                 }
             }
         }
     }
 
-    std::pair<Matrix<double>, Array<std::int32_t>> PhaseMatrixFunction(const Array<std::int32_t>& a1, const Array<std::int32_t>& a2, int refAnt, bool map)
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const Vector<std::int32_t>& a1,
+        const Vector<std::int32_t>& a2,
+        int refAnt, bool map)
     {
         int nAnt = 1 + icrar::Equal(a1,a2) ? 1 : 0;
         if(refAnt >= nAnt - 1)
@@ -182,10 +210,11 @@ namespace icrar
             A(IPosition(k,refAnt)) = 1;
             k++;
             
-            A = A(Slice(0),Slice(k));
-            I = I(Slice(0),Slice(k));
+            A = A(Slice(0), Slice(k));
+            I = I(Slice(0), Slice(k));
         }
 
         return std::make_pair(A, I);
     }
+}
 }

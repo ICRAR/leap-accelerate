@@ -71,6 +71,7 @@ if(CUDA_FOUND)
   enable_language(CUDA)
 endif()
 
+find_package(LAPACK)
 find_package(Casacore)
 find_package(Boost)
 find_package(Eigen3 REQUIRED)

@@ -22,36 +22,47 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
+#include <eigen3/Eigen/Core>
+
+#include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
+
+#include <queue>
+
+namespace casacore
+{
+    class MeasurementSet;
+    class MDirection;
+    class MVDirection;
+    class MVuvw;
+}
 
 namespace icrar
 {
-    template<typename T>
-    void h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
-    {
+    class Integration;
+    class IntegrationResult;
+    class MetaData;
+}
 
-    }
+namespace icrar
+{
+namespace cuda
+{ 
+    std::queue<IntegrationResult> PhaseRotate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, std::queue<Integration>& input);
 
-    template<typename T>
-    casacore::Matrix<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b)
-    {
-        casacore::Matrix<T> c;
-        h_multiply(a, b, c);
-        return c;
-    }
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 
-    template<typename T>
-    void h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
-    {
-    }
-
-    template<typename T>
-    casacore::Array<T> h_multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b)
-    {
-        auto c = casacore::Array<T>();
-        h_multiply(a, b, c);
-        return c;
-    }
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
+        int refAnt,
+        bool map);
+}
 }

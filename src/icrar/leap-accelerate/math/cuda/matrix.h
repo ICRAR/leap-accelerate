@@ -22,38 +22,6 @@
 
 #pragma once
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+#include <icrar/leap-accelerate/math/cuda/matrix_multiply.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_transpose.h>
 
-#include <eigen3/Eigen/Core>
-
-template<typename T>
-__device__ void d_PhaseMatrixFunction()
-{
-    
-}
-
-template<typename T>
-__global__ void g_PhaseMatrixFunction(const T* x1, const T* x2, T* y, int refAnt)
-{
-
-}
-
-template<typename T, int Rows, int Cols>
-__global__ void g_MatrixMultiply(
-    const Eigen::Matrix<T, Rows, Cols>& v1,
-    const Eigen::Matrix<T, Rows, Cols>& v2,
-    Eigen::Matrix<T, Rows, Cols>& result)
-{
-    result = v1 * v2;
-}
-
-template<typename T, int Rows, int Cols>
-__host__ void h_MatrixMultiply(
-    const Eigen::Matrix<T, Rows, Cols>& v1,
-    const Eigen::Matrix<T, Rows, Cols>& v2,
-    Eigen::Matrix<T, Rows, Cols>& result)
-{
-    result = v1 * v2;
-    //g_MatrixMultiply<<<1,1>>>(v1, v2, result);
-}

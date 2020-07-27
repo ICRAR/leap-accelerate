@@ -22,24 +22,34 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/MetaData.h>
-
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
-#include <casacore/measures/Measures/MDirection.h>
-
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <istream>
 #include <iostream>
-#include <iterator>
 #include <string>
-#include <exception>
 #include <memory>
 #include <vector>
+#include <complex>
+#include <queue>
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+    casacore::Matrix<double> InvertFunction(const casacore::Matrix<double>& A, int refAnt=-1)
+    {
+        throw std::runtime_error("not implemented");
+        // try:
+        //     print('Inverting Cal Matrix')
+        //     print("IF A:", type(A), A.shape, A.dtype)
+        //     (u,s,vh)=np.linalg.svd(A,full_matrices=False)
+        //     sd=np.zeros((len(s),1)) #A.shape[1]))
+        //     for n in range(len(s)):
+        //         if s[n]/s[0]>1e-6:
+        //         sd[n][0]=1./s[n]   # Why is this 1D?
 
-    //std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+        //     Ad=np.dot(vh.T,(sd*u.T))
+        //     I=np.dot(Ad,A)
+        // except:
+        //     print('Failed to generate inverted matrix')
+        // return Ad
+        return casacore::Matrix<double>();
+    }
 }
