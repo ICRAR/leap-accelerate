@@ -19,6 +19,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O3 -Wall -Wextra")
 
 #add_definitions(-DUseCasacoreNamespace)
 
+add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
@@ -78,9 +80,9 @@ endif()
 
 find_package(GSL)
 find_package(LAPACK)
-find_package(Casacore)
+find_package(Casacore REQUIRED)
 find_package(Boost)
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 REQUIRED HINTS /usr/local/include/)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)

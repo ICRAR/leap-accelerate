@@ -25,6 +25,11 @@
 # MA 02111-1307  USA
 #
 
+#Eigen 3.3.7
+wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.bz2
+cd eigen && cmake && sudo make install
+export EIGEN3_DIR=/usr/local/include/
+
 # CUDA 10.0
 wget http://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64
 sudo dpkg -i cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64
