@@ -182,6 +182,12 @@ public:
         ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
         ASSERT_MEQ(m1, m1 * m1d * m1, TOLERANCE);
     }
+
+    [[deprecated]]
+    void test_deprecated()
+    {
+
+    }
 };
 
 TEST_F(matrix_tests, test_cpu_transpose) { test_transpose(); }

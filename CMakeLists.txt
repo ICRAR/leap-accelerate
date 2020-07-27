@@ -11,11 +11,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-O3 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-O1 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
 
 add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 
@@ -80,7 +80,7 @@ find_package(GSL)
 find_package(LAPACK)
 find_package(Casacore REQUIRED)
 find_package(Boost)
-find_package(Eigen3 REQUIRED HINTS /usr/local/include/)
+find_package(Eigen3 REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
