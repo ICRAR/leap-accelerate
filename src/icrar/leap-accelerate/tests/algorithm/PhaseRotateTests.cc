@@ -116,6 +116,7 @@ namespace icrar
 
             auto expectedIntegration = Integration();
             expectedIntegration.baselines = 1;
+
             auto expectedMetadata = MetaData(ms);
             expectedMetadata.SetDD(direction);
             expectedMetadata.SetWv();
@@ -124,12 +125,12 @@ namespace icrar
             expectedMetadata.init = false;
 
             //Test case specific
+            ASSERT_EQ(1, expectedIntegration.baselines);
+            ASSERT_EQ(4, expectedMetadata.num_pols);
             auto expectedAvg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
             expectedAvg_data << 0, 0, 0, 0;
             expectedMetadata.avg_data = ConvertMatrix(expectedAvg_data);
 
-            // ASSERT_EQ(expectedIntegration, integration); TODO cwise
-            
             
             ASSERT_EQ(expectedMetadata.init, metadata.init);
             ASSERT_EQ(expectedMetadata.nantennas, metadata.nantennas);
@@ -148,23 +149,10 @@ namespace icrar
             ASSERT_EQ(expectedMetadata.dlm_dec, metadata.dlm_dec);
             //ASSERT_EQ(expectedMetadata.oldUVW, metadata.oldUVW);
 
-            //Test case specific
-            ASSERT_EQ(1, expectedIntegration.baselines);
-            ASSERT_EQ(4, expectedMetadata.num_pols);
-
             ASSERT_EQ(expectedIntegration.baselines, metadata.avg_data.shape()[0]);
             ASSERT_EQ(expectedMetadata.num_pols, metadata.avg_data.shape()[1]);
         
             ASSERT_MEQCD(ConvertMatrix(expectedMetadata.avg_data), ConvertMatrix(metadata.avg_data), 0.0);
-
-            //auto a = ConvertMatrix(metadata.avg_data);
-            //ASSERT_EQ(0, metadata.avg_data.shape()[0]);
-            //ASSERT_EQ(4, metadata.avg_data.shape()[1]);
-
-            // std::stringstream ss;
-            // ss << ConvertMatrix(metadata.avg_data)(0) << std::endl;
-            // throw std::runtime_error(ss.str());
-
 
             ASSERT_TRUE(icrar::Equal(expectedMetadata.dd, metadata.dd));
             ASSERT_MEQ(ConvertMatrix(expectedMetadata.A), ConvertMatrix(metadata.A), 0.01);
@@ -173,7 +161,9 @@ namespace icrar
             ASSERT_MEQ(ConvertMatrix(expectedMetadata.A1), ConvertMatrix(metadata.A1), 0.01);
             ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I1), ConvertMatrix<int>(metadata.I1), 0.01);
             ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad1), ConvertMatrix(metadata.Ad1), 0.01);
-            // ASSERT_EQ(expectedMetadata, metadata);
+            
+            //ASSERT_EQ(expectedMetadata, metadata);
+            //ASSERT_EQ(expectedIntegration, integration);
         }
 
         void PhaseMatrixFunctionTest(bool useCuda)
