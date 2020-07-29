@@ -23,7 +23,7 @@
 #include "Calibrate.h"
 
 #include <icrar/leap-accelerate/MetaData.h>
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -94,6 +94,6 @@ namespace icrar
         MetaData& metadata)
     {
         icrar::Integration integration;
-        icrar::cpu::RotateVisibilities(integration, metadata, direction);
+        icrar::casa::RotateVisibilities(integration, metadata, direction);
     }
 }

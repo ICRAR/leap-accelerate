@@ -58,7 +58,7 @@ namespace icrar
 namespace cuda
 { 
     std::queue<IntegrationResult> PhaseRotate(
-        MetaDataCudaHost& metadata,
+        MetaDataCudaDevice& metadata,
         const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -69,61 +69,15 @@ namespace cuda
 
     void RotateVisibilities(
         Integration& integration,
-        MetaDataCudaHost& metadata,
+        MetaDataCudaDevice& metadata,
         const MVDirection& direction)
     {
-        //using namespace std::literals::complex_literals;
-        auto& data = integration.data;
-        auto& uvw = integration.uvw;
-        auto parameters = integration.parameters;
-
-        if(metadata.init)
-        {
-            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
-            
-            metadata.SetDD(direction);
-            metadata.SetWv();
-            // Zero a vector for averaging in time and freq
-            metadata.avg_data = Eigen::MatrixXcd(integration.baselines, metadata.GetConstants().num_pols);
-            metadata.init = false;
-        }
-        metadata.CalcUVW(uvw);
-
-        // loop over baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
-        {
-            // For baseline
-            const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor -2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
-
-            if(baseline % 1000 == 1)
-            {
-                std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
-            }
-
-            // Loop over channels
-            for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
-            {
-                double shiftRad = shiftFactor / metadata.GetConstants().channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
-                std::complex<double> v = data(channel,baseline);
-
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data(channel, baseline).real() == NAN
-                || data(channel, baseline).imag() == NAN)
-                {
-                    metadata.avg_data(1, baseline) += data(channel,baseline);
-                }
-            }
-        }
+        throw std::runtime_error("not implemented"); //TODO
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Vector<std::int32_t>& a1,
-        const casacore::Vector<std::int32_t>& a2,
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+        const Eigen::VectorXi& a1,
+        const Eigen::VectorXi& a2,
         int refAnt,
         bool map)
          {

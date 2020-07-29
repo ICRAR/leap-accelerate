@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/math/cpu/Invert.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/math/casa/matrix_invert.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>

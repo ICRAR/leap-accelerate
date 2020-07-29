@@ -10,9 +10,7 @@ set(public_headers
     band_data.h
     MetaData.h
 
-    math/cpu/Invert.h
-    
-    algorithm/cpu/PhaseRotate.h
+    algorithm/casa/PhaseRotate.h
 )
 set(private_headers
 
@@ -25,10 +23,14 @@ set(sources
     MetaData.cc
 
     math/linear_math_helper.cc
-    math/cpu/Invert.cc
+
+    math/casa/matrix_invert.cc
+    math/casa/vector.cc
+    math/casa/matrix.cc
+
     math/cpu/vector.cc
-    math/cpu/matrix.cc
     
+    algorithm/casa/PhaseRotate.cc
     algorithm/cpu/PhaseRotate.cc
 )
 

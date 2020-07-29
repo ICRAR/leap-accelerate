@@ -22,53 +22,18 @@
 
 #pragma once
 
-#include <casacore/casa/Arrays/Array.h>
-
-#include <array>
-#include <vector>
-#include <stdexcept>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 namespace icrar
 {
 namespace cpu
 {
-    /**
-    * @brief Performs vector addition of equal length vectors
-    *
-    * @tparam T vector value type
-    * @param x1 left vector
-    * @param x2 right vector
-    * @param y out vector
-    */
     template<typename T>
-    void add(size_t n, const T* x1, const T* x2, T* y)
+    void add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
-        for(size_t i = 0; i < n; i++)
+        if (a.shape() != b.shape() && a.shape() != c.shape())
         {
-            y[i] = x1[i] + x2[i];
-        }
-    }
-
-    template<typename T, size_t N>
-    void add(const std::array<T, N>& a, const std::array<T, N>& b, std::array<T, N>& c)
-    {
-        add(a.size(), a.data(), b.data(), c.data());
-    }
-
-    template<typename T, size_t N>
-    std::array<T, N> add(const std::array<T, N>& a, const std::array<T, N>& b)
-    {
-        std::array<T, N> result;
-        add(a.size(), a.data(), b.data(), result.data());
-        return result;
-    }
-
-    template<typename T>
-    void add(const std::vector<T>& a, const std::vector<T>& b, std::vector<T>& c)
-    {
-        if (a.size() != b.size() && a.size() != c.size())
-        {
-            throw std::runtime_error("argument sizes must be equal");
+            throw std::runtime_error("argument shapes must be equal");
         }
 
         add(a.size(), a.data(), b.data(), c.data());

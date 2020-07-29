@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -41,8 +42,17 @@
 
 #include <vector>
 
+using namespace std::literals::complex_literals;
+
 namespace icrar
 {
+    enum class Impl
+    {
+        casa,
+        eigen,
+        cuda
+    };
+
     class PhaseRotateTests : public ::testing::Test
     {
         casacore::MeasurementSet ms;
@@ -71,7 +81,7 @@ namespace icrar
             
         }
 
-        void PhaseRotateTest(bool useCuda)
+        void PhaseRotateTest(Impl impl)
         {
             
             MetaData metadata;
@@ -80,19 +90,31 @@ namespace icrar
             std::queue<IntegrationResult> output_integrations;
             std::queue<CalibrationResult> output_calibrations;
 
-            if(useCuda)
+            if(impl == Impl::casa)
+            {
+                icrar::casa::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations);
+            }
+            if(impl == Impl::eigen)
             {
                 auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
-                icrar::cuda::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations); //TODO: exception
+                icrar::cpu::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations);
+            }
+            if(impl == Impl::cuda)
+            {
+                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
+                icrar::cuda::PhaseRotate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
             else
             {
-                icrar::cpu::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations); //TODO: exception
+                throw std::invalid_argument("impl");
             }
         }
 
-        void RotateVisibilitiesTest(bool useCuda)
+        void RotateVisibilitiesTest(Impl impl)
         {
+            const double THRESHOLD = 0.01;
+
             std::string filepath = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             auto ms = casacore::MeasurementSet(filepath);
             auto metadata = MetaData(ms);
@@ -104,14 +126,21 @@ namespace icrar
             integration.data = Eigen::MatrixXcd(metadata.channels, integration.baselines);
 
 
-            if(useCuda)
+            if(impl == Impl::casa)
+            {
+                icrar::casa::RotateVisibilities(integration, metadata, direction);
+            }
+            if(impl == Impl::eigen)
             {
                 auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
-                icrar::cuda::RotateVisibilities(integration, metadatahost, direction);
+                icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
             }
-            else
+            if(impl == Impl::cuda)
             {
-                icrar::cpu::RotateVisibilities(integration, metadata, direction);
+                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
+                icrar::cuda::RotateVisibilities(integration, metadatadevice, direction);
+                metadatadevice.ToHost(metadatahost);
             }
 
             auto expectedIntegration = Integration();
@@ -128,7 +157,11 @@ namespace icrar
             ASSERT_EQ(1, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.num_pols);
             auto expectedAvg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
-            expectedAvg_data << 0, 0, 0, 0;
+            expectedAvg_data <<
+            0,
+            0.877191 + 0.357205i, //-0.549283 + 0.773963i,
+            0,
+            0;
             expectedMetadata.avg_data = ConvertMatrix(expectedAvg_data);
 
             
@@ -147,41 +180,49 @@ namespace icrar
             ASSERT_EQ(expectedMetadata.phase_centre_dec_rad, metadata.phase_centre_dec_rad);
             ASSERT_EQ(expectedMetadata.dlm_ra, metadata.dlm_ra);
             ASSERT_EQ(expectedMetadata.dlm_dec, metadata.dlm_dec);
-            //ASSERT_EQ(expectedMetadata.oldUVW, metadata.oldUVW);
+            //ASSERT_EQ(expectedMetadata.oldUVW, metadata.oldUVW); //TODO
 
             ASSERT_EQ(expectedIntegration.baselines, metadata.avg_data.shape()[0]);
             ASSERT_EQ(expectedMetadata.num_pols, metadata.avg_data.shape()[1]);
         
-            ASSERT_MEQCD(ConvertMatrix(expectedMetadata.avg_data), ConvertMatrix(metadata.avg_data), 0.0);
+            ASSERT_MEQCD(ConvertMatrix(expectedMetadata.avg_data), ConvertMatrix(metadata.avg_data), THRESHOLD);
 
             ASSERT_TRUE(icrar::Equal(expectedMetadata.dd, metadata.dd));
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A), ConvertMatrix(metadata.A), 0.01);
-            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I), ConvertMatrix<int>(metadata.I), 0.01);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad), ConvertMatrix(metadata.Ad), 0.01);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A1), ConvertMatrix(metadata.A1), 0.01);
-            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I1), ConvertMatrix<int>(metadata.I1), 0.01);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad1), ConvertMatrix(metadata.Ad1), 0.01);
+            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A), ConvertMatrix(metadata.A), THRESHOLD);
+            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I), ConvertMatrix<int>(metadata.I), THRESHOLD);
+            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad), ConvertMatrix(metadata.Ad), THRESHOLD);
+            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A1), ConvertMatrix(metadata.A1), THRESHOLD);
+            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I1), ConvertMatrix<int>(metadata.I1), THRESHOLD);
+            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad1), ConvertMatrix(metadata.Ad1), THRESHOLD);
             
             //ASSERT_EQ(expectedMetadata, metadata);
             //ASSERT_EQ(expectedIntegration, integration);
         }
 
-        void PhaseMatrixFunctionTest(bool useCuda)
+        void PhaseMatrixFunctionTest(Impl impl)
         {
-            const casacore::Vector<int32_t> a1;
-            const casacore::Vector<int32_t> a2;
             int refAnt = 0;
             bool map = true;
 
             try
             {
-                if(useCuda)
+                if(impl == Impl::casa)
                 {
-                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
+                    const casacore::Vector<int32_t> a1;
+                    const casacore::Vector<int32_t> a2;
+                    icrar::casa::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
-                else
+                if(impl == Impl::eigen)
                 {
+                    auto a1 = Eigen::VectorXi(1);
+                    auto a2 = Eigen::VectorXi(1);
                     icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
+                if(impl == Impl::cuda)
+                {
+                    const Eigen::VectorXi a1;
+                    const Eigen::VectorXi a2;
+                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
             }
             catch(std::invalid_argument& e)
@@ -195,10 +236,15 @@ namespace icrar
         }
     };
 
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(false); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(true); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(false); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(true); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCpu) { PhaseMatrixFunctionTest(false); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCuda) { PhaseMatrixFunctionTest(true); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionTestCasa) { PhaseMatrixFunctionTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
+
+    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCpu) { PhaseMatrixFunctionTest(Impl::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
+
+    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCuda) { PhaseMatrixFunctionTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(Impl::cuda); }
 }

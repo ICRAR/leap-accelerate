@@ -23,8 +23,8 @@
 #pragma once
 
 #include <casacore/ms/MeasurementSets.h>
-
-#include <eigen3/Eigen/Core>
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 #include <string>
 #include <memory>
@@ -41,19 +41,15 @@ namespace casacore
 
 namespace icrar
 {
+    struct MetaData;
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
-    
-    namespace cuda
-    {
-        struct MetaDataCudaHost;
-    }
 }
 
 namespace icrar
 {
-namespace cpu
+namespace casa
 {
     /**
      * @brief 
@@ -61,9 +57,7 @@ namespace cpu
      * @param metadata 
      * @param directions 
      */
-    void RemoteCalibration(
-        cuda::MetaDataCudaHost& metadata,
-        const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions);
+    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
      * @brief 
@@ -73,7 +67,7 @@ namespace cpu
      * @param input 
      */
     void PhaseRotate(
-        cuda::MetaDataCudaHost& metadata,
+        MetaData& metadata,
         const casacore::MVDirection& directions,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -86,10 +80,7 @@ namespace cpu
      * @param metadata 
      * @param direction 
      */
-    void RotateVisibilities(
-        Integration& integration,
-        cuda::MetaDataCudaHost& metadata,
-        const casacore::MVDirection& direction);
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 
     /**
      * @brief Form Phase Matrix
@@ -104,9 +95,9 @@ namespace cpu
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
-    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
-        const Eigen::VectorXi& a1,
-        const Eigen::VectorXi& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
 }

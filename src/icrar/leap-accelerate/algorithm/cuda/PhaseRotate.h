@@ -49,7 +49,6 @@ namespace icrar
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
-    class MetaData;
 }
 
 namespace icrar
@@ -60,7 +59,7 @@ namespace cuda
     class MetaDataCudaDevice;
 
     std::queue<IntegrationResult> PhaseRotate(
-        MetaDataCudaHost& metadata,
+        MetaDataCudaDevice& metadata,
         const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -68,12 +67,12 @@ namespace cuda
 
     void RotateVisibilities(
         Integration& integration,
-        MetaDataCudaHost& metadata,
+        MetaDataCudaDevice& metadata,
         const casacore::MVDirection& direction);
 
-    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-         const casacore::Vector<std::int32_t>& a1,
-         const casacore::Vector<std::int32_t>& a2,
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+         const Eigen::VectorXi& a1,
+         const Eigen::VectorXi& a2,
          int refAnt,
          bool map);
 }
