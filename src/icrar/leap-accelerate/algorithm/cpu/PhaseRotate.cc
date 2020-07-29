@@ -126,13 +126,13 @@ namespace cpu
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
             
-            SetDD(metadata, direction);
-            SetWv(metadata);
+            metadata.SetDD(direction);
+            metadata.SetWv();
             // Zero a vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.init = false;
         }
-        CalcUVW(uvw, metadata);
+        metadata.CalcUVW(uvw);
 
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)

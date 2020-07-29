@@ -32,6 +32,8 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
+#include <boost/optional.hpp>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -42,10 +44,6 @@ namespace icrar
 {
     struct MetaData
     {
-        MetaData();
-        MetaData(std::istream& input);
-        MetaData(const casacore::MeasurementSet& ms);
-
         bool init;
 
         int nantennas;
@@ -64,7 +62,8 @@ namespace icrar
         std::vector<casacore::MVuvw> oldUVW;
 
         casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        casacore::Matrix<double> dd;
+        
+        boost::optional<casacore::Matrix<double>> dd;
 
         union
         {
@@ -95,6 +94,45 @@ namespace icrar
         casacore::Array<int> I1;
         casacore::Array<int> I;
 
+    public:
+        MetaData();
+        MetaData(std::istream& input);
+        MetaData(const casacore::MeasurementSet& ms);
+
+        /**
+         * @brief 
+         * 
+         * @param metadata 
+         * @param direction 
+         */
+        void SetDD(const casacore::MVDirection& direction);
+        
+        /**
+         * @brief 
+         * 
+         * @param metadata 
+         */
+        void SetWv();
+        
+        /**
+         * @brief 
+         * 
+         * @param uvw 
+         * @param metadata 
+         */
+        void CalcUVW(std::vector<casacore::MVuvw>& uvw);
+
+        // bool operator==(const MetaData& rhs)
+        // {
+        //     return init == rhs.init
+        //     && nantennas == rhs.nantennas
+        //     && nbaseline == rhs.nbaseline
+        //     && channels == rhs.channels
+        //     && num_pols == rhs.num_pols
+        //     && stations == rhs.stations
+        //     && rows == rhs.rows;
+        // }
+
         // void SetDlmRa(double value) { dlm_ra; }
         // double GetDlmRa();
         // void SetDlmdDec(double value);
@@ -118,29 +156,6 @@ namespace icrar
 
         }
     };
-
-    /**
-     * @brief 
-     * 
-     * @param metadata 
-     * @param direction 
-     */
-    void SetDD(MetaData& metadata, const casacore::MVDirection& direction);
-    
-    /**
-     * @brief 
-     * 
-     * @param metadata 
-     */
-    void SetWv(MetaData& metadata);
-    
-    /**
-     * @brief 
-     * 
-     * @param uvw 
-     * @param metadata 
-     */
-    void CalcUVW(std::vector<casacore::MVuvw>& uvw, MetaData& metadata);
 
     //class Stats
     // {

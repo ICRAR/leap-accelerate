@@ -44,7 +44,8 @@ namespace cuda
     template<typename T>
     class device_matrix
     {
-        size_t m_count;
+        size_t m_rows;
+        size_t m_cols;
         T* m_buffer = nullptr;
 
     public:
@@ -52,13 +53,15 @@ namespace cuda
         /**
          * @brief Construct a new device buffer object
          * 
-         * @param size 
+         * @param rows 
+         * @param cols
          * @param data 
          */
-        device_matrix(size_t count, const T* data = nullptr)
-        : m_count(count)
+        device_matrix(size_t rows, size_t cols, const T* data = nullptr)
+        : m_rows(rows)
+        , m_cols(cols)
         {
-            size_t byteSize = count * sizeof(T);
+            size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)
             {
@@ -70,7 +73,10 @@ namespace cuda
             }
         }
 
-        device_matrix(std::vector<T> data) : device_matrix(data.size(), data.data()) {}
+        device_matrix(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> data) : device_matrix(data.rows(), data.cols(), data.data()) {}
+
+        template<int Rows, int Cols>
+        device_matrix(Eigen::Matrix<T, Rows, Cols> data) : device_matrix(Rows, Cols, data.data()) {}
 
         /**
          * @brief Copy Constructor
@@ -79,10 +85,12 @@ namespace cuda
          */
         device_matrix(device_matrix&& other)
             : m_buffer(other.m_buffer)
-            , m_count(other.m_count)
+            , m_rows(other.m_rows)
+            , m_cols(other.m_cols)
         {
             other.m_buffer = nullptr;
-            other.m_count = 0;
+            other.m_rows = 0;
+            other.m_cols = 0;
         }
 
         ~device_matrix()
@@ -103,14 +111,24 @@ namespace cuda
             return m_buffer;
         }
 
+        __host__ __device__ size_t GetRows() const
+        {
+            return m_rows;
+        }
+
+        __host__ __device__ size_t GetCols() const
+        {
+            return m_cols;
+        }
+
         __host__ __device__ size_t GetCount() const
         {
-            return m_count;
+            return m_rows * m_cols;
         }
 
         __host__ __device__ size_t GetSize() const
         {
-            return m_count * sizeof(T);
+            return GetCount() * sizeof(T);
         }
 
         /**
@@ -121,32 +139,52 @@ namespace cuda
          */
         __host__ void SetDataSync(const T* data)
         {
-            size_t bytes = m_count * sizeof(T);
+            size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
             DebugCudaErrors();
         }
 
+        /**
+         * @brief Set the Data Async object
+         * 
+         * @param data 
+         * @return __host__ 
+         */
         __host__ void SetDataAsync(const T* data)
         {
-            size_t bytes = m_count * sizeof(T);
+            size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
             DebugCudaErrors();
         }
 
         __host__ void ToHost(T* out) const
         {
-            size_t bytes = m_count * sizeof(T);
+            size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpy(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
 
         __host__ void ToHost(std::vector<T>& out) const
         {
+            out.resize(GetRows(), GetCols());
             ToHost(out.data());
-        } 
+        }
+
+        __host__ void ToHost(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
+        {
+            out.resize(GetRows(), GetCols());
+            ToHost(out.data());
+        }
+
+        template<int Rows, int Cols>
+        __host__ void ToHost(Eigen::Matrix<T, Rows, Cols>& out) const
+        {
+            out.resize(GetRows(), GetCols());
+            ToHost(out.data());
+        }
 
         __host__ void ToHostASync(T* out) const
         {
-            size_t bytes = m_count * sizeof(T);
+            size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };

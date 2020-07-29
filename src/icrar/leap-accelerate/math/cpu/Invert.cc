@@ -22,7 +22,7 @@
 
 #include "Invert.h"
 
-#include <icrar/leap-accelerate/math/eigen_helper.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 
 namespace icrar
 {

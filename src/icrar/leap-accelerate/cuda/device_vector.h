@@ -28,6 +28,9 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+
 #include <vector>
 
 namespace icrar
@@ -71,6 +74,10 @@ namespace cuda
         }
 
         device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
+
+        device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
+
+        device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
 
         /**
          * @brief Copy Constructor
@@ -141,8 +148,15 @@ namespace cuda
 
         __host__ void ToHost(std::vector<T>& out) const
         {
+            out.resize(GetCount());
             ToHost(out.data());
         } 
+
+        __host__ void ToHost(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
+        {
+            out.resize(GetCount());
+            ToHost(out.data());
+        }
 
         __host__ void ToHostASync(T* out) const
         {

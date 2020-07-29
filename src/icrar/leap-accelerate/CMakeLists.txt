@@ -17,14 +17,14 @@ set(public_headers
 set(private_headers
 
     math/casacore_helper.h
-    math/eigen_helper.h
+    math/linear_math_helper.h
     math/math.h
 )
 set(sources
     utils.cc
     MetaData.cc
 
-    math/eigen_helper.cc
+    math/linear_math_helper.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc

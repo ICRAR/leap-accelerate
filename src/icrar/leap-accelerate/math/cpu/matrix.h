@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/math/eigen_helper.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <eigen3/Eigen/Core>
 

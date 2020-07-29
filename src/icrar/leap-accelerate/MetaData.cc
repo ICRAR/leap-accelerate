@@ -125,14 +125,14 @@ namespace icrar
         throw std::runtime_error("not implemented");
     }
 
-    void CalcUVW(std::vector<MVuvw>& uvws, MetaData& metadata)
+    void MetaData::CalcUVW(std::vector<MVuvw>& uvws)
     {
-        metadata.oldUVW = uvws;
+        oldUVW = uvws;
         auto size = uvws.size();
         uvws.clear();
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], metadata.dd);
+            auto uvw = icrar::Dot(uvws[n], dd.value());
             uvws.push_back(uvw);
         }
     }
@@ -143,23 +143,30 @@ namespace icrar
      * @param metadata 
      * @param direction 
      */
-    void SetDD(MetaData& metadata, const MVDirection& direction)
+    void MetaData::SetDD(const MVDirection& direction)
     {
         const int I2D = 2;
-        metadata.dlm_ra = direction.get()[0] - metadata.phase_centre_ra_rad;
-        metadata.dlm_dec = direction.get()[1] - metadata.phase_centre_dec_rad;
 
-        metadata.dd(IPosition(I2D,0,0)) = cos(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(I2D,0,1)) = -sin(metadata.dlm_ra);
-        metadata.dd(IPosition(I2D,0,2)) = cos(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        if(!dd.is_initialized())
+        {
+            dd.reset(casacore::Matrix<double>(3,3));
+        }
+
+        auto& dd3d = dd.value();
+        dlm_ra = direction.get()[0] - phase_centre_ra_rad;
+        dlm_dec = direction.get()[1] - phase_centre_dec_rad;
+
+        dd3d(IPosition(I2D,0,0)) = cos(dlm_ra) * cos(dlm_dec);
+        dd3d(IPosition(I2D,0,1)) = -sin(dlm_ra);
+        dd3d(IPosition(I2D,0,2)) = cos(dlm_ra) * sin(dlm_dec);
         
-        metadata.dd(IPosition(I2D,1,0)) = sin(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(I2D,1,1)) = cos(metadata.dlm_ra);
-        metadata.dd(IPosition(I2D,1,2)) = sin(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        dd3d(IPosition(I2D,1,0)) = sin(dlm_ra) * cos(dlm_dec);
+        dd3d(IPosition(I2D,1,1)) = cos(dlm_ra);
+        dd3d(IPosition(I2D,1,2)) = sin(dlm_ra) * sin(dlm_dec);
 
-        metadata.dd(IPosition(I2D,2,0)) = -sin(metadata.dlm_dec);
-        metadata.dd(IPosition(I2D,2,1)) = 0;
-        metadata.dd(IPosition(I2D,2,2)) = cos(metadata.dlm_dec);
+        dd3d(IPosition(I2D,2,0)) = -sin(dlm_dec);
+        dd3d(IPosition(I2D,2,1)) = 0;
+        dd3d(IPosition(I2D,2,2)) = cos(dlm_dec);
     }
 
     /**
@@ -168,14 +175,14 @@ namespace icrar
      * 
      * @param metadata 
      */
-    void SetWv(MetaData& metadata)
+    void MetaData::SetWv()
     {
         double speed_of_light = 299792458.0;
-        metadata.channel_wavelength = range(
-            metadata.freq_start_hz,
-            metadata.freq_inc_hz,
-            metadata.freq_start_hz + metadata.freq_inc_hz * metadata.channels);
-        for(double& v : metadata.channel_wavelength)
+        channel_wavelength = range(
+            freq_start_hz,
+            freq_inc_hz,
+            freq_start_hz + freq_inc_hz * channels);
+        for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;
         }

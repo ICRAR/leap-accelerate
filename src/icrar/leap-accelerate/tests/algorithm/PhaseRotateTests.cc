@@ -19,6 +19,9 @@ namespace icrar
 {
     class PhaseRotateTests : public ::testing::Test
     {
+        casacore::MeasurementSet ms;
+        MetaData meta;
+
     protected:
 
         PhaseRotateTests() {
@@ -32,7 +35,9 @@ namespace icrar
 
         void SetUp() override
         {
-
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = casacore::MeasurementSet(filename);
+            meta = MetaData(ms);
         }
 
         void TearDown() override
@@ -66,6 +71,7 @@ namespace icrar
             auto ms = casacore::MeasurementSet(filepath);
             auto metadata = MetaData(ms);
             auto direction = casacore::MVDirection(-0.7129444556035118, -0.365286407171852);
+            meta.SetDD(direction);
             auto integration = Integration();
 
             if(useCuda)

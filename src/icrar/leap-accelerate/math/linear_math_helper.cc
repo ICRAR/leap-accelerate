@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "eigen_helper.h"
+#include "linear_math_helper.h"
 
 namespace icrar
 {
