@@ -100,6 +100,16 @@ namespace icrar
             ASSERT_EQ(4854, meta.I1.shape()[0]);
         }
 
+        void TestSetWv()
+        {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            auto ms = casacore::MeasurementSet(filename);
+            auto meta = MetaData(ms);
+
+            meta.SetWv();
+            ASSERT_EQ(meta.channels, meta.channel_wavelength.size());
+        }
+
         void TestCudaBufferCopy()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
@@ -130,6 +140,6 @@ namespace icrar
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
-
+    TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }

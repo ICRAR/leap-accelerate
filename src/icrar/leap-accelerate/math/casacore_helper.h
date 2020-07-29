@@ -28,6 +28,8 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
+#include <boost/optional.hpp>
+
 #include <functional>
 #include <algorithm>
 #include <complex>
@@ -53,6 +55,20 @@ namespace icrar
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
         return Dot(v1, ConvertMatrix3x3(v2));
+    }
+
+    template<typename T>
+    bool Equal(const boost::optional<casacore::Matrix<T>>& l, const boost::optional<casacore::Matrix<T>>& r)
+    {
+        bool equal = false;
+        if(l.is_initialized() && r.is_initialized())
+        {
+            if(l.value().shape() == r.value().shape())
+            {
+                equal = std::equal(l.value().cbegin(), l.value().cend(), r.value().cbegin());
+            }
+        }
+        return equal;
     }
 
     template<typename T> 

@@ -109,13 +109,13 @@ namespace cuda
                 double shiftRad = shiftFactor / metadata.GetConstants().channel_wavelength[channel];
                 double rs = sin(shiftRad);
                 double rc = cos(shiftRad);
-                std::complex<double> v = data[channel][baseline];
+                std::complex<double> v = data(channel,baseline);
 
-                data[channel][baseline] = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data[channel][baseline].real() == NAN
-                || data[channel][baseline].imag() == NAN)
+                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                if(data(channel, baseline).real() == NAN
+                || data(channel, baseline).imag() == NAN)
                 {
-                    metadata.avg_data(1, baseline) += data[channel][baseline];
+                    metadata.avg_data(1, baseline) += data(channel,baseline);
                 }
             }
         }

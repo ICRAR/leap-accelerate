@@ -27,27 +27,12 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU> //Needed for Matrix::inverse()
 
+#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <gtest/gtest.h>
 
 #include <array>
 #include <vector>
 #include <sstream>
-
-namespace
-{
-    void assert_meq(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string file, int line)
-    {
-        ASSERT_EQ(expected.rows(), actual.rows());
-        ASSERT_EQ(expected.cols(), actual.cols());
-        if(!actual.isApprox(expected, tolerance))
-        {
-            std::cerr << "got\n" << actual << "\n" << " expected\n" << expected << "\n" << "at " << file << ":" << line << std::endl;
-        }
-        ASSERT_TRUE(actual.isApprox(expected, tolerance));
-    }
-}
-
-#define ASSERT_MEQ(expected, actual, tolerance) assert_meq(expected, actual, tolerance, __FILE__, __LINE__)
 
 class matrix_tests : public testing::Test
 {

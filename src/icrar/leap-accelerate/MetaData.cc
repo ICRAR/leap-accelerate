@@ -177,14 +177,44 @@ namespace icrar
      */
     void MetaData::SetWv()
     {
-        double speed_of_light = 299792458.0;
         channel_wavelength = range(
             freq_start_hz,
-            freq_inc_hz,
-            freq_start_hz + freq_inc_hz * channels);
+            freq_start_hz + freq_inc_hz * channels,
+            freq_inc_hz);
+        
+        double speed_of_light = 299792458.0;
         for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;
         }
+    }
+
+    bool MetaData::operator==(const MetaData& rhs) const
+    {
+        return init == rhs.init
+        && nantennas == rhs.nantennas
+        //&& nbaseline == rhs.nbaseline
+        && channels == rhs.channels
+        && num_pols == rhs.num_pols
+        && stations == rhs.stations
+        && rows == rhs.rows
+        && freq_start_hz == rhs.freq_start_hz
+        && freq_inc_hz == rhs.freq_inc_hz
+        && solution_interval == rhs.solution_interval
+        && channel_wavelength == rhs.channel_wavelength
+        && phase_centre_ra_rad == rhs.phase_centre_ra_rad
+        && phase_centre_dec_rad == rhs.phase_centre_dec_rad
+        && dlm_ra == rhs.dlm_ra
+        && dlm_dec == rhs.dlm_dec
+        && oldUVW == rhs.oldUVW
+        && icrar::Equal(avg_data, rhs.avg_data)
+        && icrar::Equal(dd, rhs.dd)
+        && icrar::Equal(A, rhs.A)
+        && icrar::Equal(I, rhs.I)
+        && icrar::Equal(Ad, rhs.Ad)
+        && icrar::Equal(A1, rhs.A1)
+        && icrar::Equal(I1, rhs.I1)
+        && icrar::Equal(Ad1, rhs.Ad1);
+
     }
 }

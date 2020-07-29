@@ -47,7 +47,7 @@ namespace icrar
         bool init;
 
         int nantennas;
-        int nbaseline;
+        //int nbaseline;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -122,16 +122,7 @@ namespace icrar
          */
         void CalcUVW(std::vector<casacore::MVuvw>& uvw);
 
-        // bool operator==(const MetaData& rhs)
-        // {
-        //     return init == rhs.init
-        //     && nantennas == rhs.nantennas
-        //     && nbaseline == rhs.nbaseline
-        //     && channels == rhs.channels
-        //     && num_pols == rhs.num_pols
-        //     && stations == rhs.stations
-        //     && rows == rhs.rows;
-        // }
+        bool operator==(const MetaData& rhs) const;
 
         // void SetDlmRa(double value) { dlm_ra; }
         // double GetDlmRa();

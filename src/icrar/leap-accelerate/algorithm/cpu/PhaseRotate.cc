@@ -134,6 +134,12 @@ namespace cpu
         }
         metadata.CalcUVW(uvw);
 
+        assert(uvw.size() == integration.baselines);
+        assert(data.rows() == metadata.channels);
+        assert(data.cols() == integration.baselines);
+        assert(metadata.oldUVW.size() == integration.baselines);
+        assert(metadata.channel_wavelength.size() == metadata.channels);
+
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
@@ -154,13 +160,13 @@ namespace cpu
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
                 double rs = sin(shiftRad);
                 double rc = cos(shiftRad);
-                std::complex<double> v = data[channel][baseline];
+                std::complex<double> v = data(channel, baseline);
 
-                data[channel][baseline] = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data[channel][baseline].real() == NAN
-                || data[channel][baseline].imag() == NAN)
+                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                if(data(channel, baseline).real() == NAN
+                || data(channel, baseline).imag() == NAN)
                 {
-                    metadata.avg_data(casacore::IPosition(1, baseline)) += data[channel][baseline];
+                    metadata.avg_data(casacore::IPosition(2, 1, baseline)) += data(channel, baseline);
                 }
             }
         }

@@ -85,7 +85,8 @@ namespace cuda
 
     class MetaDataCudaHost
     {
-    private:
+        MetaDataCudaHost();
+
     public:
 
         bool init = false; //set to true after rotateVisibilities
@@ -117,6 +118,7 @@ namespace cuda
 
     class MetaDataCudaDevice
     {
+        MetaDataCudaDevice();
     public:
         bool init;
         Constants constants;

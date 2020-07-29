@@ -4,6 +4,8 @@ set(TEST_TARGET LeapAccelerate.Tests)
 set(sources
   main.cc
   
+  test_helper.cc
+
   math/casacore_eigen_tests.cc
   math/eigen_tests.cc
   math/vector_tests.cc
