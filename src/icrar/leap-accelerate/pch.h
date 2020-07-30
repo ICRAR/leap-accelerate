@@ -31,7 +31,7 @@
 #include <eigen3/Eigen/Sparse>
 #include <eigen3/Eigen/LU>
 #include <eigen3/Eigen/SVD>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <cuda_runtime.h>
 

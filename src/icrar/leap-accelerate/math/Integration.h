@@ -27,7 +27,7 @@
 
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 

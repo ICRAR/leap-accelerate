@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/ms/MeasurementSets.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -45,7 +45,7 @@ namespace icrar
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     /**
      * @brief 

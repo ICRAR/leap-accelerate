@@ -25,11 +25,11 @@
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/casa/matrix.h>
 
 #include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
-#include <icrar/leap-accelerate/math/casa/matrix.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -44,6 +44,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
 
+#include <utility>
 #include <istream>
 #include <iostream>
 #include <iterator>
@@ -51,6 +52,7 @@
 #include <queue>
 #include <exception>
 #include <memory>
+#include <vector>
 
 using Radians = double;
 
@@ -68,7 +70,7 @@ namespace casa
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            icrar::casa::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
     }
 
@@ -88,7 +90,7 @@ namespace casa
 
             if(integration.is_initialized())
             {
-                icrar::casa::RotateVisibilities(integration.get(), metadata, direction);
+                icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
@@ -98,14 +100,14 @@ namespace casa
                     return std::arg(c);
                 };
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
-                casacore::Array<double> cal1 = icrar::casa::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
+                casacore::Array<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
                 casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
                 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(1, n)) * cal1;
                 }
-                cal.push_back(icrar::casa::multiply(metadata.Ad, dInt) + cal1);
+                cal.push_back(icrar::casalib::multiply(metadata.Ad, dInt) + cal1);
                 break;
             }
         }

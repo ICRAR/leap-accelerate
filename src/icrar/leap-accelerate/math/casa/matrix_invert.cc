@@ -27,7 +27,7 @@
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
     {

@@ -18,6 +18,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g -O1 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
 
 add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
+add_definitions(-DUseCasacoreNamespace=1)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)

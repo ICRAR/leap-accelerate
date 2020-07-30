@@ -39,7 +39,7 @@
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     /**
      * @see PseudoInverse

@@ -28,7 +28,7 @@
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     template<typename T>
     void multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)

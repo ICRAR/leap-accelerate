@@ -92,7 +92,7 @@ namespace icrar
 
             if(impl == Impl::casa)
             {
-                icrar::casa::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations);
+                icrar::casalib::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations);
             }
             if(impl == Impl::eigen)
             {
@@ -135,7 +135,7 @@ namespace icrar
 
             if(impl == Impl::casa)
             {
-                icrar::casa::RotateVisibilities(integration, metadata, direction);
+                icrar::casalib::RotateVisibilities(integration, metadata, direction);
             }
             if(impl == Impl::eigen)
             {
@@ -215,7 +215,7 @@ namespace icrar
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
-                    icrar::casa::PhaseMatrixFunction(a1, a2, refAnt, map);
+                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
                 if(impl == Impl::eigen)
                 {
@@ -258,7 +258,7 @@ namespace icrar
             {
                 casacore::Matrix<double> A1;
                 casacore::Array<std::int32_t> I1;
-                std::tie(A1, I1) = icrar::casa::PhaseMatrixFunction(a1, a2, refAnt, map);
+                std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
                 ASSERT_EQ(4854, A1.shape()[0]);
                 ASSERT_EQ(128, A1.shape()[1]);
             }

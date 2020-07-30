@@ -24,7 +24,7 @@
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { add(a, b, c); }
     void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { add(a, b, c); }

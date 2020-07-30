@@ -94,6 +94,6 @@ namespace icrar
         MetaData& metadata)
     {
         icrar::Integration integration;
-        icrar::casa::RotateVisibilities(integration, metadata, direction);
+        icrar::casalib::RotateVisibilities(integration, metadata, direction);
     }
 }

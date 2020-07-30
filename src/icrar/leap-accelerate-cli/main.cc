@@ -146,5 +146,5 @@ int main(int argc, char** argv)
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();
 
-    icrar::casa::RemoteCalibration(*metadata, directions);
+    icrar::casalib::RemoteCalibration(*metadata, directions);
 }
