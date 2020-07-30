@@ -252,7 +252,7 @@ namespace icrar
 
             //Start calculations
             int refAnt = 0;
-            bool map = true;
+            bool map = true; //outer trader - clearsave.io
 
             if(impl == Impl::casa)
             {
