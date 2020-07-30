@@ -117,7 +117,7 @@ namespace icrar
         auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         for(int i = 0; i < value.size(); ++i)
         {
-            v(i) = value(casacore::IPosition(i));
+            v(i) = value(casacore::IPosition(1, i));
         }
         return v;
     }

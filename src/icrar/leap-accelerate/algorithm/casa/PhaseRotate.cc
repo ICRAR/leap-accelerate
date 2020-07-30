@@ -113,6 +113,20 @@ namespace casa
         output_calibrations.push(CalibrationResult(direction, cal));
     }
 
+    bool isNaN(const Eigen::VectorXcd& vector)
+    {
+        // bool valid = true;
+        // for(int i = 0; i < vector.size(); i++)
+        // {
+        //     if(vector(i).real() == NAN || vector(i).imag() == NAN)
+        //     {
+        //         valid = false;
+        //         break;
+        //     }
+        // }
+        // return valid;
+    }
+
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
         using namespace std::literals::complex_literals;
@@ -120,7 +134,7 @@ namespace casa
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        if(metadata.init)
+        if(true)
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
             
@@ -128,6 +142,7 @@ namespace casa
             metadata.SetWv();
             // Zero a vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
+            metadata.avg_data = 0;
             metadata.init = false;
         }
         metadata.CalcUVW(uvw);
@@ -158,12 +173,16 @@ namespace casa
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
                 double rs = sin(shiftRad);
                 double rc = cos(shiftRad);
-                std::complex<double> v = data(channel, baseline);
 
+                Eigen::VectorXcd v = data(channel, baseline);
                 data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data(channel, baseline).real() != NAN && data(channel, baseline).imag() != NAN)
+
+                if(!data(channel, baseline).hasNaN())
                 {
-                    metadata.avg_data(casacore::IPosition(2, 1, baseline)) += data(channel, baseline);
+                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    {
+                        metadata.avg_data(casacore::IPosition(2, baseline, i)) += data(channel, baseline)(i);
+                    }
                 }
             }
         }

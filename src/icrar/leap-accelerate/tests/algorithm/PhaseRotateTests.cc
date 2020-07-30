@@ -121,10 +121,17 @@ namespace icrar
             auto direction = casacore::MVDirection(-0.7129444556035118, -0.365286407171852);
             meta.SetDD(direction);
             auto integration = Integration();
-            integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw() };
+            integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
-            integration.data = Eigen::MatrixXcd(metadata.channels, integration.baselines);
 
+            integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
+            for(int row = 0; row < integration.data.rows(); ++row)
+            {
+                for(int col = 0; col < integration.data.cols(); ++col)
+                {
+                    integration.data(row, col) = Eigen::VectorXcd(metadata.num_pols);
+                }
+            }
 
             if(impl == Impl::casa)
             {
@@ -132,8 +139,8 @@ namespace icrar
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
-                icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
+                //auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                //icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
             }
             if(impl == Impl::cuda)
             {
@@ -144,7 +151,7 @@ namespace icrar
             }
 
             auto expectedIntegration = Integration();
-            expectedIntegration.baselines = 1;
+            expectedIntegration.baselines = integration.uvw.size();
 
             auto expectedMetadata = MetaData(ms);
             expectedMetadata.SetDD(direction);
@@ -154,14 +161,12 @@ namespace icrar
             expectedMetadata.init = false;
 
             //Test case specific
-            ASSERT_EQ(1, expectedIntegration.baselines);
+            ASSERT_EQ(2, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.num_pols);
             auto expectedAvg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
             expectedAvg_data <<
-            0,
-            0.877191 + 0.357205i, //-0.549283 + 0.773963i,
-            0,
-            0;
+            0, 0, 0, 0,  //-0.549283 + 0.773963i,
+            0, 0, 0, 0;
             expectedMetadata.avg_data = ConvertMatrix(expectedAvg_data);
 
             
@@ -199,7 +204,7 @@ namespace icrar
             //ASSERT_EQ(expectedIntegration, integration);
         }
 
-        void PhaseMatrixFunctionTest(Impl impl)
+        void PhaseMatrixFunction0Test(Impl impl)
         {
             int refAnt = 0;
             bool map = true;
@@ -214,8 +219,8 @@ namespace icrar
                 }
                 if(impl == Impl::eigen)
                 {
-                    auto a1 = Eigen::VectorXi(1);
-                    auto a2 = Eigen::VectorXi(1);
+                    auto a1 = Eigen::VectorXi();
+                    auto a2 = Eigen::VectorXi();
                     icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
                 if(impl == Impl::cuda)
@@ -234,17 +239,62 @@ namespace icrar
                 FAIL() << "Expected std::invalid_argument";
             }
         }
+
+        void PhaseMatrixFunctionDataTest(Impl impl)
+        {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            auto ms = casacore::MeasurementSet(filename);
+            auto msmc = std::make_unique<casacore::MSMainColumns>(ms);
+
+            int nantennas = 4853;
+            casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(casacore::Slice(0, nantennas, 1));
+            casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(casacore::Slice(0, nantennas, 1));
+
+            //Start calculations
+            int refAnt = 0;
+            bool map = true;
+
+            if(impl == Impl::casa)
+            {
+                casacore::Matrix<double> A1;
+                casacore::Array<std::int32_t> I1;
+                std::tie(A1, I1) = icrar::casa::PhaseMatrixFunction(a1, a2, refAnt, map);
+                ASSERT_EQ(4854, A1.shape()[0]);
+                ASSERT_EQ(128, A1.shape()[1]);
+            }
+            if(impl == Impl::eigen)
+            {
+                auto ea1 = ConvertVector(a1);
+                auto ea2 = ConvertVector(a2);
+                
+                Eigen::MatrixXd A1;
+                Eigen::VectorXi I1;
+                std::tie(A1, I1) =icrar::cpu::PhaseMatrixFunction(ea1, ea2, refAnt, map);
+                ASSERT_EQ(4854, A1.rows());
+                ASSERT_EQ(128, A1.cols());
+            }
+            if(impl == Impl::cuda)
+            {
+                auto ea1 = ConvertVector(a1);
+                auto ea2 = ConvertVector(a2);
+                icrar::cuda::PhaseMatrixFunction(ea1, ea2, refAnt, map);
+            }
+        }
     };
 
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionTestCasa) { PhaseMatrixFunctionTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(Impl::casa); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(Impl::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(Impl::cuda); }
+
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(Impl::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(Impl::cuda); }
+
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(Impl::casa); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
-
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCpu) { PhaseMatrixFunctionTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
-
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionTestCuda) { PhaseMatrixFunctionTest(Impl::cuda); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
+    
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(Impl::cuda); }
 }

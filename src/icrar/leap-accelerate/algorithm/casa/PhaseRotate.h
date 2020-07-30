@@ -26,18 +26,14 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
+#include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Quanta/MVuvw.h>
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <complex>
 #include <queue>
-
-namespace casacore
-{
-    class MDirection;
-    class MVDirection;
-    class MVuvw;
-}
 
 namespace icrar
 {
