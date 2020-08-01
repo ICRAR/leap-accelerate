@@ -65,6 +65,7 @@ namespace icrar
 
         auto m = Eigen::Matrix<T, R, C>();
 
+        // column major to column major
         auto it = value.begin();
         for(int col = 0; col < C; ++col)
         {
@@ -99,10 +100,11 @@ namespace icrar
 
         auto m = Eigen::Matrix<T, 3, 3>();
 
+        // column major to column major
         auto it = value.begin();
-        for(int row = 0; row < 3; ++row)
+        for(int col = 0; col < 3; ++col)
         {
-            for(int col = 0; col < 3; ++col)
+            for(int row = 0; row < 3; ++row)
             {
                 m(row, col) = *it;
                 it++;

@@ -122,6 +122,10 @@ namespace icrar
         this->Ad1 = Ad1;
         this->I1 = I1;
         this->I = I;
+
+        //preallocate
+        //this->dd;
+        //this->avg_data;
     }
 
     MetaData::MetaData(std::istream& input)
@@ -143,6 +147,8 @@ namespace icrar
             auto uvw = icrar::Dot(uvws[n], dd.value());
             uvws.push_back(uvw);
         }
+
+        //this->avg_data = Eigen::MatrixXcd(uvws.size(), num_pols);
     }
 
     // TODO: rename to CalcDD or UpdateDD
@@ -159,17 +165,20 @@ namespace icrar
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 
-        dd3d(IPosition(I2D,0,0)) = cos(dlm_ra) * cos(dlm_dec);
-        dd3d(IPosition(I2D,0,1)) = -sin(dlm_ra);
-        dd3d(IPosition(I2D,0,2)) = cos(dlm_ra) * sin(dlm_dec);
+        dd3d(0,0) = cos(dlm_ra) * cos(dlm_dec);
+        dd3d(0,1) = -sin(dlm_ra);
+        dd3d(0,2) = cos(dlm_ra) * sin(dlm_dec);
         
-        dd3d(IPosition(I2D,1,0)) = sin(dlm_ra) * cos(dlm_dec);
-        dd3d(IPosition(I2D,1,1)) = cos(dlm_ra);
-        dd3d(IPosition(I2D,1,2)) = sin(dlm_ra) * sin(dlm_dec);
+        dd3d(1,0) = sin(dlm_ra) * cos(dlm_dec);
+        dd3d(1,1) = cos(dlm_ra);
+        dd3d(1,2) = sin(dlm_ra) * sin(dlm_dec);
 
-        dd3d(IPosition(I2D,2,0)) = -sin(dlm_dec);
-        dd3d(IPosition(I2D,2,1)) = 0;
-        dd3d(IPosition(I2D,2,2)) = cos(dlm_dec);
+        dd3d(2,0) = -sin(dlm_dec);
+        dd3d(2,1) = 0;
+        dd3d(2,2) = cos(dlm_dec);
+
+        std::cout << dd3d << std::endl;
+        std::cout << ConvertMatrix(dd3d) << std::endl;
     }
 
     /**

@@ -115,7 +115,7 @@ namespace icrar
             const double THRESHOLD = 0.01;
 
             auto metadata = MetaData(ms);
-            auto direction = casacore::MVDirection(-0.7129444556035118, -0.365286407171852);
+            auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
             auto integration = Integration();
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
@@ -151,19 +151,29 @@ namespace icrar
                 metadatadevice.ToHost(metadatahost);
                 metadataOptionalOutput.reset(metadatahost);
             }
-
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cuda::MetaDataCudaHost& metadataOutput = metadataOptionalOutput.get();
 
+            // =======================
+            // Build expected results
+            // Test case generic
             auto expectedIntegration = Integration();
             expectedIntegration.baselines = integration.uvw.size();
+            expectedIntegration.uvw = integration.uvw;
 
+            //TODO: relying on cpu implementation for expected
             auto expectedMetadata = icrar::cuda::MetaDataCudaHost(ms);
             expectedMetadata.Initialize(direction);
-            expectedIntegration.uvw = integration.uvw;
+            expectedMetadata.SetWv();
             expectedMetadata.oldUVW = expectedIntegration.uvw;
 
             //Test case specific
+            expectedMetadata.dd = Eigen::Matrix3d();
+            expectedMetadata.dd.get() <<
+             0.46856701,  0.86068501, -0.19916391,
+            -0.79210108,  0.50913781,  0.33668172,
+             0.39117878,  0.0,         0.92031471;
+
             ASSERT_EQ(2, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
             expectedMetadata.avg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
@@ -171,6 +181,8 @@ namespace icrar
             0, 0, 0, 0,
             0, 0, 0, 0;
 
+            // ==========
+            // ASSERT
             ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.get().cols());
             ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
 
