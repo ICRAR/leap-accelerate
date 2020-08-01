@@ -176,9 +176,6 @@ namespace icrar
         dd3d(2,0) = -sin(dlm_dec);
         dd3d(2,1) = 0;
         dd3d(2,2) = cos(dlm_dec);
-
-        std::cout << dd3d << std::endl;
-        std::cout << ConvertMatrix(dd3d) << std::endl;
     }
 
     /**
