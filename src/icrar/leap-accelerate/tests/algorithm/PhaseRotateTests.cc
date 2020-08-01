@@ -161,11 +161,11 @@ namespace icrar
             expectedIntegration.baselines = integration.uvw.size();
             expectedIntegration.uvw = integration.uvw;
 
-            //TODO: relying on cpu implementation for expected
+            //TODO: don't rely on eigen implementation for expected values
             auto expectedMetadata = icrar::cuda::MetaDataCudaHost(ms);
             expectedMetadata.Initialize(direction);
             expectedMetadata.SetWv();
-            expectedMetadata.oldUVW = expectedIntegration.uvw;
+            expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific
             expectedMetadata.dd = Eigen::Matrix3d();

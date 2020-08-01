@@ -24,6 +24,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <boost/optional/optional_io.hpp>
+
 namespace icrar
 {
 namespace cuda
@@ -146,9 +148,15 @@ namespace cuda
 
     bool MetaDataCudaHost::operator==(const MetaDataCudaHost& rhs) const
     {
+        if(dd != rhs.dd)
+        {
+            std::cout << dd << std::endl;
+            std::cout << rhs.dd << std::endl;
+        }
+
         return init == rhs.init
         && m_constants == rhs.m_constants
-        && oldUVW == rhs.oldUVW
+        && oldUVW == rhs.oldUVW //TODO: oldUVW
         && avg_data == rhs.avg_data
         && dd == rhs.dd
         && A == rhs.A

@@ -122,7 +122,11 @@ void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual,
 
 void assert_metadataeq(const icrar::cuda::MetaDataCudaHost& expected, const icrar::cuda::MetaDataCudaHost& actual, std::string file, int line)
 {
-    std::cerr << "checking MetaData at " << file << ":" << line << std::endl;
+    if(!(expected == actual))
+    {
+        std::cerr << "MetaData not exactly equal at " << file << ":" << line << std::endl;
+    }
+
     const double THRESHOLD = 0.001;
     //ASSERT_EQ(expectedIntegration.baselines, metadataOutput.avg_data.rows());
     
@@ -141,20 +145,28 @@ void assert_metadataeq(const icrar::cuda::MetaDataCudaHost& expected, const icra
     ASSERT_EQ(expected.GetConstants().phase_centre_dec_rad, actual.GetConstants().phase_centre_dec_rad);
     ASSERT_EQ(expected.GetConstants().dlm_ra, actual.GetConstants().dlm_ra);
     ASSERT_EQ(expected.GetConstants().dlm_dec, actual.GetConstants().dlm_dec);
-    //ASSERT_EQ(expected.oldUVW, metadata.oldUVW); //TODO
 
-    ASSERT_EQ(expected.avg_data.is_initialized(), actual.avg_data.is_initialized());
-    ASSERT_MEQCD(expected.avg_data.get(), actual.avg_data.get(), THRESHOLD);
 
-    ASSERT_EQ(expected.dd.is_initialized(), actual.dd.is_initialized());
-    ASSERT_MEQ3D(expected.dd.get(), actual.dd.get(), THRESHOLD);
     ASSERT_MEQ(expected.A, actual.A, THRESHOLD);
     ASSERT_MEQI(expected.I, actual.I, THRESHOLD);
     ASSERT_MEQ(expected.Ad, actual.Ad, THRESHOLD);
     ASSERT_MEQ(expected.A1, actual.A1, THRESHOLD);
     ASSERT_MEQI(expected.I1, actual.I1, THRESHOLD);
     ASSERT_MEQ(expected.Ad1, actual.Ad1, THRESHOLD);
+    ASSERT_EQ(expected.oldUVW, actual.oldUVW);
     
-    //ASSERT_EQ(expecexpectedtedMetadata, metadata);
+    ASSERT_EQ(expected.dd.is_initialized(), actual.dd.is_initialized());
+    if(expected.dd.is_initialized() && actual.dd.is_initialized())
+    {
+        ASSERT_MEQ3D(expected.dd.get(), actual.dd.get(), THRESHOLD);
+    }
+
+    ASSERT_EQ(expected.avg_data.is_initialized(), actual.avg_data.is_initialized());
+    if(expected.avg_data.is_initialized() && actual.avg_data.is_initialized())
+    {
+        ASSERT_MEQCD(expected.avg_data.get(), actual.avg_data.get(), THRESHOLD);
+    }
+    
+    //ASSERT_EQ(expected, actual);
     //ASSERT_EQ(expectedIntegration, integration);
 }
