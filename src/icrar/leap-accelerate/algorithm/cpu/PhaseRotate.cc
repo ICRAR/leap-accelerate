@@ -83,48 +83,47 @@ namespace cpu
             metadata.Initialize(direction);
         }
 
-        // metadata.avg_data = Eigen::MatrixXcd::Zero(integration.baselines, metadata.m_constants.num_pols);
-        // metadata.CalcUVW(uvw);
+        metadata.avg_data = Eigen::MatrixXcd::Zero(integration.baselines, metadata.m_constants.num_pols);
+        metadata.CalcUVW(uvw);
 
-        // assert(uvw.size() == integration.baselines);
-        // assert(data.rows() == metadata.m_constants.channels);
-        // assert(data.cols() == integration.baselines);
-        // assert(metadata.oldUVW.size() == integration.baselines);
-        // assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
+        assert(uvw.size() == integration.baselines);
+        assert(data.rows() == metadata.m_constants.channels);
+        assert(data.cols() == integration.baselines);
+        assert(metadata.oldUVW.size() == integration.baselines);
+        assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
 
         // loop over baselines
-        // for(int baseline = 0; baseline < integration.baselines; ++baseline)
-        // {
-        //     // For baseline
-        //     const double pi = boost::math::constants::pi<double>();
-        //     double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-        //     shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-        //     shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
+        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        {
+            const double pi = boost::math::constants::pi<double>();
+            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+            shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
+            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
 
-        //     if(baseline % 1000 == 1)
-        //     {
-        //         std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
-        //     }
+            if(baseline % 1000 == 1)
+            {
+                std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
+            }
 
-        //     // Loop over channels
-        //     for(int channel = 0; channel < metadata.m_constants.channels; channel++)
-        //     {
-        //         double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
-        //         double rs = sin(shiftRad);
-        //         double rc = cos(shiftRad);
-        //         Eigen::VectorXcd v = data(channel, baseline);
+            // Loop over channels
+            for(int channel = 0; channel < metadata.m_constants.channels; channel++)
+            {
+                double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
+                double rs = sin(shiftRad);
+                double rc = cos(shiftRad);
+                Eigen::VectorXcd v = data(channel, baseline);
 
-        //         data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
 
-        //         if(!data(channel, baseline).hasNaN())
-        //         {
-        //             for(int i = 0; i < data(channel, baseline).cols(); i++)
-        //             {
-        //                 metadata.avg_data(baseline, i) += data(channel, baseline)(i);
-        //             }
-        //         }
-        //     }
-        // }
+                if(!data(channel, baseline).hasNaN())
+                {
+                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    {
+                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
+                    }
+                }
+            }
+        }
     }
 
 std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(

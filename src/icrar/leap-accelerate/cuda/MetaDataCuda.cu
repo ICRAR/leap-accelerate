@@ -83,6 +83,8 @@ namespace cuda
         A1 = ConvertMatrix(metadata.A1);
         I1 = ConvertMatrix<int>(metadata.I1);
         Ad1 = ConvertMatrix(metadata.Ad1);
+
+        SetWv();
     }
 
     void MetaDataCudaHost::Initialize(const casacore::MVDirection& direction)
@@ -148,15 +150,9 @@ namespace cuda
 
     bool MetaDataCudaHost::operator==(const MetaDataCudaHost& rhs) const
     {
-        if(dd != rhs.dd)
-        {
-            std::cout << dd << std::endl;
-            std::cout << rhs.dd << std::endl;
-        }
-
         return init == rhs.init
         && m_constants == rhs.m_constants
-        && oldUVW == rhs.oldUVW //TODO: oldUVW
+        && oldUVW == rhs.oldUVW
         && avg_data == rhs.avg_data
         && dd == rhs.dd
         && A == rhs.A
