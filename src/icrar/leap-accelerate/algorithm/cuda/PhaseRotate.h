@@ -29,6 +29,9 @@
 #undef __CUDACC_VER__
 #define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
 #endif
+#define EIGEN_HAS_CXX11 1
+#define EIGEN_VECTORIZE_GPU 1
+#define EIGEN_CUDACC 1
 #include <eigen3/Eigen/Core>
 
 #include <casacore/ms/MeasurementSets.h>

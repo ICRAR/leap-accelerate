@@ -44,7 +44,7 @@ namespace icrar
 {
     struct MetaData
     {
-        bool init;
+        bool m_initialized;
 
         int nantennas;
         //int nbaseline;
@@ -56,14 +56,14 @@ namespace icrar
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        int solution_interval;
+        int solution_interval; // TODO can remove?
 
         std::vector<double> channel_wavelength;
         std::vector<casacore::MVuvw> oldUVW;
 
-        casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        
         boost::optional<casacore::Matrix<double>> dd;
+
+        boost::optional<casacore::Matrix<std::complex<double>>> avg_data; 
 
         union
         {
@@ -98,6 +98,21 @@ namespace icrar
         MetaData();
         MetaData(std::istream& input);
         MetaData(const casacore::MeasurementSet& ms);
+        
+        /**
+         * @brief 
+         * 
+         * @param metadata 
+         */
+        void SetWv();
+
+        /**
+         * @brief 
+         * 
+         * @param uvw 
+         * @param metadata 
+         */
+        void CalcUVW(std::vector<casacore::MVuvw>& uvw);
 
         /**
          * @brief 
@@ -106,21 +121,6 @@ namespace icrar
          * @param direction 
          */
         void SetDD(const casacore::MVDirection& direction);
-        
-        /**
-         * @brief 
-         * 
-         * @param metadata 
-         */
-        void SetWv();
-        
-        /**
-         * @brief 
-         * 
-         * @param uvw 
-         * @param metadata 
-         */
-        void CalcUVW(std::vector<casacore::MVuvw>& uvw);
 
         bool operator==(const MetaData& rhs) const;
 

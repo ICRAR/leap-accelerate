@@ -44,7 +44,7 @@ namespace icrar
         auto msc = std::make_unique<casacore::MSColumns>(rms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
-        this->init = true;
+        this->m_initialized = false;
         this->stations = 0;
         this->nantennas = 0;
         this->solution_interval = 3601;
@@ -90,16 +90,20 @@ namespace icrar
         {
             msc->observation().timeRange().get(0, range);
         }
-        //start_time = range[0];
-        //end_time = range[1];
-
 
         casacore::Vector<double> time = msmc->time().getColumn();
-        //msmc.time();
 
-        this->nantennas = 4853; //TODO
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
-        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
+        //select the first epoch only
+        double epoch = time[0];
+        int nEpochs = 0;
+        for(int i = 0; i < time.size(); i++)
+        {
+            if(time[i] == time[0]) nEpochs++;
+        }
+        auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
         //Start calculations
         casacore::Matrix<double> A1;
@@ -127,6 +131,10 @@ namespace icrar
 
     void MetaData::CalcUVW(std::vector<MVuvw>& uvws)
     {
+        if(!dd.is_initialized())
+        {
+            throw std::runtime_error("dd must be initialized before CalcUVW");
+        }
         oldUVW = uvws;
         auto size = uvws.size();
         uvws.clear();
@@ -137,12 +145,7 @@ namespace icrar
         }
     }
 
-    /**
-     * @brief 
-     * TODO: rename to CalcDD or UpdateDD
-     * @param metadata 
-     * @param direction 
-     */
+    // TODO: rename to CalcDD or UpdateDD
     void MetaData::SetDD(const MVDirection& direction)
     {
         const int I2D = 2;
@@ -191,7 +194,7 @@ namespace icrar
 
     bool MetaData::operator==(const MetaData& rhs) const
     {
-        return init == rhs.init
+        return m_initialized == rhs.m_initialized
         && nantennas == rhs.nantennas
         //&& nbaseline == rhs.nbaseline
         && channels == rhs.channels

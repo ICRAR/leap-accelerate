@@ -21,6 +21,7 @@
  */
 
 
+#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
@@ -56,7 +57,6 @@ namespace icrar
     class PhaseRotateTests : public ::testing::Test
     {
         casacore::MeasurementSet ms;
-        MetaData meta;
 
     protected:
 
@@ -73,7 +73,6 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = casacore::MeasurementSet(filename);
-            meta = MetaData(ms);
         }
 
         void TearDown() override
@@ -115,15 +114,14 @@ namespace icrar
         {
             const double THRESHOLD = 0.01;
 
-            std::string filepath = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            auto ms = casacore::MeasurementSet(filepath);
             auto metadata = MetaData(ms);
             auto direction = casacore::MVDirection(-0.7129444556035118, -0.365286407171852);
-            meta.SetDD(direction);
+
             auto integration = Integration();
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
 
+            //3d matrix initializing
             integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
             for(int row = 0; row < integration.data.rows(); ++row)
             {
@@ -133,14 +131,17 @@ namespace icrar
                 }
             }
 
+            boost::optional<icrar::cuda::MetaDataCudaHost> metadataOptionalOutput;
             if(impl == Impl::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
+                metadataOptionalOutput.reset(icrar::cuda::MetaDataCudaHost(metadata));
             }
             if(impl == Impl::eigen)
             {
-                //auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
-                //icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
+                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
+                metadataOptionalOutput.reset(metadatahost);
             }
             if(impl == Impl::cuda)
             {
@@ -148,58 +149,31 @@ namespace icrar
                 auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
                 icrar::cuda::RotateVisibilities(integration, metadatadevice, direction);
                 metadatadevice.ToHost(metadatahost);
+                metadataOptionalOutput.reset(metadatahost);
             }
+
+            ASSERT_TRUE(metadataOptionalOutput.is_initialized());
+            icrar::cuda::MetaDataCudaHost& metadataOutput = metadataOptionalOutput.get();
 
             auto expectedIntegration = Integration();
             expectedIntegration.baselines = integration.uvw.size();
 
-            auto expectedMetadata = MetaData(ms);
-            expectedMetadata.SetDD(direction);
-            expectedMetadata.SetWv();
+            auto expectedMetadata = icrar::cuda::MetaDataCudaHost(ms);
+            expectedMetadata.Initialize(direction);
             expectedIntegration.uvw = integration.uvw;
             expectedMetadata.oldUVW = expectedIntegration.uvw;
-            expectedMetadata.init = false;
 
             //Test case specific
             ASSERT_EQ(2, expectedIntegration.baselines);
-            ASSERT_EQ(4, expectedMetadata.num_pols);
-            auto expectedAvg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
-            expectedAvg_data <<
-            0, 0, 0, 0,  //-0.549283 + 0.773963i,
+            ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
+            expectedMetadata.avg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
+            expectedMetadata.avg_data.get() <<
+            0, 0, 0, 0,
             0, 0, 0, 0;
-            expectedMetadata.avg_data = ConvertMatrix(expectedAvg_data);
 
-            
-            ASSERT_EQ(expectedMetadata.init, metadata.init);
-            ASSERT_EQ(expectedMetadata.nantennas, metadata.nantennas);
-            //ASSERT_EQ(expectedMetadata.nbaseline, metadata.nbaseline);
-            ASSERT_EQ(expectedMetadata.channels, metadata.channels);
-            ASSERT_EQ(expectedMetadata.num_pols, metadata.num_pols);
-            ASSERT_EQ(expectedMetadata.stations, metadata.stations);
-            ASSERT_EQ(expectedMetadata.rows, metadata.rows);
-            ASSERT_EQ(expectedMetadata.freq_start_hz, metadata.freq_start_hz);
-            ASSERT_EQ(expectedMetadata.freq_inc_hz, metadata.freq_inc_hz);
-            ASSERT_EQ(expectedMetadata.solution_interval, metadata.solution_interval);
-            ASSERT_EQ(expectedMetadata.channel_wavelength, metadata.channel_wavelength);
-            ASSERT_EQ(expectedMetadata.phase_centre_ra_rad, metadata.phase_centre_ra_rad);
-            ASSERT_EQ(expectedMetadata.phase_centre_dec_rad, metadata.phase_centre_dec_rad);
-            ASSERT_EQ(expectedMetadata.dlm_ra, metadata.dlm_ra);
-            ASSERT_EQ(expectedMetadata.dlm_dec, metadata.dlm_dec);
-            //ASSERT_EQ(expectedMetadata.oldUVW, metadata.oldUVW); //TODO
+            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.get().cols());
+            ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
 
-            ASSERT_EQ(expectedIntegration.baselines, metadata.avg_data.shape()[0]);
-            ASSERT_EQ(expectedMetadata.num_pols, metadata.avg_data.shape()[1]);
-        
-            ASSERT_MEQCD(ConvertMatrix(expectedMetadata.avg_data), ConvertMatrix(metadata.avg_data), THRESHOLD);
-
-            ASSERT_TRUE(icrar::Equal(expectedMetadata.dd, metadata.dd));
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A), ConvertMatrix(metadata.A), THRESHOLD);
-            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I), ConvertMatrix<int>(metadata.I), THRESHOLD);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad), ConvertMatrix(metadata.Ad), THRESHOLD);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.A1), ConvertMatrix(metadata.A1), THRESHOLD);
-            ASSERT_MEQI(ConvertMatrix<int>(expectedMetadata.I1), ConvertMatrix<int>(metadata.I1), THRESHOLD);
-            ASSERT_MEQ(ConvertMatrix(expectedMetadata.Ad1), ConvertMatrix(metadata.Ad1), THRESHOLD);
-            
             //ASSERT_EQ(expectedMetadata, metadata);
             //ASSERT_EQ(expectedIntegration, integration);
         }
@@ -240,58 +214,294 @@ namespace icrar
             }
         }
 
+        Eigen::MatrixXd GetExpectedA1()
+        {
+            Eigen::MatrixXd A1Expected = Eigen::MatrixXd::Zero(4854, 128);
+            A1Expected(0, 0) = 1;
+            A1Expected(1, 0) = 1;
+            A1Expected(2, 0) = 1;
+            A1Expected(3, 0) = 1;
+            A1Expected(4, 0) = 1;
+            A1Expected(5, 0) = 1;
+            A1Expected(6, 0) = 1;
+            A1Expected(7, 0) = 1;
+            A1Expected(8, 0) = 1;
+            A1Expected(9, 0) = 1;
+            A1Expected(10, 0) = 1;
+            A1Expected(11, 0) = 1;
+            A1Expected(12, 0) = 1;
+            A1Expected(13, 0) = 1;
+            A1Expected(14, 0) = 1;
+            A1Expected(15, 0) = 1;
+            A1Expected(16, 0) = 1;
+            A1Expected(17, 0) = 1;
+            A1Expected(18, 0) = 1;
+            A1Expected(19, 0) = 1;
+            A1Expected(20, 0) = 1;
+            A1Expected(21, 0) = 1;
+            A1Expected(22, 0) = 1;
+            A1Expected(23, 0) = 1;
+            A1Expected(24, 0) = 1;
+            A1Expected(25, 0) = 1;
+            A1Expected(26, 0) = 1;
+            A1Expected(27, 0) = 1;
+            A1Expected(28, 0) = 1;
+            A1Expected(29, 0) = 1;
+            A1Expected(30, 0) = 1;
+            A1Expected(31, 0) = 1;
+            A1Expected(32, 0) = 1;
+            A1Expected(33, 0) = 1;
+            A1Expected(34, 0) = 1;
+            A1Expected(35, 0) = 1;
+            A1Expected(36, 0) = 1;
+            A1Expected(37, 0) = 1;
+            A1Expected(38, 0) = 1;
+            A1Expected(39, 0) = 1;
+            A1Expected(40, 0) = 1;
+            A1Expected(41, 0) = 1;
+            A1Expected(42, 0) = 1;
+            A1Expected(43, 0) = 1;
+            A1Expected(44, 0) = 1;
+            A1Expected(45, 0) = 1;
+            A1Expected(46, 0) = 1;
+            A1Expected(47, 0) = 1;
+            A1Expected(48, 0) = 1;
+            A1Expected(49, 0) = 1;
+            A1Expected(50, 0) = 1;
+            A1Expected(51, 0) = 1;
+            A1Expected(52, 0) = 1;
+            A1Expected(53, 0) = 1;
+            A1Expected(54, 0) = 1;
+            A1Expected(55, 0) = 1;
+            A1Expected(56, 0) = 1;
+            A1Expected(57, 0) = 1;
+            A1Expected(58, 0) = 1;
+            A1Expected(59, 0) = 1;
+            A1Expected(60, 0) = 1;
+            A1Expected(61, 0) = 1;
+            A1Expected(62, 0) = 1;
+            A1Expected(63, 0) = 1;
+            A1Expected(64, 0) = 1;
+            A1Expected(65, 0) = 1;
+            A1Expected(66, 0) = 1;
+            A1Expected(67, 0) = 1;
+            A1Expected(68, 0) = 1;
+            A1Expected(69, 0) = 1;
+            A1Expected(70, 0) = 1;
+            A1Expected(71, 0) = 1;
+            A1Expected(72, 0) = 1;
+            A1Expected(73, 0) = 1;
+            A1Expected(74, 0) = 1;
+            A1Expected(75, 0) = 1;
+            A1Expected(76, 0) = 1;
+            A1Expected(77, 0) = 1;
+            A1Expected(78, 0) = 1;
+            A1Expected(79, 0) = 1;
+            A1Expected(80, 0) = 1;
+            A1Expected(81, 0) = 1;
+            A1Expected(82, 0) = 1;
+            A1Expected(83, 0) = 1;
+            A1Expected(84, 0) = 1;
+            A1Expected(85, 0) = 1;
+            A1Expected(86, 0) = 1;
+            A1Expected(87, 0) = 1;
+            A1Expected(88, 0) = 1;
+            A1Expected(89, 0) = 1;
+            A1Expected(90, 0) = 1;
+            A1Expected(91, 0) = 1;
+            A1Expected(92, 0) = 1;
+            A1Expected(93, 0) = 1;
+            A1Expected(94, 0) = 1;
+            A1Expected(95, 0) = 1;
+            A1Expected(96, 0) = 1;
+            A1Expected(0, 1) = -1;
+            A1Expected(1, 4) = -1;
+            A1Expected(2, 5) = -1;
+            A1Expected(3, 6) = -1;
+            A1Expected(4, 7) = -1;
+            A1Expected(5, 8) = -1;
+            A1Expected(6, 12) = -1;
+            A1Expected(7, 13) = -1;
+            A1Expected(8, 14) = -1;
+            A1Expected(9, 16) = -1;
+            A1Expected(10, 17) = -1;
+            A1Expected(11, 20) = -1;
+            A1Expected(12, 21) = -1;
+            A1Expected(13, 22) = -1;
+            A1Expected(14, 23) = -1;
+            A1Expected(15, 24) = -1;
+            A1Expected(16, 25) = -1;
+            A1Expected(17, 27) = -1;
+            A1Expected(18, 28) = -1;
+            A1Expected(19, 29) = -1;
+            A1Expected(20, 31) = -1;
+            A1Expected(21, 32) = -1;
+            A1Expected(22, 33) = -1;
+            A1Expected(23, 35) = -1;
+            A1Expected(24, 36) = -1;
+            A1Expected(25, 37) = -1;
+            A1Expected(26, 40) = -1;
+            A1Expected(27, 41) = -1;
+            A1Expected(28, 42) = -1;
+            A1Expected(29, 43) = -1;
+            A1Expected(30, 44) = -1;
+            A1Expected(31, 45) = -1;
+            A1Expected(32, 46) = -1;
+            A1Expected(33, 47) = -1;
+            A1Expected(34, 48) = -1;
+            A1Expected(35, 50) = -1;
+            A1Expected(36, 52) = -1;
+            A1Expected(37, 53) = -1;
+            A1Expected(38, 54) = -1;
+            A1Expected(39, 55) = -1;
+            A1Expected(40, 56) = -1;
+            A1Expected(41, 57) = -1;
+            A1Expected(42, 58) = -1;
+            A1Expected(43, 59) = -1;
+            A1Expected(44, 65) = -1;
+            A1Expected(45, 66) = -1;
+            A1Expected(46, 67) = -1;
+            A1Expected(47, 68) = -1;
+            A1Expected(48, 69) = -1;
+            A1Expected(49, 72) = -1;
+            A1Expected(50, 73) = -1;
+            A1Expected(51, 74) = -1;
+            A1Expected(52, 75) = -1;
+            A1Expected(53, 76) = -1;
+            A1Expected(54, 77) = -1;
+            A1Expected(55, 78) = -1;
+            A1Expected(56, 79) = -1;
+            A1Expected(57, 81) = -1;
+            A1Expected(58, 82) = -1;
+            A1Expected(59, 83) = -1;
+            A1Expected(60, 84) = -1;
+            A1Expected(61, 85) = -1;
+            A1Expected(62, 86) = -1;
+            A1Expected(63, 88) = -1;
+            A1Expected(64, 89) = -1;
+            A1Expected(65, 90) = -1;
+            A1Expected(66, 92) = -1;
+            A1Expected(67, 96) = -1;
+            A1Expected(68, 97) = -1;
+            A1Expected(69, 98) = -1;
+            A1Expected(70, 99) = -1;
+            A1Expected(71, 100) = -1;
+            A1Expected(72, 101) = -1;
+            A1Expected(73, 102) = -1;
+            A1Expected(74, 103) = -1;
+            A1Expected(75, 104) = -1;
+            A1Expected(76, 105) = -1;
+            A1Expected(77, 106) = -1;
+            A1Expected(78, 107) = -1;
+            A1Expected(79, 108) = -1;
+            A1Expected(80, 109) = -1;
+            A1Expected(81, 110) = -1;
+            A1Expected(82, 112) = -1;
+            A1Expected(83, 113) = -1;
+            A1Expected(84, 114) = -1;
+            A1Expected(85, 116) = -1;
+            A1Expected(86, 117) = -1;
+            A1Expected(87, 118) = -1;
+            A1Expected(88, 119) = -1;
+            A1Expected(89, 120) = -1;
+            A1Expected(90, 121) = -1;
+            A1Expected(91, 122) = -1;
+            A1Expected(92, 123) = -1;
+            A1Expected(93, 124) = -1;
+            A1Expected(94, 125) = -1;
+            A1Expected(95, 126) = -1;
+            A1Expected(96, 127) = -1;
+            return A1Expected;
+        }
+
+        Eigen::VectorXi GetExpectedI1()
+        {
+            auto I1Expected = Eigen::VectorXi(4854);
+            I1Expected.setConstant(1);
+            for(int i = 1; i < 97; ++i)
+            {
+                I1Expected(i) = i + 1;
+            }
+            return I1Expected;
+        }
+
         void PhaseMatrixFunctionDataTest(Impl impl)
         {
+            //int nantennas = 10;
+            //int nstations = 1;
+
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             auto ms = casacore::MeasurementSet(filename);
             auto msmc = std::make_unique<casacore::MSMainColumns>(ms);
 
-            int nantennas = 4853;
-            casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(casacore::Slice(0, nantennas, 1));
-            casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(casacore::Slice(0, nantennas, 1));
+            int nstations = ms.antenna().nrow(); //128
+
+            //select the first epoch only
+            casacore::Vector<double> time = msmc->time().getColumn();
+            double epoch = time[0];
+            int nEpochs = 0;
+            for(int i = 0; i < time.size(); i++)
+            {
+                if(time[i] == time[0]) nEpochs++;
+            }
+            auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+
+            int nantennas = nEpochs;
+
+            casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+            casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
             //Start calculations
             int refAnt = 0;
-            bool map = true; //outer trader - clearsave.io
+            bool map = true;
 
+            //output
+            Eigen::MatrixXd A1;
+            Eigen::VectorXi I1;
             if(impl == Impl::casa)
             {
-                casacore::Matrix<double> A1;
-                casacore::Array<std::int32_t> I1;
-                std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
-                ASSERT_EQ(4854, A1.shape()[0]);
-                ASSERT_EQ(128, A1.shape()[1]);
+                casacore::Matrix<double> casaA1;
+                casacore::Array<std::int32_t> casaI1;
+                std::tie(casaA1, casaI1) = icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
+
+                A1 = ConvertMatrix(casaA1);
+                I1 = ConvertVector(casaI1);
             }
             if(impl == Impl::eigen)
             {
                 auto ea1 = ConvertVector(a1);
                 auto ea2 = ConvertVector(a2);
-                
-                Eigen::MatrixXd A1;
-                Eigen::VectorXi I1;
-                std::tie(A1, I1) =icrar::cpu::PhaseMatrixFunction(ea1, ea2, refAnt, map);
-                ASSERT_EQ(4854, A1.rows());
-                ASSERT_EQ(128, A1.cols());
+                std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, refAnt, map);
+
             }
             if(impl == Impl::cuda)
             {
                 auto ea1 = ConvertVector(a1);
                 auto ea2 = ConvertVector(a2);
-                icrar::cuda::PhaseMatrixFunction(ea1, ea2, refAnt, map);
+                std::tie(A1, I1) = icrar::cuda::PhaseMatrixFunction(ea1, ea2, refAnt, map);
             }
+
+            ASSERT_EQ(nantennas + 1, A1.rows());
+            ASSERT_EQ(nstations, A1.cols());
+
+            Eigen::MatrixXd A1Expected = GetExpectedA1();
+            ASSERT_MEQ(A1Expected, A1, 0.001);
+
+            auto I1Expected = GetExpectedI1();
+            ASSERT_VEQI(I1Expected, I1, 0.001);
         }
     };
 
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(Impl::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(Impl::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(Impl::cuda); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(Impl::cuda); }
 
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(Impl::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(Impl::cuda); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(Impl::casa); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
     
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }

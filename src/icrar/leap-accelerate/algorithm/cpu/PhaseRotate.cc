@@ -78,23 +78,19 @@ namespace cpu
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        if(metadata.init)
+        if(!metadata.IsInitialized())
         {
-            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
-            
-            metadata.SetDD(direction);
-            metadata.SetWv();
-            // Zero a vector for averaging in time and freq
-            metadata.avg_data = Eigen::MatrixXcd::Zero(integration.baselines, metadata.m_constants.num_pols);
-            metadata.init = false;
+            metadata.Initialize(direction);
         }
-        metadata.CalcUVW(uvw);
 
-        assert(uvw.size() == integration.baselines);
-        assert(data.rows() == metadata.m_constants.channels);
-        assert(data.cols() == integration.baselines);
-        assert(metadata.oldUVW.size() == integration.baselines);
-        assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
+        // metadata.avg_data = Eigen::MatrixXcd::Zero(integration.baselines, metadata.m_constants.num_pols);
+        // metadata.CalcUVW(uvw);
+
+        // assert(uvw.size() == integration.baselines);
+        // assert(data.rows() == metadata.m_constants.channels);
+        // assert(data.cols() == integration.baselines);
+        // assert(metadata.oldUVW.size() == integration.baselines);
+        // assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
 
         // loop over baselines
         // for(int baseline = 0; baseline < integration.baselines; ++baseline)
@@ -152,40 +148,42 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
 
+        int STATIONS = A.cols() - 1; //TODO verify correctness
+
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
         I.setConstant(1);
 
         int k = 0;
 
-        // for(int n = 0; n < a1.size(); n++)
-        // {
-        //     if(a1(1, n) != a2(1, n))
-        //     {
-        //         if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
-        //         {
-        //             A(k, a1(n)) = 1;
-        //             A(k, a2(n)) = -1;
-        //             I(k) = n;
-        //             k++;
-        //         }
-        //     }
-        // }
-        // if(refAnt < 0)
-        // {
-        //     refAnt = 0;
-        //     A(k, refAnt) = 1;
-        //     k++;
+        for(int n = 0; n < a1.size(); n++)
+        {
+            if(a1(n) != a2(n))
+            {
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
+                {
+                    A(k, a1(n)) = 1;
+                    A(k, a2(n)) = -1;
+                    I(k) = n;
+                    k++;
+                }
+            }
+        }
+        if(refAnt < 0)
+        {
+            refAnt = 0;
+            A(k, refAnt) = 1;
+            k++;
             
-        //     auto Atemp = Eigen::MatrixXd(k, 127);
-        //     Atemp = A(Eigen::seq(0, k), Eigen::seq(0, 127));
-        //     A.resize(0,0);
-        //     A = Atemp;
+            auto Atemp = Eigen::MatrixXd(k, STATIONS);
+            Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
+            A.resize(0,0);
+            A = Atemp;
 
-        //     auto Itemp = Eigen::VectorXi(k);
-        //     Itemp = I(Eigen::seq(0, k));
-        //     I.resize(0);
-        //     I = Itemp;
-        // }
+            auto Itemp = Eigen::VectorXi(k);
+            Itemp = I(Eigen::seqN(0, k));
+            I.resize(0);
+            I = Itemp;
+        }
 
         return std::make_pair(A, I);
     }

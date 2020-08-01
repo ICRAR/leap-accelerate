@@ -35,6 +35,7 @@ namespace cuda
         && num_pols == rhs.num_pols
         && stations == rhs.stations
         && rows == rhs.rows
+        && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
         && channel_wavelength == rhs.channel_wavelength
@@ -51,25 +52,26 @@ namespace cuda
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;
         m_constants.rows = metadata.rows;
+        m_constants.solution_interval = metadata.solution_interval;
         m_constants.freq_start_hz = metadata.freq_start_hz;
         m_constants.freq_inc_hz = metadata.freq_inc_hz;
         m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
         m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
+        m_constants.channel_wavelength = metadata.channel_wavelength;
 
-        init = metadata.init;
+        init = metadata.m_initialized;
         oldUVW = metadata.oldUVW;
 
-        avg_data = ConvertMatrix(metadata.avg_data);
-        
         if(metadata.dd.is_initialized())
         {
             dd = ConvertMatrix3x3(metadata.dd.value());
         }
-        else
+
+        if(metadata.avg_data.is_initialized())
         {
-            throw std::runtime_error("dd is required");
+            avg_data = ConvertMatrix(metadata.avg_data.value());
         }
 
         A = ConvertMatrix(metadata.A);
@@ -79,6 +81,17 @@ namespace cuda
         A1 = ConvertMatrix(metadata.A1);
         I1 = ConvertMatrix<int>(metadata.I1);
         Ad1 = ConvertMatrix(metadata.Ad1);
+    }
+
+    void MetaDataCudaHost::Initialize(const casacore::MVDirection& direction)
+    {
+        SetDD(direction);
+        init = true;
+    }
+
+    bool MetaDataCudaHost::IsInitialized() const
+    {
+        return init;
     }
 
     const Constants& MetaDataCudaHost::GetConstants() const
@@ -93,7 +106,7 @@ namespace cuda
         uvws.clear();
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], dd);
+            auto uvw = icrar::Dot(uvws[n], dd.get());
             uvws.push_back(uvw);
         }
     }
@@ -103,26 +116,28 @@ namespace cuda
         m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
 
-        dd(0,0) = cos(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
-        dd(0,1) = -sin(m_constants.dlm_ra);
-        dd(0,2) = cos(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
+        dd = Eigen::Matrix3d();
+        dd.get()(0,0) = cos(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
+        dd.get()(0,1) = -sin(m_constants.dlm_ra);
+        dd.get()(0,2) = cos(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
         
-        dd(1,0) = sin(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
-        dd(1,1) = cos(m_constants.dlm_ra);
-        dd(1,2) = sin(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
+        dd.get()(1,0) = sin(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
+        dd.get()(1,1) = cos(m_constants.dlm_ra);
+        dd.get()(1,2) = sin(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
 
-        dd(2,0) = -sin(m_constants.dlm_dec);
-        dd(2,1) = 0;
-        dd(2,2) = cos(m_constants.dlm_dec);
+        dd.get()(2,0) = -sin(m_constants.dlm_dec);
+        dd.get()(2,1) = 0;
+        dd.get()(2,2) = cos(m_constants.dlm_dec);
     }
 
     void MetaDataCudaHost::SetWv()
     {
-        double speed_of_light = 299792458.0;
         m_constants.channel_wavelength = range(
             m_constants.freq_start_hz,
-            m_constants.freq_inc_hz,
-            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels);
+            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels,
+            m_constants.freq_inc_hz);
+        
+        double speed_of_light = 299792458.0;
         for(double& v : m_constants.channel_wavelength)
         {
             v = speed_of_light / v;
@@ -148,8 +163,8 @@ namespace cuda
     : constants(metadata.GetConstants())
     , init(metadata.init)
     , oldUVW(metadata.oldUVW)
-    , avg_data(metadata.avg_data)
-    , dd(metadata.dd)
+    , dd(metadata.dd.is_initialized() ? metadata.dd.get() : Eigen::Matrix3d())
+    , avg_data(metadata.avg_data.is_initialized() ? metadata.avg_data.get() : Eigen::MatrixXcd(1,1))
     , A(metadata.A)
     , I(metadata.I)
     , Ad(metadata.Ad)
@@ -165,20 +180,38 @@ namespace cuda
         metadata.init = init;
         metadata.m_constants = constants;
         oldUVW.ToHost(metadata.oldUVW);
-        avg_data.ToHost(metadata.avg_data);
-        dd.ToHost(metadata.dd);
+
         A.ToHost(metadata.A);
         I.ToHost(metadata.I);
         Ad.ToHost(metadata.Ad);
         A1.ToHost(metadata.A1);
         I1.ToHost(metadata.I1);
         Ad1.ToHost(metadata.Ad1);
+
+        if(metadata.avg_data.is_initialized())
+        {
+            avg_data.ToHost(metadata.avg_data.get());
+        }
+        else
+        {
+            metadata.avg_data = Eigen::MatrixXcd(avg_data.GetRows(), avg_data.GetCols());
+            avg_data.ToHost(metadata.avg_data.get());
+        }
+        
+        if(metadata.dd.is_initialized())
+        {
+            dd.ToHost(metadata.dd.get());
+        }
+        else
+        {
+            metadata.dd = Eigen::Matrix3d();
+            dd.ToHost(metadata.dd.get());
+        }
     }
 
     MetaDataCudaHost MetaDataCudaDevice::ToHost() const
     {
         auto meta = MetaData();
-        meta.SetDD(casacore::MVDirection(0.0, 0.0));
         MetaDataCudaHost result = MetaDataCudaHost(meta);
         ToHost(result);
         return result;

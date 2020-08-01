@@ -60,7 +60,7 @@ using namespace casacore;
 
 namespace icrar
 {
-namespace casa
+namespace casalib
 {
     void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions)
     {
@@ -99,7 +99,7 @@ namespace casa
                 {
                     return std::arg(c);
                 };
-                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
+                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
                 casacore::Array<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
                 casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
                 
@@ -115,20 +115,6 @@ namespace casa
         output_calibrations.push(CalibrationResult(direction, cal));
     }
 
-    bool isNaN(const Eigen::VectorXcd& vector)
-    {
-        // bool valid = true;
-        // for(int i = 0; i < vector.size(); i++)
-        // {
-        //     if(vector(i).real() == NAN || vector(i).imag() == NAN)
-        //     {
-        //         valid = false;
-        //         break;
-        //     }
-        // }
-        // return valid;
-    }
-
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
         using namespace std::literals::complex_literals;
@@ -136,17 +122,19 @@ namespace casa
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        if(true)
+        if(!metadata.dd.is_initialized())
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
             
             metadata.SetDD(direction);
             metadata.SetWv();
-            // Zero a vector for averaging in time and freq
-            metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
-            metadata.avg_data = 0;
-            metadata.init = false;
+            metadata.m_initialized = true;
         }
+
+        // Zero a vector for averaging in time and freq
+        metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
+        metadata.avg_data.get() = 0;
+
         metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
@@ -183,7 +171,7 @@ namespace casa
                 {
                     for(int i = 0; i < data(channel, baseline).cols(); i++)
                     {
-                        metadata.avg_data(casacore::IPosition(2, baseline, i)) += data(channel, baseline)(i);
+                        metadata.avg_data.get()(casacore::IPosition(2, baseline, i)) += data(channel, baseline)(i);
                     }
                 }
             }
@@ -212,6 +200,8 @@ namespace casa
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
         A = 0.0;
 
+        int STATIONS = A.shape()[1] - 1; //TODO verify correctness
+
         Vector<int> I = Vector<int>(a1.size() + 1);
         I = 1;
 
@@ -236,8 +226,8 @@ namespace casa
             A(IPosition(2, k, refAnt)) = 1;
             k++;
             
-            auto Atemp = casacore::Matrix<double>(k, 127);
-            Atemp = A(Slice(0, k), Slice(0, 127));
+            auto Atemp = casacore::Matrix<double>(k, STATIONS);
+            Atemp = A(Slice(0, k), Slice(0, STATIONS));
             A.resize(0,0);
             A = Atemp;
 

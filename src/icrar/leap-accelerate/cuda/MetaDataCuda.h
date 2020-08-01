@@ -56,6 +56,8 @@ namespace cuda
         int stations; // The number of stations used by the current observation
         int rows;
 
+        int solution_interval; //TODO can remove?
+
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
         std::vector<double> channel_wavelength;
@@ -94,8 +96,8 @@ namespace cuda
 
         std::vector<casacore::MVuvw> oldUVW;
 
-        Eigen::MatrixXcd avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        Eigen::Matrix3d dd;
+        boost::optional<Eigen::MatrixXcd> avg_data;
+        boost::optional<Eigen::Matrix3d> dd;
 
         Eigen::MatrixXd A;
         Eigen::VectorXi I;
@@ -106,6 +108,9 @@ namespace cuda
         Eigen::MatrixXd Ad1;
 
         MetaDataCudaHost(const MetaData& metadata);
+
+        void Initialize(const casacore::MVDirection& direction);
+        bool IsInitialized() const;
 
         const Constants& GetConstants() const;
 
