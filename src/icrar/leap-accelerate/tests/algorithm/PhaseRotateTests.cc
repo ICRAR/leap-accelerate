@@ -95,12 +95,12 @@ namespace icrar
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                auto metadatahost = icrar::cuda::MetaDataPortable(metadata);
                 icrar::cpu::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations);
             }
             if(impl == Impl::cuda)
             {
-                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                auto metadatahost = icrar::cuda::MetaDataPortable(metadata);
                 auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
                 icrar::cuda::PhaseRotate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
@@ -131,28 +131,28 @@ namespace icrar
                 }
             }
 
-            boost::optional<icrar::cuda::MetaDataCudaHost> metadataOptionalOutput;
+            boost::optional<icrar::cuda::MetaDataPortable> metadataOptionalOutput;
             if(impl == Impl::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput.reset(icrar::cuda::MetaDataCudaHost(metadata));
+                metadataOptionalOutput.reset(icrar::cuda::MetaDataPortable(metadata));
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
-                icrar::cpu::RotateVisibilities(integration, metadatahost, direction);
+                auto metadatahost = icrar::cuda::MetaDataPortable(metadata, direction, integration.uvw);
+                icrar::cpu::RotateVisibilities(integration, metadatahost);
                 metadataOptionalOutput.reset(metadatahost);
             }
             if(impl == Impl::cuda)
             {
-                auto metadatahost = icrar::cuda::MetaDataCudaHost(metadata);
+                auto metadatahost = icrar::cuda::MetaDataPortable(metadata, direction, integration.uvw);
                 auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
-                icrar::cuda::RotateVisibilities(integration, metadatadevice, direction);
+                icrar::cuda::RotateVisibilities(integration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
                 metadataOptionalOutput.reset(metadatahost);
             }
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
-            icrar::cuda::MetaDataCudaHost& metadataOutput = metadataOptionalOutput.get();
+            icrar::cuda::MetaDataPortable& metadataOutput = metadataOptionalOutput.get();
 
             // =======================
             // Build expected results
@@ -162,14 +162,12 @@ namespace icrar
             expectedIntegration.uvw = integration.uvw;
 
             //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cuda::MetaDataCudaHost(ms);
-            expectedMetadata.Initialize(direction);
-            expectedMetadata.SetWv();
+            auto expectedMetadata = icrar::cuda::MetaDataPortable(MetaData(ms), direction, integration.uvw);
             expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific
             expectedMetadata.dd = Eigen::Matrix3d();
-            expectedMetadata.dd.get() <<
+            expectedMetadata.dd <<
              0.46856701,  0.86068501, -0.19916391,
             -0.79210108,  0.50913781,  0.33668172,
              0.39117878,  0.0,         0.92031471;
@@ -177,13 +175,13 @@ namespace icrar
             ASSERT_EQ(2, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
             expectedMetadata.avg_data = Eigen::MatrixXcd(expectedIntegration.baselines, metadata.num_pols);
-            expectedMetadata.avg_data.get() <<
+            expectedMetadata.avg_data <<
             0, 0, 0, 0,
             0, 0, 0, 0;
 
             // ==========
             // ASSERT
-            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.get().cols());
+            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
             ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
 
             //ASSERT_EQ(expectedMetadata, metadata);
@@ -514,7 +512,7 @@ namespace icrar
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(Impl::casa); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
     
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }

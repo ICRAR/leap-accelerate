@@ -175,6 +175,12 @@ namespace cuda
             ToHost(out.data());
         }
 
+        // __host__ void ToHost(Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>& out) const
+        // {
+        //     out.resize(GetRows(), GetCols());
+        //     ToHost((std::complex<double>*)out.data());
+        // }
+
         template<int Rows, int Cols>
         __host__ void ToHost(Eigen::Matrix<T, Rows, Cols>& out) const
         {
@@ -188,5 +194,15 @@ namespace cuda
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
+
+    // template<>
+    // class device_matrix<cuDoubleComplex>
+    // {
+    //     __host__ void ToHost(Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>& out) const
+    //     {
+    //         out.resize(GetRows(), GetCols());
+    //         ToHost((std::complex<double>*)out.data());
+    //     }
+    // };
 }
 }

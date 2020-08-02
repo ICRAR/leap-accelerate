@@ -39,6 +39,8 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include <cuComplex.h>
+
 #include <complex>
 #include <istream>
 #include <iostream>
@@ -67,12 +69,95 @@ namespace cuda
         throw std::runtime_error("not implemented"); //TODO
     }
 
-    void RotateVisibilities(
-        Integration& integration,
-        MetaDataCudaDevice& metadata,
-        const MVDirection& direction)
+    __global__ void g_RotateVisibilities(
+        //Integration integration,
+        Constants constants,
+        Eigen::Matrix3d dd,
+        cuDoubleComplex* pavg_data, int avg_dataRows, int avg_dataCols)
     {
-        throw std::runtime_error("not implemented"); //TODO
+        using MatrixXCucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>;
+        using Tensor3DCucd = Eigen::Matrix<Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
+
+        int integration_baselines = 0;
+        Tensor3DCucd integration_data;
+        Eigen::Map<MatrixXCucd> avg_data = Eigen::Map<MatrixXCucd>(pavg_data, avg_dataRows, avg_dataCols);
+
+        /// loop over baselines
+        for(int baseline = 0; baseline < integration_baselines; ++baseline)
+        {
+            // loop over channels
+            for(int channel = 0; channel < constants.channels; channel++)
+            {
+                for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
+                {
+                    // make_cuDoubleComplex(0.0, 0.0);
+                    avg_data(baseline, i) = cuCadd(avg_data(baseline, i), integration_data(channel, baseline)(i));
+                }
+            }
+        }
+    }
+
+    __host__ void RotateVisibilities(
+        Integration& integration,
+        MetaDataCudaDevice& metadata)
+    {
+        //unpack metadata
+        g_RotateVisibilities<<<1,1>>>(
+            //integration,
+            metadata.constants,
+            metadata.dd,
+            (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
+    }
+
+    __host__ void RotateVisibilitiesExample(
+        Integration& integration,
+        MetaDataCudaDevice& metadata)
+    {
+        // using namespace std::literals::complex_literals;
+        // auto& data = integration.data;
+        // auto& uvw = metadata.UVW;
+        // auto parameters = integration.parameters;
+
+        // assert(uvw.GetCount() == integration.baselines);
+        // assert(data.rows() == metadata.constants.channels);
+        // assert(data.cols() == integration.baselines);
+        // assert(metadata.oldUVW.GetCount() == integration.baselines);
+        // assert(metadata.constants.channel_wavelength.size() == metadata.constants.channels);
+        // assert(metadata.avg_data.GetRows() == integration.baselines);
+        // assert(metadata.avg_data.GetCols() == metadata.constants.num_pols);
+
+        // // loop over baselines
+        // for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        // {
+        //     const double pi = boost::math::constants::pi<double>();
+        //     double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+        //     shiftFactor = shiftFactor + 2 * pi * (metadata.constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
+        //     shiftFactor = shiftFactor - 2 * pi * (metadata.direction.get()[0] * uvw[baseline].get()[0] - metadata.direction.get()[1] * uvw[baseline].get()[1]);
+
+        //     if(baseline % 1000 == 1)
+        //     {
+        //         std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
+        //     }
+
+        //     // Loop over channels
+        //     for(int channel = 0; channel < metadata.constants.channels; channel++)
+        //     {
+        //         double shiftRad = shiftFactor / metadata.constants.channel_wavelength[channel];
+        //         double rs = sin(shiftRad);
+        //         double rc = cos(shiftRad);
+        //         Eigen::VectorXcd v = data(channel, baseline);
+
+        //         data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+
+        //         if(!data(channel, baseline).hasNaN())
+        //         {
+        //             for(int i = 0; i < data(channel, baseline).cols(); i++)
+        //             {
+        //                 metadata.avg_data(baseline, i) += data(channel, baseline)(i);
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(

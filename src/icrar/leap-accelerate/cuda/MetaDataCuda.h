@@ -43,6 +43,8 @@
 #include <vector>
 #include <complex>
 
+#include <cuComplex.h>
+
 namespace icrar
 {
 namespace cuda
@@ -85,19 +87,12 @@ namespace cuda
         bool operator==(const Constants& rhs) const;
     };
 
-    class MetaDataCudaHost
+    class MetaDataPortable
     {
-        MetaDataCudaHost();
+        MetaDataPortable() {}
 
     public:
-
-        bool init = false; //set to true after rotateVisibilities
         Constants m_constants;
-
-        std::vector<casacore::MVuvw> oldUVW;
-
-        boost::optional<Eigen::MatrixXcd> avg_data;
-        boost::optional<Eigen::Matrix3d> dd;
 
         Eigen::MatrixXd A;
         Eigen::VectorXi I;
@@ -107,32 +102,42 @@ namespace cuda
         Eigen::VectorXi I1;
         Eigen::MatrixXd Ad1;
 
-        MetaDataCudaHost(const MetaData& metadata);
+        std::vector<casacore::MVuvw> oldUVW;
+        std::vector<casacore::MVuvw> UVW;
 
-        void Initialize(const casacore::MVDirection& direction);
-        bool IsInitialized() const;
+        casacore::MVDirection direction;
+        Eigen::Matrix3d dd;
+        Eigen::MatrixXcd avg_data;
+
+        MetaDataPortable(const MetaData& metadata);
+        MetaDataPortable(const MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws);
+        
+        MetaDataPortable(
+            const Constants& constants,
+            const double* A, int ARows, int ACols,
+            const int* I, int ILength,
+            const double* Ad, int AdRows, int AdCols,
+            const double* A1, int A1Rows, int A1Cols,
+            Eigen::Matrix3d& dd,
+            const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
+        {
+            
+        }
 
         const Constants& GetConstants() const;
 
-        void CalcUVW(std::vector<casacore::MVuvw>& uvws);
+        void CalcUVW(const std::vector<casacore::MVuvw>& uvws);
         void SetDD(const casacore::MVDirection& direction);
         void SetWv();
 
-        bool operator==(const MetaDataCudaHost& rhs) const;
+        bool operator==(const MetaDataPortable& rhs) const;
     };
 
     class MetaDataCudaDevice
     {
         MetaDataCudaDevice();
     public:
-        bool init;
         Constants constants;
-
-        icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
-
-        icrar::cuda::device_matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        icrar::cuda::device_matrix<double> dd;
-
         icrar::cuda::device_matrix<double> A;
         icrar::cuda::device_vector<int> I;
         icrar::cuda::device_matrix<double> Ad;
@@ -141,11 +146,18 @@ namespace cuda
         icrar::cuda::device_vector<int> I1;
         icrar::cuda::device_matrix<double> Ad1;
 
-        MetaDataCudaDevice(const MetaDataCudaHost& metadata);
+        icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
+        icrar::cuda::device_vector<casacore::MVuvw> UVW;
 
-        void ToHost(MetaDataCudaHost& host) const;
-        MetaDataCudaHost ToHost() const;
-        void ToHostAsync(MetaDataCudaHost& host) const;
+        casacore::MVDirection direction;
+        Eigen::Matrix3d dd;
+        icrar::cuda::device_matrix<std::complex<double>> avg_data;
+
+        MetaDataCudaDevice(const MetaDataPortable& metadata);
+
+        void ToHost(MetaDataPortable& host) const;
+        MetaDataPortable ToHost() const;
+        void ToHostAsync(MetaDataPortable& host) const;
     };
 }
 }

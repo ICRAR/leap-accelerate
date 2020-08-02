@@ -58,7 +58,7 @@ namespace icrar
 {
 namespace cuda
 {
-    class MetaDataCudaHost;
+    class MetaDataPortable;
     class MetaDataCudaDevice;
 
     std::queue<IntegrationResult> PhaseRotate(
@@ -70,8 +70,7 @@ namespace cuda
 
     void RotateVisibilities(
         Integration& integration,
-        MetaDataCudaDevice& metadata,
-        const casacore::MVDirection& direction);
+        MetaDataCudaDevice& metadata);
 
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
          const Eigen::VectorXi& a1,

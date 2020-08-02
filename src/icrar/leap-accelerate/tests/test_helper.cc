@@ -120,7 +120,7 @@ void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual,
     assert_veq<double>(expected, actual, tolerance, file, line);
 }
 
-void assert_metadataeq(const icrar::cuda::MetaDataCudaHost& expected, const icrar::cuda::MetaDataCudaHost& actual, std::string file, int line)
+void assert_metadataeq(const icrar::cuda::MetaDataPortable& expected, const icrar::cuda::MetaDataPortable& actual, std::string file, int line)
 {
     if(!(expected == actual))
     {
@@ -130,7 +130,6 @@ void assert_metadataeq(const icrar::cuda::MetaDataCudaHost& expected, const icra
     const double THRESHOLD = 0.001;
     //ASSERT_EQ(expectedIntegration.baselines, metadataOutput.avg_data.rows());
     
-    ASSERT_EQ(expected.IsInitialized(), actual.IsInitialized());
     ASSERT_EQ(expected.GetConstants().nantennas, actual.GetConstants().nantennas);
     //ASSERT_EQ(expected.nbaseline, metadata.nbaseline);
     ASSERT_EQ(expected.GetConstants().channels, actual.GetConstants().channels);
@@ -153,20 +152,15 @@ void assert_metadataeq(const icrar::cuda::MetaDataCudaHost& expected, const icra
     ASSERT_MEQ(expected.A1, actual.A1, THRESHOLD);
     ASSERT_MEQI(expected.I1, actual.I1, THRESHOLD);
     ASSERT_MEQ(expected.Ad1, actual.Ad1, THRESHOLD);
-    ASSERT_EQ(expected.oldUVW, actual.oldUVW);
-    
-    ASSERT_EQ(expected.dd.is_initialized(), actual.dd.is_initialized());
-    if(expected.dd.is_initialized() && actual.dd.is_initialized())
-    {
-        ASSERT_MEQ3D(expected.dd.get(), actual.dd.get(), THRESHOLD);
-    }
 
-    ASSERT_EQ(expected.avg_data.is_initialized(), actual.avg_data.is_initialized());
-    if(expected.avg_data.is_initialized() && actual.avg_data.is_initialized())
-    {
-        ASSERT_MEQCD(expected.avg_data.get(), actual.avg_data.get(), THRESHOLD);
-    }
+    ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
+    ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);
     
+    // TODO: ensure these copy correctly
+    //ASSERT_EQ(expected.direction, actual.direction);
+    //ASSERT_EQ(expected.oldUVW, actual.oldUVW); 
+    //ASSERT_EQ(expected.UVW, actual.UVW);
+
     //ASSERT_EQ(expected, actual);
     //ASSERT_EQ(expectedIntegration, integration);
 }

@@ -56,13 +56,13 @@ namespace icrar
 {
 namespace cpu
 {
-    void RemoteCalibration(cuda::MetaDataCudaHost& metadata, const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions)
+    void RemoteCalibration(cuda::MetaDataPortable& metadata, const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions)
     {
 
     }
 
     void PhaseRotate(
-        cuda::MetaDataCudaHost& metadata,
+        cuda::MetaDataPortable& metadata,
         const casacore::MVDirection& directions,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -71,34 +71,27 @@ namespace cpu
         
     }
 
-    void RotateVisibilities(Integration& integration, cuda::MetaDataCudaHost& metadata, const casacore::MVDirection& direction)
+    void RotateVisibilities(Integration& integration, cuda::MetaDataPortable& metadata)
     {
         using namespace std::literals::complex_literals;
         auto& data = integration.data;
-        auto& uvw = integration.uvw;
+        auto& uvw = metadata.UVW;
         auto parameters = integration.parameters;
-
-        if(!metadata.IsInitialized())
-        {
-            metadata.Initialize(direction);
-        }
-
-        metadata.avg_data = Eigen::MatrixXcd::Zero(integration.baselines, metadata.m_constants.num_pols);
-        metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
         assert(data.rows() == metadata.m_constants.channels);
         assert(data.cols() == integration.baselines);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
-
+        assert(metadata.avg_data.rows() == integration.baselines);
+        assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             const double pi = boost::math::constants::pi<double>();
             double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
             shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
+            shiftFactor = shiftFactor - 2 * pi * (metadata.direction.get()[0] * uvw[baseline].get()[0] - metadata.direction.get()[1] * uvw[baseline].get()[1]);
 
             if(baseline % 1000 == 1)
             {
@@ -119,7 +112,7 @@ namespace cpu
                 {
                     for(int i = 0; i < data(channel, baseline).cols(); i++)
                     {
-                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
+                        metadata.avg_data(baseline, i) += data(channel, baseline)(i);
                     }
                 }
             }
