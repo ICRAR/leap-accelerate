@@ -134,13 +134,13 @@ namespace icrar
             if(impl == Impl::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput.reset(icrar::cuda::MetaData(metadata));
+                metadataOptionalOutput = icrar::cuda::MetaData(metadata);
             }
             if(impl == Impl::eigen)
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
-                metadataOptionalOutput.reset(metadatahost);
+                metadataOptionalOutput = metadatahost;
             }
             if(impl == Impl::cuda)
             {
@@ -148,7 +148,7 @@ namespace icrar
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 icrar::cuda::RotateVisibilities(integration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
-                metadataOptionalOutput.reset(metadatahost);
+                metadataOptionalOutput = metadatahost;
             }
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cuda::MetaData& metadataOutput = metadataOptionalOutput.get();

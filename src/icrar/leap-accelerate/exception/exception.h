@@ -21,11 +21,34 @@
 */
 
 #include <exception>
+#include <string>
+#include <strstream>
 
 namespace icrar
 {
     class exception : public std::exception
     {
+        std::string m_message;
 
+    public:
+        exception(std::string msg, std::string file, int line)
+        {
+            std::strstream ss;
+            ss << file << ":" << line << ":\n" << msg;
+            m_message = ss.str();
+        }
+
+        virtual const char* what() const noexcept override
+        {
+            return m_message.c_str();
+        }
+    };
+
+    class not_implemented_exception : icrar::exception
+    {
+    public:
+        not_implemented_exception(std::string file, int line) : exception("not implemented", file, line) {}
     };
 }
+
+#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
