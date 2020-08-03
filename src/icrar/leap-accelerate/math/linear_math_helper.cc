@@ -24,10 +24,15 @@
 
 namespace icrar
 {
-    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value)
+    Eigen::RowVector3d ToVector3(const casacore::MVuvw& value)
     {
         return Eigen::RowVector3d(value.get().data());
     }
+
+    // std::vector<Eigen::RowVector3d> ToVector3(const std::vector<casacore::MVuvw>& value)
+    // {
+    //     return std::vector<Eigen::RowVector3d>(value.cbegin(), value.cend());
+    // }
 
     casacore::MVuvw ConvertUVW(Eigen::RowVector3d value)
     {

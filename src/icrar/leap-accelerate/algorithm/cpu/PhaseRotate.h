@@ -47,7 +47,7 @@ namespace icrar
     
     namespace cuda
     {
-        struct MetaDataPortable;
+        struct MetaData;
     }
 }
 
@@ -62,7 +62,7 @@ namespace cpu
      * @param directions 
      */
     void RemoteCalibration(
-        cuda::MetaDataPortable& metadata,
+        cuda::MetaData& metadata,
         const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions);
 
     /**
@@ -73,7 +73,7 @@ namespace cpu
      * @param input 
      */
     void PhaseRotate(
-        cuda::MetaDataPortable& metadata,
+        cuda::MetaData& metadata,
         const casacore::MVDirection& directions,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -87,7 +87,7 @@ namespace cpu
      */
     void RotateVisibilities(
         Integration& integration,
-        cuda::MetaDataPortable& metadata);
+        cuda::MetaData& metadata);
 
     /**
      * @brief Form Phase Matrix

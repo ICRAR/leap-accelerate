@@ -46,7 +46,7 @@ namespace cuda
         && dlm_dec == rhs.dlm_dec;
     }
 
-    MetaDataPortable::MetaDataPortable(const MetaData& metadata)
+    MetaData::MetaData(const casalib::MetaData& metadata)
     {
         m_constants.nantennas = metadata.nantennas;
         m_constants.channels = metadata.channels;
@@ -96,7 +96,7 @@ namespace cuda
         }
     }
 
-    MetaDataPortable::MetaDataPortable(const MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws)
+    MetaData::MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws)
     {
         m_constants.nantennas = metadata.nantennas;
         m_constants.channels = metadata.channels;
@@ -129,12 +129,12 @@ namespace cuda
         }
     }
 
-    const Constants& MetaDataPortable::GetConstants() const
+    const Constants& MetaData::GetConstants() const
     {
         return m_constants;
     }
 
-    void MetaDataPortable::CalcUVW(const std::vector<casacore::MVuvw>& uvws)
+    void MetaData::CalcUVW(const std::vector<casacore::MVuvw>& uvws)
     {
         this->oldUVW = uvws;
         auto size = uvws.size();
@@ -148,7 +148,7 @@ namespace cuda
         avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
     }
 
-    void MetaDataPortable::SetDD(const casacore::MVDirection& direction)
+    void MetaData::SetDD(const casacore::MVDirection& direction)
     {
         this->direction = direction;
 
@@ -169,7 +169,7 @@ namespace cuda
         dd(2,2) = cos(m_constants.dlm_dec);
     }
 
-    void MetaDataPortable::SetWv()
+    void MetaData::SetWv()
     {
         m_constants.channel_wavelength = range(
             m_constants.freq_start_hz,
@@ -183,7 +183,7 @@ namespace cuda
         }
     }
 
-    bool MetaDataPortable::operator==(const MetaDataPortable& rhs) const
+    bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants
         && oldUVW == rhs.oldUVW
@@ -198,7 +198,7 @@ namespace cuda
         && avg_data == rhs.avg_data;
     }
 
-    MetaDataCudaDevice::MetaDataCudaDevice(const MetaDataPortable& metadata)
+    DeviceMetaData::DeviceMetaData(const MetaData& metadata)
     : constants(metadata.GetConstants())
     , UVW(metadata.UVW)
     , oldUVW(metadata.oldUVW)
@@ -214,7 +214,7 @@ namespace cuda
 
     }
 
-    void MetaDataCudaDevice::ToHost(MetaDataPortable& metadata) const
+    void DeviceMetaData::ToHost(MetaData& metadata) const
     {
         metadata.m_constants = constants;
 
@@ -228,23 +228,22 @@ namespace cuda
         oldUVW.ToHost(metadata.oldUVW);
         UVW.ToHost(metadata.UVW);
         metadata.direction = direction;
-        //dd.ToHost(metadata.dd);
         metadata.dd = dd;
         avg_data.ToHost(metadata.avg_data);
     }
 
-    MetaDataPortable MetaDataCudaDevice::ToHost() const
+    MetaData DeviceMetaData::ToHost() const
     {
         //TODO: tidy up using a constructor for now
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<casacore::MVuvw> uvwTemp;
         UVW.ToHost(uvwTemp);
-        MetaDataPortable result = MetaDataPortable(MetaData(), direction, uvwTemp);
+        MetaData result = MetaData(casalib::MetaData(), direction, uvwTemp);
         ToHost(result);
         return result;
     }
 
-    void MetaDataCudaDevice::ToHostAsync(MetaDataPortable& host) const
+    void DeviceMetaData::ToHostAsync(MetaData& host) const
     {
         throw std::runtime_error("not implemented");
     }

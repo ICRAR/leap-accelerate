@@ -74,7 +74,7 @@ namespace icrar
 
         void TestReadFromFile()
         {
-            auto meta = MetaData(*ms);
+            auto meta = casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
             //ASSERT_EQ(4853, meta.nantennas);
@@ -107,25 +107,25 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             auto ms = casacore::MeasurementSet(filename);
-            auto meta = MetaData(ms);
+            auto meta = casalib::MetaData(ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
         }
 
         void TestCudaBufferCopy()
         {
-            auto meta = MetaData(*ms);
+            auto meta = casalib::MetaData(*ms);
             auto direction = casacore::MVDirection(0.0, 0.0);
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDD(direction);
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cuda::MetaDataPortable(meta, direction, uvw);
-            auto metadataDevice = icrar::cuda::MetaDataCudaDevice(expectedMetadataHost);
+            auto expectedMetadataHost = icrar::cuda::MetaData(meta, direction, uvw);
+            auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
 
             // copy from device back to host
-            icrar::cuda::MetaDataPortable metaDataHost = metadataDevice.ToHost();
+            icrar::cuda::MetaData metaDataHost = metadataDevice.ToHost();
 
             std::cout << uvw[0] << std::endl;
             std::cout << expectedMetadataHost.oldUVW[0] << std::endl;

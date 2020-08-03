@@ -82,8 +82,7 @@ namespace icrar
 
         void PhaseRotateTest(Impl impl)
         {
-            
-            MetaData metadata;
+            casalib::MetaData metadata;
             casacore::MVDirection direction;
             std::queue<Integration> input;
             std::queue<IntegrationResult> output_integrations;
@@ -95,13 +94,13 @@ namespace icrar
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaDataPortable(metadata);
+                auto metadatahost = icrar::cuda::MetaData(metadata);
                 icrar::cpu::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations);
             }
             if(impl == Impl::cuda)
             {
-                auto metadatahost = icrar::cuda::MetaDataPortable(metadata);
-                auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
+                auto metadatahost = icrar::cuda::MetaData(metadata);
+                auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 icrar::cuda::PhaseRotate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
             else
@@ -114,7 +113,7 @@ namespace icrar
         {
             const double THRESHOLD = 0.01;
 
-            auto metadata = MetaData(ms);
+            auto metadata = casalib::MetaData(ms);
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
             auto integration = Integration();
@@ -131,28 +130,28 @@ namespace icrar
                 }
             }
 
-            boost::optional<icrar::cuda::MetaDataPortable> metadataOptionalOutput;
+            boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
             if(impl == Impl::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput.reset(icrar::cuda::MetaDataPortable(metadata));
+                metadataOptionalOutput.reset(icrar::cuda::MetaData(metadata));
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaDataPortable(metadata, direction, integration.uvw);
+                auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
                 metadataOptionalOutput.reset(metadatahost);
             }
             if(impl == Impl::cuda)
             {
-                auto metadatahost = icrar::cuda::MetaDataPortable(metadata, direction, integration.uvw);
-                auto metadatadevice = icrar::cuda::MetaDataCudaDevice(metadatahost);
+                auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
+                auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 icrar::cuda::RotateVisibilities(integration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
                 metadataOptionalOutput.reset(metadatahost);
             }
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
-            icrar::cuda::MetaDataPortable& metadataOutput = metadataOptionalOutput.get();
+            icrar::cuda::MetaData& metadataOutput = metadataOptionalOutput.get();
 
             // =======================
             // Build expected results
@@ -162,7 +161,7 @@ namespace icrar
             expectedIntegration.uvw = integration.uvw;
 
             //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cuda::MetaDataPortable(MetaData(ms), direction, integration.uvw);
+            auto expectedMetadata = icrar::cuda::MetaData(casalib::MetaData(ms), direction, integration.uvw);
             expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific

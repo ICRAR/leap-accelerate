@@ -29,12 +29,14 @@
 namespace casacore
 {
     class MVDirection;
-    
 }
 
 namespace icrar
 {
-    struct MetaData;
+    namespace casalib
+    {
+        struct MetaData;
+    }
 
     void ServerLeapHandleRemoteMS(std::istream& reader, std::ostream& writer);
     void LeapHandleRemoteMS(std::string ms_filename);
@@ -46,5 +48,5 @@ namespace icrar
      * @param direction 
      * @param meta 
      */
-    void LeapCalibrateFromQueue(const casacore::MVDirection& direction, MetaData& meta);
+    void LeapCalibrateFromQueue(const casacore::MVDirection& direction, casalib::MetaData& meta);
 }

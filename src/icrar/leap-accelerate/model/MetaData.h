@@ -42,6 +42,8 @@
 
 namespace icrar
 {
+namespace casalib
+{
     struct MetaData
     {
         bool m_initialized;
@@ -129,42 +131,5 @@ namespace icrar
         // void SetDlmdDec(double value);
         // double GetDlmdDec();
     };
-
-    class MetaDataVerified
-    {
-        int m_antennas;
-        int m_baseline;
-        int m_channels;
-        int m_stations;
-
-    public:
-        MetaDataVerified(int antennas, int baselines, int channels, int polarizations, int stations)
-        : m_antennas(antennas)
-        , m_baseline(baselines)
-        , m_channels(channels)
-        , m_stations(stations)
-        {
-
-        }
-    };
-
-    //class Stats
-    // {
-    // public:
-    //     bool m_init;
-    //     int m_channels; // The number of channels of the current observation
-    //     int m_num_pols; // The number of polarizations used by the current observation
-    //     int m_stations; // The number of stations used by the current observation
-    //     int m_rows;
-
-    //     int solution_interval; // Solve for every 'interval' cycles
-    //     double phase_centre_ra_rad; // The RA phase centre in radians
-    //     double phase_centre_dec_rad; // The DEC phase centre in radians
-
-    //     Matrixd A;
-    //     Matrixd Ad;
-    //     Matrixd Ad1;
-    //     Matrixd I1;
-    //     Matrixd I;
-    // };
+}
 }

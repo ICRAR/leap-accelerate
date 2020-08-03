@@ -46,7 +46,7 @@ namespace icrar
     template<typename T>
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const Eigen::Matrix<T, 3, 3>& right)
     {
-        auto left = icrar::ConvertVector3(v1);
+        auto left = icrar::ToVector3(v1);
         auto result = left * right;
         return ConvertUVW(result);
     }

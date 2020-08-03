@@ -34,6 +34,8 @@ using namespace casacore;
 
 namespace icrar
 {
+namespace casalib
+{
     MetaData::MetaData()
     {
         
@@ -226,4 +228,5 @@ namespace icrar
         && icrar::Equal(Ad1, rhs.Ad1);
 
     }
+}
 }

@@ -120,7 +120,7 @@ void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual,
     assert_veq<double>(expected, actual, tolerance, file, line);
 }
 
-void assert_metadataeq(const icrar::cuda::MetaDataPortable& expected, const icrar::cuda::MetaDataPortable& actual, std::string file, int line)
+void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string file, int line)
 {
     if(!(expected == actual))
     {

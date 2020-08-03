@@ -45,7 +45,7 @@ void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual,
 //vector equal double
 void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string file, int line);
 
-void assert_metadataeq(const icrar::cuda::MetaDataPortable& expected, const icrar::cuda::MetaDataPortable& actual, std::string file, int line);
+void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string file, int line);
 
 #define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQ(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)

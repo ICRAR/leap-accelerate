@@ -37,7 +37,6 @@
 
 namespace icrar
 {
-    struct MetaData;
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
@@ -47,6 +46,8 @@ namespace icrar
 {
 namespace casalib
 {
+    struct MetaData;
+
     /**
      * @brief 
      * 

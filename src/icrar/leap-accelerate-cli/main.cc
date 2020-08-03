@@ -141,7 +141,7 @@ int main(int argc, char** argv)
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
-    auto metadata = std::make_unique<MetaData>(args.GetMeasurementSet());
+    auto metadata = std::make_unique<casalib::MetaData>(args.GetMeasurementSet());
 
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();

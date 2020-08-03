@@ -130,7 +130,8 @@ namespace icrar
         return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
 
-    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value);
+    Eigen::RowVector3d ToVector3(const casacore::MVuvw& value);
+    //std::vector<Eigen::RowVector3d> ToVector3(const std::vector<casacore::MVuvw>& value);
 
     casacore::MVuvw ConvertUVW(Eigen::RowVector3d value);
 }
