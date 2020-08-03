@@ -22,6 +22,7 @@
 
 #include "MetaData.h"
 
+#include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
@@ -191,7 +192,6 @@ namespace icrar
             freq_start_hz + freq_inc_hz * channels,
             freq_inc_hz);
         
-        double speed_of_light = 299792458.0;
         for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;

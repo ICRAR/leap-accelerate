@@ -23,7 +23,7 @@
 
 #include "PhaseRotate.h"
 
-#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math.h>
@@ -40,6 +40,7 @@
 #include <boost/math/constants/constants.hpp>
 
 #include <cuComplex.h>
+#include <math_constants.h>
 
 #include <complex>
 #include <istream>
@@ -69,29 +70,65 @@ namespace cuda
         throw std::runtime_error("not implemented"); //TODO
     }
 
+    __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
+    {
+        // see https://forums.developer.nvidia.com/t/complex-number-exponential-function/24696/2
+        cuDoubleComplex res;
+        sincos(z.y, &res.y, &res.x);
+        double t = exp(z.x);
+        res.x *= t;
+        res.y *= t;
+        return res;
+    }
+
     __global__ void g_RotateVisibilities(
         //Integration integration,
         Constants constants,
         Eigen::Matrix3d dd,
+        double2 direction,
+        double3* uvw, int uvwLength,
+        double3* oldUVW, int oldUVWLegth,
         cuDoubleComplex* pavg_data, int avg_dataRows, int avg_dataCols)
     {
-        using MatrixXCucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>;
-        using Tensor3DCucd = Eigen::Matrix<Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
+        using VectorXcucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, 1>;
+        using MatrixXcucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>;
+        using Tensor3Xcucd = Eigen::Matrix<VectorXcucd, Eigen::Dynamic, Eigen::Dynamic>;
 
         int integration_baselines = 0;
-        Tensor3DCucd integration_data;
-        Eigen::Map<MatrixXCucd> avg_data = Eigen::Map<MatrixXCucd>(pavg_data, avg_dataRows, avg_dataCols);
+        Tensor3Xcucd integration_data; //TODO: incomplete
+        Eigen::Map<MatrixXcucd> avg_data = Eigen::Map<MatrixXcucd>(pavg_data, avg_dataRows, avg_dataCols);
 
         /// loop over baselines
         for(int baseline = 0; baseline < integration_baselines; ++baseline)
         {
+            const double pi = CUDART_PI;
+            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
+            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
+            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+
             // loop over channels
             for(int channel = 0; channel < constants.channels; channel++)
             {
+                double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+                double rs = sin(shiftRad);
+                double rc = cos(shiftRad);
+                VectorXcucd v = integration_data(channel, baseline);
+
+                //integration_data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                integration_data(channel, baseline) = v;
+                cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
                 for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
                 {
-                    // make_cuDoubleComplex(0.0, 0.0);
-                    avg_data(baseline, i) = cuCadd(avg_data(baseline, i), integration_data(channel, baseline)(i));
+                    integration_data(channel, baseline)(i) = cuCmul(integration_data(channel, baseline)(i), exp);
+                }
+
+                for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
+                {
+                    //if(!integration_data(channel, baseline).hasNaN())
+                    {
+                        // make_cuDoubleComplex(0.0, 0.0);
+                        avg_data(baseline, i) = cuCadd(avg_data(baseline, i), integration_data(channel, baseline)(i));
+                    }
                 }
             }
         }
@@ -106,6 +143,9 @@ namespace cuda
             //integration,
             metadata.constants,
             metadata.dd,
+            make_double2(metadata.direction.get()[0], metadata.direction.get()[1]),
+            (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(), //TODO: change uvw to double3
+            (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(), //TODO: change olduvw to double3
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
     }
 

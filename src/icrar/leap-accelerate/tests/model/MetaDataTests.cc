@@ -21,8 +21,8 @@
 */
 
 
-#include <icrar/leap-accelerate/MetaData.h>
-#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>

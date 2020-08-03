@@ -22,7 +22,7 @@
 
 #include "Calibrate.h"
 
-#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 

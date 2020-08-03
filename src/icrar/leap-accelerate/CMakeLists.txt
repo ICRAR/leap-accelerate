@@ -6,9 +6,10 @@ set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
     ${CMAKE_CURRENT_BINARY_DIR}/config.h
-    visibility.h
-    band_data.h
-    MetaData.h
+    
+    model/visibility.h
+    model/band_data.h
+    model/MetaData.h
 
     algorithm/casa/PhaseRotate.h
 )
@@ -20,7 +21,8 @@ set(private_headers
 )
 set(sources
     utils.cc
-    MetaData.cc
+    
+    model/MetaData.cc
 
     math/linear_math_helper.cc
 
@@ -51,7 +53,7 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
-    cuda/MetaDataCuda.cu
+    model/cuda/MetaDataCuda.cu
 
     math/cuda/vector.cu
     math/cuda/matrix.cu

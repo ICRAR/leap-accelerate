@@ -29,8 +29,8 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/MetaData.h>
-#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>

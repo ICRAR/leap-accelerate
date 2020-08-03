@@ -28,7 +28,7 @@
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
 #include <icrar/leap-accelerate/utils.h>
-#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>

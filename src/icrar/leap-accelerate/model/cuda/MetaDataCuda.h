@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/common/constants.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -84,7 +85,14 @@ namespace cuda
             };
         };
 
+        __device__ __host__ double GetChannelWavelength(int i)
+        {
+            return speed_of_light / (freq_inc_hz + i * freq_inc_hz);
+        }
+
         bool operator==(const Constants& rhs) const;
+
+
     };
 
     class MetaDataPortable
