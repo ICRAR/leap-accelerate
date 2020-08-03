@@ -89,9 +89,9 @@ namespace cpu
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor - 2 * pi * (metadata.direction.get()[0] * uvw[baseline].get()[0] - metadata.direction.get()[1] * uvw[baseline].get()[1]);
+            double shiftFactor = -2 * pi * uvw[baseline](2) - metadata.oldUVW[baseline](2); // check these are correct
+            shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline](0));
+            shiftFactor = shiftFactor - 2 * pi * (metadata.direction(0) * uvw[baseline](0) - metadata.direction(1) * uvw[baseline](1));
 
             if(baseline % 1000 == 1)
             {

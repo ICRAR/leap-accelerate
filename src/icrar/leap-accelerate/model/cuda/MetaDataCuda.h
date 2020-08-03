@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/MetaData.h>
 
@@ -110,10 +113,10 @@ namespace cuda
         Eigen::VectorXi I1;
         Eigen::MatrixXd Ad1;
 
-        std::vector<casacore::MVuvw> oldUVW;
-        std::vector<casacore::MVuvw> UVW;
+        std::vector<icrar::MVuvw> oldUVW;
+        std::vector<icrar::MVuvw> UVW;
 
-        casacore::MVDirection direction;
+        icrar::MVDirection direction;
         Eigen::Matrix3d dd;
         Eigen::MatrixXcd avg_data;
 
@@ -134,7 +137,7 @@ namespace cuda
 
         const Constants& GetConstants() const;
 
-        void CalcUVW(const std::vector<casacore::MVuvw>& uvws);
+        void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
         void SetDD(const casacore::MVDirection& direction);
         void SetWv();
 
@@ -154,10 +157,10 @@ namespace cuda
         icrar::cuda::device_vector<int> I1;
         icrar::cuda::device_matrix<double> Ad1;
 
-        icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
-        icrar::cuda::device_vector<casacore::MVuvw> UVW;
+        icrar::cuda::device_vector<icrar::MVuvw> oldUVW;
+        icrar::cuda::device_vector<icrar::MVuvw> UVW;
 
-        casacore::MVDirection direction;
+        icrar::MVDirection direction;
         Eigen::Matrix3d dd;
         icrar::cuda::device_matrix<std::complex<double>> avg_data;
 

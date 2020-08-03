@@ -136,7 +136,7 @@ namespace casalib
         throw std::runtime_error("not implemented");
     }
 
-    void MetaData::CalcUVW(std::vector<MVuvw>& uvws)
+    void MetaData::CalcUVW(std::vector<casacore::MVuvw>& uvws)
     {
         if(!dd.is_initialized())
         {

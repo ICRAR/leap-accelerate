@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/MVuvw.h>
+
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -130,8 +132,9 @@ namespace icrar
         return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
 
-    Eigen::RowVector3d ToVector3(const casacore::MVuvw& value);
-    //std::vector<Eigen::RowVector3d> ToVector3(const std::vector<casacore::MVuvw>& value);
+    icrar::MVuvw ToUVW(const casacore::MVPosition& value);
+    std::vector<icrar::MVuvw> ToUVW(const std::vector<casacore::MVuvw>& value);
 
-    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value);
+    casacore::MVuvw ToCasaUVW(icrar::MVuvw value);
+    std::vector<casacore::MVuvw> ToCasaUVW(const std::vector<icrar::MVuvw>& value);
 }

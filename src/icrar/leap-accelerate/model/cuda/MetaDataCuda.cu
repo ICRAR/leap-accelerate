@@ -67,7 +67,7 @@ namespace cuda
         }
         m_constants.channel_wavelength = metadata.channel_wavelength;
 
-        oldUVW = metadata.oldUVW;
+        oldUVW = ToUVW(metadata.oldUVW);
 
         A = ConvertMatrix(metadata.A);
         I = ConvertMatrix<int>(metadata.I);
@@ -121,7 +121,8 @@ namespace cuda
 
         SetWv();
         SetDD(direction);
-        CalcUVW(uvws);
+        CalcUVW(ToUVW(uvws));
+        assert(UVW.size() == uvws.size());
 
         if(metadata.avg_data.is_initialized())
         {
@@ -134,15 +135,15 @@ namespace cuda
         return m_constants;
     }
 
-    void MetaData::CalcUVW(const std::vector<casacore::MVuvw>& uvws)
+    void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
     {
         this->oldUVW = uvws;
         auto size = uvws.size();
-        this->UVW = std::vector<casacore::MVuvw>();
+        this->UVW = std::vector<icrar::MVuvw>();
+        this->UVW.reserve(uvws.size());
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], dd);
-            UVW.push_back(uvw);
+            UVW.push_back(uvws[n] * dd);
         }
 
         avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
@@ -150,7 +151,7 @@ namespace cuda
 
     void MetaData::SetDD(const casacore::MVDirection& direction)
     {
-        this->direction = direction;
+        this->direction = ToUVW(direction);
 
         m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
@@ -236,9 +237,9 @@ namespace cuda
     {
         //TODO: tidy up using a constructor for now
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
-        std::vector<casacore::MVuvw> uvwTemp;
+        std::vector<icrar::MVuvw> uvwTemp;
         UVW.ToHost(uvwTemp);
-        MetaData result = MetaData(casalib::MetaData(), direction, uvwTemp);
+        MetaData result = MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVW(uvwTemp));
         ToHost(result);
         return result;
     }

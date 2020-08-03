@@ -143,7 +143,7 @@ namespace cuda
             //integration,
             metadata.constants,
             metadata.dd,
-            make_double2(metadata.direction.get()[0], metadata.direction.get()[1]),
+            make_double2(metadata.direction(0), metadata.direction(1)),
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(), //TODO: change uvw to double3
             (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(), //TODO: change olduvw to double3
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());

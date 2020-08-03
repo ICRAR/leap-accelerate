@@ -64,7 +64,7 @@ namespace icrar
         bool operator==(const Integration& rhs) const
         {
             // There should be a nicer way of doing this, using Eigen::Tensor is one of them
-            bool equal = true;
+            bool dataEqual = true;
             for(int row = 0; row < data.rows(); ++row)
             {
                 for(int col = 0; col < data.cols(); ++col)
@@ -73,13 +73,13 @@ namespace icrar
                     {
                         if(data(row, col)(depth) != rhs.data(row, col)(depth))
                         {
-                            equal = false;
+                            dataEqual = false;
                             break;
                         }
                     }
                 }
             }
-            return equal
+            return dataEqual
             && uvw == rhs.uvw
             && integration_number == rhs.integration_number;
         }

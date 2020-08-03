@@ -80,7 +80,7 @@ namespace cpu
         std::queue<CalibrationResult>& output_calibrations);
 
     /**
-     * @brief 
+     * @brief Performs averaging over each baseline, channel and polarization.
      * 
      * @param integration 
      * @param metadata 
