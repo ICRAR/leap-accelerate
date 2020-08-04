@@ -20,14 +20,32 @@
  * MA 02111 - 1307  USA
  */
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include "DeviceIntegration.h"
+#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
 
 namespace icrar
 {
-    template<typename T>
-    using Tensor3X = Eigen::Matrix<Eigen::Matrix<T, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
+namespace cuda
+{
+    DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
+    {
+        icrar::Tensor3X<std::complex<double>> data; //data is an array data[nch][nbl][npol]
 
-    //template<typename T>
-    //using Tensor3X = Eigen::Tensor<T, 3>;
+        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        int integration_number;
+
+        union
+        {
+            std::array<int, 4> parameters; // index, 0, channels, baselines
+            struct
+            {
+                int index;
+                int x;
+                int channels;
+                int baselines;
+            };
+        };
+    }
+}
 }

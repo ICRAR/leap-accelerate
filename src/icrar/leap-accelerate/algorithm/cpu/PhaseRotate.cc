@@ -26,8 +26,8 @@
 #include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/Integration.h>
 
+#include <icrar/leap-accelerate/model/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>

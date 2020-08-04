@@ -22,12 +22,10 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
-
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -43,8 +41,7 @@ namespace icrar
     public:
         //Integration();
 
-        Eigen::Matrix<Eigen::VectorXcd, -1, -1> data; //data is an array data[nch][nbl][npol]
-        //Eigen::Tensor<std::complex<double>, 3> data;
+        Tensor3X<std::complex<double>> data; //data is an array data[nch][nbl][npol]
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;

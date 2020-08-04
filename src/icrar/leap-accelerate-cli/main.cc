@@ -21,7 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/utils.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 
 #include <casacore/measures/Measures/MDirection.h>
