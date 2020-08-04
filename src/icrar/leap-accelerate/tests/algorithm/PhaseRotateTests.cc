@@ -31,6 +31,8 @@
 
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
@@ -146,7 +148,8 @@ namespace icrar
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                icrar::cuda::RotateVisibilities(integration, metadatadevice);
+                auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
+                icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
                 metadataOptionalOutput = metadatahost;
             }

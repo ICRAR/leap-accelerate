@@ -24,11 +24,13 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
-
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math.h>
+
 #include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 
@@ -95,7 +97,7 @@ namespace cuda
     {
         using VectorXcucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, 1>;
         using MatrixXcucd = Eigen::Matrix<cuDoubleComplex, Eigen::Dynamic, Eigen::Dynamic>;
-        using Tensor3Xcucd = icrar::Tensor3X<cuDoubleComplex>;
+        using Tensor3Xcucd = Eigen::Tensor<cuDoubleComplex, 3>;
 
         auto x = Eigen::Tensor<cuDoubleComplex, 3>(integration_dataRows, integration_dataCols, integration_dataDepth);
         //Eigen::Map<Tensor3Xcucd> integration_data = Eigen::Map<Tensor3Xcucd>(pintegration_data);
@@ -140,13 +142,13 @@ namespace cuda
     }
 
     __host__ void RotateVisibilities(
-        Integration& integration,
+        DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // unpack metadata
         g_RotateVisibilities<<<1,1>>>(
-            (cuDoubleComplex*)integration.data.data(), integration.data.rows(), integration.data.cols(), 1,
+            (cuDoubleComplex*)integration.data.data(), integration.data.dimension(0), integration.data.dimension(1), integration.data.dimension(2),
             integration.channels,
             integration.baselines,
 

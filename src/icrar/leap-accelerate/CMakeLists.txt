@@ -54,6 +54,7 @@ set(cuda_headers
 set(cuda_sources
     cuda/cuda_info.cu
     model/cuda/MetaDataCuda.cu
+    model/cuda/DeviceIntegration.cu
 
     math/cuda/vector.cu
     math/cuda/matrix.cu

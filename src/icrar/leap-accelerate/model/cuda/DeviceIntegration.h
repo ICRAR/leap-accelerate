@@ -28,6 +28,7 @@
 
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -57,9 +58,8 @@ namespace cuda
     class DeviceIntegration
     {
     public:
-        icrar::Tensor3X<std::complex<double>> data; //data is an array data[nch][nbl][npol]
-
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
+        //std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
 
         union
@@ -73,7 +73,6 @@ namespace cuda
                 int baselines;
             };
         };
-
 
         DeviceIntegration(const icrar::Integration& integration);
     };

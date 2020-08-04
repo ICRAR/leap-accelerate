@@ -24,28 +24,20 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/model/Integration.h>
+
 namespace icrar
 {
 namespace cuda
 {
     DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
     {
-        icrar::Tensor3X<std::complex<double>> data; //data is an array data[nch][nbl][npol]
-
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
-        int integration_number;
-
-        union
-        {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
-            struct
-            {
-                int index;
-                int x;
-                int channels;
-                int baselines;
-            };
-        };
+        data = Eigen::Tensor<std::complex<double>, 3>(integration.data.rows(), integration.data.cols(), integration.data(0,0).size());
+        //TODO data.values
+        index = integration.index;
+        x = integration.x;
+        channels = integration.channels;
+        baselines = integration.baselines;
     }
 }
 }
