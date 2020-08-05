@@ -73,10 +73,8 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_package(CUDA)
-if(CUDA_FOUND)
-  enable_language(CUDA)
-endif()
+find_package(CUDA REQUIRED)
+enable_language(CUDA)
 
 find_package(GSL)
 find_package(LAPACK)

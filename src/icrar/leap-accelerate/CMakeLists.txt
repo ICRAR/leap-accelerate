@@ -62,7 +62,6 @@ set(cuda_sources
 )
 
 # Libraries
-option(CUDA_ENABLED "Cuda Enabled" TRUE)
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(BOOST_ENABLED "Boost Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
@@ -102,10 +101,8 @@ if(USE_CUDA_EXTRA)
   #target_link_libraries(${TARGET_NAME} CUDA)
 endif()
 
-if(CUDA_ENABLED)
-  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-endif()
+target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
@@ -150,7 +147,6 @@ install(
     include/icrar/${SOLUTION_NAME_LOWER}
 )
 
-unset(CUDA_ENABLED CACHE)
 unset(CASA_ENABLED CACHE)
 unset(BOOST_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)
