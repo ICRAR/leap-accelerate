@@ -25,9 +25,9 @@
 
 namespace icrar
 {
-    template<typename T>
-    using Tensor3X = Eigen::Matrix<Eigen::Matrix<T, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
-
     //template<typename T>
-    //using Tensor3X = Eigen::Tensor<T, 3>;
+    //using Tensor3X = Eigen::Matrix<Eigen::Matrix<T, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
+
+    template<typename T>
+    using Tensor3X = Eigen::Tensor<T, 3>;
 }

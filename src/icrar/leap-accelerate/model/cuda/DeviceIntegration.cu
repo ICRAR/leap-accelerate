@@ -31,13 +31,12 @@ namespace icrar
 namespace cuda
 {
     DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
+    : data(integration.data)
+    , index(integration.index)
+    , x(integration.x)
+    , channels(integration.channels)
+    , baselines(integration.baselines)
     {
-        data = Eigen::Tensor<std::complex<double>, 3>(integration.data.rows(), integration.data.cols(), integration.data(0,0).size());
-        //TODO data.values
-        index = integration.index;
-        x = integration.x;
-        channels = integration.channels;
-        baselines = integration.baselines;
     }
 }
 }

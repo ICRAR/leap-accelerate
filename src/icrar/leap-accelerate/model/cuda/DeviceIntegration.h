@@ -30,14 +30,10 @@
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/Integration.h>
 
-#include <icrar/leap-accelerate/cuda/device_vector.h>
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
+#include <icrar/leap-accelerate/cuda/device_tensor.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Vector.h>
 
 #include <eigen3/Eigen/Core>
 
@@ -58,19 +54,18 @@ namespace cuda
     class DeviceIntegration
     {
     public:
-        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
-        //std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        icrar::cuda::device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
         int integration_number;
 
         union
         {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
+            std::array<size_t, 4> parameters; // index, 0, channels, baselines
             struct
             {
-                int index;
-                int x;
-                int channels;
-                int baselines;
+                size_t index;
+                size_t x;
+                size_t channels;
+                size_t baselines;
             };
         };
 

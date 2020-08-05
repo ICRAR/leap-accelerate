@@ -121,16 +121,11 @@ namespace icrar
             auto integration = Integration();
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
+            integration.channels = metadata.channels;
 
             //3d matrix initializing
-            integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
-            for(int row = 0; row < integration.data.rows(); ++row)
-            {
-                for(int col = 0; col < integration.data.cols(); ++col)
-                {
-                    integration.data(row, col) = Eigen::VectorXcd(metadata.num_pols);
-                }
-            }
+            integration.data = Eigen::Tensor<std::complex<double>, 3>(metadata.channels, integration.baselines, metadata.num_pols);
+            integration.data.setZero();
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
             if(impl == Impl::casa)

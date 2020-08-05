@@ -41,7 +41,7 @@ namespace icrar
     public:
         //Integration();
 
-        Tensor3X<std::complex<double>> data; //data is an array data[nch][nbl][npol]
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
@@ -51,32 +51,18 @@ namespace icrar
             std::array<int, 4> parameters; // index, 0, channels, baselines
             struct
             {
-                int index;
-                int x;
-                int channels;
-                int baselines;
+                size_t index;
+                size_t x;
+                size_t channels;
+                size_t baselines;
             };
         };
 
         bool operator==(const Integration& rhs) const
         {
-            // There should be a nicer way of doing this, using Eigen::Tensor is one of them
-            bool dataEqual = true;
-            for(int row = 0; row < data.rows(); ++row)
-            {
-                for(int col = 0; col < data.cols(); ++col)
-                {
-                    for(int depth = 0; depth < data(row,col).cols(); ++depth)
-                    {
-                        if(data(row, col)(depth) != rhs.data(row, col)(depth))
-                        {
-                            dataEqual = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            return dataEqual
+            Eigen::Map<const Eigen::VectorXcd> datav(data.data(), data.size());
+            Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.data.data(), rhs.data.size());
+            return datav.isApprox(rhsdatav)
             && uvw == rhs.uvw
             && integration_number == rhs.integration_number;
         }
