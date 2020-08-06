@@ -25,6 +25,10 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 //#include <eigen3/unsupported/Eigen/CXX11/Tensor>

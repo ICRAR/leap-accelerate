@@ -34,6 +34,10 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
 
 #include <boost/optional.hpp>
