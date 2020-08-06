@@ -24,6 +24,10 @@
 
 #include <icrar/leap-accelerate/math/cpu/Invert.h>
 
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU> //Needed for Matrix::inverse()
 
