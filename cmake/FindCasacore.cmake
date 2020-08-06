@@ -137,9 +137,9 @@ if (NOT CASACORE_FOUND)
       message (STATUS "... libcasa_images      = ${CASACORE_IMAGES_LIBRARY}")
     endif (NOT CASACORE_FIND_QUIETLY)
   else (CASACORE_FOUND)
-    if (CASACORE_FIND_REQUIRED)
+    if (Casacore_FIND_REQUIRED)
       message (FATAL_ERROR "Could not find CASACORE!")
-    endif (CASACORE_FIND_REQUIRED)
+    endif (Casacore_FIND_REQUIRED)
   endif (CASACORE_FOUND)
 
   ## Compatibility variables
