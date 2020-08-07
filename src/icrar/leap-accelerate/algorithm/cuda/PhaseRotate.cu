@@ -107,9 +107,7 @@ namespace cuda
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
-                std::complex<double> v = data(channel,baseline);
+                std::complex<double> v = data(channel, baseline);
 
                 data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
                 if(data(channel, baseline).real() == NAN

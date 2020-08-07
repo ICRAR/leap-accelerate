@@ -103,17 +103,17 @@ namespace cuda
         m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
 
-        dd(0,0) = cos(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
-        dd(0,1) = -sin(m_constants.dlm_ra);
-        dd(0,2) = cos(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
+        dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        dd(0,1) = -std::sin(m_constants.dlm_ra);
+        dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
         
-        dd(1,0) = sin(m_constants.dlm_ra) * cos(m_constants.dlm_dec);
-        dd(1,1) = cos(m_constants.dlm_ra);
-        dd(1,2) = sin(m_constants.dlm_ra) * sin(m_constants.dlm_dec);
+        dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        dd(1,1) = std::cos(m_constants.dlm_ra);
+        dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
 
-        dd(2,0) = -sin(m_constants.dlm_dec);
+        dd(2,0) = -std::sin(m_constants.dlm_dec);
         dd(2,1) = 0;
-        dd(2,2) = cos(m_constants.dlm_dec);
+        dd(2,2) = std::cos(m_constants.dlm_dec);
     }
 
     void MetaDataCudaHost::SetWv()

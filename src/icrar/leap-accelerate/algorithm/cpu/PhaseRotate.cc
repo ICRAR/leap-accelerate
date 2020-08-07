@@ -158,8 +158,6 @@ namespace cpu
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
                 std::complex<double> v = data(channel, baseline);
 
                 data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
