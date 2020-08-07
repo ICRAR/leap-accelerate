@@ -62,9 +62,7 @@ set(cuda_sources
 )
 
 # Libraries
-option(CUDA_ENABLED "Cuda Enabled" TRUE)
 option(CASA_ENABLED "Casa Enabled" TRUE)
-option(BOOST_ENABLED "Boost Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
 
 add_library(
@@ -100,23 +98,18 @@ if(USE_CUDA_EXTRA)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_50,code=sm_50>)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2886">)
   #target_link_libraries(${TARGET_NAME} CUDA)
-  endif()
-  
-  if(CUDA_ENABLED)
-  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-  target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe=--diag_suppress=esa_on_defaulted_function_ignored>)
-  endif()
+endif()
+
+target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+
+target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
+  target_include_directories(${TARGET_NAME} PUBLIC ${CASACORE_INCLUDES})
 endif()
-if(BOOST_ENABLED)
-  target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-endif()
-
-#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
-
 if(GSL_ENABLED)
   target_link_libraries(${TARGET_NAME} GSL::gsl)
 endif()
@@ -150,7 +143,5 @@ install(
     include/icrar/${SOLUTION_NAME_LOWER}
 )
 
-unset(CUDA_ENABLED CACHE)
 unset(CASA_ENABLED CACHE)
-unset(BOOST_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)

@@ -110,8 +110,6 @@ namespace cuda
             for(int channel = 0; channel < constants.channels; channel++)
             {
                 double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
                 VectorXcucd v = integration_data(channel, baseline);
 
                 //integration_data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
