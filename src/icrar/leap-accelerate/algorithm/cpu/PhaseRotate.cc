@@ -164,7 +164,7 @@ namespace cpu
                 if(data(channel, baseline).real() == NAN
                 || data(channel, baseline).imag() == NAN)
                 {
-                    metadata.avg_data(casacore::IPosition(2, 1, baseline)) += data(channel, baseline);
+                    metadata.avg_data(1, baseline) += data(channel, baseline);
                 }
             }
         }
@@ -199,13 +199,13 @@ namespace cpu
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(IPosition(1, n)) != a2(IPosition(1, n)))
+            if(a1(n) != a2(n))
             {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n)) == refAnt) || (a2(IPosition(1, n)) == refAnt))))
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(IPosition(2, k, a1(IPosition(1, n)))) = 1;
-                    A(IPosition(2, k, a2(IPosition(1, n)))) = -1;
-                    I(IPosition(1, k)) = n;
+                    A(k, a1(n)) = 1;
+                    A(k, a2(n)) = -1;
+                    I(k) = n;
                     k++;
                 }
             }
@@ -213,7 +213,7 @@ namespace cpu
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(IPosition(2, k, refAnt)) = 1;
+            A(k, refAnt) = 1;
             k++;
             
             auto Atemp = casacore::Matrix<double>(k, 127);
