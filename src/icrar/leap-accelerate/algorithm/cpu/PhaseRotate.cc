@@ -85,6 +85,7 @@ namespace cpu
         assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
         assert(metadata.avg_data.rows() == integration.baselines);
         assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
+        
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
