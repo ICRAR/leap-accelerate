@@ -127,8 +127,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             throw std::invalid_argument("a1 and a2 must be equal size");
         }
 
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
+        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
+        unique.insert(a2.begin(), a2.end());
         int nAnt = unique.size();
         if(refAnt >= nAnt - 1)
         {
@@ -164,12 +164,12 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             k++;
             
             auto Atemp = Eigen::MatrixXd(k, STATIONS);
-            Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
+            Atemp = A(Eigen::seq(0, k), Eigen::seq(0, STATIONS));
             A.resize(0,0);
             A = Atemp;
 
             auto Itemp = Eigen::VectorXi(k);
-            Itemp = I(Eigen::seqN(0, k));
+            Itemp = I(Eigen::seq(0, k));
             I.resize(0);
             I = Itemp;
         }
