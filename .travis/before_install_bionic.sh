@@ -25,7 +25,7 @@
 # MA 02111-1307  USA
 #
 
-#Eigen 3.3.7
+# Eigen 3.3.7
 #wget http://bitbucket.org/eigen/eigen/get/3.3.7.tar.bz2
 #tar -xvjf 3.3.7.tar.bz2
 #cd eigen-eigen-323c052e1731 && mkdir build && cd build
@@ -33,7 +33,7 @@
 #cd ../../
 #export EIGEN3_DIR=/usr/local/include/
 
-#Eigen 3.3.9
+# Eigen 3.3.9
 git clone https://gitlab.com/libeigen/eigen.git
 cd eigen
 git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d
