@@ -144,36 +144,36 @@ namespace casalib
         assert(metadata.channel_wavelength.size() == metadata.channels);
 
         // loop over baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
-        {
-            // For baseline
-            const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
+        // for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        // {
+        //     // For baseline
+        //     const double pi = boost::math::constants::pi<double>();
+        //     double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+        //     shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
+        //     shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
 
-            if(baseline % 1000 == 1)
-            {
-                std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
-            }
+        //     if(baseline % 1000 == 1)
+        //     {
+        //         std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
+        //     }
 
-            // Loop over channels
-            for(int channel = 0; channel < metadata.channels; channel++)
-            {
-                double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
+        //     // Loop over channels
+        //     for(int channel = 0; channel < metadata.channels; channel++)
+        //     {
+        //         double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
 
-                Eigen::VectorXcd v = data(channel, baseline);
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+        //         Eigen::VectorXcd v = data(channel, baseline);
+        //         data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
 
-                if(!data(channel, baseline).hasNaN())
-                {
-                    for(int i = 0; i < data(channel, baseline).cols(); i++)
-                    {
-                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
-                    }
-                }
-            }
-        }
+        //         if(!data(channel, baseline).hasNaN())
+        //         {
+        //             for(int i = 0; i < data(channel, baseline).cols(); i++)
+        //             {
+        //                 metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
