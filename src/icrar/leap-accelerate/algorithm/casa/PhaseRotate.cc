@@ -134,6 +134,7 @@ namespace casalib
         // Zero a vector for averaging in time and freq
         metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
         metadata.avg_data.get() = 0;
+        assert(metadata.avg_data.get()(0,0) ==std::complex<double>(0.0,0.0));
 
         metadata.CalcUVW(uvw);
 

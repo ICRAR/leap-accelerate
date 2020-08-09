@@ -32,6 +32,7 @@
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/Integration.h>
@@ -119,6 +120,7 @@ namespace icrar
             auto integration = Integration();
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
+            integration.channels = metadata.channels;
 
             //3d matrix initializing
             integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
@@ -126,7 +128,7 @@ namespace icrar
             {
                 for(int col = 0; col < integration.data.cols(); ++col)
                 {
-                    integration.data(row, col) = Eigen::VectorXcd(metadata.num_pols);
+                    integration.data(row, col) = Eigen::VectorXcd::Zero(metadata.num_pols);
                 }
             }
 
@@ -134,13 +136,13 @@ namespace icrar
             if(impl == Impl::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput.reset(icrar::cuda::MetaData(metadata));
+                metadataOptionalOutput = icrar::cuda::MetaData(metadata);
             }
             if(impl == Impl::eigen)
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
-                metadataOptionalOutput.reset(metadatahost);
+                metadataOptionalOutput = metadatahost;
             }
             if(impl == Impl::cuda)
             {
@@ -148,7 +150,7 @@ namespace icrar
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 icrar::cuda::RotateVisibilities(integration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
-                metadataOptionalOutput.reset(metadatahost);
+                metadataOptionalOutput = metadatahost;
             }
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cuda::MetaData& metadataOutput = metadataOptionalOutput.get();
