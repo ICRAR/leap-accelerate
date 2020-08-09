@@ -110,10 +110,7 @@ namespace cuda
             for(int channel = 0; channel < constants.channels; channel++)
             {
                 double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-                VectorXcucd v = integration_data(channel, baseline);
 
-                //integration_data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                integration_data(channel, baseline) = v;
                 cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
                 for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
                 {
@@ -145,57 +142,6 @@ namespace cuda
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(), //TODO: change uvw to double3
             (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(), //TODO: change olduvw to double3
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
-    }
-
-    __host__ void RotateVisibilitiesExample(
-        Integration& integration,
-        DeviceMetaData& metadata)
-    {
-        // using namespace std::literals::complex_literals;
-        // auto& data = integration.data;
-        // auto& uvw = metadata.UVW;
-        // auto parameters = integration.parameters;
-
-        // assert(uvw.GetCount() == integration.baselines);
-        // assert(data.rows() == metadata.constants.channels);
-        // assert(data.cols() == integration.baselines);
-        // assert(metadata.oldUVW.GetCount() == integration.baselines);
-        // assert(metadata.constants.channel_wavelength.size() == metadata.constants.channels);
-        // assert(metadata.avg_data.GetRows() == integration.baselines);
-        // assert(metadata.avg_data.GetCols() == metadata.constants.num_pols);
-
-        // // loop over baselines
-        // for(int baseline = 0; baseline < integration.baselines; ++baseline)
-        // {
-        //     const double pi = boost::math::constants::pi<double>();
-        //     double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-        //     shiftFactor = shiftFactor + 2 * pi * (metadata.constants.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-        //     shiftFactor = shiftFactor - 2 * pi * (metadata.direction.get()[0] * uvw[baseline].get()[0] - metadata.direction.get()[1] * uvw[baseline].get()[1]);
-
-        //     if(baseline % 1000 == 1)
-        //     {
-        //         std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
-        //     }
-
-        //     // Loop over channels
-        //     for(int channel = 0; channel < metadata.constants.channels; channel++)
-        //     {
-        //         double shiftRad = shiftFactor / metadata.constants.channel_wavelength[channel];
-        //         double rs = sin(shiftRad);
-        //         double rc = cos(shiftRad);
-        //         Eigen::VectorXcd v = data(channel, baseline);
-
-        //         data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-
-        //         if(!data(channel, baseline).hasNaN())
-        //         {
-        //             for(int i = 0; i < data(channel, baseline).cols(); i++)
-        //             {
-        //                 metadata.avg_data(baseline, i) += data(channel, baseline)(i);
-        //             }
-        //         }
-        //     }
-        // }
     }
 
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
