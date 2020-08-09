@@ -20,25 +20,9 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <casacore/ms/MeasurementSets.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Array.h>
-
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/SVD>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
-
-#include <cuda_runtime.h>
-
-#include <utility>
-#include <sstream>
-#include <iostream>
-#include <vector>
-#include <array>
-#include <set>
+// Eigen3.3 beta1-2 uses an unsupported cuda macro, the following code redefines __CUDACC_VER__.
+// Ensure this header is included before all eigen headers.
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif

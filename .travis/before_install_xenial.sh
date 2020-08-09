@@ -25,6 +25,15 @@
 # MA 02111-1307  USA
 #
 
+# Eigen 3.3.9
+git clone https://gitlab.com/libeigen/eigen.git
+cd eigen
+git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d
+mkdir build && cd build
+cmake ../ && sudo make install
+cd ../../
+export EIGEN3_DIR=/usr/local/include/
+
 sudo apt-get install software-properties-common
 sudo add-apt-repository -y -s ppa:kernsuite/kern-3
 sudo apt-add-repository -y multiverse
@@ -32,6 +41,7 @@ sudo apt-add-repository -y restricted
 sudo apt-get update
 sudo apt-get install casacore-dev
 
+# CUDA 9.0
 wget http://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub

@@ -140,7 +140,7 @@ namespace casalib
     {
         if(!dd.is_initialized())
         {
-            throw std::runtime_error("dd must be initialized before CalcUVW");
+            throw std::logic_error("dd must be initialized before using CalcUVW");
         }
         oldUVW = uvws;
         auto size = uvws.size();
@@ -157,8 +157,6 @@ namespace casalib
     // TODO: rename to CalcDD or UpdateDD
     void MetaData::SetDD(const MVDirection& direction)
     {
-        const int I2D = 2;
-
         if(!dd.is_initialized())
         {
             dd.reset(casacore::Matrix<double>(3,3));

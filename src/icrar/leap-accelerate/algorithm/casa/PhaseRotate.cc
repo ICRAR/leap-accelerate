@@ -105,7 +105,7 @@ namespace casalib
                 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(1, n)) * cal1;
+                    dInt[n] = avg_data(metadata.I) - metadata.A(IPosition(1, n)) * cal1;
                 }
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dInt) + cal1);
                 break;
@@ -161,8 +161,6 @@ namespace casalib
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
 
                 Eigen::VectorXcd v = data(channel, baseline);
                 data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
@@ -171,7 +169,7 @@ namespace casalib
                 {
                     for(int i = 0; i < data(channel, baseline).cols(); i++)
                     {
-                        metadata.avg_data.get()(casacore::IPosition(2, baseline, i)) += data(channel, baseline)(i);
+                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
                     }
                 }
             }
@@ -209,13 +207,13 @@ namespace casalib
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(IPosition(1, n)) != a2(IPosition(1, n)))
+            if(a1(n) != a2(n))
             {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n)) == refAnt) || (a2(IPosition(1, n)) == refAnt))))
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(IPosition(2, k, a1(IPosition(1, n)))) = 1;
-                    A(IPosition(2, k, a2(IPosition(1, n)))) = -1;
-                    I(IPosition(1, k)) = n;
+                    A(k, a1(n)) = 1;
+                    A(k, a2(n)) = -1;
+                    I(k) = n;
                     k++;
                 }
             }
@@ -223,7 +221,7 @@ namespace casalib
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(IPosition(2, k, refAnt)) = 1;
+            A(k, refAnt) = 1;
             k++;
             
             auto Atemp = casacore::Matrix<double>(k, STATIONS);

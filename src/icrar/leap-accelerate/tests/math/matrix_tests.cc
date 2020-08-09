@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/math/casa/matrix_invert.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU> //Needed for Matrix::inverse()
 

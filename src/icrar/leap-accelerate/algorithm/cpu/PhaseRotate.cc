@@ -85,6 +85,7 @@ namespace cpu
         assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
         assert(metadata.avg_data.rows() == integration.baselines);
         assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
+        
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
@@ -102,11 +103,8 @@ namespace cpu
             for(int channel = 0; channel < metadata.m_constants.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
-                Eigen::VectorXcd v = data(channel, baseline);
 
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                data(channel, baseline) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
 
                 if(!data(channel, baseline).hasNaN())
                 {
@@ -130,8 +128,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             throw std::invalid_argument("a1 and a2 must be equal size");
         }
 
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
+        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
+        unique.insert(a2.begin(), a2.end());
         int nAnt = unique.size();
         if(refAnt >= nAnt - 1)
         {
@@ -167,12 +165,12 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             k++;
             
             auto Atemp = Eigen::MatrixXd(k, STATIONS);
-            Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
+            Atemp = A(Eigen::seq(0, k), Eigen::seq(0, STATIONS));
             A.resize(0,0);
             A = Atemp;
 
             auto Itemp = Eigen::VectorXi(k);
-            Itemp = I(Eigen::seqN(0, k));
+            Itemp = I(Eigen::seq(0, k));
             I.resize(0);
             I = Itemp;
         }

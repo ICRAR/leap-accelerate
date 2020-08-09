@@ -25,13 +25,10 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#ifdef __CUDACC_VER__
-#undef __CUDACC_VER__
-#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
-#endif
 #define EIGEN_HAS_CXX11 1
 #define EIGEN_VECTORIZE_GPU 1
 #define EIGEN_CUDACC 1
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 
 #include <casacore/ms/MeasurementSets.h>
