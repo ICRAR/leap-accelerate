@@ -32,6 +32,7 @@
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
+
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/Integration.h>
@@ -119,6 +120,7 @@ namespace icrar
             auto integration = Integration();
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
+            integration.channels = metadata.channels;
 
             //3d matrix initializing
             integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
@@ -126,7 +128,7 @@ namespace icrar
             {
                 for(int col = 0; col < integration.data.cols(); ++col)
                 {
-                    integration.data(row, col) = Eigen::VectorXcd(metadata.num_pols);
+                    integration.data(row, col) = Eigen::VectorXcd::Zero(metadata.num_pols);
                 }
             }
 
