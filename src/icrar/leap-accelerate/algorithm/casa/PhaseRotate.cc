@@ -31,6 +31,8 @@
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
+#include <icrar/leap-accelerate/exception/exception.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -62,11 +64,28 @@ namespace icrar
 {
 namespace casalib
 {
-    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions)
+    // leap_remote_calibration
+    void Calibrate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, boost::optional<int> overrideStations, int solutionInterval)
     {
+        if(overrideStations.is_initialized())
+        {
+            metadata.stations = overrideStations.get();
+        }
         auto input_queues = std::vector<std::queue<Integration>>(directions.size());
         auto output_integrations = std::vector<std::queue<IntegrationResult>>(directions.size());
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>(directions.size());
+        
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            auto integration = Integration(i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());  //TODO read uvw
+
+            input_queues.push_back(std::queue<Integration>());
+            output_integrations.push_back(std::queue<IntegrationResult>());
+        }
+
+        std::cout << "direction count " << directions.size() << std::endl;
+        std::cout << "input count " << input_queues.size() << std::endl;
+
 
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -74,6 +93,7 @@ namespace casalib
         }
     }
 
+    //leap_calibrate_from_queue
     void PhaseRotate(
         MetaData& metadata,
         const casacore::MVDirection& direction,
@@ -81,24 +101,40 @@ namespace casalib
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
+        std::cout << "PhaseRotate Start" << std::endl;
         auto cal = std::vector<casacore::Array<double>>();
 
         while(true)
         {
+            std::cout << "input count " << input.size() << std::endl;
             boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
-            input.pop();
+            if(integration.is_initialized())
+            {
+                input.pop();
+            }
 
             if(integration.is_initialized())
             {
+                std::cout << "Start RotateVisibilities" << std::endl;
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
+                std::cout << "End RotateVisibilities" << std::endl;
+
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
             {
+                std::cout << "Integration empty!" << std::endl;
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
                 };
+
+                std::cout << "Start Final Rotate" << std::endl;
+
+                if(!metadata.avg_data.is_initialized())
+                {
+                    throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
+                }
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
                 casacore::Array<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
                 casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
@@ -108,11 +144,13 @@ namespace casalib
                     dInt[n] = avg_data(metadata.I) - metadata.A(IPosition(1, n)) * cal1;
                 }
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dInt) + cal1);
+                std::cout << "End Rotate" << std::endl;
                 break;
             }
         }
 
         output_calibrations.push(CalibrationResult(direction, cal));
+        std::cout << "PhaseRotate Complete" << std::endl;
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)

@@ -42,9 +42,8 @@ namespace icrar
     class Integration
     {
     public:
-        //Integration();
 
-        Eigen::Matrix<Eigen::VectorXcd, -1, -1> data; //data is an array data[nch][nbl][npol]
+        Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic> data; //data is an array data[nch][nbl][npol]
         //Eigen::Tensor<std::complex<double>, 3> data;
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
@@ -62,28 +61,9 @@ namespace icrar
             };
         };
 
-        bool operator==(const Integration& rhs) const
-        {
-            // There should be a nicer way of doing this, using Eigen::Tensor is one of them
-            bool dataEqual = true;
-            for(int row = 0; row < data.rows(); ++row)
-            {
-                for(int col = 0; col < data.cols(); ++col)
-                {
-                    for(int depth = 0; depth < data(row,col).cols(); ++depth)
-                    {
-                        if(data(row, col)(depth) != rhs.data(row, col)(depth))
-                        {
-                            dataEqual = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            return dataEqual
-            && uvw == rhs.uvw
-            && integration_number == rhs.integration_number;
-        }
+        Integration(int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
+
+        bool operator==(const Integration& rhs) const;
     };
 
     class IntegrationResult

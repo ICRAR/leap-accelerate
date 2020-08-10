@@ -56,18 +56,12 @@ class ArgumentsValidated
     InputType m_source;
     boost::optional<std::string> m_fileName;
 
-    std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
-
-
     /**
      * Resources
      */
+    std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
     std::ifstream m_fileStream;
-
-    /**
-     * Cached reference to the input stream
-     */
-    std::istream* m_inputStream = nullptr;
+    std::istream* m_inputStream = nullptr; // Cached reference to the input stream
 
 public:
     ArgumentsValidated(const Arguments&& args)
@@ -140,11 +134,10 @@ int main(int argc, char** argv)
     ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
-
     auto metadata = std::make_unique<casalib::MetaData>(args.GetMeasurementSet());
 
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();
 
-    icrar::casalib::RemoteCalibration(*metadata, directions);
+    icrar::casalib::Calibrate(*metadata, directions, boost::none);
 }

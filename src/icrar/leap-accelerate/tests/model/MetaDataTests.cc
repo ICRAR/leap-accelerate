@@ -80,7 +80,8 @@ namespace icrar
             //ASSERT_EQ(4853, meta.nantennas);
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(128, meta.stations);
+            ASSERT_EQ(128, meta.stations); //LEAP-Cal ovverides stations to 126
+            ASSERT_EQ(8256, meta.GetBaselines());
             ASSERT_EQ(1, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);

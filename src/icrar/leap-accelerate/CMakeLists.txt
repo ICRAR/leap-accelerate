@@ -24,6 +24,7 @@ set(sources
     
     model/MetaData.cc
 
+    math/Integration.cc
     math/linear_math_helper.cc
 
     math/casa/matrix_invert.cc

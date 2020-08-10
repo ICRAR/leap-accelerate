@@ -83,26 +83,34 @@ namespace icrar
 
         void PhaseRotateTest(Impl impl)
         {
-            casalib::MetaData metadata;
-            casacore::MVDirection direction;
-            std::queue<Integration> input;
-            std::queue<IntegrationResult> output_integrations;
-            std::queue<CalibrationResult> output_calibrations;
+            auto metadata = casalib::MetaData(ms);
+            std::vector<casacore::MVDirection> directions =
+            {
+                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
+                casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
+                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
+                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
+                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
+                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
+                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
+                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
+                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+            };
 
             if(impl == Impl::casa)
             {
-                icrar::casalib::PhaseRotate(metadata, direction, input, output_integrations, output_calibrations);
+                icrar::casalib::Calibrate(metadata, directions, 126, 3600);
             }
             if(impl == Impl::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaData(metadata);
-                icrar::cpu::PhaseRotate(metadatahost, direction, input, output_integrations, output_calibrations);
+                // auto metadatahost = icrar::cuda::MetaData(metadata);
+                // icrar::cpu::Calibrate(metadatahost, direction, input, output_integrations, output_calibrations);
             }
             if(impl == Impl::cuda)
             {
-                auto metadatahost = icrar::cuda::MetaData(metadata);
-                auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                icrar::cuda::PhaseRotate(metadatadevice, direction, input, output_integrations, output_calibrations);
+                // auto metadatahost = icrar::cuda::MetaData(metadata);
+                // auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
+                // icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
             else
             {
@@ -117,20 +125,9 @@ namespace icrar
             auto metadata = casalib::MetaData(ms);
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            auto integration = Integration();
+            auto integration = Integration(0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, 2);
             integration.uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             integration.baselines = integration.uvw.size();
-            integration.channels = metadata.channels;
-
-            //3d matrix initializing
-            integration.data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(metadata.channels, integration.baselines);
-            for(int row = 0; row < integration.data.rows(); ++row)
-            {
-                for(int col = 0; col < integration.data.cols(); ++col)
-                {
-                    integration.data(row, col) = Eigen::VectorXcd::Zero(metadata.num_pols);
-                }
-            }
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
             if(impl == Impl::casa)
@@ -158,7 +155,7 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = Integration();
+            auto expectedIntegration = Integration(0, metadata.channels, metadata.GetBaselines(), metadata.num_pols,  metadata.GetBaselines());
             expectedIntegration.baselines = integration.uvw.size();
             expectedIntegration.uvw = integration.uvw;
 
@@ -515,7 +512,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
     
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(Impl::cuda); }
 }

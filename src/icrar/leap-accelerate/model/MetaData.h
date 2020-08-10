@@ -101,6 +101,8 @@ namespace casalib
         MetaData(std::istream& input);
         MetaData(const casacore::MeasurementSet& ms);
         
+        int GetBaselines() { return stations * (stations + 1) / 2; }
+
         /**
          * @brief 
          * 
