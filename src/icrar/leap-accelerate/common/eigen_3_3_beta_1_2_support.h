@@ -20,12 +20,9 @@
  * MA 02111 - 1307  USA
  */
 
-#include "MetaDataCuda.h"
-
-namespace icrar
-{
-namespace cuda
-{
-    
-}
-}
+// Eigen3.3 beta1-2 uses an unsupported cuda macro, the following code redefines __CUDACC_VER__.
+// Ensure this header is included before all eigen headers.
+#ifdef __CUDACC_VER__
+#undef __CUDACC_VER__
+#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
+#endif

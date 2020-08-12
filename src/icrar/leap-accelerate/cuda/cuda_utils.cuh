@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #ifdef DEBUG_CUDA_ERRORS
 static void DebugCudaErrors()
 {

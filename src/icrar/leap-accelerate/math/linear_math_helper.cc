@@ -20,22 +20,17 @@
  * MA 02111 - 1307  USA
  */
 
-#include "Invert.h"
-
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include "linear_math_helper.h"
 
 namespace icrar
 {
-namespace cpu
-{
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
+    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value)
     {
-        return ConvertMatrix(PseudoInverse(ConvertMatrix(a)));
+        return Eigen::RowVector3d(value.get().data());
     }
 
-    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a, double epsilon)
+    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value)
     {
-        return ConvertMatrix(SVDPseudoInverse(ConvertMatrix(a), epsilon));
+        return casacore::MVuvw(value[0], value[1], value[2]);
     }
-}
 }

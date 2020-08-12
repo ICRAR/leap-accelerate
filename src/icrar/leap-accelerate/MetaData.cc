@@ -125,14 +125,18 @@ namespace icrar
         throw std::runtime_error("not implemented");
     }
 
-    void CalcUVW(std::vector<MVuvw>& uvws, MetaData& metadata)
+    void MetaData::CalcUVW(std::vector<MVuvw>& uvws)
     {
-        metadata.oldUVW = uvws;
+        if(!dd.is_initialized())
+        {
+            throw std::logic_error("dd must be initialized before using CalcUVW");
+        }
+        oldUVW = uvws;
         auto size = uvws.size();
         uvws.clear();
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], metadata.dd);
+            auto uvw = icrar::Dot(uvws[n], dd.value());
             uvws.push_back(uvw);
         }
     }
@@ -143,22 +147,28 @@ namespace icrar
      * @param metadata 
      * @param direction 
      */
-    void SetDD(MetaData& metadata, const MVDirection& direction)
+    void MetaData::SetDD(const MVDirection& direction)
     {
-        metadata.dlm_ra = direction.get()[0] - metadata.phase_centre_ra_rad;
-        metadata.dlm_dec = direction.get()[1] - metadata.phase_centre_dec_rad;
+        if(!dd.is_initialized())
+        {
+            dd.reset(casacore::Matrix<double>(3,3));
+        }
 
-        metadata.dd(IPosition(0,0)) = cos(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(0,1)) = -sin(metadata.dlm_ra);
-        metadata.dd(IPosition(0,2)) = cos(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        auto& dd3d = dd.value();
+        dlm_ra = direction.get()[0] - phase_centre_ra_rad;
+        dlm_dec = direction.get()[1] - phase_centre_dec_rad;
+
+        dd3d(0,0) = std::cos(dlm_ra) * std::cos(dlm_dec);
+        dd3d(0,1) = -std::sin(dlm_ra);
+        dd3d(0,2) = std::cos(dlm_ra) * std::sin(dlm_dec);
         
-        metadata.dd(IPosition(1,0)) = sin(metadata.dlm_ra) * cos(metadata.dlm_dec);
-        metadata.dd(IPosition(1,1)) = cos(metadata.dlm_ra);
-        metadata.dd(IPosition(1,2)) = sin(metadata.dlm_ra) * sin(metadata.dlm_dec);
+        dd3d(1,0) = std::sin(dlm_ra) * std::cos(dlm_dec);
+        dd3d(1,1) = std::cos(dlm_ra);
+        dd3d(1,2) = std::sin(dlm_ra) * std::sin(dlm_dec);
 
-        metadata.dd(IPosition(2,0)) = -sin(metadata.dlm_dec);
-        metadata.dd(IPosition(2,1)) = 0;
-        metadata.dd(IPosition(2,2)) = cos(metadata.dlm_dec);
+        dd3d(2,0) = -std::sin(dlm_dec);
+        dd3d(2,1) = 0;
+        dd3d(2,2) = std::cos(dlm_dec);
     }
 
     /**
@@ -167,16 +177,46 @@ namespace icrar
      * 
      * @param metadata 
      */
-    void SetWv(MetaData& metadata)
+    void MetaData::SetWv()
     {
+        channel_wavelength = range(
+            freq_start_hz,
+            freq_start_hz + freq_inc_hz * channels,
+            freq_inc_hz);
+        
         double speed_of_light = 299792458.0;
-        metadata.channel_wavelength = range(
-            metadata.freq_start_hz,
-            metadata.freq_inc_hz,
-            metadata.freq_start_hz + metadata.freq_inc_hz * metadata.channels);
-        for(double& v : metadata.channel_wavelength)
+        for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;
         }
+    }
+
+    bool MetaData::operator==(const MetaData& rhs) const
+    {
+        return init == rhs.init
+        && nantennas == rhs.nantennas
+        //&& nbaseline == rhs.nbaseline
+        && channels == rhs.channels
+        && num_pols == rhs.num_pols
+        && stations == rhs.stations
+        && rows == rhs.rows
+        && freq_start_hz == rhs.freq_start_hz
+        && freq_inc_hz == rhs.freq_inc_hz
+        && solution_interval == rhs.solution_interval
+        && channel_wavelength == rhs.channel_wavelength
+        && phase_centre_ra_rad == rhs.phase_centre_ra_rad
+        && phase_centre_dec_rad == rhs.phase_centre_dec_rad
+        && dlm_ra == rhs.dlm_ra
+        && dlm_dec == rhs.dlm_dec
+        && oldUVW == rhs.oldUVW
+        && icrar::Equal(avg_data, rhs.avg_data)
+        && icrar::Equal(dd, rhs.dd)
+        && icrar::Equal(A, rhs.A)
+        && icrar::Equal(I, rhs.I)
+        && icrar::Equal(Ad, rhs.Ad)
+        && icrar::Equal(A1, rhs.A1)
+        && icrar::Equal(I1, rhs.I1)
+        && icrar::Equal(Ad1, rhs.Ad1);
+
     }
 }

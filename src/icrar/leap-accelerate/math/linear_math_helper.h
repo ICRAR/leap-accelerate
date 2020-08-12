@@ -26,10 +26,7 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
-#ifdef __CUDACC_VER__
-#undef __CUDACC_VER__
-#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
-#endif
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <vector>
 
@@ -92,6 +89,11 @@ namespace icrar
     template<typename T>
     Eigen::Matrix<T, 3, 3> ConvertMatrix3x3(const casacore::Matrix<T>& value)
     {
+        if(value.shape()[0] != 3 && value.shape()[1] != 3)
+        {
+            throw std::runtime_error("matrix must be 3x3");
+        }
+
         auto m = Eigen::Matrix<T, 3, 3>();
 
         auto it = value.begin();

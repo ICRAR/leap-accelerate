@@ -33,7 +33,10 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
+
+#include <boost/optional.hpp>
 
 #include <iostream>
 #include <string>
@@ -47,8 +50,6 @@ namespace cuda
 {
     struct Constants
     {
-        //bool init;
-
         int nantennas;
         //int nbaselines;
         int channels; // The number of channels of the current observation
@@ -80,47 +81,67 @@ namespace cuda
             };
         };
 
-        
+        bool operator==(const Constants& rhs) const;
     };
 
-    struct MetaDataCudaHost
+    class MetaDataCudaHost
     {
-        MetaDataCudaHost(MetaData& metadata);
+        MetaDataCudaHost();
 
-        Constants constants;
+    public:
+
+        bool init = false; //set to true after rotateVisibilities
+        Constants m_constants;
 
         std::vector<casacore::MVuvw> oldUVW;
 
         Eigen::MatrixXcd avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        Eigen::MatrixXd dd;
+        Eigen::Matrix3d dd;
 
         Eigen::MatrixXd A;
-        Eigen::VectorXd I;
+        Eigen::VectorXi I;
         Eigen::MatrixXd Ad;
 
         Eigen::MatrixXd A1;
-        Eigen::VectorXd I1;
+        Eigen::VectorXi I1;
         Eigen::MatrixXd Ad1;
+
+        MetaDataCudaHost(const MetaData& metadata);
+
+        const Constants& GetConstants() const;
+
+        void CalcUVW(std::vector<casacore::MVuvw>& uvws);
+        void SetDD(const casacore::MVDirection& direction);
+        void SetWv();
+
+        bool operator==(const MetaDataCudaHost& rhs) const;
     };
 
-    struct MetaDataCudaDevice
+    class MetaDataCudaDevice
     {
-        MetaDataCudaDevice(MetaDataCudaDevice& metadata);
-
+        MetaDataCudaDevice();
+    public:
+        bool init;
         Constants constants;
 
         icrar::cuda::device_vector<casacore::MVuvw> oldUVW;
 
         icrar::cuda::device_matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
         icrar::cuda::device_matrix<double> dd;
-        
+
         icrar::cuda::device_matrix<double> A;
-        icrar::cuda::device_vector<double> I;
+        icrar::cuda::device_vector<int> I;
         icrar::cuda::device_matrix<double> Ad;
         
         icrar::cuda::device_matrix<double> A1;
-        icrar::cuda::device_vector<double> I1;
+        icrar::cuda::device_vector<int> I1;
         icrar::cuda::device_matrix<double> Ad1;
+
+        MetaDataCudaDevice(const MetaDataCudaHost& metadata);
+
+        void ToHost(MetaDataCudaHost& host) const;
+        MetaDataCudaHost ToHost() const;
+        void ToHostAsync(MetaDataCudaHost& host) const;
     };
 }
 }

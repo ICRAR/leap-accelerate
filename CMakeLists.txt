@@ -17,8 +17,6 @@ set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS_DEBUG "-O1 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wextra")
 
-#add_definitions(-DUseCasacoreNamespace)
-
 add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -79,7 +77,7 @@ enable_language(CUDA)
 find_package(GSL)
 find_package(LAPACK)
 find_package(Casacore REQUIRED)
-find_package(Boost)
+find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)

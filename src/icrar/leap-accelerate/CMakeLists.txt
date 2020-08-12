@@ -17,24 +17,19 @@ set(public_headers
 set(private_headers
 
     math/casacore_helper.h
-    math/eigen_helper.h
+    math/linear_math_helper.h
     math/math.h
 )
 set(sources
     utils.cc
     MetaData.cc
 
-    math/eigen_helper.cc
+    math/linear_math_helper.cc
     math/cpu/Invert.cc
     math/cpu/vector.cc
     math/cpu/matrix.cc
     
     algorithm/cpu/PhaseRotate.cc
-
-    # TODO: dgesvd_ not avaiable on travisCI (LAPACK?)
-    #wsclean/chgcentre.cc
-    #wsclean/multibanddata.cpp
-    #wsclean/progressbar.cpp
 )
 
 set(cuda_headers
@@ -54,6 +49,7 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
+    cuda/MetaDataCuda.cu
 
     math/cuda/vector.cu
     math/cuda/matrix.cu
@@ -63,7 +59,6 @@ set(cuda_sources
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)
-option(BOOST_ENABLED "Boost Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
 
 add_library(
@@ -104,16 +99,13 @@ endif()
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
 
+target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
+
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
   target_include_directories(${TARGET_NAME} PUBLIC ${CASACORE_INCLUDES})
 endif()
-if(BOOST_ENABLED)
-  target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-endif()
-
-#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
-
 if(GSL_ENABLED)
   target_link_libraries(${TARGET_NAME} GSL::gsl)
 endif()
@@ -148,5 +140,4 @@ install(
 )
 
 unset(CASA_ENABLED CACHE)
-unset(BOOST_ENABLED CACHE)
 unset(GSL_ENABLED CACHE)

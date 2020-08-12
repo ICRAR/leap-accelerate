@@ -23,12 +23,13 @@
 #include <gtest/gtest.h>
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/eigen_helper.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Sparse>
 

@@ -20,17 +20,22 @@
  * MA 02111 - 1307  USA
  */
 
-#include "eigen_helper.h"
+#pragma once
 
-namespace icrar
-{
-    Eigen::RowVector3d ConvertVector3(const casacore::MVuvw& value)
-    {
-        return Eigen::RowVector3d(value.get().data());
-    }
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
 
-    casacore::MVuvw ConvertUVW(Eigen::RowVector3d value)
-    {
-        return casacore::MVuvw(value[0], value[1], value[2]);
-    }
-}
+#include <gtest/gtest.h>
+
+//matrix equal int
+void assert_meqi(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string file, int line);
+
+//matrix equal double
+void assert_meqd(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string file, int line);
+
+//matrix equal complex double
+void assert_meqcd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string file, int line);
+
+#define ASSERT_MEQ(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, __FILE__, __LINE__)
+#define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, __FILE__, __LINE__)
+#define ASSERT_MEQCD(expected, actual, tolerance) assert_meqcd(expected, actual, tolerance, __FILE__, __LINE__)

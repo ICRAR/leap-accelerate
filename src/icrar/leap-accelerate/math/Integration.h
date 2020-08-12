@@ -25,6 +25,10 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+
 #include <boost/optional.hpp>
 
 #include <vector>
@@ -37,7 +41,7 @@ namespace icrar
     class Integration
     {
     public:
-        std::vector<std::vector<std::complex<double>>> data;
+        Eigen::MatrixXcd data;
         std::vector<casacore::MVuvw> uvw;
         int integration_number;
 
@@ -52,6 +56,13 @@ namespace icrar
                 int baselines;
             };
         };
+
+        bool operator==(const Integration& rhs) const
+        {
+            return data.isApprox(rhs.data, 0.001)
+            && uvw == rhs.uvw
+            && integration_number == rhs.integration_number;
+        }
     };
 
     class IntegrationResult

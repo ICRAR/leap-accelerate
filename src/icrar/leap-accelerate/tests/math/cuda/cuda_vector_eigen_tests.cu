@@ -25,10 +25,7 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/math/cuda/vector_eigen.cuh>
 
-#ifdef __CUDACC_VER__
-#undef __CUDACC_VER__
-#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
-#endif
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 
 #include <gtest/gtest.h>

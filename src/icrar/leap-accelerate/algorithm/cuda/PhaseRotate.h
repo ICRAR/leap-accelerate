@@ -25,10 +25,7 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
-#ifdef __CUDACC_VER__
-#undef __CUDACC_VER__
-#define __CUDACC_VER__ ((__CUDACC_VER_MAJOR__ * 10000) + (__CUDACC_VER_MINOR__ * 100))
-#endif
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 
 #include <casacore/ms/MeasurementSets.h>
@@ -55,20 +52,26 @@ namespace icrar
 namespace icrar
 {
 namespace cuda
-{ 
+{
+    class MetaDataCudaHost;
+    class MetaDataCudaDevice;
+
     std::queue<IntegrationResult> PhaseRotate(
-        MetaData& metadata,
-        const casacore::MVDirection& directions,
+        MetaDataCudaHost& metadata,
+        const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
+    void RotateVisibilities(
+        Integration& integration,
+        MetaDataCudaHost& metadata,
+        const casacore::MVDirection& direction);
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Vector<std::int32_t>& a1,
-        const casacore::Vector<std::int32_t>& a2,
-        int refAnt,
-        bool map);
+         const casacore::Vector<std::int32_t>& a1,
+         const casacore::Vector<std::int32_t>& a2,
+         int refAnt,
+         bool map);
 }
 }

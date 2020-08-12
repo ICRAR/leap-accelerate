@@ -23,7 +23,7 @@
 
 #include "PhaseRotate.h"
 
-#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/cuda/MetaDataCuda.h>
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math.h>
@@ -39,6 +39,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include <complex>
 #include <istream>
 #include <iostream>
 #include <iterator>
@@ -57,104 +58,74 @@ namespace icrar
 namespace cuda
 { 
     std::queue<IntegrationResult> PhaseRotate(
-        MetaData& metadata,
+        MetaDataCudaHost& metadata,
         const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
         throw std::runtime_error("not implemented"); //TODO
-
-        // auto cal = std::vector<casacore::Array<double>>();
-
-        // while(true)
-        // {
-        //     boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
-        //     input.pop();
-
-        //     if(integration.is_initialized())
-        //     {
-        //         icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
-        //         output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
-        //     }
-        //     else
-        //     {
-        //         std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-        //         {
-        //             return std::arg(c);
-        //         };
-        //         casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
-        //         casacore::Array<double> cal1 = icrar::cuda::multiply(metadata.Ad1, avg_data.column(0));
-        //         casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
-                
-        //         for(int n = 0; n < metadata.I.size(); ++n)
-        //         {
-        //             dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(n)) * cal1;
-        //         }
-        //         cal.push_back(icrar::cuda::multiply(metadata.Ad, dInt) + cal1);
-        //         break;
-        //     }
-        // }
-
-        // output_calibrations.push(CalibrationResult(direction, cal));
     }
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const MVDirection& direction)
+    void RotateVisibilities(
+        Integration& integration,
+        MetaDataCudaHost& metadata,
+        const MVDirection& direction)
     {
-        throw std::runtime_error("not implemented"); //TODO
-    }
+        //using namespace std::literals::complex_literals;
+        auto& data = integration.data;
+        auto& uvw = integration.uvw;
+        auto parameters = integration.parameters;
 
-    std::pair<Matrix<double>, Vector<std::int32_t>> PhaseMatrixFunction(
-        const Vector<std::int32_t>& a1,
-        const Vector<std::int32_t>& a2,
-        int refAnt, bool map)
-    {
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
-        int nAnt = unique.size();
-        if(refAnt >= nAnt - 1)
+        if(metadata.init)
         {
-            throw std::invalid_argument("RefAnt out of bounds");
+            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
+            
+            metadata.SetDD(direction);
+            metadata.SetWv();
+            // Zero a vector for averaging in time and freq
+            metadata.avg_data = Eigen::MatrixXcd(integration.baselines, metadata.GetConstants().num_pols);
+            metadata.init = false;
         }
+        metadata.CalcUVW(uvw);
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1));
-        for(auto v : A)
+        // loop over baselines
+        for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            v = 0;
-        }
+            // For baseline
+            const double pi = boost::math::constants::pi<double>();
+            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+            shiftFactor = shiftFactor + 2 * pi * (metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
+            shiftFactor = shiftFactor -2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
 
-        Matrix<int> I = Matrix<int>(a1.size() + 1, a1.size() + 1);
-        for(auto v : I)
-        {
-            v = 1;
-        }
-
-        int k = 0;
-
-        for(int n = 0; n < a1.size(); n++)
-        {
-            if(a1(IPosition(n)) != a2(IPosition(n)))
+            if(baseline % 1000 == 1)
             {
-                if((refAnt < 0) || ((refAnt >= 0) & ((a1(IPosition(n)) == refAnt) || (a2(IPosition(n)) == refAnt))))
+                std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
+            }
+
+            // Loop over channels
+            for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
+            {
+                double shiftRad = shiftFactor / metadata.GetConstants().channel_wavelength[channel];
+                std::complex<double> v = data(channel, baseline);
+
+                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                if(data(channel, baseline).real() == NAN
+                || data(channel, baseline).imag() == NAN)
                 {
-                    A(IPosition(k, a1(IPosition(n)))) = 1;
-                    A(IPosition(k, a2(IPosition(n)))) = -1;
-                    I(IPosition(k)) = n;
-                    k++;
+                    metadata.avg_data(1, baseline) += data(channel,baseline);
                 }
             }
         }
-        if(refAnt < 0)
-        {
-            refAnt = 0;
-            A(IPosition(k,refAnt)) = 1;
-            k++;
-            
-            A = A(Slice(0), Slice(k));
-            I = I(Slice(0), Slice(k));
-        }
-
-        return std::make_pair(A, I);
     }
+
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
+        int refAnt,
+        bool map)
+         {
+             throw std::runtime_error("cuda::PhaseMatrixFunction not implemented");
+         }
 }
 }

@@ -126,13 +126,19 @@ namespace cpu
         {
             //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
             
-            SetDD(metadata, direction);
-            SetWv(metadata);
+            metadata.SetDD(direction);
+            metadata.SetWv();
             // Zero a vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.init = false;
         }
-        CalcUVW(uvw, metadata);
+        metadata.CalcUVW(uvw);
+
+        assert(uvw.size() == integration.baselines);
+        assert(data.rows() == metadata.channels);
+        assert(data.cols() == integration.baselines);
+        assert(metadata.oldUVW.size() == integration.baselines);
+        assert(metadata.channel_wavelength.size() == metadata.channels);
 
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
@@ -152,23 +158,21 @@ namespace cpu
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-                double rs = sin(shiftRad);
-                double rc = cos(shiftRad);
-                std::complex<double> v = data[channel][baseline];
+                std::complex<double> v = data(channel, baseline);
 
-                data[channel][baseline] = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data[channel][baseline].real() == NAN
-                || data[channel][baseline].imag() == NAN)
+                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                if(data(channel, baseline).real() == NAN
+                || data(channel, baseline).imag() == NAN)
                 {
-                    metadata.avg_data(casacore::IPosition(1, baseline)) += data[channel][baseline];
+                    metadata.avg_data(1, baseline) += data(channel, baseline);
                 }
             }
         }
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const Vector<std::int32_t>& a1,
-        const Vector<std::int32_t>& a2,
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt,
         bool map)
     {
@@ -195,13 +199,13 @@ namespace cpu
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(IPosition(1, n)) != a2(IPosition(1, n)))
+            if(a1(n) != a2(n))
             {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(IPosition(1, n)) == refAnt) || (a2(IPosition(1, n)) == refAnt))))
+                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(IPosition(2, k, a1(IPosition(1, n)))) = 1;
-                    A(IPosition(2, k, a2(IPosition(1, n)))) = -1;
-                    I(IPosition(1, k)) = n;
+                    A(k, a1(n)) = 1;
+                    A(k, a2(n)) = -1;
+                    I(k) = n;
                     k++;
                 }
             }
@@ -209,7 +213,7 @@ namespace cpu
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(IPosition(2, k, refAnt)) = 1;
+            A(k, refAnt) = 1;
             k++;
             
             auto Atemp = casacore::Matrix<double>(k, 127);
