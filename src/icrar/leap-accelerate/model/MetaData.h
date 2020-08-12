@@ -93,8 +93,8 @@ namespace casalib
         casacore::Matrix<double> A1; // Antennas with baseline PhaseMatrix
         casacore::Matrix<double> Ad1; //A1 inverse
 
-        casacore::Array<int> I1;
-        casacore::Array<int> I;
+        casacore::Vector<int> I1;
+        casacore::Vector<int> I;
 
     public:
         MetaData();

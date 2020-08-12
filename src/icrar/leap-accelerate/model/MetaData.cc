@@ -121,10 +121,10 @@ namespace casalib
 
         this->A = A;
         this->Ad = Ad;
+        this->I = I;
         this->A1 = A1;
         this->Ad1 = Ad1;
         this->I1 = I1;
-        this->I = I;
 
         //preallocate
         //this->dd;

@@ -71,15 +71,16 @@ namespace casalib
         {
             metadata.stations = overrideStations.get();
         }
-        auto input_queues = std::vector<std::queue<Integration>>(directions.size());
-        auto output_integrations = std::vector<std::queue<IntegrationResult>>(directions.size());
-        auto output_calibrations = std::vector<std::queue<CalibrationResult>>(directions.size());
+        auto input_queues = std::vector<std::queue<Integration>>();
+        auto output_integrations = std::vector<std::queue<IntegrationResult>>();
+        auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto integration = Integration(i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());  //TODO read uvw
+            auto queue = std::queue<Integration>(); 
+            queue.push(Integration(i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines())); //TODO read uvw
 
-            input_queues.push_back(std::queue<Integration>());
+            input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
         }
 
@@ -123,33 +124,68 @@ namespace casalib
             }
             else
             {
-                std::cout << "Integration empty!" << std::endl;
+                std::cout << "Start Final Rotate" << std::endl;
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
                 };
 
-                std::cout << "Start Final Rotate" << std::endl;
-
                 if(!metadata.avg_data.is_initialized())
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
+
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
-                casacore::Array<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
-                casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
+
+                std::cout << "Ad1:" << metadata.Ad1.shape() << std::endl;
+                std::cout << "avg_data:" << avg_data.shape() << std::endl;
+
+
+                auto indexes = ConvertVector(metadata.I1);
+
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ConvertMatrix(avg_data)(indexes, 0)));
+                std::cout << "avg_data_t:" << avg_data_t.shape() << std::endl;
+
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
+                assert(cal1.shape()[1] == 1);
+
+                std::cout << "cal1:" << cal1.shape() << std::endl;
+
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
+                dInt = 0;
+                std::cout << "dInt:" << dInt.shape() << std::endl;
+
+                //avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
                 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt[n] = avg_data(metadata.I) - metadata.A(IPosition(1, n)) * cal1;
+                    Eigen::VectorXi e_i = ConvertVector(metadata.I);
+                    Eigen::MatrixXd e_avg_data_slice = ConvertMatrix(avg_data)(e_i, Eigen::all);
+                    casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+                    //std::cout << "avg_data_slice:" << avg_data_slice.shape() << std::endl;
+                    //std::cout << "avg_data_slice[n]:" << avg_data_slice.row(0).shape() << std::endl;
+
+                    casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1; //TODO: assuming contiguous
+                    //std::cout << "cumsum:" << cumsum.shape() << std::endl;
+
+                    dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
-                cal.push_back(icrar::casalib::multiply(metadata.Ad, dInt) + cal1);
+
+                std::cout << "Ad:" << metadata.Ad.shape() << std::endl;
+                
+                casacore::Matrix<double> dIntColumn = dInt.column(0);
+                dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
+
+                std::cout << "dIntColumn:" << dIntColumn.shape() << std::endl; //TODO: need column vector
+
+                cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 std::cout << "End Rotate" << std::endl;
                 break;
             }
         }
 
-        output_calibrations.push(CalibrationResult(direction, cal));
+        CalibrationResult(direction, cal);
+        //output_calibrations.push(CalibrationResult(direction, cal));
         std::cout << "PhaseRotate Complete" << std::endl;
     }
 
@@ -236,11 +272,10 @@ namespace casalib
         Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
         A = 0.0;
 
-        int STATIONS = A.shape()[1] - 1; //TODO verify correctness
-
         Vector<int> I = Vector<int>(a1.size() + 1);
         I = 1;
 
+        int STATIONS = A.shape()[1]; //TODO verify correctness
         int k = 0;
 
         for(int n = 0; n < a1.size(); n++)
@@ -259,19 +294,20 @@ namespace casalib
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(k, refAnt) = 1;
-            k++;
-            
-            auto Atemp = casacore::Matrix<double>(k, STATIONS);
-            Atemp = A(Slice(0, k), Slice(0, STATIONS));
-            A.resize(0,0);
-            A = Atemp;
-
-            auto Itemp = casacore::Vector<int>(k);
-            Itemp = I(Slice(0, k));
-            I.resize(0);
-            I = Itemp;
         }
+
+        A(k, refAnt) = 1;
+        k++;
+        
+        auto Atemp = casacore::Matrix<double>(k, STATIONS);
+        Atemp = A(Slice(0, k), Slice(0, STATIONS));
+        A.resize(0,0);
+        A = Atemp;
+
+        auto Itemp = casacore::Vector<int>(k);
+        Itemp = I(Slice(0, k));
+        I.resize(0);
+        I = Itemp;
 
         return std::make_pair(A, I);
     }

@@ -92,8 +92,8 @@ namespace icrar
 
     public:
         CalibrationResult(
-            casacore::MVDirection direction,
-            std::vector<casacore::Array<double>> data)
+            const casacore::MVDirection& direction,
+            const std::vector<casacore::Array<double>>& data)
             : m_direction(direction)
             , m_data(data)
         {
