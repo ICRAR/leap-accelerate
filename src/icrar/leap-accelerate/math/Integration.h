@@ -95,9 +95,17 @@ namespace icrar
             const casacore::MVDirection& direction,
             const std::vector<casacore::Array<double>>& data)
             : m_direction(direction)
-            , m_data(data)
+            //, m_data(data)
         {
+            for(int i = 0; i < data.size(); ++i)
+            {
+                //m_data.push_back(data[i]);
+                m_data.push_back(casacore::Matrix<double>());
+            }
 
+            std::cout << "data: " << m_data.size() << std::endl;
         }
+
+        const std::vector<casacore::Array<double>>& GetData() const { return m_data; }
     };
 }

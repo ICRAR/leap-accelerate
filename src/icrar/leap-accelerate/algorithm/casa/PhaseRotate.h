@@ -54,7 +54,11 @@ namespace casalib
      * @brief 
      * 
      */
-    void Calibrate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, boost::optional<int> overrideStations, int solutionInterval = 3600);
+    std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>> Calibrate(
+        MetaData& metadata,
+        const std::vector<casacore::MVDirection>& directions,
+        boost::optional<int> overrideStations,
+        int solutionInterval = 3600);
 
     /**
      * @brief 

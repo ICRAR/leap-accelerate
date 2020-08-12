@@ -65,15 +65,20 @@ namespace icrar
 namespace casalib
 {
     // leap_remote_calibration
-    void Calibrate(MetaData& metadata, const std::vector<casacore::MVDirection>& directions, boost::optional<int> overrideStations, int solutionInterval)
+    std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>> Calibrate(
+        MetaData& metadata,
+        const std::vector<casacore::MVDirection>& directions,
+        boost::optional<int> overrideStations,
+        int solutionInterval)
     {
+        auto output_integrations = std::vector<std::queue<IntegrationResult>>();
+        auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
+        
         if(overrideStations.is_initialized())
         {
             metadata.stations = overrideStations.get();
         }
         auto input_queues = std::vector<std::queue<Integration>>();
-        auto output_integrations = std::vector<std::queue<IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -88,11 +93,12 @@ namespace casalib
         std::cout << "direction count " << directions.size() << std::endl;
         std::cout << "input count " << input_queues.size() << std::endl;
 
-
         for(int i = 0; i < directions.size(); ++i)
         {
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+
+        return std::make_pair(output_integrations, output_calibrations);
     }
 
     //leap_calibrate_from_queue
@@ -103,12 +109,10 @@ namespace casalib
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
-        std::cout << "PhaseRotate Start" << std::endl;
         auto cal = std::vector<casacore::Array<double>>();
 
         while(true)
         {
-            std::cout << "input count " << input.size() << std::endl;
             boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
             if(integration.is_initialized())
             {
@@ -117,15 +121,11 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-                std::cout << "Start RotateVisibilities" << std::endl;
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
-                std::cout << "End RotateVisibilities" << std::endl;
-
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
             {
-                std::cout << "Start Final Rotate" << std::endl;
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
@@ -138,55 +138,36 @@ namespace casalib
 
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
-                std::cout << "Ad1:" << metadata.Ad1.shape() << std::endl;
-                std::cout << "avg_data:" << avg_data.shape() << std::endl;
-
-
                 auto indexes = ConvertVector(metadata.I1);
 
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ConvertMatrix(avg_data)(indexes, 0)));
-                std::cout << "avg_data_t:" << avg_data_t.shape() << std::endl;
-
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ConvertMatrix(avg_data)(indexes, 0))); // 1st pol only
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
                 assert(cal1.shape()[1] == 1);
 
-                std::cout << "cal1:" << cal1.shape() << std::endl;
-
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
-                std::cout << "dInt:" << dInt.shape() << std::endl;
 
-                //avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
-                
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
                     Eigen::VectorXi e_i = ConvertVector(metadata.I);
                     Eigen::MatrixXd e_avg_data_slice = ConvertMatrix(avg_data)(e_i, Eigen::all);
                     casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                    //std::cout << "avg_data_slice:" << avg_data_slice.shape() << std::endl;
-                    //std::cout << "avg_data_slice[n]:" << avg_data_slice.row(0).shape() << std::endl;
 
-                    casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1; //TODO: assuming contiguous
-                    //std::cout << "cumsum:" << cumsum.shape() << std::endl;
-
+                    casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
-
-                std::cout << "Ad:" << metadata.Ad.shape() << std::endl;
                 
-                casacore::Matrix<double> dIntColumn = dInt.column(0);
+                casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
-
-                std::cout << "dIntColumn:" << dIntColumn.shape() << std::endl; //TODO: need column vector
+                assert(dIntColumn.shape()[1] == 1);
 
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
-                std::cout << "End Rotate" << std::endl;
                 break;
             }
         }
 
+        std::cout << "cal.size(): " << cal.size() << std::endl;
         output_calibrations.push(CalibrationResult(direction, cal));
-        std::cout << "PhaseRotate Complete" << std::endl;
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)

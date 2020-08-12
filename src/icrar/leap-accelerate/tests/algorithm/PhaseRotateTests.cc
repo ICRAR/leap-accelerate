@@ -97,9 +97,11 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
+            std::vector<std::queue<IntegrationResult>> integrations;
+            std::vector<std::queue<CalibrationResult>> calibrations;
             if(impl == Impl::casa)
             {
-                icrar::casalib::Calibrate(metadata, directions, 126, 3600);
+                std::tie(integrations, calibrations) = icrar::casalib::Calibrate(metadata, directions, 126, 3600);
             }
             else if(impl == Impl::eigen)
             {
@@ -115,6 +117,15 @@ namespace icrar
             else
             {
                 throw std::invalid_argument("impl");
+            }
+
+            ASSERT_EQ(9, calibrations.size());
+            for(int i = 0; i < 10; i++)
+            {
+                ASSERT_EQ(1, calibrations[i].size());
+
+                const CalibrationResult& calibration = calibrations[i].front();
+                ASSERT_EQ(1, calibration.GetData().size());
             }
         }
 
