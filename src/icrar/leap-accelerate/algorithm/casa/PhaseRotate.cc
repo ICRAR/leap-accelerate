@@ -82,6 +82,7 @@ namespace casalib
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
+            output_calibrations.push_back(std::queue<CalibrationResult>());
         }
 
         std::cout << "direction count " << directions.size() << std::endl;
@@ -184,8 +185,7 @@ namespace casalib
             }
         }
 
-        CalibrationResult(direction, cal);
-        //output_calibrations.push(CalibrationResult(direction, cal));
+        output_calibrations.push(CalibrationResult(direction, cal));
         std::cout << "PhaseRotate Complete" << std::endl;
     }
 
