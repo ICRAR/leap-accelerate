@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -61,7 +62,7 @@ namespace icrar
             };
         };
 
-        Integration(int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
+        Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
 
         bool operator==(const Integration& rhs) const;
     };
@@ -88,24 +89,20 @@ namespace icrar
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<casacore::Array<double>> m_data;
+        std::vector<casacore::Matrix<double>> m_data;
 
     public:
         CalibrationResult(
             const casacore::MVDirection& direction,
-            const std::vector<casacore::Array<double>>& data)
+            const std::vector<casacore::Matrix<double>>& data)
             : m_direction(direction)
-            //, m_data(data)
+            , m_data(data)
         {
-            for(int i = 0; i < data.size(); ++i)
-            {
-                //m_data.push_back(data[i]);
-                m_data.push_back(casacore::Matrix<double>());
-            }
-
-            std::cout << "data: " << m_data.size() << std::endl;
         }
 
-        const std::vector<casacore::Array<double>>& GetData() const { return m_data; }
+        const casacore::MVDirection GetDirection() const { return m_direction; }
+        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+
+        //bool operator==(const CalibrationResult& rhs) const;
     };
 }

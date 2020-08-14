@@ -21,10 +21,11 @@
  */
 
 #include "Integration.h"
+#include <icrar/leap-accelerate/ms/utils.h>
 
 namespace icrar
 {
-    Integration::Integration(int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+    Integration::Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)
@@ -40,7 +41,12 @@ namespace icrar
             }
         }
 
+        auto msc = std::make_unique<casacore::MSColumns>(ms);
+        auto msmc = std::make_unique<casacore::MSMainColumns>(ms);
+
+
         uvw = std::vector<casacore::MVuvw>();
+
         uvw.resize(uvws);
     }
 

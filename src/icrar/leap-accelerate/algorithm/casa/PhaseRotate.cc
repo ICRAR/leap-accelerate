@@ -65,14 +65,15 @@ namespace icrar
 namespace casalib
 {
     // leap_remote_calibration
-    std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>> Calibrate(
+    CalibrateResult Calibrate(
+        const casacore::MeasurementSet& ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,
         int solutionInterval)
     {
-        auto output_integrations = std::vector<std::queue<IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
+        auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
+        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
         
         if(overrideStations.is_initialized())
         {
@@ -83,11 +84,11 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.push(Integration(i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines())); //TODO read uvw
+            queue.push(Integration(ms, i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines())); //TODO read uvw
 
             input_queues.push_back(queue);
-            output_integrations.push_back(std::queue<IntegrationResult>());
-            output_calibrations.push_back(std::queue<CalibrationResult>());
+            output_integrations->push_back(std::queue<IntegrationResult>());
+            output_calibrations->push_back(std::queue<CalibrationResult>());
         }
 
         std::cout << "direction count " << directions.size() << std::endl;
@@ -95,10 +96,10 @@ namespace casalib
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
-        return std::make_pair(output_integrations, output_calibrations);
+        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
     //leap_calibrate_from_queue
@@ -109,7 +110,7 @@ namespace casalib
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
-        auto cal = std::vector<casacore::Array<double>>();
+        auto cal = std::vector<casacore::Matrix<double>>();
 
         while(true)
         {
@@ -166,7 +167,6 @@ namespace casalib
             }
         }
 
-        std::cout << "cal.size(): " << cal.size() << std::endl;
         output_calibrations.push(CalibrationResult(direction, cal));
     }
 
@@ -198,12 +198,15 @@ namespace casalib
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.channel_wavelength.size() == metadata.channels);
 
+        std::cout << "uvw is " << uvw[0] << std::endl;
+
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
             const double pi = boost::math::constants::pi<double>();
             double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+
             shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
             shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
 

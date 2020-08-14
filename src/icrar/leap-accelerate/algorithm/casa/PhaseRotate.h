@@ -50,11 +50,14 @@ namespace casalib
 {
     struct MetaData;
 
+    using CalibrateResult = std::pair<std::unique_ptr<std::vector<std::queue<IntegrationResult>>>, std::unique_ptr<std::vector<std::queue<CalibrationResult>>>>;
+
     /**
      * @brief 
      * 
      */
-    std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>> Calibrate(
+    CalibrateResult Calibrate(
+        const casacore::MeasurementSet& ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,

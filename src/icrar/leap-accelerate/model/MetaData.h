@@ -65,7 +65,7 @@ namespace casalib
 
         boost::optional<casacore::Matrix<double>> dd;
 
-        boost::optional<casacore::Matrix<std::complex<double>>> avg_data; 
+        boost::optional<casacore::Matrix<std::complex<double>>> avg_data;
 
         union
         {
