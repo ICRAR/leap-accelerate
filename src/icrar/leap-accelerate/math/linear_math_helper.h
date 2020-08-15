@@ -34,8 +34,14 @@
 
 namespace icrar
 {
+    // template<typename T>
+    // Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const Eigen::Tensor<T, 2> value)
+    // {
+
+    // }
+
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertMatrix(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
         auto m = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
@@ -54,7 +60,7 @@ namespace icrar
     }
 
     template<typename T, int R, int C>
-    Eigen::Matrix<T, R, C> ConvertMatrix(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, R, C> ToMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
         if(shape[0] != R || shape[1] != C)
@@ -90,7 +96,7 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, 3, 3> ConvertMatrix3x3(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, 3, 3> ToMatrix3x3(const casacore::Matrix<T>& value)
     {
         if(value.shape()[0] != 3 && value.shape()[1] != 3)
         {
@@ -113,7 +119,7 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T>& value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T>& value)
     {
         auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         for(int i = 0; i < value.size(); ++i)

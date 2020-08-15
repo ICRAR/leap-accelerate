@@ -120,7 +120,7 @@ public:
         }
         
         //Convert to eigen matrix and back
-        Eigen::Matrix<double, 5, 5> em = icrar::ConvertMatrix<double, 5, 5>(m);
+        Eigen::Matrix<double, 5, 5> em = icrar::ToMatrix<double, 5, 5>(m);
         casacore::Matrix<double> cm = icrar::ConvertMatrix<double, 5, 5>(em);
         
 

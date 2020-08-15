@@ -84,7 +84,13 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.push(Integration(ms, i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines())); //TODO read uvw
+            queue.push(Integration(
+                ms,
+                i,
+                metadata.channels,
+                metadata.GetBaselines(),
+                metadata.num_pols,
+                metadata.GetBaselines())); //TODO read uvw
 
             input_queues.push_back(queue);
             output_integrations->push_back(std::queue<IntegrationResult>());
@@ -139,9 +145,9 @@ namespace casalib
 
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
-                auto indexes = ConvertVector(metadata.I1);
+                auto indexes = ToVector(metadata.I1);
 
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ConvertMatrix(avg_data)(indexes, 0))); // 1st pol only
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
                 assert(cal1.shape()[1] == 1);
 
@@ -150,8 +156,8 @@ namespace casalib
 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    Eigen::VectorXi e_i = ConvertVector(metadata.I);
-                    Eigen::MatrixXd e_avg_data_slice = ConvertMatrix(avg_data)(e_i, Eigen::all);
+                    Eigen::VectorXi e_i = ToVector(metadata.I);
+                    Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                     casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;

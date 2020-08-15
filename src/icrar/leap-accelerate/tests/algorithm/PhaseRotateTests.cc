@@ -445,7 +445,7 @@ namespace icrar
             auto& calibrations = *pcalibrations;
 
             auto expected = GetExpectedCalibration();
-            
+
             ASSERT_EQ(9, calibrations.size());
             for(int i = 0; i < 9; i++)
             {
@@ -454,7 +454,7 @@ namespace icrar
                 ASSERT_EQ(1, calibration.GetData().size());
 
                 //ASSERT_EQ(calibration)
-                ASSERT_MEQ(ToVector(expected[0].second), ConvertMatrix(calibration.GetData()[0]), THRESHOLD);
+                ASSERT_MEQ(ToVector(expected[0].second), ToMatrix(calibration.GetData()[0]), THRESHOLD);
             }
         }
 
@@ -1027,23 +1027,23 @@ namespace icrar
                 casacore::Array<std::int32_t> casaI1;
                 std::tie(casaA1, casaI1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, map);
 
-                A = ConvertMatrix(casaA);
-                I = ConvertVector(casaI);
-                A1 = ConvertMatrix(casaA1);
-                I1 = ConvertVector(casaI1);
+                A = ToMatrix(casaA);
+                I = ToVector(casaI);
+                A1 = ToMatrix(casaA1);
+                I1 = ToVector(casaI1);
             }
             if(impl == Impl::eigen)
             {
-                auto ea1 = ConvertVector(a1);
-                auto ea2 = ConvertVector(a2);
+                auto ea1 = ToVector(a1);
+                auto ea2 = ToVector(a2);
                 std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, -1, map);
                 std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
 
             }
             if(impl == Impl::cuda)
             {
-                auto ea1 = ConvertVector(a1);
-                auto ea2 = ConvertVector(a2);
+                auto ea1 = ToVector(a1);
+                auto ea2 = ToVector(a2);
                 std::tie(A, I) = icrar::cuda::PhaseMatrixFunction(ea1, ea2, -1, map);
                 std::tie(A1, I1) = icrar::cuda::PhaseMatrixFunction(ea1, ea2, 0, map);
             }
