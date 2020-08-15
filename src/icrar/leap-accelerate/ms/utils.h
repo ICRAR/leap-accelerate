@@ -22,12 +22,33 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+
 #include <casacore/ms/MeasurementSets.h>
+#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <casacore/ms/MeasurementSets/MSColumns.h>
+
+#include <casacore/measures/Measures/MDirection.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays.h>
+
+#include <iterator>
+#include <string>
+#include <exception>
+#include <memory>
+#include <vector>
 
 namespace icrar
 {
+    /**
+     * @brief Converts an input stream into a leap dataset.
+     * 
+     * @param input 
+     * @return std::unique_ptr<casacore::MeasurementSet> 
+     */
+    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+
     //See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
     template<typename T>
     void ms_read_coords(
@@ -38,7 +59,8 @@ namespace icrar
         T* vv,
         T* ww)
     {
-        auto msmc = casacore::MSMainColumns(ms);
+        auto rms = casacore::MeasurementSet(ms);
+        auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
         unsigned int total_rows = ms.nrow();
         if(start_row >= total_rows)
@@ -53,7 +75,7 @@ namespace icrar
 
         // Read the coordinate data and copy it into the supplied arrays.
         casacore::Slice slice(start_row, num_baselines, 1);
-        casacore::Array<double> column_range = msmc.uvw().getColumnRange(slice);
+        casacore::Array<double> column_range = msmc->uvw().getColumnRange(slice);
         casacore::Matrix<double> matrix;
         matrix.reference(column_range);
         for (unsigned int i = 0; i < num_baselines; ++i)
@@ -64,8 +86,10 @@ namespace icrar
         }
     }
 
+    //See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
     template<typename T>
-    void ms_read_vis(const casacore::MeasurementSet& ms,
+    void ms_read_vis(
+        casacore::MeasurementSet& ms,
         unsigned int start_row,
         unsigned int start_channel,
         unsigned int num_channels,

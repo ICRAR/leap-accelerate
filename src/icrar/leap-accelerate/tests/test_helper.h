@@ -40,19 +40,21 @@ void assert_meq3d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual
 void assert_meqcd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //vector equal int
-void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string file, int line);
+void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //vector equal double
-void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string file, int line);
+void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
-void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string file, int line);
+void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+
+void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
 
 #define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQ(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQ3D(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQCD(expected, actual, tolerance) assert_meqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_VEQI(expected, actual, tolerance) assert_veqi(expected, actual, tolerance, __FILE__, __LINE__)
-#define ASSERT_VEQD(expected, actual, tolerance) assert_veqd(expected, actual, tolerance, __FILE__, __LINE__)
+#define ASSERT_VEQI(expected, actual, tolerance) assert_veqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_VEQD(expected, actual, tolerance) assert_veqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_MDEQ(expected, actual, tolerance) assert_metadataeq(expected, actual, __FILE__, __LINE__)
+#define ASSERT_MDEQ(expected, actual, tolerance) assert_metadataeq(expected, actual, #expected, #actual, __FILE__, __LINE__)

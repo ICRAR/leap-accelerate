@@ -20,6 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
+#include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -50,13 +51,6 @@ using namespace std::literals::complex_literals;
 
 namespace icrar
 {
-    enum class Impl
-    {
-        casa,
-        eigen,
-        cuda
-    };
-
     class PhaseRotateTests : public ::testing::Test
     {
         casacore::MeasurementSet ms;
@@ -401,7 +395,7 @@ namespace icrar
             return output;
         }
 
-        void PhaseRotateTest(Impl impl)
+        void PhaseRotateTest(ComputeImplementation impl)
         {
             const double THRESHOLD = 0.01;
             
@@ -422,16 +416,16 @@ namespace icrar
 
             std::unique_ptr<std::vector<std::queue<IntegrationResult>>> pintegrations;
             std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
-            if(impl == Impl::casa)
+            if(impl == ComputeImplementation::casa)
             {
                 std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(ms, metadata, directions, 126, 3600);
             }
-            else if(impl == Impl::eigen)
+            else if(impl == ComputeImplementation::eigen)
             {
                 // auto metadatahost = icrar::cuda::MetaData(metadata);
                 // icrar::cpu::Calibrate(metadatahost, direction, input, output_integrations, output_calibrations);
             }
-            else if(impl == Impl::cuda)
+            else if(impl == ComputeImplementation::cuda)
             {
                 // auto metadatahost = icrar::cuda::MetaData(metadata);
                 // auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
@@ -458,7 +452,7 @@ namespace icrar
             }
         }
 
-        void RotateVisibilitiesTest(Impl impl)
+        void RotateVisibilitiesTest(ComputeImplementation impl)
         {
             const double THRESHOLD = 0.01;
 
@@ -468,18 +462,18 @@ namespace icrar
             auto integration = Integration(ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
-            if(impl == Impl::casa)
+            if(impl == ComputeImplementation::casa)
             {
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
                 metadataOptionalOutput = icrar::cuda::MetaData(metadata);
             }
-            if(impl == Impl::eigen)
+            if(impl == ComputeImplementation::eigen)
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
                 metadataOptionalOutput = metadatahost;
             }
-            if(impl == Impl::cuda)
+            if(impl == ComputeImplementation::cuda)
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
@@ -524,26 +518,26 @@ namespace icrar
             //ASSERT_EQ(expectedIntegration, integration);
         }
 
-        void PhaseMatrixFunction0Test(Impl impl)
+        void PhaseMatrixFunction0Test(ComputeImplementation impl)
         {
             int refAnt = 0;
             bool map = true;
 
             try
             {
-                if(impl == Impl::casa)
+                if(impl == ComputeImplementation::casa)
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
                     icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
-                if(impl == Impl::eigen)
+                if(impl == ComputeImplementation::eigen)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
                     icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
                 }
-                if(impl == Impl::cuda)
+                if(impl == ComputeImplementation::cuda)
                 {
                     const Eigen::VectorXi a1;
                     const Eigen::VectorXi a2;
@@ -983,7 +977,7 @@ namespace icrar
             return expected;
         }
 
-        void PhaseMatrixFunctionDataTest(Impl impl)
+        void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
         {
             //int nantennas = 10;
             //int nstations = 1;
@@ -1017,7 +1011,7 @@ namespace icrar
             Eigen::VectorXi I;
             Eigen::MatrixXd A1;
             Eigen::VectorXi I1;
-            if(impl == Impl::casa)
+            if(impl == ComputeImplementation::casa)
             {
                 casacore::Matrix<double> casaA;
                 casacore::Array<std::int32_t> casaI;
@@ -1032,7 +1026,7 @@ namespace icrar
                 A1 = ToMatrix(casaA1);
                 I1 = ToVector(casaI1);
             }
-            if(impl == Impl::eigen)
+            if(impl == ComputeImplementation::eigen)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
@@ -1040,7 +1034,7 @@ namespace icrar
                 std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
 
             }
-            if(impl == Impl::cuda)
+            if(impl == ComputeImplementation::cuda)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
@@ -1066,19 +1060,19 @@ namespace icrar
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(Impl::casa); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(Impl::eigen); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(Impl::cuda); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(ComputeImplementation::cuda); }
 
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(Impl::casa); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(Impl::casa); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(Impl::cuda); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

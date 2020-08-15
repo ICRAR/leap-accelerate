@@ -27,7 +27,6 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
-#include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 

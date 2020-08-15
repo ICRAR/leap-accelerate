@@ -49,8 +49,16 @@ public:
     }
 
     template<unsigned int n>
-    void test_array_add(bool useGpu)
+    void test_array_add(bool useCuda)
     {
+        if(useCuda)
+        {
+            // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
+            int deviceCount = 0;
+            checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+            ASSERT_EQ(1, deviceCount);
+        }
+
         std::array<int, n> a;
         std::array<int, n> b;
         std::array<int, n> c;
@@ -58,7 +66,7 @@ public:
         a.fill(6);
         b.fill(10);
 
-        if(useGpu)
+        if(useCuda)
         {
             icrar::cuda::add(n, a.data(), b.data(), c.data());
         }
@@ -72,13 +80,13 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_vector_add(const int n, bool useGpu)
+    void test_vector_add(const int n, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
         std::vector<int> c = std::vector<int>(n, 2);
 
-        if(useGpu)
+        if(useCuda)
         {
             icrar::cuda::add(a, b, c);
         }
@@ -91,13 +99,13 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_device_vector_add(const int n, bool useGpu)
+    void test_device_vector_add(const int n, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
         std::vector<int> c = std::vector<int>(n, 2);
 
-        if(useGpu)
+        if(useCuda)
         {
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
@@ -114,13 +122,13 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_device_vector_fibonacci(const int n, const int k, bool useGpu)
+    void test_device_vector_fibonacci(const int n, const int k, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 1);
         std::vector<int> b = std::vector<int>(n, 1);
         std::vector<int> out = std::vector<int>(n, 0);
 
-        if(useGpu)
+        if(useCuda)
         {
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);

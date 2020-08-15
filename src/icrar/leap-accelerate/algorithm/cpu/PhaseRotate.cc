@@ -23,7 +23,6 @@
 
 #include "PhaseRotate.h"
 
-#include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/Integration.h>

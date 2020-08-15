@@ -24,7 +24,6 @@
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
-#include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>

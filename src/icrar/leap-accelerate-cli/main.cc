@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/utils.h>
+#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 

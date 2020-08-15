@@ -20,26 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <icrar/leap-accelerate/model/MetaData.h>
-
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
-#include <casacore/measures/Measures/MDirection.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-
-#include <istream>
-#include <iostream>
-#include <iterator>
-#include <string>
-#include <exception>
-#include <memory>
-#include <vector>
-
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
-
-    //std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+    enum class ComputeImplementation
+    {
+        casa, // Compute implementation using casa math libraries
+        eigen, // Compute implementation using eigen
+        cuda // Compute implementation use nvidia cuda
+    };
 }
