@@ -85,7 +85,7 @@ public:
 
         unsigned int num_channels = 100;
         unsigned int num_baselines = 196;
-        unsigned int num_pols = 3;
+        unsigned int num_pols = 4;
 
         auto visibilities = Eigen::Tensor<float, 3>(num_channels, num_baselines, num_pols);
 
