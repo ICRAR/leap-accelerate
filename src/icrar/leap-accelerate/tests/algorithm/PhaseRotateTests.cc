@@ -423,7 +423,7 @@ namespace icrar
             else if(impl == ComputeImplementation::eigen)
             {
                 // auto metadatahost = icrar::cuda::MetaData(metadata);
-                // icrar::cpu::Calibrate(metadatahost, direction, input, output_integrations, output_calibrations);
+                // std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
