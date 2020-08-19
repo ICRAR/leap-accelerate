@@ -49,6 +49,8 @@ namespace icrar
      */
     std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
 
+    unsigned int ms_num_stations(casacore::MeasurementSet* ms);
+
     //See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
     template<typename T>
     void ms_read_coords(
@@ -131,14 +133,11 @@ namespace icrar
 
         // Read the data.
         casacore::ArrayColumn<std::complex<T>> ac(ms, column);
-        std::cout << row_range << std::endl;
-        std::cout << array_section << std::endl;
         casacore::Array<std::complex<T>> column_range = ac.getColumnRange(row_range, array_section);
-
 
         // Copy the visibility data into the supplied array,
         // swapping baseline and channel dimensions.
-        const T* in = (const T*) column_range.data();
+        const T* in = (const T*)column_range.data();
         for (unsigned int c = 0; c < num_channels; ++c)
         {
             for (unsigned int b = 0; b < num_baselines; ++b)

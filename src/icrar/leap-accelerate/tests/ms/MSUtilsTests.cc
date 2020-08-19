@@ -83,11 +83,19 @@ public:
         unsigned int start_row = 0;
         unsigned int start_channel = 0;
 
-        unsigned int num_channels = 100;
+        unsigned int num_channels = 8;
         unsigned int num_baselines = 196;
         unsigned int num_pols = 4;
 
-        auto visibilities = Eigen::Tensor<float, 3>(num_channels, num_baselines, num_pols);
+        auto rms = casacore::MeasurementSet(ms);
+        auto msc = std::make_unique<casacore::MSColumns>(rms);
+
+        const size_t num_stations = (size_t) icrar::ms_num_stations(&ms);
+        num_baselines = num_stations * (num_stations - 1) / 2;
+        num_pols = msc->polarization().numCorr().get(0);
+        num_channels = msc->spectralWindow().numChan().get(0);
+
+        auto visibilities = Eigen::Tensor<std::complex<float>, 3>(num_channels, num_baselines, num_pols);
 
         icrar::ms_read_vis(ms,
             start_row,
@@ -96,7 +104,7 @@ public:
             num_baselines,
             num_pols,
             "DATA",
-            visibilities.data());
+            (float*)visibilities.data());
     }
 private:
     std::vector<double> GetExpectedUU()

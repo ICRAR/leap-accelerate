@@ -42,4 +42,9 @@ namespace icrar
 
         return std::make_unique<MeasurementSet>(results);
     }
+
+    unsigned int ms_num_stations(casacore::MeasurementSet* ms)
+    {
+        return ms->antenna().nrow();
+    }
 }

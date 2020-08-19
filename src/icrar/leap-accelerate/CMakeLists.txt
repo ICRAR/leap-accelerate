@@ -20,8 +20,11 @@ set(private_headers
     math/math.h
 )
 set(sources
+    exception/exception.cc
 
     ms/utils.cc
+    ms/MeasurementSet.cc
+
     model/MetaData.cc
 
     math/Integration.cc
