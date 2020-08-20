@@ -89,7 +89,7 @@ namespace casalib
                 metadata.channels,
                 metadata.GetBaselines(),
                 metadata.num_pols,
-                metadata.GetBaselines())); //TODO read uvw
+                metadata.GetBaselines()));
 
             input_queues.push_back(queue);
             output_integrations->push_back(std::queue<IntegrationResult>());

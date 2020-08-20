@@ -32,6 +32,13 @@ namespace icrar
         m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
     }
 
+    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms)
+    {
+        m_measurementSet = std::make_unique<casacore::MeasurementSet>(ms);
+        m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
+        m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
+    }
+
     unsigned int MeasurementSet::GetNumStations() const
     {
         return m_measurementSet->antenna().nrow();

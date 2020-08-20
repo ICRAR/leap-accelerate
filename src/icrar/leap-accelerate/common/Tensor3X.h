@@ -34,13 +34,13 @@ namespace icrar
     template<typename T>
     bool isApprox(const Tensor3X<T>& lhs, const Tensor3X<T>& rhs, double tolerance)
     {
-        for(int col = 0; col < rhs.dimension(0); ++col)
+        for(int x = 0; x < rhs.dimension(0); ++x)
         {
-            for(int row = 0; row < rhs.dimension(1); ++row)
+            for(int y = 0; y < rhs.dimension(1); ++y)
             {
-                for(int depth = 0; depth < rhs.dimension(2); ++depth)
+                for(int z = 0; z < rhs.dimension(2); ++z)
                 {
-                    if(abs(lhs(row, col, depth) - rhs(row, col, depth)) > tolerance)
+                    if(abs(lhs(x, y, z) - rhs(x, y, z)) > tolerance)
                     {
                         return false;
                     }

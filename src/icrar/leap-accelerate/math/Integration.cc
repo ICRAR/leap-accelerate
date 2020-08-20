@@ -22,7 +22,8 @@
 
 #include "Integration.h"
 #include <icrar/leap-accelerate/ms/utils.h>
-
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 namespace icrar
 {
     Integration::Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
@@ -32,44 +33,20 @@ namespace icrar
     , channels(channels)
     , baselines(baselines)
     {
-        data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(channels, baselines);
-        for(int row = 0; row < data.rows(); ++row)
-        {
-            for(int col = 0; col < data.cols(); ++col)
-            {
-                data(row, col) = Eigen::VectorXcd::Zero(polarizations);
-            }
-        }
+        auto cms = icrar::MeasurementSet(ms);
 
-        auto msc = std::make_unique<casacore::MSColumns>(ms);
-        auto msmc = std::make_unique<casacore::MSMainColumns>(ms);
-
+        //data = cms.GetVis();
+        //uvw = cms.GetCoords(index); TODO convert
 
         uvw = std::vector<casacore::MVuvw>();
-
         uvw.resize(uvws);
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        // There should be a nicer way of doing this, using Eigen::Tensor is one of them
-        bool dataEqual = true;
-        for(int row = 0; row < data.rows(); ++row)
-        {
-            for(int col = 0; col < data.cols(); ++col)
-            {
-                for(int depth = 0; depth < data(row,col).cols(); ++depth)
-                {
-                    if(data(row, col)(depth) != rhs.data(row, col)(depth))
-                    {
-                        dataEqual = false;
-                        break;
-                    }
-                }
-            }
-        }
-        return dataEqual
-        && uvw == rhs.uvw
+        return
+        //icrar::isApprox(data, rhs.data, 0.001) &&
+        uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }
 }

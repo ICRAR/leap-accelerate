@@ -55,6 +55,7 @@ namespace icrar
     public:
 
         MeasurementSet(std::string filepath);
+        MeasurementSet(const casacore::MeasurementSet& ms);
 
         unsigned int GetNumStations() const;
 
