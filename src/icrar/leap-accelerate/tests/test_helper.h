@@ -50,9 +50,40 @@ void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual,
 
 void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
+template<typename T>
+void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    ASSERT_EQ(expected.dimensions(), actual.dimensions());
+    ASSERT_EQ(expected.dimension(0), actual.dimension(0));
+    ASSERT_EQ(expected.dimension(1), actual.dimension(1));
+    ASSERT_EQ(expected.dimension(2), actual.dimension(2));
+    if(!icrar::isApprox(actual, expected, tolerance))
+    {
+        std::cerr << ln << " != " << rn << "\n";
+        std::cerr << file << ":" << line << " Tensor elements differ at:\n";
+        
+        for(int x = 0; x < actual.dimension(0); ++x)
+        {
+            for(int y = 0; y < actual.dimension(1); ++y)
+            {
+                for(int z = 0; z < actual.dimension(2); ++z)
+                {
+                    if(abs(expected(x, y, z) - actual(x, y, z)) > tolerance)
+                    {
+                        std::cerr << "expected(" << x << ", " << y << ", " << z << ") == " << expected(x, y, z) << "\n";
+                        std::cerr << "actual(" << x << ", " << y << ", " << z << ") == " << actual(x, y, z) << "\n";
+                    }
+                }
+            }
+        }
+        std::cerr << std::endl;
+    }
+    ASSERT_TRUE(icrar::isApprox(actual, expected, tolerance));
+}
+
 //tensor equal double
-void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+//void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+//void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
 
@@ -64,7 +95,6 @@ void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda:
 #define ASSERT_VEQI(expected, actual, tolerance) assert_veqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_VEQD(expected, actual, tolerance) assert_veqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_TEQD(expected, actual, tolerance) assert_teqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_TEQCD(expected, actual, tolerance) assert_teqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_TEQ(expected, actual, tolerance) assert_teq(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
 #define ASSERT_MDEQ(expected, actual, tolerance) assert_metadataeq(expected, actual, #expected, #actual, __FILE__, __LINE__)

@@ -84,17 +84,17 @@ public:
         unsigned int start_row = 0;
         unsigned int start_channel = 0;
 
-        unsigned int num_channels = 8;
-        unsigned int num_baselines = 196;
+        unsigned int num_channels = 2;
+        unsigned int num_baselines = 3;
         unsigned int num_pols = 4;
 
         auto rms = casacore::MeasurementSet(ms);
         auto msc = std::make_unique<casacore::MSColumns>(rms);
 
-        const size_t num_stations = (size_t) icrar::ms_num_stations(&ms);
-        num_baselines = num_stations * (num_stations - 1) / 2;
-        num_pols = msc->polarization().numCorr().get(0);
-        num_channels = msc->spectralWindow().numChan().get(0);
+        //const size_t num_stations = (size_t) icrar::ms_num_stations(&ms);
+        //num_baselines = num_stations * (num_stations - 1) / 2;
+        //num_pols = msc->polarization().numCorr().get(0);
+        //num_channels = msc->spectralWindow().numChan().get(0);
 
         auto visibilities = Eigen::Tensor<std::complex<T>, 3>(num_channels, num_baselines, num_pols);
 
@@ -107,7 +107,7 @@ public:
             "DATA",
             (T*)visibilities.data());
 
-        ASSERT_TEQCD(GetExpectedVis(), visibilities, TOLERANCE);
+        ASSERT_TEQ(GetExpectedVis(), visibilities, TOLERANCE);
     }
 
 private:
@@ -214,11 +214,25 @@ private:
         };
     }
 
-    Eigen::Tensor<std::complex<double>, 3> GetExpectedVis()
+    Eigen::Tensor<std::complex<float>, 3> GetExpectedVis()
     {
-        return Eigen::Tensor<std::complex<double>, 3>();
+        using namespace std::complex_literals;
+        auto v = Eigen::Tensor<std::complex<float>, 3>(2, 3, 4);
+        v.setValues({
+            {
+                {{0,0}, {-10.9083,11.3553}, {0,0}, {-21.3128,-9.91422}},
+                {{0,0}, {7.89942,33.7481}, {0,0}, {1.80109,4.9}},
+                {{-0.703454,-24.7045}, {-25.9081,8.35707}, {24.1003,17.5731}, {33.0251,34.0921}},
+            },
+            {
+                {{0,0}, {-28.7868,20.7211}, {0,0}, {-9.91203,-28.6091}},
+                {{0,0}, {36.844,9.9157}, {0,0}, {8.72433,-6.79423}},
+                {{5.16687,-1.57053}, {-28.6226,17.7872}, {-13.3485,23.2287}, {-22.3512,23.9786}},
+            }
+        });
+        return v;
     }
 };
 
 TEST_F(MSUtilsTests, test_read_coords) { test_read_coords(); }
-TEST_F(MSUtilsTests, test_read_vis) { test_read_vis<double>(); }
+TEST_F(MSUtilsTests, test_read_vis) { test_read_vis<float>(); }
