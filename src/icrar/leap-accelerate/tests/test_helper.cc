@@ -149,6 +149,47 @@ void assert_veqd(const std::vector<double>& expected, const std::vector<double>&
     assert_veq<double>(expected, actual, tolerance, ln, rn, file, line);
 }
 
+template<typename T>
+void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    ASSERT_EQ(expected.dimensions(), actual.dimensions());
+    ASSERT_EQ(expected.dimension(0), actual.dimension(0));
+    ASSERT_EQ(expected.dimension(1), actual.dimension(1));
+    ASSERT_EQ(expected.dimension(2), actual.dimension(2));
+    if(icrar::isApprox(actual, expected, tolerance))
+    {
+        std::cerr << ln << " != " << rn << "\n";
+        std::cerr << file << ":" << line << " Tensor elements differ at:\n";
+        
+        for(int col = 0; col < actual.dimension(0); ++col)
+        {
+            for(int row = 0; row < actual.dimension(1); ++row)
+            {
+                for(int depth = 0; depth < actual.dimension(2); ++depth)
+                {
+                    if(abs(expected(row, col, depth) - actual(row, col, depth)) > tolerance)
+                    {
+                        std::cerr << "expected(" << row << ", " << col << ", " << depth << ") == " << expected(row, col, depth) << "\n";
+                        std::cerr << "actual(" << row << ", " << col << ", " << depth << ") == " << actual(row, col, depth) << "\n";
+                    }
+                }
+            }
+        }
+        std::cerr << std::endl;
+    }
+    ASSERT_TRUE(icrar::isApprox(actual, expected, tolerance));
+}
+
+void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    assert_teq<double>(expected, actual, tolerance, ln, rn, file, line);
+}
+
+void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    assert_teq<std::complex<double>>(expected, actual, tolerance, ln, rn, file, line);
+}
+
 void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line)
 {
     if(!(expected == actual))

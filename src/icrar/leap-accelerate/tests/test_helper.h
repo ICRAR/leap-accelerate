@@ -24,8 +24,11 @@
 
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 
 #include <gtest/gtest.h>
 
@@ -47,6 +50,10 @@ void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual,
 
 void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
+//tensor equal double
+void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+
 void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
 
 #define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
@@ -56,5 +63,8 @@ void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda:
 
 #define ASSERT_VEQI(expected, actual, tolerance) assert_veqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_VEQD(expected, actual, tolerance) assert_veqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+
+#define ASSERT_TEQD(expected, actual, tolerance) assert_teqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_TEQCD(expected, actual, tolerance) assert_teqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
 #define ASSERT_MDEQ(expected, actual, tolerance) assert_metadataeq(expected, actual, #expected, #actual, __FILE__, __LINE__)
