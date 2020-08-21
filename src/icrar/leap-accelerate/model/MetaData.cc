@@ -147,7 +147,7 @@ namespace casalib
         uvws.clear();
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], dd.value());
+            auto uvw = icrar::Dot(oldUVW[n], dd.value());
             uvws.push_back(uvw);
         }
 
