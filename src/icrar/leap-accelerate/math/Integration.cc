@@ -33,8 +33,8 @@ namespace icrar
     , baselines(baselines)
     {
         auto vms = std::make_unique<casacore::MeasurementSet>(ms);
-        auto msc = std::make_unique<casacore::MSColumns>(vms);
-        auto msmc = std::make_unique<casacore::MSMainColumns>(vms);
+        auto msc = std::make_unique<casacore::MSColumns>(*vms);
+        auto msmc = std::make_unique<casacore::MSMainColumns>(*vms);
 
         data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(channels, baselines);
         for(int row = 0; row < data.rows(); ++row)
