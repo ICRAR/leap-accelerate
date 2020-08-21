@@ -22,14 +22,15 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
-//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -43,9 +44,10 @@ namespace icrar
     class Integration
     {
     public:
+        //Integration();
+        Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
 
-        Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic> data; //data is an array data[nch][nbl][npol]
-        //Eigen::Tensor<std::complex<double>, 3> data;
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
@@ -55,14 +57,12 @@ namespace icrar
             std::array<int, 4> parameters; // index, 0, channels, baselines
             struct
             {
-                int index;
-                int x;
-                int channels;
-                int baselines;
+                size_t index;
+                size_t x;
+                size_t channels;
+                size_t baselines;
             };
         };
-
-        Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
 
         bool operator==(const Integration& rhs) const;
     };

@@ -132,12 +132,12 @@ namespace icrar
         casacore::Slicer array_section(start2, length2);
 
         // Read the data.
-        casacore::ArrayColumn<std::complex<T>> ac(ms, column);
-        casacore::Array<std::complex<T>> column_range = ac.getColumnRange(row_range, array_section);
+        casacore::ArrayColumn<std::complex<float>> ac(ms, column);
+        casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
 
         // Copy the visibility data into the supplied array,
         // swapping baseline and channel dimensions.
-        const T* in = (const T*)column_range.data();
+        const float* in = (const float*)column_range.data();
         for (unsigned int c = 0; c < num_channels; ++c)
         {
             for (unsigned int b = 0; b < num_baselines; ++b)
@@ -146,8 +146,8 @@ namespace icrar
                 {
                     unsigned int i = (num_pols * (b * num_channels + c) + p) << 1;
                     unsigned int j = (num_pols * (c * num_baselines + b) + p) << 1;
-                    vis[j]     = in[i];
-                    vis[j + 1] = in[i + 1];
+                    vis[j]     = static_cast<T>(in[i]);
+                    vis[j + 1] = static_cast<T>(in[i + 1]);
                 }
             }
         }

@@ -68,6 +68,6 @@ namespace icrar
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords(unsigned int start_row) const;
 
-        Eigen::Tensor<std::complex<float>, 3> GetVis() const;
+        Eigen::Tensor<std::complex<double>, 3> GetVis() const;
     };
 }

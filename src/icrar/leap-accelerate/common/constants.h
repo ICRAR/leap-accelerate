@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 namespace icrar
 {
     constexpr double speed_of_light = 299792458.0;

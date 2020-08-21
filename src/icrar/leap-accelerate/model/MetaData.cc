@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -37,6 +39,12 @@ namespace icrar
 namespace casalib
 {
     MetaData::MetaData()
+    : A()
+    , Ad()
+    , I()
+    , A1()
+    , Ad1()
+    , I1()
     {
         
     }

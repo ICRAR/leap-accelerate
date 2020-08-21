@@ -32,6 +32,9 @@
 
 #include <gtest/gtest.h>
 
+//complex double
+void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+
 //matrix equal int
 void assert_meqi(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
@@ -86,6 +89,8 @@ void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& 
 //void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
+
+#define ASSERT_EQCD(expected, actual, tolerance) assert_eqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
 #define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQ(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)

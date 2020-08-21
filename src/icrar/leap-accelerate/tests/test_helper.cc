@@ -24,6 +24,16 @@
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
 
+void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    if(std::abs(expected.real() - actual.real()) > tolerance || std::abs(expected.imag() - actual.imag()) > tolerance)
+    {
+        std::cerr << file << ":" << line << " " << ln << "!=" << rn << "\n";
+    }
+    EXPECT_NEAR(expected.real(), actual.real(), tolerance);
+    EXPECT_NEAR(expected.imag(), actual.imag(), tolerance);
+}
+
 template<typename T>
 void assert_meq(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {

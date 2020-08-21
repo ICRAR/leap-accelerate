@@ -20,33 +20,23 @@
  * MA 02111 - 1307  USA
  */
 
-#include "Integration.h"
-#include <icrar/leap-accelerate/ms/utils.h>
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include "DeviceIntegration.h"
+#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
+
+#include <icrar/leap-accelerate/model/Integration.h>
+
 namespace icrar
 {
-    Integration::Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
-    : integration_number(integrationNumber)
-    , index(0)
-    , x(0)
-    , channels(channels)
-    , baselines(baselines)
+namespace cuda
+{
+    DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
+    : data(integration.data)
+    , index(integration.index)
+    , x(integration.x)
+    , channels(integration.channels)
+    , baselines(integration.baselines)
     {
-        auto cms = icrar::MeasurementSet(ms);
-
-        //data = cms.GetVis();
-        //uvw = cms.GetCoords(index); TODO convert
-
-        uvw = std::vector<casacore::MVuvw>();
-        uvw.resize(uvws);
     }
-
-    bool Integration::operator==(const Integration& rhs) const
-    {
-        return
-        //icrar::isApprox(data, rhs.data, 0.001) &&
-        uvw == rhs.uvw
-        && integration_number == rhs.integration_number;
-    }
+}
 }

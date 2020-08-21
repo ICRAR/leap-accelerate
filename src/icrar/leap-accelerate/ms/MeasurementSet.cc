@@ -46,13 +46,21 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumPols() const
     {
-        m_msc->polarization().numCorr().get(0);
+        if(m_measurementSet->polarization().nrow() > 0)
+        {
+            return m_msc->polarization().numCorr().get(0);
+        }
+        else
+        {
+            throw icrar::not_implemented_exception(__FILE__, __LINE__);
+        }
+        
     }
 
     unsigned int MeasurementSet::GetNumBaselines() const
     {
         const size_t num_stations = (size_t)GetNumStations();
-        return num_stations * (num_stations - 1) / 2;
+        return num_stations * (num_stations + 1) / 2; //TODO: +/- 1???
     }
 
     unsigned int MeasurementSet::GetNumChannels() const
@@ -74,12 +82,14 @@ namespace icrar
         return matrix;
     }
 
-    Eigen::Tensor<std::complex<float>, 3> MeasurementSet::GetVis() const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
     {
         auto num_channels = GetNumChannels();
         auto num_baselines = GetNumBaselines();
         auto num_pols = GetNumPols();
-        auto visibilities = Eigen::Tensor<std::complex<float>, 3>(num_channels, num_baselines, num_pols);
+        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(num_channels, num_baselines, num_pols);
+        icrar::ms_read_vis(*m_measurementSet, 0, 0, num_channels, num_baselines, num_pols, "DATA", (double*)visibilities.data());
+        //TODO: implement
         return visibilities;
     }
 }

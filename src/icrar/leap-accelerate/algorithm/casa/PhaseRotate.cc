@@ -28,7 +28,7 @@
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
 #include <icrar/leap-accelerate/model/MetaData.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 
@@ -178,7 +178,8 @@ namespace casalib
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
         using namespace std::literals::complex_literals;
-        auto& data = integration.data;
+        
+        auto& integration_data = integration.data;
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
@@ -198,8 +199,9 @@ namespace casalib
         metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
-        assert(data.rows() == metadata.channels);
-        assert(data.cols() == integration.baselines);
+        assert(integration_data.dimension(0) == metadata.channels);
+        assert(integration_data.dimension(1) == integration.baselines);
+        assert(integration_data.dimension(2) == metadata.num_pols);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.channel_wavelength.size() == metadata.channels);
 
@@ -225,14 +227,24 @@ namespace casalib
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
 
-                Eigen::VectorXcd v = data(channel, baseline);
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-
-                if(!data(channel, baseline).hasNaN())
+                for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                 {
-                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                }
+
+                bool hasNaN = false;
+
+                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
+                for(int i = 0; i < polarizations.dimension(0); ++i)
+                {
+                    hasNaN |= polarizations(i).real() == NAN || polarizations(i).imag() == NAN;
+                }
+
+                if(!hasNaN)
+                {
+                    for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
-                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
+                        metadata.avg_data.get()(casacore::IPosition(2, baseline, polarization)) += integration_data(channel, baseline, polarization);
                     }
                 }
             }

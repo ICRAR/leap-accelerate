@@ -24,7 +24,7 @@
 
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Quanta/MVDirection.h>

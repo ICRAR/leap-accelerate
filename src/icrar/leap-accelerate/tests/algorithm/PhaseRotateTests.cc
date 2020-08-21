@@ -32,11 +32,12 @@
 
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -459,6 +460,8 @@ namespace icrar
             auto metadata = casalib::MetaData(ms);
             //metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
+
+            std::cout << "Initializing integration" << std::endl;
             auto integration = Integration(ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
@@ -477,7 +480,8 @@ namespace icrar
             {
                 auto metadatahost = icrar::cuda::MetaData(metadata, direction, integration.uvw);
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                icrar::cuda::RotateVisibilities(integration, metadatadevice);
+                auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
+                icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
                 metadataOptionalOutput = metadatahost;
             }
@@ -505,16 +509,22 @@ namespace icrar
             ASSERT_EQ(8256, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
             expectedMetadata.avg_data = Eigen::MatrixXcd::Zero(expectedIntegration.baselines, metadata.num_pols);
-            // expectedMetadata.avg_data <<
-            // 0, 0, 0, 0,
-            // 0, 0, 0, 0;
+
 
             // ==========
             // ASSERT
+            auto cthreshold = std::complex<double>(0.001, 0.001);
+            ASSERT_EQ(8256, metadataOutput.avg_data.rows());
+            ASSERT_EQ(4, metadataOutput.avg_data.cols());
+            ASSERT_EQCD(std::complex<double>( 138.51683763999509,  53.836993695468195), metadataOutput.avg_data(0,0), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-166.53972390770514, -428.41528489902191), metadataOutput.avg_data(0,1), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>( 627.49838424722282,  247.35526329205342), metadataOutput.avg_data(0,2), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-156.39233528909833, -270.13422448036732), metadataOutput.avg_data(0,3), THRESHOLD);
+            
+            // =============
+            // ASSERT OBJECT
             ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
-            ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
-
-            //ASSERT_EQ(expectedMetadata, metadata);
+            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD); // TODO: too much data to hard code
             //ASSERT_EQ(expectedIntegration, integration);
         }
 
