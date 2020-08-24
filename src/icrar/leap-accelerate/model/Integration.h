@@ -41,11 +41,13 @@
 
 namespace icrar
 {
+    class MeasurementSet;
+
     class Integration
     {
     public:
         //Integration();
-        Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
+        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 

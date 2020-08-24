@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
 #include <icrar/leap-accelerate/tests/test_helper.h>
 
 #include <casacore/ms/MeasurementSets.h>
@@ -39,7 +41,7 @@ namespace icrar
     class MetaDataTests : public ::testing::Test
     {
         const double PRECISION = 0.0001;
-        std::unique_ptr<casacore::MeasurementSet> ms;
+        std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
         MetaDataTests() {
@@ -54,7 +56,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<casacore::MeasurementSet>(filename);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
         }
 
         void TearDown() override
@@ -64,7 +66,7 @@ namespace icrar
 
         void TestMeasurementSet()
         {
-            auto msmc = std::make_unique<casacore::MSMainColumns>(*ms);
+            auto msmc = ms->GetMSMainColumns();
             casacore::Vector<double> time = msmc->time().getColumn();
 
             ASSERT_EQ(5020320156, time[0]);
@@ -74,7 +76,7 @@ namespace icrar
 
         void TestReadFromFile()
         {
-            auto meta = casalib::MetaData(*ms);
+            auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
             //ASSERT_EQ(4853, meta.nantennas);
@@ -107,14 +109,14 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             auto ms = casacore::MeasurementSet(filename);
-            auto meta = casalib::MetaData(ms);
+            auto meta = icrar::casalib::MetaData(ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
         }
 
         void TestCudaBufferCopy()
         {
-            auto meta = casalib::MetaData(*ms);
+            auto meta = icrar::casalib::MetaData(*ms);
             auto direction = casacore::MVDirection(0.0, 0.0);
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDD(direction);

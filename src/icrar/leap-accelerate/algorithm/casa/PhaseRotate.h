@@ -42,6 +42,7 @@ namespace icrar
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
+    class MeasurementSet;
 }
 
 namespace icrar
@@ -57,7 +58,7 @@ namespace casalib
      * 
      */
     CalibrateResult Calibrate(
-        const casacore::MeasurementSet& ms,
+        const icrar::MeasurementSet& ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,

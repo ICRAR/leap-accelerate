@@ -140,15 +140,19 @@ namespace icrar
         return v;
     }
 
+
     template<typename T>
     casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
         return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
 
+    icrar::MVuvw ToUVW(const casacore::MVuvw& value);
     icrar::MVuvw ToUVW(const casacore::MVPosition& value);
     std::vector<icrar::MVuvw> ToUVW(const std::vector<casacore::MVuvw>& value);
 
-    casacore::MVuvw ToCasaUVW(icrar::MVuvw value);
-    std::vector<casacore::MVuvw> ToCasaUVW(const std::vector<icrar::MVuvw>& value);
+    casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
+    std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
+    std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
+
 }

@@ -21,26 +21,22 @@
  */
 
 #include "Integration.h"
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
 namespace icrar
 {
-    Integration::Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)
     , channels(channels)
     , baselines(baselines)
     {
-        auto cms = icrar::MeasurementSet(ms);
-
-        data = cms.GetVis();
-        //uvw = cms.GetCoords(index); //TODO: convert to uvw
-
-        uvw = std::vector<casacore::MVuvw>();
-        uvw.resize(uvws);
+        data = ms.GetVis(channels, baselines, polarizations);
+        uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const

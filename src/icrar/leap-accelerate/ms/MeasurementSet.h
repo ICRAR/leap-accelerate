@@ -47,15 +47,35 @@ namespace icrar
 {
     class MeasurementSet
     {
-        // always contains value after constructor
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
         std::unique_ptr<casacore::MSColumns> m_msc;
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
     public:
-
         MeasurementSet(std::string filepath);
         MeasurementSet(const casacore::MeasurementSet& ms);
+        MeasurementSet(std::istream& stream);
+
+        /**
+         * @brief Gets a non-null pointer to a casacore::MeasurementSet
+         * 
+         * @return const casacore::MeasurementSet* 
+         */
+        const casacore::MeasurementSet* GetMS() const { return m_measurementSet.get(); }
+
+        /**
+         * @brief Gets a non-null pointer to a casacore::MSMainColumns
+         * 
+         * @return const casacore::MSMainColumns* 
+         */
+        const casacore::MSMainColumns* GetMSMainColumns() const { return m_msmc.get(); }
+        
+        /**
+         * @brief Gets a non-null pointer to a casacore::MSColumns
+         * 
+         * @return const casacore::MSColumns* 
+         */
+        const casacore::MSColumns* GetMSColumns() const { return m_msc.get(); }
 
         unsigned int GetNumStations() const;
 
@@ -66,8 +86,10 @@ namespace icrar
         unsigned int GetNumChannels() const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
-        Eigen::MatrixX3d GetCoords(unsigned int start_row) const;
+        Eigen::MatrixX3d GetCoords() const;
+        Eigen::MatrixX3d GetCoords(unsigned int start_row, unsigned int nBaselines) const;
 
+        Eigen::Tensor<std::complex<double>, 3> GetVis(std::uint32_t nChannels, std::uint32_t nBaselines, std::uint32_t nPolarizations) const;
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
     };
 }

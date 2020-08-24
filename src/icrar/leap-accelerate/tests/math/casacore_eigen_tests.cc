@@ -167,9 +167,21 @@ public:
             inc += 1.0;
         }
     }
+
+    void test_uvw_to_icrar()
+    {
+        casacore::MVuvw casa = casacore::MVuvw(1,2,3);
+        icrar::MVuvw uvw = icrar::ToUVW(casa);
+
+        ASSERT_EQ(1, uvw(0));
+        ASSERT_EQ(2, uvw(1));
+        ASSERT_EQ(3, uvw(2));
+    }
 };
 
 TEST_F(casacore_eigen_tests, test_column_major) { test_column_major(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa) { test_matrix_casa(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
+
+TEST_F(casacore_eigen_tests, test_uvw_to_icrar) { test_uvw_to_icrar(); }

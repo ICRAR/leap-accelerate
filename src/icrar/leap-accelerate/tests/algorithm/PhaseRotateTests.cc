@@ -20,7 +20,6 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -30,18 +29,20 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
-
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/model/Integration.h>
 
+#include <icrar/leap-accelerate/core/compute_implementation.h>
+
 #include <casacore/casa/Quanta/MVDirection.h>
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <gtest/gtest.h>
 
 #include <vector>
@@ -54,7 +55,7 @@ namespace icrar
 {
     class PhaseRotateTests : public ::testing::Test
     {
-        casacore::MeasurementSet ms;
+        std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
 
@@ -70,7 +71,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = casacore::MeasurementSet(filename);
+            ms = std::make_unique<icrar::MeasurementSet>(filename);
         }
 
         void TearDown() override
@@ -400,7 +401,7 @@ namespace icrar
         {
             const double THRESHOLD = 0.01;
             
-            auto metadata = casalib::MetaData(ms);
+            auto metadata = icrar::casalib::MetaData(*ms);
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -419,12 +420,12 @@ namespace icrar
             std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
             if(impl == ComputeImplementation::casa)
             {
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(ms, metadata, directions, 126, 3600);
+                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
                 // auto metadatahost = icrar::cuda::MetaData(metadata);
-                // std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(ms, metadata, directions, 126, 3600);
+                // std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
@@ -448,7 +449,6 @@ namespace icrar
                 const CalibrationResult& calibration = calibrations[i].front();
                 ASSERT_EQ(1, calibration.GetData().size());
 
-                //ASSERT_EQ(calibration)
                 ASSERT_MEQ(ToVector(expected[0].second), ToMatrix(calibration.GetData()[0]), THRESHOLD);
             }
         }
@@ -457,12 +457,11 @@ namespace icrar
         {
             const double THRESHOLD = 0.01;
 
-            auto metadata = casalib::MetaData(ms);
-            //metadata.stations = 126;
+            auto metadata = casalib::MetaData(*ms);
+            metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            std::cout << "Initializing integration" << std::endl;
-            auto integration = Integration(ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
+            auto integration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
@@ -491,12 +490,12 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = Integration(ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
+            auto expectedIntegration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
             expectedIntegration.baselines = integration.uvw.size();
             expectedIntegration.uvw = integration.uvw;
 
             //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cuda::MetaData(casalib::MetaData(ms), direction, integration.uvw);
+            auto expectedMetadata = icrar::cuda::MetaData(casalib::MetaData(*ms), direction, integration.uvw);
             expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific
@@ -506,7 +505,7 @@ namespace icrar
             -0.79210108,  0.50913781,  0.33668172,
              0.39117878,  0.0,         0.92031471;
 
-            ASSERT_EQ(8256, expectedIntegration.baselines);
+            ASSERT_EQ(8001, expectedIntegration.baselines);
             ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
             expectedMetadata.avg_data = Eigen::MatrixXcd::Zero(expectedIntegration.baselines, metadata.num_pols);
 
@@ -514,7 +513,7 @@ namespace icrar
             // ==========
             // ASSERT
             auto cthreshold = std::complex<double>(0.001, 0.001);
-            ASSERT_EQ(8256, metadataOutput.avg_data.rows());
+            ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
             ASSERT_EQCD(std::complex<double>( 138.51683763999509,  53.836993695468195), metadataOutput.avg_data(0,0), THRESHOLD);
             ASSERT_EQCD(std::complex<double>(-166.53972390770514, -428.41528489902191), metadataOutput.avg_data(0,1), THRESHOLD);
@@ -992,11 +991,10 @@ namespace icrar
             //int nantennas = 10;
             //int nstations = 1;
 
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            auto ms = casacore::MeasurementSet(filename);
-            auto msmc = std::make_unique<casacore::MSMainColumns>(ms);
+            auto pms = ms->GetMS();
+            auto msmc = ms->GetMSMainColumns();
 
-            int nstations = ms.antenna().nrow(); //128
+            int nstations = pms->antenna().nrow(); //128
 
             //select the first epoch only
             casacore::Vector<double> time = msmc->time().getColumn();
@@ -1079,10 +1077,10 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

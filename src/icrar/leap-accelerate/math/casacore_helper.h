@@ -44,17 +44,17 @@ namespace icrar
     }
 
     template<typename T>
-    casacore::MVuvw Dot(const casacore::MVuvw& v1, const Eigen::Matrix<T, 3, 3>& right)
+    icrar::MVuvw Dot(const icrar::MVuvw& left, const Eigen::Matrix<T, 3, 3>& right)
     {
-        auto left = icrar::ToUVW(v1);
-        auto result = left * right;
-        return ToCasaUVW(result);
+         return left * right;
     }
 
     template<typename T>
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
-        return Dot(v1, ToMatrix3x3(v2));
+        auto uvw = ToUVW(v1);
+        auto mat = ToMatrix3x3(v2);
+        return ToCasaUVW(Dot(uvw, mat));
     }
 
     template<typename T>

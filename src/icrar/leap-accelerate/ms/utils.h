@@ -41,16 +41,6 @@
 
 namespace icrar
 {
-    /**
-     * @brief Converts an input stream into a leap dataset.
-     * 
-     * @param input 
-     * @return std::unique_ptr<casacore::MeasurementSet> 
-     */
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
-
-    unsigned int ms_num_stations(casacore::MeasurementSet* ms);
-
     //See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
     template<typename T>
     void ms_read_coords(
@@ -118,8 +108,10 @@ namespace icrar
             throw icrar::exception("ms out of range", __FILE__, __LINE__);
         }
 
+        // clamp num_baselines
         if (start_row + num_baselines > total_rows)
         {
+            //TODO: may want to throw
             num_baselines = total_rows - start_row;
         }
 

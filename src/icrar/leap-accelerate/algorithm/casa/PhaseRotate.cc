@@ -65,7 +65,7 @@ namespace casalib
 {
     // leap_remote_calibration
     CalibrateResult Calibrate(
-        const casacore::MeasurementSet& ms,
+        const icrar::MeasurementSet& ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,
@@ -199,13 +199,13 @@ namespace casalib
         metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
+
         assert(integration_data.dimension(0) == metadata.channels);
+        std::cout << integration_data.dimension(1) << ":" << integration.baselines << std::endl;
         assert(integration_data.dimension(1) == integration.baselines);
         assert(integration_data.dimension(2) == metadata.num_pols);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.channel_wavelength.size() == metadata.channels);
-
-        std::cout << "uvw is " << uvw[0] << std::endl;
 
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)

@@ -39,6 +39,17 @@ namespace icrar
         m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
     }
 
+    MeasurementSet::MeasurementSet(std::istream& stream)
+    {
+        // don't skip the whitespace while reading
+        std::cin >> std::noskipws;
+
+        // use stream iterators to copy the stream to a string
+        std::istream_iterator<char> it(std::cin);
+        std::istream_iterator<char> end;
+        std::string results = std::string(it, end);
+    }
+
     unsigned int MeasurementSet::GetNumStations() const
     {
         return m_measurementSet->antenna().nrow();
@@ -68,14 +79,18 @@ namespace icrar
         return m_msc->spectralWindow().numChan().get(0);
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row) const
+    Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
-        auto num_baselines = GetNumBaselines();
-        Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(num_baselines, 3);
+        GetCoords(0, GetNumBaselines());
+    }
+
+    Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row, unsigned int nBaselines) const
+    {
+        Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(nBaselines, 3);
         icrar::ms_read_coords(
             *m_measurementSet,
             start_row,
-            num_baselines,
+            nBaselines,
             matrix(Eigen::all, 0).data(),
             matrix(Eigen::all, 1).data(),
             matrix(Eigen::all, 2).data());
@@ -87,9 +102,15 @@ namespace icrar
         auto num_channels = GetNumChannels();
         auto num_baselines = GetNumBaselines();
         auto num_pols = GetNumPols();
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(num_channels, num_baselines, num_pols);
-        icrar::ms_read_vis(*m_measurementSet, 0, 0, num_channels, num_baselines, num_pols, "DATA", (double*)visibilities.data());
-        //TODO: implement
+        return GetVis(num_channels, num_baselines, num_pols);
+    }
+
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(std::uint32_t nChannels, std::uint32_t nBaselines, std::uint32_t nPolarizations) const
+    {
+        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nChannels, nBaselines, nPolarizations);
+        int start_baseline = 0;
+        int start_channel = 0;
+        icrar::ms_read_vis(*m_measurementSet, start_baseline, start_channel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
         return visibilities;
     }
 }

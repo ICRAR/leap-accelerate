@@ -41,6 +41,11 @@
 
 namespace icrar
 {
+    class MeasurementSet;
+}
+
+namespace icrar
+{
 namespace casalib
 {
     struct MetaData
@@ -98,7 +103,7 @@ namespace casalib
     public:
         MetaData();
         MetaData(std::istream& input);
-        MetaData(const casacore::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms);
         
         int GetBaselines() { return stations * (stations + 1) / 2; }
 
