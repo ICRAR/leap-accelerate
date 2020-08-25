@@ -21,7 +21,6 @@
  */
 
 #include "Integration.h"
-#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
