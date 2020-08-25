@@ -256,14 +256,21 @@ namespace casalib
                 {
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
+                        if(baseline == 0 && polarization == 0)
+                        {
+                            std::cout << "integration_data(0, 0, 0) :" << integration_data(0, 0, 0) << std::endl;
+                            std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
+                        }
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
+                        if(baseline == 0 && polarization == 0)
+                        {
+                            std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
+                        }
                     }
                 }
             }
         }
-
-        std::cout << "integration_data(0, 0, 0)" << integration_data(0, 0, 0) << std::endl;
-        std::cout << "metadata.avg_data.get()(0, 0)" << metadata.avg_data.get()(0, 0) << std::endl;
+        std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
