@@ -90,16 +90,22 @@ namespace casalib
                 i,
                 metadata.channels,
                 metadata.GetBaselines(),
-                metadata.num_pols,
-                metadata.GetBaselines()));
+                metadata.num_pols));
+
+            assert(48 == queue.front().data.dimension(0)); //metadata.channels
+            assert(8001 == queue.front().data.dimension(1)); //metadata.baselines
+            assert(4 == queue.front().data.dimension(2)); //metadata.polarizations
+            std::cout << "==== integration data " << queue.front().data.dimensions() << std::endl;
+            std::cout << "==== integration data(0,0)" << queue.front().data.chip(0, 0).chip(0, 0) << std::endl;
+            std::cout << "==== integration data(1,0)" << queue.front().data.chip(1, 0).chip(0, 0) << std::endl;
+            std::cout << "==== integration data(2,0)" << queue.front().data.chip(2, 0).chip(0, 0) << std::endl;
+            std::cout << "==== integration data(3,0)" << queue.front().data.chip(3, 0).chip(0, 0) << std::endl;
+            std::cout << "==== integration data(4,0)" << queue.front().data.chip(4, 0).chip(0, 0) << std::endl;
 
             input_queues.push_back(queue);
             output_integrations->push_back(std::queue<IntegrationResult>());
             output_calibrations->push_back(std::queue<CalibrationResult>());
         }
-
-        std::cout << "direction count " << directions.size() << std::endl;
-        std::cout << "input count " << input_queues.size() << std::endl;
 
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -204,6 +210,8 @@ namespace casalib
         metadata.avg_data.get() = 0;
 
         metadata.CalcUVW(uvw);
+
+        std::cout << "integration_data(4,0,0):" << integration_data(4, 0, 0) << std::endl;
 
         std::cout << "DD:" << metadata.dd.get() << std::endl;
         std::cout << "uvw:" << uvw.size() << std::endl;

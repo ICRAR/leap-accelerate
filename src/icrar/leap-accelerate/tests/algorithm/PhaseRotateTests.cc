@@ -466,7 +466,7 @@ namespace icrar
             metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            auto integration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
+            auto integration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
 
             boost::optional<icrar::cuda::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
@@ -495,7 +495,7 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
+            auto expectedIntegration = Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
             expectedIntegration.baselines = integration.uvw.size();
             expectedIntegration.uvw = integration.uvw;
 
