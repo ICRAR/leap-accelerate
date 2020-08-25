@@ -206,8 +206,8 @@ namespace casalib
         metadata.CalcUVW(uvw);
 
         std::cout << "DD:" << metadata.dd.get() << std::endl;
-        std::cout << "uvw:" << uvw << std::endl;
-        std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
+        std::cout << "uvw:" << uvw.size() << std::endl;
+        std::cout << "oldUvw:" << metadata.oldUVW.size() << std::endl;
         std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
         std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
 
@@ -254,18 +254,31 @@ namespace casalib
 
                 if(!hasNaN)
                 {
+                    if(baseline == 0)
+                    {
+                        std::cout << "=== channel : " << channel << " === "<< std::endl;
+                        std::cout << "data : |"
+                        << integration_data(channel, baseline, 0) << "|"
+                        << integration_data(channel, baseline, 1) << "|"
+                        << integration_data(channel, baseline, 2) << "|"
+                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                        std::cout << "before : |"
+                        << metadata.avg_data.get()(baseline, 0) << "|"
+                        << metadata.avg_data.get()(baseline, 1) << "|"
+                        << metadata.avg_data.get()(baseline, 2) << "|"
+                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
+                    }
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
-                        if(baseline == 0 && polarization == 0)
-                        {
-                            std::cout << "integration_data(0, 0, 0) :" << integration_data(0, 0, 0) << std::endl;
-                            std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
-                        }
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
-                        if(baseline == 0 && polarization == 0)
-                        {
-                            std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
-                        }
+                    }
+                    if(baseline == 0)
+                    {
+                        std::cout << "after : |"
+                        << metadata.avg_data.get()(baseline, 0) << "|"
+                        << metadata.avg_data.get()(baseline, 1) << "|"
+                        << metadata.avg_data.get()(baseline, 2) << "|"
+                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
                     }
                 }
             }
