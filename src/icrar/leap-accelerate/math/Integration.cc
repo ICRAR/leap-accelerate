@@ -21,7 +21,6 @@
  */
 
 #include "Integration.h"
-#include <icrar/leap-accelerate/ms/utils.h>
 
 namespace icrar
 {

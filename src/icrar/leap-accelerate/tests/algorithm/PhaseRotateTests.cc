@@ -1078,7 +1078,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(Impl::cuda); }
     
-    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(Impl::casa); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(Impl::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(Impl::cuda); }
 }
