@@ -22,7 +22,7 @@
 
 #include "utils.h"
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 namespace icrar
 {

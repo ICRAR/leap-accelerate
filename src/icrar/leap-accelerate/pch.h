@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/stream_extensions.h>
+
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Array.h>

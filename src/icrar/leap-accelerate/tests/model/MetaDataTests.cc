@@ -21,7 +21,7 @@
 */
 
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 

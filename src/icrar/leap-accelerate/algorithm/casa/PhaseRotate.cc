@@ -27,10 +27,12 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/Integration.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
+
+#include <icrar/leap-accelerate/common/stream_extensions.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -127,6 +129,10 @@ namespace casalib
 
             if(integration.is_initialized())
             {
+                std::cout << "rotate visibilities" << std::endl;
+                std::cout << "integration_number:" << integration.get().integration_number << std::endl;
+                std::cout << "direction:" << direction.get() << std::endl;
+
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
@@ -192,11 +198,18 @@ namespace casalib
             metadata.m_initialized = true;
         }
 
+
         // Zero a vector for averaging in time and freq
         metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
         metadata.avg_data.get() = 0;
 
         metadata.CalcUVW(uvw);
+
+        std::cout << "DD:" << metadata.dd.get() << std::endl;
+        std::cout << "uvw:" << uvw << std::endl;
+        std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
+        std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
+        std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
 
         assert(uvw.size() == integration.baselines);
 
@@ -212,10 +225,9 @@ namespace casalib
         {
             // For baseline
             const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-
-            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
+            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0) - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1));
+            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline](0) - direction.get()[1] * uvw[baseline](1));
 
             if(baseline % 1000 == 1)
             {
@@ -244,11 +256,14 @@ namespace casalib
                 {
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
-                        metadata.avg_data.get()(casacore::IPosition(2, baseline, polarization)) += integration_data(channel, baseline, polarization);
+                        metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
                 }
             }
         }
+
+        std::cout << "integration_data(0, 0, 0)" << integration_data(0, 0, 0) << std::endl;
+        std::cout << "metadata.avg_data.get()(0, 0)" << metadata.avg_data.get()(0, 0) << std::endl;
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(

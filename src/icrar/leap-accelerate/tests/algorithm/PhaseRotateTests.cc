@@ -31,7 +31,7 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
@@ -405,15 +405,15 @@ namespace icrar
 
             std::vector<casacore::MVDirection> directions =
             {
-                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
-                casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513)
+                // casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
+                // casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
+                // casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
+                // casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
+                // casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
+                // casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
+                // casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
+                // casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
             std::unique_ptr<std::vector<std::queue<IntegrationResult>>> pintegrations;
@@ -441,15 +441,20 @@ namespace icrar
             auto& calibrations = *pcalibrations;
 
             auto expected = GetExpectedCalibration();
+            auto nDirections = 1;
 
-            ASSERT_EQ(9, calibrations.size());
-            for(int i = 0; i < 9; i++)
+            ASSERT_EQ(nDirections, calibrations.size());
+            for(int i = 0; i < nDirections; i++)
             {
-                ASSERT_EQ(1, calibrations[i].size());
-                const CalibrationResult& calibration = calibrations[i].front();
-                ASSERT_EQ(1, calibration.GetData().size());
+                casacore::MVDirection direction;
+                std::vector<double> calibration;
+                std::tie(direction, calibration) = expected[0];
 
-                ASSERT_MEQ(ToVector(expected[0].second), ToMatrix(calibration.GetData()[0]), THRESHOLD);
+                ASSERT_EQ(1, calibrations[i].size());
+                const CalibrationResult& result = calibrations[i].front();
+                ASSERT_EQ(1, result.GetData().size());
+
+                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
             }
         }
 
@@ -1076,7 +1081,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     

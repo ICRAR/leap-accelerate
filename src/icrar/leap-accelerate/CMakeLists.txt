@@ -9,7 +9,7 @@ set(public_headers
     
     model/visibility.h
     model/band_data.h
-    model/MetaData.h
+    model/casa/MetaData.h
 
     algorithm/casa/PhaseRotate.h
 )
@@ -28,8 +28,8 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/MetaData.cc
     model/Integration.cc
+    model/casa/MetaData.cc
     
     math/linear_math_helper.cc
     math/casa/vector.cc

@@ -24,7 +24,7 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/model/Integration.h>
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
