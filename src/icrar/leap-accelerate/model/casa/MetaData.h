@@ -105,7 +105,7 @@ namespace casalib
         MetaData(std::istream& input);
         MetaData(const icrar::MeasurementSet& ms);
         
-        int GetBaselines() { return stations * (stations + 1) / 2; }
+        int GetBaselines() const { return stations * (stations + 1) / 2; }
 
         /**
          * @brief 

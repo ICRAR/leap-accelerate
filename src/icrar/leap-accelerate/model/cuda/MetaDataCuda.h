@@ -57,7 +57,8 @@ namespace cuda
     struct Constants
     {
         int nantennas;
-        //int nbaselines;
+        int nbaselines; //the total number station pairs (excluding self cycles) 
+
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -133,7 +134,7 @@ namespace cuda
             Eigen::Matrix3d& dd,
             const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
         {
-            
+            //TODO
         }
 
         const Constants& GetConstants() const;

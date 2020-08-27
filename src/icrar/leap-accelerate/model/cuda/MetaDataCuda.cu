@@ -32,6 +32,7 @@ namespace cuda
     bool Constants::operator==(const Constants& rhs) const
     {
         return nantennas == rhs.nantennas
+        && nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations
@@ -49,6 +50,7 @@ namespace cuda
     MetaData::MetaData(const casalib::MetaData& metadata)
     {
         m_constants.nantennas = metadata.nantennas;
+        m_constants.nbaselines = metadata.GetBaselines();
         m_constants.channels = metadata.channels;
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;

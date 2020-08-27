@@ -71,7 +71,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename);
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
         }
 
         void TearDown() override
@@ -106,8 +106,8 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                //auto metadatahost = icrar::cuda::MetaData(metadata);
-                //std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, metadata, directions, 126, 3600);
+                auto metadatahost = icrar::cuda::MetaData(metadata);
+                std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, metadatahost, directions, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
