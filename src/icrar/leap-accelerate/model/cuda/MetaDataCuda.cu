@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
@@ -40,7 +41,6 @@ namespace cuda
         && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
-        && channel_wavelength == rhs.channel_wavelength
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad
         && phase_centre_dec_rad == rhs.phase_centre_dec_rad
         && dlm_ra == rhs.dlm_ra
@@ -62,12 +62,6 @@ namespace cuda
         m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
-
-        if( metadata.channel_wavelength.empty())
-        {
-            throw std::runtime_error("channel_wavelength: metadata not initialized, use alternative constructor");
-        }
-        m_constants.channel_wavelength = metadata.channel_wavelength;
 
         oldUVW = ToUVW(metadata.oldUVW);
 
@@ -174,16 +168,7 @@ namespace cuda
 
     void MetaData::SetWv()
     {
-        m_constants.channel_wavelength = range(
-            m_constants.freq_start_hz,
-            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels,
-            m_constants.freq_inc_hz);
-        
-        double speed_of_light = 299792458.0;
-        for(double& v : m_constants.channel_wavelength)
-        {
-            v = speed_of_light / v;
-        }
+        THROW_NOT_IMPLEMENTED();
     }
 
     bool MetaData::operator==(const MetaData& rhs) const
