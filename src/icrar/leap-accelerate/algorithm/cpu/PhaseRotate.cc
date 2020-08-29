@@ -96,7 +96,64 @@ namespace cpu
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
-        
+//         auto cal = std::vector<casacore::Matrix<double>>();
+//
+//         while(true)
+//         {
+//             boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
+//             if(integration.is_initialized())
+//             {
+//                 input.pop();
+//             }
+
+//             if(integration.is_initialized())
+//             {
+// #if _DEBUG
+//                 std::cout << "rotate visibilities" << std::endl;
+//                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
+//                 std::cout << "direction:" << direction.get() << std::endl;
+// #endif
+//                 icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
+//                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+//             }
+//             else
+//             {
+//                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+//                 {
+//                     return std::arg(c);
+//                 };
+
+//                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
+
+//                 auto indexes = ToVector(metadata.I1);
+
+//                 auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
+//                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
+//                 assert(cal1.shape()[1] == 1);
+
+//                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
+//                 dInt = 0;
+
+//                 for(int n = 0; n < metadata.I.size(); ++n)
+//                 {
+//                     Eigen::VectorXi e_i = ToVector(metadata.I);
+//                     Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
+//                     casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+
+//                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
+//                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
+//                 }
+                
+//                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
+//                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
+//                 assert(dIntColumn.shape()[1] == 1);
+
+//                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
+//                 break;
+//             }
+//         }
+
+//         output_calibrations.push(CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, cuda::MetaData& metadata)
