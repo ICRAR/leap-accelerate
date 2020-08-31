@@ -22,7 +22,7 @@
 
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
@@ -121,11 +121,11 @@ namespace icrar
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cuda::MetaData(meta, direction, uvw);
+            auto expectedMetadataHost = icrar::cpu::MetaData(meta, direction, uvw);
             auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
 
             // copy from device back to host
-            icrar::cuda::MetaData metaDataHost = metadataDevice.ToHost();
+            icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
 
             std::cout << uvw[0] << std::endl;
             std::cout << expectedMetadataHost.oldUVW[0] << std::endl;

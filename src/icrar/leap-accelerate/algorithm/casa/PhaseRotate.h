@@ -39,10 +39,14 @@
 
 namespace icrar
 {
-    class Integration;
-    class IntegrationResult;
-    class CalibrationResult;
     class MeasurementSet;
+
+    namespace casalib
+    {
+        class Integration;
+        class IntegrationResult;
+        class CalibrationResult;
+    }
 }
 
 namespace icrar

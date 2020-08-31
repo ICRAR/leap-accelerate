@@ -28,8 +28,11 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/Integration.cc
+    model/casa/Integration.cc
     model/casa/MetaData.cc
+
+    model/cpu/Integration.cc
+    model/cpu/MetaData.cc
     
     math/linear_math_helper.cc
     math/casa/vector.cc
@@ -59,7 +62,7 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
-    model/cuda/MetaDataCuda.cu
+    model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
 
     math/cuda/vector.cu

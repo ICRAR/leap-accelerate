@@ -24,13 +24,13 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 namespace icrar
 {
 namespace cuda
 {
-    DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
+    DeviceIntegration::DeviceIntegration(const icrar::casalib::Integration& integration)
     : data(integration.data)
     , index(integration.index)
     , x(integration.x)

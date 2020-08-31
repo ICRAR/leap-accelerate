@@ -20,15 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
-#include "MetaDataCuda.h"
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-
 #include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-namespace cuda
+namespace cpu
 {
     bool Constants::operator==(const Constants& rhs) const
     {
@@ -64,6 +64,7 @@ namespace cuda
         m_constants.dlm_dec = metadata.dlm_dec;
 
         oldUVW = ToUVW(metadata.oldUVW);
+        //UVW = ToUVW(metadata.uvw);
 
         A = ToMatrix(metadata.A);
         I = ToMatrix<int>(metadata.I);
@@ -131,6 +132,14 @@ namespace cuda
         return m_constants;
     }
 
+    const Eigen::MatrixXd& MetaData::GetA() const { return A; }
+    const Eigen::VectorXi& MetaData::GetI() const { return I; }
+    const Eigen::MatrixXd& MetaData::GetAd() const { return Ad; }
+
+    const Eigen::MatrixXd& MetaData::GetA1() const { return A1; }
+    const Eigen::VectorXi& MetaData::GetI1() const { return I1; }
+    const Eigen::MatrixXd& MetaData::GetAd1() const { return Ad1; }
+
     void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
     {
         this->oldUVW = uvws;
@@ -184,56 +193,6 @@ namespace cuda
         && Ad1 == rhs.Ad1
         && dd == rhs.dd
         && avg_data == rhs.avg_data;
-    }
-
-    DeviceMetaData::DeviceMetaData(const MetaData& metadata)
-    : constants(metadata.GetConstants())
-    , UVW(metadata.UVW)
-    , oldUVW(metadata.oldUVW)
-    , dd(metadata.dd)
-    , avg_data(metadata.avg_data)
-    , A(metadata.A)
-    , I(metadata.I)
-    , Ad(metadata.Ad)
-    , A1(metadata.A1)
-    , I1(metadata.I1)
-    , Ad1(metadata.Ad1)
-    {
-
-    }
-
-    void DeviceMetaData::ToHost(MetaData& metadata) const
-    {
-        metadata.m_constants = constants;
-
-        A.ToHost(metadata.A);
-        I.ToHost(metadata.I);
-        Ad.ToHost(metadata.Ad);
-        A1.ToHost(metadata.A1);
-        I1.ToHost(metadata.I1);
-        Ad1.ToHost(metadata.Ad1);
-
-        oldUVW.ToHost(metadata.oldUVW);
-        UVW.ToHost(metadata.UVW);
-        metadata.direction = direction;
-        metadata.dd = dd;
-        avg_data.ToHost(metadata.avg_data);
-    }
-
-    MetaData DeviceMetaData::ToHost() const
-    {
-        //TODO: tidy up using a constructor for now
-        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
-        std::vector<icrar::MVuvw> uvwTemp;
-        UVW.ToHost(uvwTemp);
-        MetaData result = MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVWVector(uvwTemp));
-        ToHost(result);
-        return result;
-    }
-
-    void DeviceMetaData::ToHostAsync(MetaData& host) const
-    {
-        throw std::runtime_error("not implemented");
     }
 }
 }

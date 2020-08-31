@@ -28,7 +28,7 @@
 
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/cuda/device_tensor.h>
 
@@ -69,7 +69,7 @@ namespace cuda
             };
         };
 
-        DeviceIntegration(const icrar::Integration& integration);
+        DeviceIntegration(const icrar::casalib::Integration& integration);
     };
 }
 }

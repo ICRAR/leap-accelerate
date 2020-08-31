@@ -32,12 +32,12 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
@@ -97,21 +97,21 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::unique_ptr<std::vector<std::queue<IntegrationResult>>> pintegrations;
-            std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
+            std::unique_ptr<std::vector<std::queue<casalib::IntegrationResult>>> pintegrations;
+            std::unique_ptr<std::vector<std::queue<casalib::CalibrationResult>>> pcalibrations;
             if(impl == ComputeImplementation::casa)
             {
-                auto metadata = icrar::casalib::MetaData(*ms);
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
+                auto metadata = casalib::MetaData(*ms);
+                std::tie(pintegrations, pcalibrations) = casalib::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, directions, 3600);
+                std::tie(pintegrations, pcalibrations) = cpu::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
                 
-                //auto metadatahost = icrar::cuda::MetaData(metadata);
+                //auto metadatahost = icrar::cpu::MetaData(metadata);
                 //auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 //icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
