@@ -66,7 +66,6 @@ namespace cpu
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        cuda::MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         int solutionInterval = 3600);
 
