@@ -37,7 +37,7 @@
 
 #include <queue>
 
-namespace casacore
+namespace casacore //TODO remove
 {
     class MDirection;
     class MVDirection;
@@ -46,9 +46,12 @@ namespace casacore
 
 namespace icrar
 {
+namespace cpu
+{
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
+}
 }
 
 namespace icrar
@@ -58,12 +61,12 @@ namespace cuda
     class DeviceMetaData;
     class DeviceIntegration;
 
-    std::queue<IntegrationResult> PhaseRotate(
+    std::queue<cpu::IntegrationResult> PhaseRotate(
         DeviceMetaData& metadata,
         const casacore::MVDirection& direction,
-        std::queue<Integration>& input,
-        std::queue<IntegrationResult>& output_integrations,
-        std::queue<CalibrationResult>& output_calibrations);
+        std::queue<cpu::Integration>& input,
+        std::queue<cpu::IntegrationResult>& output_integrations,
+        std::queue<cpu::CalibrationResult>& output_calibrations);
 
     void RotateVisibilities(
         DeviceIntegration& integration,

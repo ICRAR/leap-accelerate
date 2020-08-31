@@ -45,7 +45,7 @@ namespace icrar
 {
     class MeasurementSet;
 
-    namespace casalib
+    namespace cpu
     {
         class Integration;
         class IntegrationResult;
@@ -60,8 +60,8 @@ namespace cpu
     class MetaData;
     
     using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<casalib::IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<casalib::CalibrationResult>>>
+        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
+        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
     >;
 
     /**
@@ -83,9 +83,9 @@ namespace cpu
     void PhaseRotate(
         cpu::MetaData& metadata,
         const casacore::MVDirection& directions,
-        std::queue<casalib::Integration>& input,
-        std::queue<casalib::IntegrationResult>& output_integrations,
-        std::queue<casalib::CalibrationResult>& output_calibrations);
+        std::queue<cpu::Integration>& input,
+        std::queue<cpu::IntegrationResult>& output_integrations,
+        std::queue<cpu::CalibrationResult>& output_calibrations);
 
     /**
      * @brief Performs averaging over each baseline, channel and polarization.
@@ -94,7 +94,7 @@ namespace cpu
      * @param metadata 
      */
     void RotateVisibilities(
-        casalib::Integration& integration,
+        cpu::Integration& integration,
         cpu::MetaData& metadata);
 
     /**

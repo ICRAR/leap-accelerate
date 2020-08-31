@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
-#include <icrar/leap-accelerate/model/casa/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
@@ -64,14 +64,14 @@ namespace cpu
     {
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::make_unique<std::vector<std::queue<casalib::IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<casalib::CalibrationResult>>>();
-        auto input_queues = std::vector<std::queue<casalib::Integration>>();
+        auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
+        auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
+        auto input_queues = std::vector<std::queue<cpu::Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto queue = std::queue<casalib::Integration>(); 
-            queue.push(casalib::Integration(
+            auto queue = std::queue<cpu::Integration>(); 
+            queue.push(cpu::Integration(
                 ms,
                 i,
                 metadata.channels,
@@ -80,8 +80,8 @@ namespace cpu
                 metadata.GetBaselines()));
 
             input_queues.push_back(queue);
-            output_integrations->push_back(std::queue<casalib::IntegrationResult>());
-            output_calibrations->push_back(std::queue<casalib::CalibrationResult>());
+            output_integrations->push_back(std::queue<cpu::IntegrationResult>());
+            output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -90,7 +90,7 @@ namespace cpu
             metadata.SetWv();
             metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
 
-            auto metadatahost = icrar::cpu::MetaData(metadata); // TODO: use other constructor
+            auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
             icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
@@ -100,14 +100,14 @@ namespace cpu
     void PhaseRotate(
         cpu::MetaData& metadata,
         const casacore::MVDirection& direction,
-        std::queue<casalib::Integration>& input,
-        std::queue<casalib::IntegrationResult>& output_integrations,
-        std::queue<casalib::CalibrationResult>& output_calibrations)
+        std::queue<cpu::Integration>& input,
+        std::queue<cpu::IntegrationResult>& output_integrations,
+        std::queue<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
         while(true)
         {
-            boost::optional<casalib::Integration> integration = !input.empty() ? input.front() : (boost::optional<casalib::Integration>)boost::none;
+            boost::optional<cpu::Integration> integration = !input.empty() ? input.front() : (boost::optional<cpu::Integration>)boost::none;
             if(integration.is_initialized())
             {
                 input.pop();
@@ -116,7 +116,7 @@ namespace cpu
              if(integration.is_initialized())
              {
                 icrar::cpu::RotateVisibilities(integration.get(), metadata);
-                output_integrations.push(casalib::IntegrationResult(direction, integration.get().integration_number, boost::none));
+                output_integrations.push(cpu::IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
             {
@@ -133,12 +133,11 @@ namespace cpu
                 assert(cal1.cols() == 1);
 
                 Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-
+                Eigen::VectorXi i = metadata.GetI();
+                Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
+                
                 for(int n = 0; n < metadata.GetI().size(); ++n)
                 {
-                    Eigen::VectorXi i = metadata.GetI();
-                    Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
-
                     Eigen::MatrixXd cumsum = metadata.GetA().data()[n] * cal1;
                     double sum = cumsum.sum();
                     dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
@@ -152,10 +151,10 @@ namespace cpu
              }
          }
 
-         output_calibrations.push(casalib::CalibrationResult(direction, cal));
+         output_calibrations.push(cpu::CalibrationResult(direction, cal));
     }
 
-    void RotateVisibilities(casalib::Integration& integration, cpu::MetaData& metadata)
+    void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;

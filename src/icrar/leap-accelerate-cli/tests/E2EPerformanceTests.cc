@@ -38,6 +38,7 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
@@ -97,16 +98,15 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::unique_ptr<std::vector<std::queue<casalib::IntegrationResult>>> pintegrations;
-            std::unique_ptr<std::vector<std::queue<casalib::CalibrationResult>>> pcalibrations;
+
             if(impl == ComputeImplementation::casa)
             {
                 auto metadata = casalib::MetaData(*ms);
-                std::tie(pintegrations, pcalibrations) = casalib::Calibrate(*ms, metadata, directions, 126, 3600);
+                auto res = casalib::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                std::tie(pintegrations, pcalibrations) = cpu::Calibrate(*ms, directions, 3600);
+                auto res = cpu::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
@@ -122,7 +122,7 @@ namespace icrar
         }
     };
 
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
     TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen); }
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda); }
 }

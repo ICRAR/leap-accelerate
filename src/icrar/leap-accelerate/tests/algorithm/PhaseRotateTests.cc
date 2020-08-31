@@ -33,11 +33,13 @@
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+
+#include <icrar/leap-accelerate/model/casa/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
@@ -466,22 +468,44 @@ namespace icrar
             metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            auto integration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
-
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
             {
+                auto integration = icrar::casalib::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols,
+                    metadata.GetBaselines());
+
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
             if(impl == ComputeImplementation::eigen)
             {
+                auto integration = icrar::cpu::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols,
+                    metadata.GetBaselines());
+
                 auto metadatahost = icrar::cpu::MetaData(metadata, direction, integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
                 metadataOptionalOutput = metadatahost;
             }
             if(impl == ComputeImplementation::cuda)
             {
+                auto integration = icrar::cpu::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols,
+                    metadata.GetBaselines());
+
                 auto metadatahost = icrar::cpu::MetaData(metadata, direction, integration.uvw);
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
@@ -496,11 +520,11 @@ namespace icrar
             // Build expected results
             // Test case generic
             auto expectedIntegration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
-            expectedIntegration.baselines = integration.uvw.size();
-            expectedIntegration.uvw = integration.uvw;
+            expectedIntegration.baselines = metadata.GetBaselines();
+            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
 
             //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), direction, integration.uvw);
+            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), direction, expectedIntegration.uvw);
             expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific

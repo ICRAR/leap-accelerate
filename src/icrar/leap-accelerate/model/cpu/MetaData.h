@@ -128,6 +128,7 @@ namespace cpu
         MetaData(const casalib::MetaData& metadata);
         MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws);
         
+        MetaData(icrar::MeasurementSet& ms);
         MetaData(
             const Constants& constants,
             const double* A, int ARows, int ACols,
