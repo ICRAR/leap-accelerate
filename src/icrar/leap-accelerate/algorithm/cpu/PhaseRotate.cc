@@ -26,10 +26,10 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -64,14 +64,14 @@ namespace cpu
     {
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
-        auto input_queues = std::vector<std::queue<Integration>>();
+        auto output_integrations = std::make_unique<std::vector<std::queue<casalib::IntegrationResult>>>();
+        auto output_calibrations = std::make_unique<std::vector<std::queue<casalib::CalibrationResult>>>();
+        auto input_queues = std::vector<std::queue<casalib::Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto queue = std::queue<Integration>(); 
-            queue.push(Integration(
+            auto queue = std::queue<casalib::Integration>(); 
+            queue.push(casalib::Integration(
                 ms,
                 i,
                 metadata.channels,
@@ -80,8 +80,8 @@ namespace cpu
                 metadata.GetBaselines()));
 
             input_queues.push_back(queue);
-            output_integrations->push_back(std::queue<IntegrationResult>());
-            output_calibrations->push_back(std::queue<CalibrationResult>());
+            output_integrations->push_back(std::queue<casalib::IntegrationResult>());
+            output_calibrations->push_back(std::queue<casalib::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -90,7 +90,7 @@ namespace cpu
             metadata.SetWv();
             metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
 
-            auto metadatahost = icrar::cuda::MetaData(metadata); // TODO: use other constructor
+            auto metadatahost = icrar::cpu::MetaData(metadata); // TODO: use other constructor
             icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
@@ -98,16 +98,16 @@ namespace cpu
     }
 
     void PhaseRotate(
-        cuda::MetaData& metadata,
+        cpu::MetaData& metadata,
         const casacore::MVDirection& direction,
-        std::queue<Integration>& input,
-        std::queue<IntegrationResult>& output_integrations,
-        std::queue<CalibrationResult>& output_calibrations)
+        std::queue<casalib::Integration>& input,
+        std::queue<casalib::IntegrationResult>& output_integrations,
+        std::queue<casalib::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
         while(true)
         {
-            boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
+            boost::optional<casalib::Integration> integration = !input.empty() ? input.front() : (boost::optional<casalib::Integration>)boost::none;
             if(integration.is_initialized())
             {
                 input.pop();
@@ -116,7 +116,7 @@ namespace cpu
              if(integration.is_initialized())
              {
                 icrar::cpu::RotateVisibilities(integration.get(), metadata);
-                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+                output_integrations.push(casalib::IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
             {
@@ -126,53 +126,51 @@ namespace cpu
                 };
 
                 auto avg_data = metadata.avg_data.unaryExpr(getAngle);
-                auto& indexes = metadata.I1;
+                auto& indexes = metadata.GetI1();
 
                 auto avg_data_t = avg_data(indexes, 0); // 1st pol only
-                auto cal1 = metadata.Ad1 * avg_data_t;
-                //assert(cal1.shape()[1] == 1);
+                auto cal1 = metadata.GetAd1() * avg_data_t;
+                assert(cal1.cols() == 1);
 
-//                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
-//                 dInt = 0;
+                Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
 
-//                 for(int n = 0; n < metadata.I.size(); ++n)
-//                 {
-//                     Eigen::VectorXi e_i = ToVector(metadata.I);
-//                     Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
-//                     casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+                for(int n = 0; n < metadata.GetI().size(); ++n)
+                {
+                    Eigen::VectorXi i = metadata.GetI();
+                    Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
 
-//                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
-//                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
-//                 }
-                
-//                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
-//                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
-//                 assert(dIntColumn.shape()[1] == 1);
+                    Eigen::MatrixXd cumsum = metadata.GetA().data()[n] * cal1;
+                    double sum = cumsum.sum();
+                    dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+                }
 
-//                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
-                 break;
+                Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
+                assert(dIntColumn.cols() == 1);
+
+                cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
+                break;
              }
          }
 
-         output_calibrations.push(CalibrationResult(direction, cal));
+         output_calibrations.push(casalib::CalibrationResult(direction, cal));
     }
 
-    void RotateVisibilities(Integration& integration, cuda::MetaData& metadata)
+    void RotateVisibilities(casalib::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        //metadata.CalcUVW(uvw); TODO
+        metadata.CalcUVW(ToUVW(uvw));
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
         assert(uvw.size() == integration.baselines);
-        assert(integration_data.dimension(0) == metadata.m_constants.channels);
+        assert(integration_data.dimension(0) == metadata.GetConstants().channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.avg_data.rows() == integration.baselines);
-        assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
+        assert(metadata.avg_data.cols() == metadata.GetConstants().num_pols);
         
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
@@ -197,9 +195,9 @@ namespace cpu
             }
 
             // Loop over channels
-            for(int channel = 0; channel < metadata.m_constants.channels; channel++)
+            for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
-                double shiftRad = shiftFactor / metadata.m_constants.GetChannelWavelength(channel);
+                double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {

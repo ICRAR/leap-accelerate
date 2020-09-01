@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -40,6 +41,8 @@
 
 
 namespace icrar
+{
+namespace casalib
 {
     class MeasurementSet;
 
@@ -107,4 +110,5 @@ namespace icrar
 
         //bool operator==(const CalibrationResult& rhs) const;
     };
+}
 }

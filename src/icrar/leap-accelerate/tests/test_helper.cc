@@ -159,7 +159,7 @@ void assert_veqd(const std::vector<double>& expected, const std::vector<double>&
     assert_veq<double>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line)
+void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line)
 {
     if(!(expected == actual))
     {
@@ -184,12 +184,12 @@ void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda:
     ASSERT_EQ(expected.GetConstants().dlm_dec, actual.GetConstants().dlm_dec);
 
 
-    ASSERT_MEQ(expected.A, actual.A, THRESHOLD);
-    ASSERT_MEQI(expected.I, actual.I, THRESHOLD);
-    ASSERT_MEQ(expected.Ad, actual.Ad, THRESHOLD);
-    ASSERT_MEQ(expected.A1, actual.A1, THRESHOLD);
-    ASSERT_MEQI(expected.I1, actual.I1, THRESHOLD);
-    ASSERT_MEQ(expected.Ad1, actual.Ad1, THRESHOLD);
+    ASSERT_MEQ(expected.GetA(), actual.GetA(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI(), actual.GetI(), THRESHOLD);
+    ASSERT_MEQ(expected.GetAd(), actual.GetAd(), THRESHOLD);
+    ASSERT_MEQ(expected.GetA1(), actual.GetA1(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
+    ASSERT_MEQ(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
     ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
     ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);

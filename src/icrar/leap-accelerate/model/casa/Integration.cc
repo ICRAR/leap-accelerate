@@ -28,6 +28,8 @@
 
 namespace icrar
 {
+namespace casalib
+{
     Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
     , index(0)
@@ -48,4 +50,5 @@ namespace icrar
         && uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }
+}
 }

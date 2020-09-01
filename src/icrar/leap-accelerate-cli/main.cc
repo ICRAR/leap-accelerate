@@ -22,7 +22,7 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 
@@ -154,7 +154,7 @@ int main(int argc, char** argv)
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
-    auto queue = std::queue<Integration>();
+    auto queue = std::queue<casalib::Integration>();
 
     switch(args.GetComputeImplementation())
     {
