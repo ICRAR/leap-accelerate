@@ -30,6 +30,8 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
 #include <icrar/leap-accelerate/exception/exception.h>
 
 #include <icrar/leap-accelerate/common/stream_extensions.h>
@@ -68,18 +70,14 @@ namespace casalib
     // leap_remote_calibration
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
-        boost::optional<int> overrideStations,
         int solutionInterval)
     {
+        auto metadata = casalib::MetaData(ms);
+        metadata.stations = ms.GetNumStations();
+
         auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
-        
-        if(overrideStations.is_initialized())
-        {
-            metadata.stations = overrideStations.get();
-        }
+        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();        
         auto input_queues = std::vector<std::queue<Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)

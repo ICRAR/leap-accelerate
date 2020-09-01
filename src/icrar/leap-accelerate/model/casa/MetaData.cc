@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/common/MVDirection.h>
+
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
@@ -168,6 +170,30 @@ namespace casalib
         auto& dd3d = dd.value();
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
+
+        dd3d(0,0) = cos(dlm_ra) * cos(dlm_dec);
+        dd3d(0,1) = -sin(dlm_ra);
+        dd3d(0,2) = cos(dlm_ra) * sin(dlm_dec);
+        
+        dd3d(1,0) = sin(dlm_ra) * cos(dlm_dec);
+        dd3d(1,1) = cos(dlm_ra);
+        dd3d(1,2) = sin(dlm_ra) * sin(dlm_dec);
+
+        dd3d(2,0) = -sin(dlm_dec);
+        dd3d(2,1) = 0;
+        dd3d(2,2) = cos(dlm_dec);
+    }
+
+    void MetaData::SetDD(const icrar::MVDirection& direction)
+    {
+        if(!dd.is_initialized())
+        {
+            dd.reset(casacore::Matrix<double>(3,3));
+        }
+
+        auto& dd3d = dd.value();
+        dlm_ra = direction(0) - phase_centre_ra_rad;
+        dlm_dec = direction(1) - phase_centre_dec_rad;
 
         dd3d(0,0) = cos(dlm_ra) * cos(dlm_dec);
         dd3d(0,1) = -sin(dlm_ra);

@@ -63,9 +63,7 @@ namespace casalib
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
-        boost::optional<int> overrideStations,
         int solutionInterval = 3600);
 
     /**

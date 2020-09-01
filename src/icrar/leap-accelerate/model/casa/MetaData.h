@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/math/casa/matrix_invert.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -129,6 +130,8 @@ namespace casalib
          * @param direction 
          */
         void SetDD(const casacore::MVDirection& direction);
+
+        void SetDD(const icrar::MVDirection& direction);
 
         bool operator==(const MetaData& rhs) const;
 

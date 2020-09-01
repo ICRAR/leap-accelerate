@@ -422,12 +422,13 @@ namespace icrar
             std::unique_ptr<std::vector<std::queue<casalib::CalibrationResult>>> pcalibrations;
             if(impl == ComputeImplementation::casa)
             {
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
+                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                // auto metadatahost = icrar::cpu::MetaData(metadata);
-                // std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, metadata, directions, 126, 3600);
+                std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>> pintegrations;
+                std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>> pcalibrations;
+                std::tie(pintegrations, pcalibrations) = icrar::cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {

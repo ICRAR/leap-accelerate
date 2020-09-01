@@ -59,9 +59,10 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions,
+        const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+
         auto metadata = icrar::casalib::MetaData(ms);
 
         auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
@@ -94,12 +95,13 @@ namespace cpu
             icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
+        std::cout << "returning" << std::endl;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
     void PhaseRotate(
         cpu::MetaData& metadata,
-        const casacore::MVDirection& direction,
+        const icrar::MVDirection& direction,
         std::vector<cpu::Integration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations)

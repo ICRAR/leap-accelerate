@@ -98,15 +98,14 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-
             if(impl == ComputeImplementation::casa)
             {
                 auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, metadata, directions, 126, 3600);
+                auto res = casalib::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                auto res = cpu::Calibrate(*ms, directions, 3600);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {

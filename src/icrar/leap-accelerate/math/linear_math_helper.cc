@@ -71,7 +71,7 @@ namespace icrar
         // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
         std::vector<casacore::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
         res.reserve(value.size());
-        auto lambda = [&](icrar::MVuvw x)
+        auto lambda = [](icrar::MVuvw x)
         {
             return casacore::MVuvw(x(0), x(1), x(2));
         };
@@ -95,5 +95,18 @@ namespace icrar
     icrar::MVDirection ToDirection(const casacore::MVDirection& value)
     {
         return icrar::MVDirection(value.get()[0], value.get()[1], value.get()[2]);
+    }
+
+    std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
+    {
+        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
+        std::vector<icrar::MVDirection> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
+        res.reserve(value.size());
+        auto lambda = [](casacore::MVDirection x)
+        {
+            return icrar::MVDirection(x.get()[0], x.get()[1], x.get()[2]);
+        };
+        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
+        return res;
     }
 }

@@ -24,6 +24,7 @@
 
 #include <casacore/ms/MeasurementSets.h>
 
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <eigen3/Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -70,7 +71,7 @@ namespace cpu
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions,
+        const std::vector<icrar::MVDirection>& directions,
         int solutionInterval = 3600);
 
     /**
@@ -82,7 +83,7 @@ namespace cpu
      */
     void PhaseRotate(
         cpu::MetaData& metadata,
-        const casacore::MVDirection& directions,
+        const icrar::MVDirection& directions,
         std::vector<cpu::Integration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations);

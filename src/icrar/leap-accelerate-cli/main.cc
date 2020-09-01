@@ -27,6 +27,7 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/measures/Measures/MDirection.h>
@@ -153,22 +154,21 @@ int main(int argc, char** argv)
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
 
-    std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<casalib::Integration>();
 
     switch(args.GetComputeImplementation())
     {
     case ComputeImplementation::casa:
     {
-        auto metadata = casalib::MetaData(args.GetMeasurementSet());
-        icrar::casalib::Calibrate(args.GetMeasurementSet(), metadata, directions, boost::none);
+        std::vector<casacore::MVDirection> directions;
+        icrar::casalib::Calibrate(args.GetMeasurementSet(), directions, 16001);
         break;
     }
     case ComputeImplementation::eigen:
     {
-        THROW_NOT_IMPLEMENTED();
-        //icrar::cpu::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
-        //break;
+        std::vector<icrar::MVDirection> directions; //ZenithDirection(ms);
+        icrar::cpu::Calibrate(args.GetMeasurementSet(), directions, 16001);
+        break;
     }
     case ComputeImplementation::cuda:
     {
