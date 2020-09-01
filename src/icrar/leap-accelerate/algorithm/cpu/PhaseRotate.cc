@@ -55,9 +55,38 @@ namespace icrar
 {
 namespace cpu
 {
-    void RemoteCalibration(cuda::MetaData& metadata, const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions)
+    CalibrateResult Calibrate(
+        const icrar::MeasurementSet& ms,
+        cuda::MetaData& metadata,
+        const std::vector<casacore::MVDirection>& directions,
+        int solutionInterval)
     {
+        auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
+        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
+        auto input_queues = std::vector<std::queue<Integration>>();
+        
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            auto queue = std::queue<Integration>(); 
+            queue.push(Integration(
+                ms,
+                i,
+                metadata.GetConstants().channels,
+                metadata.GetConstants().nbaselines,
+                metadata.GetConstants().num_pols,
+                metadata.GetConstants().nbaselines));
 
+            input_queues.push_back(queue);
+            output_integrations->push_back(std::queue<IntegrationResult>());
+            output_calibrations->push_back(std::queue<CalibrationResult>());
+        }
+
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+        }
+
+        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
     void PhaseRotate(

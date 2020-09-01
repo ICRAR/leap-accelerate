@@ -26,6 +26,8 @@
 
 #include <eigen3/Eigen/Core>
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -44,6 +46,7 @@ namespace icrar
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
+    class MeasurementSet;
     
     namespace cuda
     {
@@ -55,15 +58,17 @@ namespace icrar
 {
 namespace cpu
 {
+    using CalibrateResult = std::pair<std::unique_ptr<std::vector<std::queue<IntegrationResult>>>, std::unique_ptr<std::vector<std::queue<CalibrationResult>>>>;
+
     /**
      * @brief 
      * 
-     * @param metadata 
-     * @param directions 
      */
-    void RemoteCalibration(
+    CalibrateResult Calibrate(
+        const icrar::MeasurementSet& ms,
         cuda::MetaData& metadata,
-        const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions);
+        const std::vector<casacore::MVDirection>& directions,
+        int solutionInterval = 3600);
 
     /**
      * @brief 

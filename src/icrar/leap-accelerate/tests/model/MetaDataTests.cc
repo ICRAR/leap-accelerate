@@ -56,7 +56,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename);
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
         }
 
         void TearDown() override
@@ -107,9 +107,7 @@ namespace icrar
 
         void TestSetWv()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            auto ms = casacore::MeasurementSet(filename);
-            auto meta = icrar::casalib::MetaData(ms);
+            auto meta = icrar::casalib::MetaData(*ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
         }

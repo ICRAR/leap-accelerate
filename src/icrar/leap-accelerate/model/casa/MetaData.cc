@@ -194,7 +194,7 @@ namespace casalib
             freq_start_hz,
             freq_start_hz + freq_inc_hz * channels,
             freq_inc_hz);
-        
+       
         for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;

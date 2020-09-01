@@ -71,7 +71,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename);
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
         }
 
         void TearDown() override

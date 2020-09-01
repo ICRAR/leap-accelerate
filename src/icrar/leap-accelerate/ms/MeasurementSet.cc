@@ -25,21 +25,25 @@
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(std::string filepath)
+    MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideStations)
     {
         m_measurementSet = std::make_unique<casacore::MeasurementSet>(filepath);
         m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
         m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
+        
+        m_baselines = overrideStations.is_initialized() ? overrideStations.get() : GetNumStations();
     }
 
-    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms)
+    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideStations)
+    : m_baselines(overrideStations.is_initialized() ? overrideStations.get() : GetNumStations())
     {
         m_measurementSet = std::make_unique<casacore::MeasurementSet>(ms);
         m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
         m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
     }
 
-    MeasurementSet::MeasurementSet(std::istream& stream)
+    MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideStations)
+    : m_baselines(overrideStations.is_initialized() ? overrideStations.get() : GetNumStations())
     {
         // don't skip the whitespace while reading
         std::cin >> std::noskipws;

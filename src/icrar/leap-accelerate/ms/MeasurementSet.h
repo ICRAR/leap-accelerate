@@ -36,6 +36,8 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
+#include <boost/optional.hpp>
+
 #include <iterator>
 #include <string>
 #include <exception>
@@ -51,10 +53,12 @@ namespace icrar
         std::unique_ptr<casacore::MSColumns> m_msc;
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
+        int m_baselines;
+
     public:
-        MeasurementSet(std::string filepath);
-        MeasurementSet(const casacore::MeasurementSet& ms);
-        MeasurementSet(std::istream& stream);
+        MeasurementSet(std::string filepath, boost::optional<int> overrideStations = boost::none);
+        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideStations = boost::none);
+        MeasurementSet(std::istream& stream, boost::optional<int> overrideStations = boost::none);
 
         /**
          * @brief Gets a non-null pointer to a casacore::MeasurementSet
