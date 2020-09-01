@@ -110,21 +110,17 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
-        std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-        {
-            return std::arg(c);
-        };
 
-        auto avg_data = metadata.avg_data.unaryExpr(getAngle);
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
 
-        auto avg_data_t = avg_data(indexes, 0); // 1st pol only
+        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
         auto cal1 = metadata.GetAd1() * avg_data_t;
         assert(cal1.cols() == 1);
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
         Eigen::VectorXi i = metadata.GetI();
-        Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
         
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
@@ -148,7 +144,7 @@ namespace cpu
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        metadata.CalcUVW(ToUVW(uvw));
+        metadata.CalcUVW(uvw);
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
         assert(uvw.size() == integration.baselines);

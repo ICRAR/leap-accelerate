@@ -126,7 +126,7 @@ namespace cpu
         Eigen::MatrixXcd avg_data; // late initialized
 
         MetaData(const casalib::MetaData& metadata);
-        MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws);
+        MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         
         MetaData(icrar::MeasurementSet& ms);
         MetaData(
@@ -152,8 +152,7 @@ namespace cpu
         const Eigen::MatrixXd& GetAd1() const;
 
         void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
-        void SetDD(const casacore::MVDirection& direction);
-        void SetWv();
+        void SetDD(const icrar::MVDirection& direction);
 
         bool operator==(const MetaData& rhs) const;
 

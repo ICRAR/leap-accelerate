@@ -87,7 +87,7 @@ namespace icrar
                 {
                     m_fileStream = std::ifstream(args.filePath.value());
                     m_inputStream = &m_fileStream;
-                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream);
+                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, boost::none);
                 }
                 else
                 {
@@ -97,7 +97,7 @@ namespace icrar
             case InputType::FILENAME:
                 if (m_filePath.is_initialized())
                 {
-                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get());
+                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get(), boost::none);
                 }
                 else
                 {

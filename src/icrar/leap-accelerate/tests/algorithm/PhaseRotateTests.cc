@@ -492,7 +492,7 @@ namespace icrar
                     metadata.num_pols,
                     metadata.GetBaselines());
 
-                auto metadatahost = icrar::cpu::MetaData(metadata, direction, integration.uvw);
+                auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
                 metadataOptionalOutput = metadatahost;
             }
@@ -506,7 +506,7 @@ namespace icrar
                     metadata.num_pols,
                     metadata.GetBaselines());
 
-                auto metadatahost = icrar::cpu::MetaData(metadata, direction, integration.uvw);
+                auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
@@ -524,7 +524,7 @@ namespace icrar
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
 
             //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), direction, expectedIntegration.uvw);
+            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), ToDirection(direction), ToUVWVector(expectedIntegration.uvw));
             expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific

@@ -25,6 +25,10 @@
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
+#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -54,7 +58,7 @@ namespace cpu
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        std::vector<icrar::MVuvw> uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d 
         int integration_number;
 
         union

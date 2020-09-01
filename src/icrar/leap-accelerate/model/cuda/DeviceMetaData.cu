@@ -70,7 +70,7 @@ namespace cuda
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
         UVW.ToHost(uvwTemp);
-        cpu::MetaData result = cpu::MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVWVector(uvwTemp));
+        cpu::MetaData result = cpu::MetaData(casalib::MetaData(), icrar::MVDirection(), uvwTemp);
         ToHost(result);
         return result;
     }

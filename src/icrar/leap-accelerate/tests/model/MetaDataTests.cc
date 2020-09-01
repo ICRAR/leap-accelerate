@@ -121,7 +121,7 @@ namespace icrar
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cpu::MetaData(meta, direction, uvw);
+            auto expectedMetadataHost = icrar::cpu::MetaData(meta, ToDirection(direction), ToUVWVector(uvw));
             auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
 
             // copy from device back to host
