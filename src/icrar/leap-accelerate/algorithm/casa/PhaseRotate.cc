@@ -198,18 +198,19 @@ namespace casalib
             metadata.m_initialized = true;
         }
 
-
         // Zero a vector for averaging in time and freq
         metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
         metadata.avg_data.get() = 0;
 
         metadata.CalcUVW(uvw);
 
+#if _DEBUG
         std::cout << "DD:" << metadata.dd.get() << std::endl;
-        std::cout << "uvw:" << uvw << std::endl;
-        std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
+        //std::cout << "uvw:" << uvw << std::endl;
+        //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
         std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
         std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
+#endif
 
         assert(uvw.size() == integration.baselines);
 
