@@ -230,8 +230,16 @@ namespace casalib
             // For baseline
             const double pi = boost::math::constants::pi<double>();
             double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0) - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1));
-            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline](0) - direction.get()[1] * uvw[baseline](1));
+            shiftFactor = shiftFactor + 2 * pi *
+            (
+                metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
+                - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
+            );
+            shiftFactor = shiftFactor - 2 * pi *
+            (
+                direction.get()[0] * uvw[baseline](0)
+                - direction.get()[1] * uvw[baseline](1)
+            );
 
             if(baseline % 1000 == 1)
             {
