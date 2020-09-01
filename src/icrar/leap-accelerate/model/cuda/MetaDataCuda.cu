@@ -135,7 +135,7 @@ namespace cuda
     {
         this->oldUVW = uvws;
         auto size = uvws.size();
-        this->UVW = std::vector<icrar::MVuvw>();
+        this->UVW.clear();
         this->UVW.reserve(uvws.size());
         for(int n = 0; n < size; n++)
         {

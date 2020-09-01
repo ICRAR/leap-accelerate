@@ -83,7 +83,6 @@ namespace icrar
         {
             const double THRESHOLD = 0.01;
             
-            auto metadata = icrar::casalib::MetaData(*ms);
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -102,15 +101,16 @@ namespace icrar
             std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
             if(impl == ComputeImplementation::casa)
             {
+                auto metadata = icrar::casalib::MetaData(*ms);
                 std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                auto metadatahost = icrar::cuda::MetaData(metadata);
-                std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, metadatahost, directions, 3600);
+                std::tie(pintegrations, pcalibrations) =  icrar::cpu::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
+                
                 //auto metadatahost = icrar::cuda::MetaData(metadata);
                 //auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 //icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
@@ -122,7 +122,7 @@ namespace icrar
         }
     };
 
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen); }
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda); }
 }

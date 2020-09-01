@@ -95,8 +95,6 @@ namespace cuda
         }
 
         bool operator==(const Constants& rhs) const;
-
-
     };
 
     class MetaData

@@ -27,6 +27,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/model/Integration.h>
+
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -57,10 +59,11 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        cuda::MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         int solutionInterval)
     {
+        auto metadata = icrar::casalib::MetaData(ms);
+
         auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
         auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -71,10 +74,10 @@ namespace cpu
             queue.push(Integration(
                 ms,
                 i,
-                metadata.GetConstants().channels,
-                metadata.GetConstants().nbaselines,
-                metadata.GetConstants().num_pols,
-                metadata.GetConstants().nbaselines));
+                metadata.channels,
+                metadata.GetBaselines(),
+                metadata.num_pols,
+                metadata.GetBaselines()));
 
             input_queues.push_back(queue);
             output_integrations->push_back(std::queue<IntegrationResult>());
@@ -83,7 +86,12 @@ namespace cpu
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+            metadata.SetDD(directions[i]);
+            metadata.SetWv();
+            metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
+
+            auto metadatahost = icrar::cuda::MetaData(metadata); // TODO: use other constructor
+            icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
@@ -91,45 +99,38 @@ namespace cpu
 
     void PhaseRotate(
         cuda::MetaData& metadata,
-        const casacore::MVDirection& directions,
+        const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
-//         auto cal = std::vector<casacore::Matrix<double>>();
-//
-//         while(true)
-//         {
-//             boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
-//             if(integration.is_initialized())
-//             {
-//                 input.pop();
-//             }
+        auto cal = std::vector<casacore::Matrix<double>>();
+        while(true)
+        {
+            boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
+            if(integration.is_initialized())
+            {
+                input.pop();
+            }
 
-//             if(integration.is_initialized())
-//             {
-// #if _DEBUG
-//                 std::cout << "rotate visibilities" << std::endl;
-//                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
-//                 std::cout << "direction:" << direction.get() << std::endl;
-// #endif
-//                 icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
-//                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
-//             }
-//             else
-//             {
-//                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-//                 {
-//                     return std::arg(c);
-//                 };
+             if(integration.is_initialized())
+             {
+                icrar::cpu::RotateVisibilities(integration.get(), metadata);
+                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+            }
+            else
+            {
+                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+                {
+                    return std::arg(c);
+                };
 
-//                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
+                auto avg_data = metadata.avg_data.unaryExpr(getAngle);
+                auto& indexes = metadata.I1;
 
-//                 auto indexes = ToVector(metadata.I1);
-
-//                 auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
-//                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
-//                 assert(cal1.shape()[1] == 1);
+                auto avg_data_t = avg_data(indexes, 0); // 1st pol only
+                auto cal1 = metadata.Ad1 * avg_data_t;
+                //assert(cal1.shape()[1] == 1);
 
 //                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
 //                 dInt = 0;
@@ -149,20 +150,23 @@ namespace cpu
 //                 assert(dIntColumn.shape()[1] == 1);
 
 //                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
-//                 break;
-//             }
-//         }
+                 break;
+             }
+         }
 
-//         output_calibrations.push(CalibrationResult(direction, cal));
+         output_calibrations.push(CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, cuda::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;
-        auto& uvw = metadata.UVW;
+        auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
+        //metadata.CalcUVW(uvw); TODO
+
+        assert(metadata.GetConstants().nbaselines == integration.baselines);
         assert(uvw.size() == integration.baselines);
         assert(integration_data.dimension(0) == metadata.m_constants.channels);
         assert(integration_data.dimension(1) == integration.baselines);
