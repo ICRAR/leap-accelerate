@@ -123,7 +123,7 @@ namespace cuda
 
                 for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
                 {
-                    //if(!integration_data(channel, baseline).hasNaN())
+                    //if(!integration_data(channel, baseline).hasNaN()) // TODO: perform this efficiently
                     {
                         avg_data(baseline, i) = cuCadd(avg_data(baseline, i), integration_data(channel, baseline)(i));
                     }
