@@ -68,7 +68,6 @@ namespace cuda
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
-        std::vector<double> channel_wavelength;
 
         union
         {

@@ -167,7 +167,6 @@ namespace cpu
         assert(integration_data.dimension(0) == metadata.m_constants.channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.oldUVW.size() == integration.baselines);
-        assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
         assert(metadata.avg_data.rows() == integration.baselines);
         assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
         
@@ -196,7 +195,7 @@ namespace cpu
             // Loop over channels
             for(int channel = 0; channel < metadata.m_constants.channels; channel++)
             {
-                double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
+                double shiftRad = shiftFactor / metadata.m_constants.GetChannelWavelength(channel);
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
