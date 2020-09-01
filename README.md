@@ -71,11 +71,16 @@ eigen3.3.7 is required, see .travis/before_install_bionic.sh
 
 Testing provided via googletest. To test using CTest use the following command in build/linux:
 
-`make test`
+`make test` or `ctest`
 
-To test using the google test runner, use the following command:
+for verbose output use:
 
 `ctest --verbose`
+
+To test using the google test runner, the test binaries can be executed directly using the following commands:
+
+`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
+`./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
 
 ## Doxygen
 
