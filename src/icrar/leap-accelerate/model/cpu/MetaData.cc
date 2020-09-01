@@ -63,8 +63,8 @@ namespace cpu
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
 
-        oldUVW = ToUVW(metadata.oldUVW);
-        //UVW = ToUVW(metadata.uvw);
+        oldUVW = ToUVWVector(metadata.oldUVW);
+        // UVW = ToUVW(metadata.uvw);
 
         A = ToMatrix(metadata.A);
         I = ToMatrix<int>(metadata.I);
@@ -93,7 +93,7 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws)
+    MetaData::MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
     {
         m_constants.nantennas = metadata.nantennas;
         m_constants.channels = metadata.channels;
@@ -116,9 +116,8 @@ namespace cpu
         I1 = ToMatrix<int>(metadata.I1);
         Ad1 = ToMatrix(metadata.Ad1);
 
-        SetWv();
         SetDD(direction);
-        CalcUVW(ToUVW(uvws));
+        CalcUVW(uvws);
         assert(UVW.size() == uvws.size());
 
         if(metadata.avg_data.is_initialized())
@@ -154,12 +153,25 @@ namespace cpu
         avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
     }
 
-    void MetaData::SetDD(const casacore::MVDirection& direction)
-    {
-        this->direction = ToUVW(direction);
+    // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)
+    // {
+    //     this->oldUVW = uvws;
+    //     auto size = uvws.size();
+    //     this->UVW.setZero(uvws.size());
+    //     for(int n = 0; n < size; n++)
+    //     {
+    //         UVW(n, Eigen::all) = (uvws[n] * dd);
+    //     }
 
-        m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
-        m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
+    //     avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
+    // }
+
+    void MetaData::SetDD(const icrar::MVDirection& direction)
+    {
+        this->direction = direction;
+
+        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad;
+        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad;
 
         dd = Eigen::Matrix3d();
         dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
@@ -173,11 +185,6 @@ namespace cpu
         dd(2,0) = -std::sin(m_constants.dlm_dec);
         dd(2,1) = 0;
         dd(2,2) = std::cos(m_constants.dlm_dec);
-    }
-
-    void MetaData::SetWv()
-    {
-        THROW_NOT_IMPLEMENTED();
     }
 
     bool MetaData::operator==(const MetaData& rhs) const

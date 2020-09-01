@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -149,10 +150,12 @@ namespace icrar
 
     icrar::MVuvw ToUVW(const casacore::MVuvw& value);
     icrar::MVuvw ToUVW(const casacore::MVPosition& value);
-    std::vector<icrar::MVuvw> ToUVW(const std::vector<casacore::MVuvw>& value);
+    std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
+    std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value);
 
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
 
+    icrar::MVDirection ToDirection(const casacore::MVDirection& value);
 }
