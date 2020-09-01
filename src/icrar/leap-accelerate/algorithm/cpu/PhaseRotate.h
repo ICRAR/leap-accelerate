@@ -83,7 +83,7 @@ namespace cpu
     void PhaseRotate(
         cpu::MetaData& metadata,
         const casacore::MVDirection& directions,
-        std::queue<cpu::Integration>& input,
+        std::vector<cpu::Integration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations);
 
