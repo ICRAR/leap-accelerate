@@ -162,10 +162,11 @@ namespace casalib
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
 
+                Eigen::VectorXi e_i = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all); //TODO this is a slow copy
+                
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    Eigen::VectorXi e_i = ToVector(metadata.I);
-                    Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all); //TODO this is a slow copy
                     casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;

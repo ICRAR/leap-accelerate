@@ -27,8 +27,6 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/casa/Integration.h>
 
 #include <icrar/leap-accelerate/cuda/device_tensor.h>
 
@@ -46,6 +44,15 @@
 #include <complex>
 
 #include <cuComplex.h>
+
+namespace icrar
+{
+namespace cpu
+{
+    class Integration;
+}
+}
+
 
 namespace icrar
 {
@@ -69,7 +76,7 @@ namespace cuda
             };
         };
 
-        DeviceIntegration(const icrar::casalib::Integration& integration);
+        DeviceIntegration(const icrar::cpu::Integration& integration);
     };
 }
 }
