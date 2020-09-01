@@ -98,8 +98,10 @@ namespace casalib
             output_calibrations->push_back(std::queue<CalibrationResult>());
         }
 
+#if _DEBUG
         std::cout << "direction count " << directions.size() << std::endl;
         std::cout << "input count " << input_queues.size() << std::endl;
+#endif
 
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -129,10 +131,11 @@ namespace casalib
 
             if(integration.is_initialized())
             {
+#if _DEBUG
                 std::cout << "rotate visibilities" << std::endl;
                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
                 std::cout << "direction:" << direction.get() << std::endl;
-
+#endif
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
@@ -257,21 +260,28 @@ namespace casalib
                 {
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
+#if _DEBUG
                         if(baseline == 0 && polarization == 0)
                         {
                             std::cout << "integration_data(0, 0, 0) :" << integration_data(0, 0, 0) << std::endl;
                             std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
                         }
+#endif
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
+#if _DEBUG
                         if(baseline == 0 && polarization == 0)
                         {
                             std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
                         }
+#endif
                     }
                 }
             }
         }
+          
+#if _DEBUG
         std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
+#endif
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
