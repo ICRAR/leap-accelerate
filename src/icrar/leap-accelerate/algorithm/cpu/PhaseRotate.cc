@@ -66,12 +66,12 @@ namespace cpu
 
         auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
         auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
-        auto input_queues = std::vector<std::queue<cpu::Integration>>();
+        auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto queue = std::queue<cpu::Integration>(); 
-            queue.push(cpu::Integration(
+            auto queue = std::vector<cpu::Integration>(); 
+            queue.push_back(cpu::Integration(
                 ms,
                 i,
                 metadata.channels,
@@ -100,58 +100,45 @@ namespace cpu
     void PhaseRotate(
         cpu::MetaData& metadata,
         const casacore::MVDirection& direction,
-        std::queue<cpu::Integration>& input,
+        std::vector<cpu::Integration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
-        while(true)
+        for(auto& integration : input)
         {
-            boost::optional<cpu::Integration> integration = !input.empty() ? input.front() : (boost::optional<cpu::Integration>)boost::none;
-            if(integration.is_initialized())
-            {
-                input.pop();
-            }
+            icrar::cpu::RotateVisibilities(integration, metadata);
+            output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+        }
+        std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+        {
+            return std::arg(c);
+        };
 
-             if(integration.is_initialized())
-             {
-                icrar::cpu::RotateVisibilities(integration.get(), metadata);
-                output_integrations.push(cpu::IntegrationResult(direction, integration.get().integration_number, boost::none));
-            }
-            else
-            {
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-                {
-                    return std::arg(c);
-                };
+        auto avg_data = metadata.avg_data.unaryExpr(getAngle);
+        auto& indexes = metadata.GetI1();
 
-                auto avg_data = metadata.avg_data.unaryExpr(getAngle);
-                auto& indexes = metadata.GetI1();
+        auto avg_data_t = avg_data(indexes, 0); // 1st pol only
+        auto cal1 = metadata.GetAd1() * avg_data_t;
+        assert(cal1.cols() == 1);
 
-                auto avg_data_t = avg_data(indexes, 0); // 1st pol only
-                auto cal1 = metadata.GetAd1() * avg_data_t;
-                assert(cal1.cols() == 1);
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
+        Eigen::VectorXi i = metadata.GetI();
+        Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
+        
+        for(int n = 0; n < metadata.GetI().size(); ++n)
+        {
+            Eigen::MatrixXd cumsum = metadata.GetA().data()[n] * cal1;
+            double sum = cumsum.sum();
+            dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+        }
 
-                Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-                Eigen::VectorXi i = metadata.GetI();
-                Eigen::MatrixXd avg_data_slice = avg_data(i, Eigen::all);
-                
-                for(int n = 0; n < metadata.GetI().size(); ++n)
-                {
-                    Eigen::MatrixXd cumsum = metadata.GetA().data()[n] * cal1;
-                    double sum = cumsum.sum();
-                    dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
-                }
+        Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
+        assert(dIntColumn.cols() == 1);
 
-                Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
-                assert(dIntColumn.cols() == 1);
+        cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
 
-                cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
-                break;
-             }
-         }
-
-         output_calibrations.push(cpu::CalibrationResult(direction, cal));
+        output_calibrations.push(cpu::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
