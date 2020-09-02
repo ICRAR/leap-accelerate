@@ -18,7 +18,11 @@ LEAP-Accelerate includes:
 
 `mkdir build && cd build`
 
-`mdir linux && cd linux`
+`mkdir linux && cd linux`
+
+`mkdir Debug`
+
+`mkdir Release`
 
 `export CUDA_HOME=/usr/local/cuda`
 
@@ -26,7 +30,17 @@ LEAP-Accelerate includes:
 
 `export PATH=$PATH:$CUDA_HOME/bin`
 
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda"`
+#### Debug
+
+`cd Debug`
+
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
+
+#### Release
+
+`cd Release`
+
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_CXX_FLAGS_RELEASE=-O3 -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 
