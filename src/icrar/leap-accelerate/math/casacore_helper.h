@@ -54,7 +54,7 @@ namespace icrar
     template<typename T>
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
-        return Dot(v1, ConvertMatrix3x3(v2));
+        return Dot(v1, ConvertMatrix<T, 3, 3>(v2));
     }
 
     template<typename T>

@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -43,8 +42,9 @@ namespace icrar
     class Integration
     {
     public:
+        //Integration();
 
-        Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic> data; //data is an array data[nch][nbl][npol]
+        Eigen::Matrix<Eigen::VectorXcd, -1, -1> data; //data is an array data[nch][nbl][npol]
         //Eigen::Tensor<std::complex<double>, 3> data;
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
@@ -89,20 +89,16 @@ namespace icrar
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<casacore::Matrix<double>> m_data;
+        std::vector<casacore::Array<double>> m_data;
 
     public:
         CalibrationResult(
-            const casacore::MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
+            casacore::MVDirection direction,
+            std::vector<casacore::Array<double>> data)
             : m_direction(direction)
             , m_data(data)
         {
+
         }
-
-        const casacore::MVDirection GetDirection() const { return m_direction; }
-        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
-
-        //bool operator==(const CalibrationResult& rhs) const;
     };
 }

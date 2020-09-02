@@ -79,7 +79,7 @@ namespace cuda
 
         if(metadata.dd.is_initialized())
         {
-            dd = ConvertMatrix3x3(metadata.dd.value());
+            dd = ConvertMatrix<double, 3, 3>(metadata.dd.value());
         }
         else
         {

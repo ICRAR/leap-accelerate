@@ -113,14 +113,11 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T>& value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
-        auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
-        for(int i = 0; i < value.size(); ++i)
-        {
-            v(i) = value(casacore::IPosition(1, i));
-        }
-        return v;
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T>

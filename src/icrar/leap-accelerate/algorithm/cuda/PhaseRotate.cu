@@ -101,10 +101,14 @@ namespace cuda
         /// loop over baselines
         for(int baseline = 0; baseline < integration_baselines; ++baseline)
         {
-            const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
+            shiftFactor +=
+            ( 
+                constants.phase_centre_ra_rad * oldUVW[baseline].x
+                - constants.phase_centre_dec_rad * oldUVW[baseline].y
+            );
+            shiftFactor -= direction.x * uvw[baseline].x - direction.y * uvw[baseline].y;
+            shiftFactor *= 2 * CUDART_PI;
 
             // loop over channels
             for(int channel = 0; channel < constants.channels; channel++)
@@ -119,9 +123,8 @@ namespace cuda
 
                 for(int i = 0; i < integration_data(channel, baseline).cols(); i++)
                 {
-                    //if(!integration_data(channel, baseline).hasNaN())
+                    //if(!integration_data(channel, baseline).hasNaN()) // TODO: perform this efficiently
                     {
-                        // make_cuDoubleComplex(0.0, 0.0);
                         avg_data(baseline, i) = cuCadd(avg_data(baseline, i), integration_data(channel, baseline)(i));
                     }
                 }
