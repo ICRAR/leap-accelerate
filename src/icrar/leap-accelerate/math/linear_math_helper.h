@@ -75,7 +75,7 @@ namespace icrar
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         for(int i = 0; i < value.size(); ++i)
         {
-            output(i) = value(casacore::IPosition(1, i));
+            output(i) = value(casacore::IPosition(1, i)); // TODO consider using std::copy or memcpy
         }
         return output;
     }
