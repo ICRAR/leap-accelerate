@@ -58,6 +58,7 @@ eigen3.3.7 is required, see .travis/before_install_bionic.sh
 * cuda 10.1
 * boost 1.71.0
 * casacore 3.1.2
+* eigen 3.3.90
 
 #### Minimum Versions Compatibility
 
@@ -106,7 +107,7 @@ or
 * gprof
 * google-perftools
 
-## Deploy
+## Cluster Deployment
 
 * module help
 * module load
