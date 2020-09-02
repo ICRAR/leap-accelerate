@@ -33,7 +33,7 @@ fail() {
 cd ${TRAVIS_BUILD_DIR}/build
 
 # TravisCI is unable to run cuda
-GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
+export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
 
 # Run unit tests first
 ctest --verbose || fail "unit tests failed"
