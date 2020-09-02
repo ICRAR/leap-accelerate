@@ -62,15 +62,84 @@ using namespace casacore;
 namespace icrar
 {
 namespace cuda
-{ 
-    std::queue<cpu::IntegrationResult> PhaseRotate(
-        DeviceMetaData& metadata,
-        const casacore::MVDirection& direction,
-        std::queue<cpu::Integration>& input,
+{
+    CalibrateResult Calibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval)
+    {
+        // auto metadata = icrar::casalib::MetaData(ms);
+
+        // auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
+        // auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
+        // auto input_queues = std::vector<std::vector<cpu::Integration>>();
+        
+        // for(int i = 0; i < directions.size(); ++i)
+        // {
+        //     auto queue = std::vector<cpu::Integration>(); 
+        //     queue.push_back(cpu::Integration(
+        //         ms,
+        //         i,
+        //         metadata.channels,
+        //         metadata.GetBaselines(),
+        //         metadata.num_pols,
+        //         metadata.GetBaselines()));
+
+        //     input_queues.push_back(queue);
+        //     output_integrations->push_back(std::queue<cpu::IntegrationResult>());
+        //     output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
+        // }
+
+        // for(int i = 0; i < directions.size(); ++i)
+        // {
+        //     metadata.SetDD(directions[i]);
+        //     metadata.SetWv();
+        //     metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
+
+        //     auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
+        //     icrar::gpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+        // }
+
+        // return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+    }
+
+    void PhaseRotate(
+        cpu::MetaData& hostMetadata,
+        DeviceMetaData& deviceMetadata,
+        const icrar::MVDirection& direction,
+        std::vector<cuda::DeviceIntegration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations)
     {
-        throw std::runtime_error("not implemented"); //TODO
+        auto cal = std::vector<casacore::Matrix<double>>();
+        for(auto& integration : input)
+        {
+            icrar::cuda::RotateVisibilities(integration, deviceMetadata);
+            output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+        }
+        deviceMetadata.ToHost(hostMetadata);
+        
+        auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        auto& indexes = hostMetadata.GetI1();
+
+        auto cal1 = hostMetadata.GetAd1() * avg_data_angles(indexes, 0); // 1st pol only
+
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
+        Eigen::VectorXi i = hostMetadata.GetI();
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
+        
+        for(int n = 0; n < hostMetadata.GetI().size(); ++n)
+        {
+            Eigen::MatrixXd cumsum = hostMetadata.GetA().data()[n] * cal1;
+            double sum = cumsum.sum();
+            dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+        }
+
+        Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
+
+        cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
+
+        output_calibrations.push(cpu::CalibrationResult(direction, cal));
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
@@ -85,7 +154,7 @@ namespace cuda
     }
 
     // template<int Dims>
-    // __device __forceinline__ cuDoubleComplex cuCexp(const Eigen::Tensor<cuDoubleComplex, Dims>& tensor)
+    // __device__ __forceinline__ cuDoubleComplex cuCexp(const Eigen::Tensor<cuDoubleComplex, Dims>& tensor)
     // {
         
     // }
@@ -108,7 +177,7 @@ namespace cuda
         auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_rows, integration_data_cols, integration_data_depth);
         auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
 
-        // /// loop over baselines
+        // loop over baselines
         for(int baseline = 0; baseline < integration_baselines; ++baseline)
         {
             const double pi = CUDART_PI;

@@ -86,7 +86,6 @@ namespace icrar
     void LeapRemoteCalibration(const std::vector<MVDirection>& directions)
     {
         //LeapCalibrateFromQueue()
-        
     }
 
     void LeapCalibrateFromQueue(

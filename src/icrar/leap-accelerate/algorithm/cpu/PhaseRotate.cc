@@ -95,7 +95,6 @@ namespace cpu
             icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
 
-        std::cout << "returning" << std::endl;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 

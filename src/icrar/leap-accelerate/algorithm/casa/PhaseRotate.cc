@@ -74,6 +74,7 @@ namespace casalib
         int solutionInterval)
     {
         auto metadata = casalib::MetaData(ms);
+        
         metadata.stations = ms.GetNumStations();
 
         auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();

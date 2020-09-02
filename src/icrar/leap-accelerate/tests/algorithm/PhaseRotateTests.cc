@@ -432,9 +432,9 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                // auto metadatahost = icrar::cpu::MetaData(metadata);
-                // auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                // icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
+                std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>> pintegrations;
+                std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>> pcalibrations;
+                std::tie(pintegrations, pcalibrations) = icrar::cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else
             {

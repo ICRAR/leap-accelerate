@@ -109,8 +109,6 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                //auto metadatahost = icrar::cpu::MetaData(metadata);
-                //auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 //icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
             }
             else

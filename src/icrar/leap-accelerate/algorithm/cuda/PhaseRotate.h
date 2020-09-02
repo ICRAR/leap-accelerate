@@ -25,6 +25,8 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+#include <icrar/leap-accelerate/common/MVDirection.h>
+
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
 //#define EIGEN_CUDACC 1
@@ -36,35 +38,48 @@
 #include <casacore/casa/Arrays/Matrix.h>
 
 #include <queue>
-
-namespace casacore //TODO remove
-{
-    class MDirection;
-    class MVDirection;
-    class MVuvw;
-}
+#include <vector>
 
 namespace icrar
 {
-namespace cpu
+    class MeasurementSet;
+}
+
+namespace icrar::cpu
 {
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
-}
+    class MetaData;
 }
 
-namespace icrar
-{
-namespace cuda
+namespace icrar::cuda
 {
     class DeviceMetaData;
     class DeviceIntegration;
 
-    std::queue<cpu::IntegrationResult> PhaseRotate(
-        DeviceMetaData& metadata,
-        const casacore::MVDirection& direction,
-        std::queue<cpu::Integration>& input,
+    using CalibrateResult = std::pair<
+        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
+        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
+    >;
+
+    /**
+     * @brief 
+     * 
+     */
+    CalibrateResult Calibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval = 3600);
+
+    /**
+     * Performs only visibilities rotation on the GPU
+     */
+    void PhaseRotate(
+        cpu::MetaData& hostMetadata,
+        DeviceMetaData& deviceMetadata,
+        const icrar::MVDirection& direction,
+        std::vector<cuda::DeviceIntegration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations);
 
@@ -77,5 +92,4 @@ namespace cuda
          const Eigen::VectorXi& a2,
          int refAnt,
          bool map);
-}
 }
