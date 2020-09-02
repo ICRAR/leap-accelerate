@@ -24,6 +24,7 @@
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
@@ -89,16 +90,21 @@ namespace icrar
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<casacore::Array<double>> m_data;
+        std::vector<casacore::Matrix<double>> m_data;
 
     public:
         CalibrationResult(
             casacore::MVDirection direction,
-            std::vector<casacore::Array<double>> data)
+            std::vector<casacore::Matrix<double>> data)
             : m_direction(direction)
             , m_data(data)
         {
 
         }
+
+        const casacore::MVDirection GetDirection() const { return m_direction; }
+        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+
+        //bool operator==(const CalibrationResult& rhs) const;
     };
 }

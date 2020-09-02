@@ -167,7 +167,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(CalibrationResult(direction, cal));
+        output_calibrations.push(icrar::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)

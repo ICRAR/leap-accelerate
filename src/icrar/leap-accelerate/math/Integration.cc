@@ -52,6 +52,18 @@ namespace icrar
     bool Integration::operator==(const Integration& rhs) const
     {
         // There should be a nicer way of doing this, using Eigen::Tensor is one of them
+        bool dimsEqual = true;
+        dimsEqual &= data.rows() == rhs.data.rows();
+        dimsEqual &= data.cols() == rhs.data.cols();
+        for(int row = 0; row < data.rows(); ++row)
+        {
+            for(int col = 0; col < data.cols(); ++col)
+            {
+                dimsEqual &= data(row,col).size() == rhs.data(row,col).size();
+            }
+        }
+        if(!dimsEqual) return false;
+
         bool dataEqual = true;
         for(int row = 0; row < data.rows(); ++row)
         {
