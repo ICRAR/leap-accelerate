@@ -20,26 +20,37 @@
  * MA 02111 - 1307  USA
  */
 
-#include "utils.h"
+#pragma once
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
-using namespace casacore;
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/LU>
+
+#include <iostream>
+#include <string>
+#include <memory>
+#include <vector>
+#include <complex>
+#include <queue>
+#include <limits>
 
 namespace icrar
 {
-    std::unique_ptr<MeasurementSet> ParseMeasurementSet(std::istream& input)
-    {
-        // don't skip the whitespace while reading
-        std::cin >> std::noskipws;
+namespace casalib
+{
+    /**
+     * @see PseudoInverse
+     */
+    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a);
 
-        // use stream iterators to copy the stream to a string
-        std::istream_iterator<char> it(std::cin);
-        std::istream_iterator<char> end;
-        std::string results = std::string(it, end);
-
-        std::cout << results;
-
-        return std::make_unique<MeasurementSet>(results);
-    }
+    /**
+     * @see SVDPseudoInverse
+     */
+    casacore::Matrix<double> SVDPseudoInverse(
+        const casacore::Matrix<double>& a,
+        double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
+}
 }

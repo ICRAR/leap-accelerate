@@ -20,26 +20,28 @@
  * MA 02111 - 1307  USA
  */
 
-#include "utils.h"
+#pragma once
 
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <casacore/casa/Arrays/Matrix.h>
 
-using namespace casacore;
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/LU>
+
+namespace Eigen
+{
+    template<typename T>
+    using Matrix3D = Eigen::Matrix<EigenMatrix<T, -1, 1>, -1, -1>;
+}
 
 namespace icrar
 {
-    std::unique_ptr<MeasurementSet> ParseMeasurementSet(std::istream& input)
+namespace cpu
+{
+    template<typename T>
+    Matrix3D Matrix3DZeros(int rows, int cols, int depth)
     {
-        // don't skip the whitespace while reading
-        std::cin >> std::noskipws;
 
-        // use stream iterators to copy the stream to a string
-        std::istream_iterator<char> it(std::cin);
-        std::istream_iterator<char> end;
-        std::string results = std::string(it, end);
-
-        std::cout << results;
-
-        return std::make_unique<MeasurementSet>(results);
     }
+}
 }

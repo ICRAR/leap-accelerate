@@ -20,35 +20,14 @@
 *    MA 02111-1307  USA
 */
 
-#include <exception>
-#include <string>
-#include <strstream>
+#include "vector.h"
 
 namespace icrar
 {
-    class exception : public std::exception
-    {
-        std::string m_message;
-
-    public:
-        exception(std::string msg, std::string file, int line)
-        {
-            std::strstream ss;
-            ss << file << ":" << line << ":\n" << msg;
-            m_message = ss.str();
-        }
-
-        virtual const char* what() const noexcept override
-        {
-            return m_message.c_str();
-        }
-    };
-
-    class not_implemented_exception : icrar::exception
-    {
-    public:
-        not_implemented_exception(std::string file, int line) : exception("not implemented", file, line) {}
-    };
+namespace casalib
+{
+    void add(const casacore::Array<double>& a, const casacore::Array<double>& b, casacore::Array<double>& c) { add(a, b, c); }
+    void add(const casacore::Array<float>& a, const casacore::Array<float>& b, casacore::Array<float>& c) { add(a, b, c); }
+    void add(const casacore::Array<int>& a, const casacore::Array<int>& b, casacore::Array<int>& c) { add(a, b, c); }
 }
-
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
+}

@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/math/cpu/Invert.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/math/casa/matrix_invert.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -42,9 +42,11 @@
 
 namespace icrar
 {
+namespace casalib
+{
     struct MetaData
     {
-        bool init;
+        bool m_initialized;
 
         int nantennas;
         //int nbaseline;
@@ -56,14 +58,14 @@ namespace icrar
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        int solution_interval;
+        int solution_interval; // TODO can remove?
 
         std::vector<double> channel_wavelength;
         std::vector<casacore::MVuvw> oldUVW;
 
-        casacore::Matrix<std::complex<double>> avg_data; // casacore::Array<casacore::MVuvw> avg_data;
-        
         boost::optional<casacore::Matrix<double>> dd;
+
+        boost::optional<casacore::Matrix<std::complex<double>>> avg_data; 
 
         union
         {
@@ -98,14 +100,6 @@ namespace icrar
         MetaData();
         MetaData(std::istream& input);
         MetaData(const casacore::MeasurementSet& ms);
-
-        /**
-         * @brief 
-         * 
-         * @param metadata 
-         * @param direction 
-         */
-        void SetDD(const casacore::MVDirection& direction);
         
         /**
          * @brief 
@@ -113,7 +107,7 @@ namespace icrar
          * @param metadata 
          */
         void SetWv();
-        
+
         /**
          * @brief 
          * 
@@ -122,6 +116,14 @@ namespace icrar
          */
         void CalcUVW(std::vector<casacore::MVuvw>& uvw);
 
+        /**
+         * @brief 
+         * 
+         * @param metadata 
+         * @param direction 
+         */
+        void SetDD(const casacore::MVDirection& direction);
+
         bool operator==(const MetaData& rhs) const;
 
         // void SetDlmRa(double value) { dlm_ra; }
@@ -129,42 +131,5 @@ namespace icrar
         // void SetDlmdDec(double value);
         // double GetDlmdDec();
     };
-
-    class MetaDataVerified
-    {
-        int m_antennas;
-        int m_baseline;
-        int m_channels;
-        int m_stations;
-
-    public:
-        MetaDataVerified(int antennas, int baselines, int channels, int polarizations, int stations)
-        : m_antennas(antennas)
-        , m_baseline(baselines)
-        , m_channels(channels)
-        , m_stations(stations)
-        {
-
-        }
-    };
-
-    //class Stats
-    // {
-    // public:
-    //     bool m_init;
-    //     int m_channels; // The number of channels of the current observation
-    //     int m_num_pols; // The number of polarizations used by the current observation
-    //     int m_stations; // The number of stations used by the current observation
-    //     int m_rows;
-
-    //     int solution_interval; // Solve for every 'interval' cycles
-    //     double phase_centre_ra_rad; // The RA phase centre in radians
-    //     double phase_centre_dec_rad; // The DEC phase centre in radians
-
-    //     Matrixd A;
-    //     Matrixd Ad;
-    //     Matrixd Ad1;
-    //     Matrixd I1;
-    //     Matrixd I;
-    // };
+}
 }

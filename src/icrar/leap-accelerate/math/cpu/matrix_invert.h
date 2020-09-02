@@ -69,8 +69,8 @@ namespace cpu
      * 
      * @param A
      */
-    template<typename Matrix_T>
-    Matrix_T PseudoInverse(const Matrix_T& a)
+    template<typename T>
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
     {
         #if EIGEN_VERSION_AT_LEAST(3,3,0)
         return a.completeOrthogonalDecomposition().pseudoInverse();
@@ -78,15 +78,5 @@ namespace cpu
         return SVDPseudoInverse(a);
         #endif
     }
-
-    /**
-     * @see PseudoInverse
-     */
-    casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a);
-
-    /**
-     * @see SVDPseudoInverse
-     */
-    casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a,  double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
 }
 }

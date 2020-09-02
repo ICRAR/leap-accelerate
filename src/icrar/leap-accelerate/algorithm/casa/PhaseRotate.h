@@ -22,9 +22,12 @@
 
 #pragma once
 
+#include <casacore/casa/Arrays/Vector.h>
+#include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/ms/MeasurementSets.h>
 
-#include <eigen3/Eigen/Core>
+#include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Quanta/MVuvw.h>
 
 #include <string>
 #include <memory>
@@ -32,38 +35,26 @@
 #include <complex>
 #include <queue>
 
-namespace casacore
-{
-    class MDirection;
-    class MVDirection;
-    class MVuvw;
-}
-
 namespace icrar
 {
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
-    
-    namespace cuda
-    {
-        struct MetaData;
-    }
 }
 
 namespace icrar
 {
-namespace cpu
+namespace casalib
 {
+    struct MetaData;
+
     /**
      * @brief 
      * 
      * @param metadata 
      * @param directions 
      */
-    void RemoteCalibration(
-        cuda::MetaData& metadata,
-        const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions);
+    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
 
     /**
      * @brief 
@@ -73,21 +64,20 @@ namespace cpu
      * @param input 
      */
     void PhaseRotate(
-        cuda::MetaData& metadata,
+        MetaData& metadata,
         const casacore::MVDirection& directions,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);
 
     /**
-     * @brief Performs averaging over each baseline, channel and polarization.
+     * @brief 
      * 
      * @param integration 
      * @param metadata 
+     * @param direction 
      */
-    void RotateVisibilities(
-        Integration& integration,
-        cuda::MetaData& metadata);
+    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction);
 
     /**
      * @brief Form Phase Matrix
@@ -102,9 +92,9 @@ namespace cpu
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
-    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
-        const Eigen::VectorXi& a1,
-        const Eigen::VectorXi& a2,
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
 }

@@ -22,8 +22,8 @@
 
 #include "Calibrate.h"
 
-#include <icrar/leap-accelerate/MetaData.h>
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -64,7 +64,7 @@ namespace icrar
         MeasurementSet ms = MeasurementSet(ms_filename);
         throw std::runtime_error("not implemented");
 
-        MetaData metadata = MetaData(ms);
+        casalib::MetaData metadata = casalib::MetaData(ms);
     }
 
     void ClientLeapRemoteCalibration(std::string host, short port, std::string ms_path, const std::vector<MVDirection>& directions, boost::optional<int> overrideStations, int solutionInterval=3600)
@@ -74,7 +74,7 @@ namespace icrar
 
     void LeapRemoteCalibration(std::istream& input, std::ostream& output, boost::optional<int> overrideStations)
     {
-        MetaData metadata = MetaData(input);
+        casalib::MetaData metadata = casalib::MetaData(input);
 
         if(overrideStations.is_initialized())
         {
@@ -91,9 +91,9 @@ namespace icrar
 
     void LeapCalibrateFromQueue(
         const MVDirection& direction,
-        MetaData& metadata)
+        casalib::MetaData& metadata)
     {
         icrar::Integration integration;
-        icrar::cpu::RotateVisibilities(integration, metadata, direction);
+        icrar::casalib::RotateVisibilities(integration, metadata, direction);
     }
 }

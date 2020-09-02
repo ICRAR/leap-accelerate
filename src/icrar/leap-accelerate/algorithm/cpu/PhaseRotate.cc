@@ -23,15 +23,12 @@
 
 #include "PhaseRotate.h"
 
+#include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-
-#include <icrar/leap-accelerate/utils.h>
-#include <icrar/leap-accelerate/MetaData.h>
 #include <icrar/leap-accelerate/math/Integration.h>
 
-#include <icrar/leap-accelerate/math/cpu/matrix.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -39,9 +36,6 @@
 
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
-
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/casa/Arrays/Vector.h>
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
@@ -62,92 +56,43 @@ namespace icrar
 {
 namespace cpu
 {
-    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions)
+    void RemoteCalibration(cuda::MetaData& metadata, const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions)
     {
-        auto input_queues = std::vector<std::queue<Integration>>(directions.size());
-        auto output_integrations = std::vector<std::queue<IntegrationResult>>(directions.size());
-        auto output_calibrations = std::vector<std::queue<CalibrationResult>>(directions.size());
 
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
-        }
     }
 
     void PhaseRotate(
-        MetaData& metadata,
-        const casacore::MVDirection& direction,
+        cuda::MetaData& metadata,
+        const casacore::MVDirection& directions,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations)
     {
-        auto cal = std::vector<casacore::Array<double>>();
-
-        while(true)
-        {
-            boost::optional<Integration> integration = !input.empty() ? input.front() : (boost::optional<Integration>)boost::none;
-            input.pop();
-
-            if(integration.is_initialized())
-            {
-                icrar::cpu::RotateVisibilities(integration.get(), metadata, direction);
-                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
-            }
-            else
-            {
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-                {
-                    return std::arg(c);
-                };
-                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data, getAngle);
-                casacore::Array<double> cal1 = icrar::cpu::multiply(metadata.Ad1, avg_data.column(0));// TODO: (IPosition(0, metadata.I1)); //diagonal???
-                casacore::Matrix<double> dInt = avg_data(Slice(0, 0), Slice(metadata.I.shape()[0], metadata.I.shape()[1]));
-                
-                for(int n = 0; n < metadata.I.size(); ++n)
-                {
-                    dInt[n] = avg_data(IPosition(metadata.I)) - metadata.A(IPosition(1, n)) * cal1;
-                }
-                cal.push_back(icrar::cpu::multiply(metadata.Ad, dInt) + cal1);
-                break;
-            }
-        }
-
-        output_calibrations.push(CalibrationResult(direction, cal));
+        
     }
 
-    void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
+    void RotateVisibilities(Integration& integration, cuda::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
         auto& data = integration.data;
-        auto& uvw = integration.uvw;
+        auto& uvw = metadata.UVW;
         auto parameters = integration.parameters;
 
-        if(metadata.init)
-        {
-            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
-            
-            metadata.SetDD(direction);
-            metadata.SetWv();
-            // Zero a vector for averaging in time and freq
-            metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
-            metadata.init = false;
-        }
-        metadata.CalcUVW(uvw);
-
         assert(uvw.size() == integration.baselines);
-        assert(data.rows() == metadata.channels);
+        assert(data.rows() == metadata.m_constants.channels);
         assert(data.cols() == integration.baselines);
         assert(metadata.oldUVW.size() == integration.baselines);
-        assert(metadata.channel_wavelength.size() == metadata.channels);
-
+        assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
+        assert(metadata.avg_data.rows() == integration.baselines);
+        assert(metadata.avg_data.cols() == metadata.m_constants.num_pols);
+        
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            // For baseline
             const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor -2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
+            double shiftFactor = -2 * pi * uvw[baseline](2) - metadata.oldUVW[baseline](2); // check these are correct
+            shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline](0));
+            shiftFactor = shiftFactor - 2 * pi * (metadata.direction(0) * uvw[baseline](0) - metadata.direction(1) * uvw[baseline](1));
 
             if(baseline % 1000 == 1)
             {
@@ -155,24 +100,26 @@ namespace cpu
             }
 
             // Loop over channels
-            for(int channel = 0; channel < metadata.channels; channel++)
+            for(int channel = 0; channel < metadata.m_constants.channels; channel++)
             {
-                double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-                std::complex<double> v = data(channel, baseline);
+                double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
 
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-                if(data(channel, baseline).real() == NAN
-                || data(channel, baseline).imag() == NAN)
+                data(channel, baseline) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+
+                if(!data(channel, baseline).hasNaN())
                 {
-                    metadata.avg_data(1, baseline) += data(channel, baseline);
+                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    {
+                        metadata.avg_data(baseline, i) += data(channel, baseline)(i);
+                    }
                 }
             }
         }
     }
 
-    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Vector<std::int32_t>& a1,
-        const casacore::Vector<std::int32_t>& a2,
+std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+        const Eigen::VectorXi& a1,
+        const Eigen::VectorXi& a2,
         int refAnt,
         bool map)
     {
@@ -181,19 +128,20 @@ namespace cpu
             throw std::invalid_argument("a1 and a2 must be equal size");
         }
 
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
+        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
+        unique.insert(a2.begin(), a2.end());
         int nAnt = unique.size();
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
-        A = 0.0;
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
 
-        Vector<int> I = Vector<int>(a1.size() + 1);
-        I = 1;
+        int STATIONS = A.cols() - 1; //TODO verify correctness
+
+        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
+        I.setConstant(1);
 
         int k = 0;
 
@@ -216,13 +164,13 @@ namespace cpu
             A(k, refAnt) = 1;
             k++;
             
-            auto Atemp = casacore::Matrix<double>(k, 127);
-            Atemp = A(Slice(0, k), Slice(0, 127));
+            auto Atemp = Eigen::MatrixXd(k, STATIONS);
+            Atemp = A(Eigen::seq(0, k), Eigen::seq(0, STATIONS));
             A.resize(0,0);
             A = Atemp;
 
-            auto Itemp = casacore::Vector<int>(k);
-            Itemp = I(Slice(0, k));
+            auto Itemp = Eigen::VectorXi(k);
+            Itemp = I(Eigen::seq(0, k));
             I.resize(0);
             I = Itemp;
         }

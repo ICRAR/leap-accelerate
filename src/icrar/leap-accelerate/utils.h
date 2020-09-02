@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/MetaData.h>
+#include <icrar/leap-accelerate/model/MetaData.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>

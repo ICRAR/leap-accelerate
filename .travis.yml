@@ -45,7 +45,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-6, doxygen, libeigen3-dev, libgsl-dev, libboost1.58-all-dev]
+      packages: [g++-6, doxygen, libgsl-dev, libboost1.58-all-dev]
     env: COMPILER=g++-6 CUDA=9 PYTHON=python3
   - os: linux
     dist:

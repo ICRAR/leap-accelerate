@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
+//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -41,8 +42,12 @@ namespace icrar
     class Integration
     {
     public:
-        Eigen::MatrixXcd data;
-        std::vector<casacore::MVuvw> uvw;
+        //Integration();
+
+        Eigen::Matrix<Eigen::VectorXcd, -1, -1> data; //data is an array data[nch][nbl][npol]
+        //Eigen::Tensor<std::complex<double>, 3> data;
+
+        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
 
         union
@@ -59,7 +64,35 @@ namespace icrar
 
         bool operator==(const Integration& rhs) const
         {
-            return data.isApprox(rhs.data, 0.001)
+            // There should be a nicer way of doing this, using Eigen::Tensor is one of them
+            bool dimsEqual = true;
+            dimsEqual &= data.rows() == rhs.data.rows();
+            dimsEqual &= data.cols() == rhs.data.cols();
+            for(int row = 0; row < data.rows(); ++row)
+            {
+                for(int col = 0; col < data.cols(); ++col)
+                {
+                    dimsEqual &= data(row,col).size() == rhs.data(row,col).size();
+                }
+            }
+            if(!dimsEqual) return false;
+
+            bool dataEqual = true;
+            for(int row = 0; row < data.rows(); ++row)
+            {
+                for(int col = 0; col < data.cols(); ++col)
+                {
+                    for(int depth = 0; depth < data(row,col).cols(); ++depth)
+                    {
+                        if(data(row, col)(depth) != rhs.data(row, col)(depth))
+                        {
+                            dataEqual = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            return dataEqual
             && uvw == rhs.uvw
             && integration_number == rhs.integration_number;
         }

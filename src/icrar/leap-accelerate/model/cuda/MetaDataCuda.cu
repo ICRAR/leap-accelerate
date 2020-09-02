@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+
 namespace icrar
 {
 namespace cuda
@@ -35,6 +36,7 @@ namespace cuda
         && num_pols == rhs.num_pols
         && stations == rhs.stations
         && rows == rhs.rows
+        && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
         && channel_wavelength == rhs.channel_wavelength
@@ -44,13 +46,14 @@ namespace cuda
         && dlm_dec == rhs.dlm_dec;
     }
 
-    MetaDataCudaHost::MetaDataCudaHost(const MetaData& metadata)
+    MetaData::MetaData(const casalib::MetaData& metadata)
     {
         m_constants.nantennas = metadata.nantennas;
         m_constants.channels = metadata.channels;
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;
         m_constants.rows = metadata.rows;
+        m_constants.solution_interval = metadata.solution_interval;
         m_constants.freq_start_hz = metadata.freq_start_hz;
         m_constants.freq_inc_hz = metadata.freq_inc_hz;
         m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
@@ -58,19 +61,13 @@ namespace cuda
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
 
-        init = metadata.init;
-        oldUVW = metadata.oldUVW;
+        if( metadata.channel_wavelength.empty())
+        {
+            throw std::runtime_error("channel_wavelength: metadata not initialized, use alternative constructor");
+        }
+        m_constants.channel_wavelength = metadata.channel_wavelength;
 
-        avg_data = ConvertMatrix(metadata.avg_data);
-        
-        if(metadata.dd.is_initialized())
-        {
-            dd = ConvertMatrix3x3(metadata.dd.value());
-        }
-        else
-        {
-            throw std::runtime_error("dd is required");
-        }
+        oldUVW = ToUVW(metadata.oldUVW);
 
         A = ConvertMatrix(metadata.A);
         I = ConvertMatrix<int>(metadata.I);
@@ -79,30 +76,87 @@ namespace cuda
         A1 = ConvertMatrix(metadata.A1);
         I1 = ConvertMatrix<int>(metadata.I1);
         Ad1 = ConvertMatrix(metadata.Ad1);
+
+        if(metadata.dd.is_initialized())
+        {
+            dd = ConvertMatrix<double, 3, 3>(metadata.dd.value());
+        }
+        else
+        {
+            throw std::runtime_error("dd: metadata not initialized, use alternative constructor");
+        }
+
+        if(metadata.avg_data.is_initialized())
+        {
+            avg_data = ConvertMatrix(metadata.avg_data.value());
+        }
+        else
+        {
+            throw std::runtime_error("avg_data: metadata not initialized, use alternative constructor");
+        }
     }
 
-    const Constants& MetaDataCudaHost::GetConstants() const
+    MetaData::MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws)
+    {
+        m_constants.nantennas = metadata.nantennas;
+        m_constants.channels = metadata.channels;
+        m_constants.num_pols = metadata.num_pols;
+        m_constants.stations = metadata.stations;
+        m_constants.rows = metadata.rows;
+        m_constants.solution_interval = metadata.solution_interval;
+        m_constants.freq_start_hz = metadata.freq_start_hz;
+        m_constants.freq_inc_hz = metadata.freq_inc_hz;
+        m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
+        m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
+        m_constants.dlm_ra = metadata.dlm_ra;
+        m_constants.dlm_dec = metadata.dlm_dec;
+
+        A = ConvertMatrix(metadata.A);
+        I = ConvertMatrix<int>(metadata.I);
+        Ad = ConvertMatrix(metadata.Ad);
+
+        A1 = ConvertMatrix(metadata.A1);
+        I1 = ConvertMatrix<int>(metadata.I1);
+        Ad1 = ConvertMatrix(metadata.Ad1);
+
+        SetWv();
+        SetDD(direction);
+        CalcUVW(ToUVW(uvws));
+        assert(UVW.size() == uvws.size());
+
+        if(metadata.avg_data.is_initialized())
+        {
+            avg_data = ConvertMatrix(metadata.avg_data.value());
+        }
+    }
+
+    const Constants& MetaData::GetConstants() const
     {
         return m_constants;
     }
 
-    void MetaDataCudaHost::CalcUVW(std::vector<casacore::MVuvw>& uvws)
+    void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
     {
         this->oldUVW = uvws;
         auto size = uvws.size();
-        uvws.clear();
+        this->UVW = std::vector<icrar::MVuvw>();
+        this->UVW.reserve(uvws.size());
         for(int n = 0; n < size; n++)
         {
-            auto uvw = icrar::Dot(uvws[n], dd);
-            uvws.push_back(uvw);
+            UVW.push_back(uvws[n] * dd);
         }
+
+        avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
     }
 
-    void MetaDataCudaHost::SetDD(const casacore::MVDirection& direction)
+    void MetaData::SetDD(const casacore::MVDirection& direction)
     {
+        this->direction = ToUVW(direction);
+
         m_constants.dlm_ra = direction.get()[0] - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = direction.get()[1] - m_constants.phase_centre_dec_rad;
 
+        dd = Eigen::Matrix3d();
         dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
         dd(0,1) = -std::sin(m_constants.dlm_ra);
         dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
@@ -116,40 +170,41 @@ namespace cuda
         dd(2,2) = std::cos(m_constants.dlm_dec);
     }
 
-    void MetaDataCudaHost::SetWv()
+    void MetaData::SetWv()
     {
-        double speed_of_light = 299792458.0;
         m_constants.channel_wavelength = range(
             m_constants.freq_start_hz,
-            m_constants.freq_inc_hz,
-            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels);
+            m_constants.freq_start_hz + m_constants.freq_inc_hz * m_constants.channels,
+            m_constants.freq_inc_hz);
+        
+        double speed_of_light = 299792458.0;
         for(double& v : m_constants.channel_wavelength)
         {
             v = speed_of_light / v;
         }
     }
 
-    bool MetaDataCudaHost::operator==(const MetaDataCudaHost& rhs) const
+    bool MetaData::operator==(const MetaData& rhs) const
     {
-        return init == rhs.init
-        && m_constants == rhs.m_constants
+        return m_constants == rhs.m_constants
         && oldUVW == rhs.oldUVW
-        && avg_data == rhs.avg_data
-        && dd == rhs.dd
+        && UVW == rhs.UVW
         && A == rhs.A
         && I == rhs.I
         && Ad == rhs.Ad
         && A1 == rhs.A1
         && I1 == rhs.I1
-        && Ad1 == rhs.Ad1;
+        && Ad1 == rhs.Ad1
+        && dd == rhs.dd
+        && avg_data == rhs.avg_data;
     }
 
-    MetaDataCudaDevice::MetaDataCudaDevice(const MetaDataCudaHost& metadata)
+    DeviceMetaData::DeviceMetaData(const MetaData& metadata)
     : constants(metadata.GetConstants())
-    , init(metadata.init)
+    , UVW(metadata.UVW)
     , oldUVW(metadata.oldUVW)
-    , avg_data(metadata.avg_data)
     , dd(metadata.dd)
+    , avg_data(metadata.avg_data)
     , A(metadata.A)
     , I(metadata.I)
     , Ad(metadata.Ad)
@@ -160,31 +215,36 @@ namespace cuda
 
     }
 
-    void MetaDataCudaDevice::ToHost(MetaDataCudaHost& metadata) const
+    void DeviceMetaData::ToHost(MetaData& metadata) const
     {
-        metadata.init = init;
         metadata.m_constants = constants;
-        oldUVW.ToHost(metadata.oldUVW);
-        avg_data.ToHost(metadata.avg_data);
-        dd.ToHost(metadata.dd);
+
         A.ToHost(metadata.A);
         I.ToHost(metadata.I);
         Ad.ToHost(metadata.Ad);
         A1.ToHost(metadata.A1);
         I1.ToHost(metadata.I1);
         Ad1.ToHost(metadata.Ad1);
+
+        oldUVW.ToHost(metadata.oldUVW);
+        UVW.ToHost(metadata.UVW);
+        metadata.direction = direction;
+        metadata.dd = dd;
+        avg_data.ToHost(metadata.avg_data);
     }
 
-    MetaDataCudaHost MetaDataCudaDevice::ToHost() const
+    MetaData DeviceMetaData::ToHost() const
     {
-        auto meta = MetaData();
-        meta.SetDD(casacore::MVDirection(0.0, 0.0));
-        MetaDataCudaHost result = MetaDataCudaHost(meta);
+        //TODO: tidy up using a constructor for now
+        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
+        std::vector<icrar::MVuvw> uvwTemp;
+        UVW.ToHost(uvwTemp);
+        MetaData result = MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVW(uvwTemp));
         ToHost(result);
         return result;
     }
 
-    void MetaDataCudaDevice::ToHostAsync(MetaDataCudaHost& host) const
+    void DeviceMetaData::ToHostAsync(MetaData& host) const
     {
         throw std::runtime_error("not implemented");
     }

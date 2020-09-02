@@ -25,6 +25,9 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+#define EIGEN_HAS_CXX11 1
+#define EIGEN_VECTORIZE_GPU 1
+#define EIGEN_CUDACC 1
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
 
@@ -46,18 +49,17 @@ namespace icrar
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
-    class MetaData;
 }
 
 namespace icrar
 {
 namespace cuda
 {
-    class MetaDataCudaHost;
-    class MetaDataCudaDevice;
+    class MetaData;
+    class DeviceMetaData;
 
     std::queue<IntegrationResult> PhaseRotate(
-        MetaDataCudaHost& metadata,
+        DeviceMetaData& metadata,
         const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
@@ -65,12 +67,11 @@ namespace cuda
 
     void RotateVisibilities(
         Integration& integration,
-        MetaDataCudaHost& metadata,
-        const casacore::MVDirection& direction);
+        DeviceMetaData& metadata);
 
-    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-         const casacore::Vector<std::int32_t>& a1,
-         const casacore::Vector<std::int32_t>& a2,
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+         const Eigen::VectorXi& a1,
+         const Eigen::VectorXi& a2,
          int refAnt,
          bool map);
 }

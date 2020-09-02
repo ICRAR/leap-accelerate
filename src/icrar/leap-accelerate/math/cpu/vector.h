@@ -73,16 +73,5 @@ namespace cpu
 
         add(a.size(), a.data(), b.data(), c.data());
     }
-
-    template<typename T>
-    void add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
-    {
-        if (a.shape() != b.shape() && a.shape() != c.shape())
-        {
-            throw std::runtime_error("argument shapes must be equal");
-        }
-
-        add(a.shape()[0], a.data(), b.data(), c.data());
-    }
 }
 }

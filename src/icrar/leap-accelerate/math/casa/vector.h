@@ -20,35 +20,23 @@
 *    MA 02111-1307  USA
 */
 
-#include <exception>
-#include <string>
-#include <strstream>
+#pragma once
+
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 
 namespace icrar
 {
-    class exception : public std::exception
+namespace cpu
+{
+    template<typename T>
+    void add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
-        std::string m_message;
-
-    public:
-        exception(std::string msg, std::string file, int line)
+        if (a.shape() != b.shape() && a.shape() != c.shape())
         {
-            std::strstream ss;
-            ss << file << ":" << line << ":\n" << msg;
-            m_message = ss.str();
+            throw std::runtime_error("argument shapes must be equal");
         }
 
-        virtual const char* what() const noexcept override
-        {
-            return m_message.c_str();
-        }
-    };
-
-    class not_implemented_exception : icrar::exception
-    {
-    public:
-        not_implemented_exception(std::string file, int line) : exception("not implemented", file, line) {}
-    };
+        add(a.size(), a.data(), b.data(), c.data());
+    }
 }
-
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
+}

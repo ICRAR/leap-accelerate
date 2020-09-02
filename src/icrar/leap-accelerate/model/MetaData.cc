@@ -22,6 +22,7 @@
 
 #include "MetaData.h"
 
+#include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
@@ -32,6 +33,8 @@
 using namespace casacore;
 
 namespace icrar
+{
+namespace casalib
 {
     MetaData::MetaData()
     {
@@ -44,7 +47,7 @@ namespace icrar
         auto msc = std::make_unique<casacore::MSColumns>(rms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
 
-        this->init = true;
+        this->m_initialized = false;
         this->stations = 0;
         this->nantennas = 0;
         this->solution_interval = 3601;
@@ -90,27 +93,31 @@ namespace icrar
         {
             msc->observation().timeRange().get(0, range);
         }
-        //start_time = range[0];
-        //end_time = range[1];
-
 
         casacore::Vector<double> time = msmc->time().getColumn();
-        //msmc.time();
 
-        this->nantennas = 4853; //TODO
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(Slice(0, 4853, 1)); //TODO
-        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(Slice(0, 4853, 1)); //TODO
+        //select the first epoch only
+        double epoch = time[0];
+        int nEpochs = 0;
+        for(int i = 0; i < time.size(); i++)
+        {
+            if(time[i] == time[0]) nEpochs++;
+        }
+        auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
         //Start calculations
         casacore::Matrix<double> A1;
         casacore::Array<std::int32_t> I1;
-        std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(a1, a2, 0);
-        casacore::Matrix<double> Ad1 = icrar::cpu::PseudoInverse(A1);
+        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
+        casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
 
         casacore::Matrix<double> A;
         casacore::Array<std::int32_t> I;
-        std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad = icrar::cpu::PseudoInverse(A);
+        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
+        casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
 
         this->A = A;
         this->Ad = Ad;
@@ -118,6 +125,10 @@ namespace icrar
         this->Ad1 = Ad1;
         this->I1 = I1;
         this->I = I;
+
+        //preallocate
+        //this->dd;
+        //this->avg_data;
     }
 
     MetaData::MetaData(std::istream& input)
@@ -125,7 +136,7 @@ namespace icrar
         throw std::runtime_error("not implemented");
     }
 
-    void MetaData::CalcUVW(std::vector<MVuvw>& uvws)
+    void MetaData::CalcUVW(std::vector<casacore::MVuvw>& uvws)
     {
         if(!dd.is_initialized())
         {
@@ -139,14 +150,11 @@ namespace icrar
             auto uvw = icrar::Dot(uvws[n], dd.value());
             uvws.push_back(uvw);
         }
+
+        //this->avg_data = Eigen::MatrixXcd(uvws.size(), num_pols);
     }
 
-    /**
-     * @brief 
-     * TODO: rename to CalcDD or UpdateDD
-     * @param metadata 
-     * @param direction 
-     */
+    // TODO: rename to CalcDD or UpdateDD
     void MetaData::SetDD(const MVDirection& direction)
     {
         if(!dd.is_initialized())
@@ -184,7 +192,6 @@ namespace icrar
             freq_start_hz + freq_inc_hz * channels,
             freq_inc_hz);
         
-        double speed_of_light = 299792458.0;
         for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;
@@ -193,7 +200,7 @@ namespace icrar
 
     bool MetaData::operator==(const MetaData& rhs) const
     {
-        return init == rhs.init
+        return m_initialized == rhs.m_initialized
         && nantennas == rhs.nantennas
         //&& nbaseline == rhs.nbaseline
         && channels == rhs.channels
@@ -219,4 +226,5 @@ namespace icrar
         && icrar::Equal(Ad1, rhs.Ad1);
 
     }
+}
 }
