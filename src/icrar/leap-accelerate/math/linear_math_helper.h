@@ -39,7 +39,7 @@ namespace icrar
     {
         auto shape = value.shape();
         auto output = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
-        memcpy(output.data(), value.data(), shape[0] * shape[1] * sizeof(T));
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
         return output;
     }
 
@@ -53,7 +53,8 @@ namespace icrar
         }
 
         auto output = Eigen::Matrix<T, R, C>();
-        memcpy(output.data(), value.data(), R * C * sizeof(T));
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        //memcpy(output.data(), value.data(), R * C * sizeof(T));
         return output;
     }
 
@@ -73,10 +74,7 @@ namespace icrar
     Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
     {
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
-        for(int i = 0; i < value.size(); ++i)
-        {
-            output(i) = value(casacore::IPosition(1, i)); // TODO consider using std::copy or memcpy
-        }
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
         return output;
     }
 
