@@ -97,10 +97,13 @@ namespace icrar::cuda
             metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
             
             auto hostMetadata = icrar::cpu::MetaData(metadata);
-            //hostMetadata.SetDD(directions[i]);
+
+            //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
             hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
             
-            std::cout << "device metatadata: " << i << "/" << directions.size() << std::endl;
+#ifdef _DEBUG
+            std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
+#endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
             icrar::cuda::PhaseRotate(hostMetadata, deviceMetadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
         }
@@ -116,8 +119,14 @@ namespace icrar::cuda
         std::queue<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
+#ifdef _DEBUG
+        int integration_number = 0;
+#endif
         for(auto& integration : input)
         {
+#ifdef _DEBUG
+            std::cout << integration_number++ << "/" << input.size() << std::endl;
+#endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
@@ -183,22 +192,22 @@ namespace icrar::cuda
         // loop over baselines
         for(int baseline = 0; baseline < integration_baselines; ++baseline)
         {
-            const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+             const double pi = CUDART_PI;
+             double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
+             shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
+             shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
 
-            // loop over channels
-            for(int channel = 0; channel < constants.channels; channel++)
-            {
-                double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+             // loop over channels
+             for(int channel = 0; channel < constants.channels; channel++)
+             {
+                 double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
 
-                cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
+                 cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-                for(int polarization = 0; polarization < polarizations; polarization++)
-                {
-                    integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
-                }
+                 for(int polarization = 0; polarization < polarizations; polarization++)
+                 {
+                     integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
+                 }
 
                 bool hasNaN = false;
                 for(int polarization = 0; polarization < polarizations; polarization++)
@@ -218,20 +227,91 @@ namespace icrar::cuda
         }
     }
 
+    __global__ void g_RotateVisibilitiesBC(
+        cuDoubleComplex* pintegration_data, int integration_data_rows, int integration_data_cols, int integration_data_depth,
+        int integration_channels,
+        int integration_baselines,
+        int polarizations,
+        icrar::cpu::Constants constants,
+        Eigen::Matrix3d dd,
+        double2 direction,
+        double3* uvw, int uvwLength,
+        double3* oldUVW, int oldUVWLegth,
+        cuDoubleComplex* pavg_data, int avg_dataRows, int avg_dataCols)
+    {
+        using Tensor2Xcucd = Eigen::Tensor<cuDoubleComplex, 2>;
+        using Tensor3Xcucd = Eigen::Tensor<cuDoubleComplex, 3>;
+
+        //parallel execution per channel
+        int baseline = blockDim.x * blockIdx.x + threadIdx.x;
+        int channel = blockDim.y * blockIdx.y + threadIdx.y;
+
+        if(baseline < integration_baselines && channel < integration_channels)
+        {
+            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_rows, integration_data_cols, integration_data_depth);
+            auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
+    
+            // loop over baselines
+            const double pi = CUDART_PI;
+            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
+            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
+            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+
+            // loop over channels
+            double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+
+            cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
+
+            for(int polarization = 0; polarization < polarizations; polarization++)
+            {
+                integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
+            }
+
+            bool hasNaN = false;
+            for(int polarization = 0; polarization < polarizations; polarization++)
+            {
+                auto n = integration_data(channel, baseline, polarization);
+                hasNaN |= n.x == NAN || n.y == NAN;
+            }
+
+            if(!hasNaN)
+            {
+                for(int polarization = 0; polarization < polarizations; ++polarization)
+                {
+                    avg_data(baseline, polarization) = cuCadd(avg_data(baseline, polarization), integration_data(channel, baseline, polarization));
+                }
+            }
+        }
+    }
+
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
-        assert(metadata.GetConstants().channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
+        const auto& constants = metadata.GetConstants(); 
+        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
+        assert(constants.nbaselines == integration.data.GetDimensionSize(1));
         assert(integration.baselines == integration.data.GetDimensionSize(1));
-        assert(metadata.GetConstants().num_pols == integration.data.GetDimensionSize(2));
+        assert(constants.num_pols == integration.data.GetDimensionSize(2));
 
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
-        // unpack metadata
-        g_RotateVisibilities<<<1,1,1>>>(
+        // each block cannot have more than 1024 threads, only threads in a block may share memory
+        // each cuda core can run 32 cuda threads 
+
+        //dim3 grid = dim3(1,1,1);
+        //dim3 threads = dim3(constants.channels, constants.nbaselines, constants.num_pols);
+
+        dim3 blockSize = dim3(128, 8, 1);
+        dim3 gridSize = dim3(
+            (int)ceil((float)constants.nbaselines / blockSize.x),
+            (int)ceil((float)constants.channels / blockSize.y),
+            1
+        ); 
+
+        g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
-            integration.channels, integration.baselines, metadata.GetConstants().num_pols,
-            metadata.GetConstants(),
+            integration.channels, integration.baselines, constants.num_pols,
+            constants,
             metadata.dd,
             make_double2(metadata.direction(0), metadata.direction(1)),
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
