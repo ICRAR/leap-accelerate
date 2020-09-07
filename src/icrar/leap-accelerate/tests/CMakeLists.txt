@@ -14,6 +14,7 @@ set(sources
   ms/MSUtilsTests.cc
 
   model/MetaDataTests.cc
+  model/IntegrationTests.cc
   
   algorithm/PhaseRotateTests.cc
 )

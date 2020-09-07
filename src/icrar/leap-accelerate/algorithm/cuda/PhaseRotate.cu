@@ -59,48 +59,52 @@ using Radians = double;
 
 using namespace casacore;
 
-namespace icrar
+namespace icrar::cuda
 {
-namespace cuda
-{
-    CalibrateResult Calibrate(
+    cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
-        // auto metadata = icrar::casalib::MetaData(ms);
+        auto metadata = icrar::casalib::MetaData(ms);
 
-        // auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
-        // auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
-        // auto input_queues = std::vector<std::vector<cpu::Integration>>();
-        
-        // for(int i = 0; i < directions.size(); ++i)
-        // {
-        //     auto queue = std::vector<cpu::Integration>(); 
-        //     queue.push_back(cpu::Integration(
-        //         ms,
-        //         i,
-        //         metadata.channels,
-        //         metadata.GetBaselines(),
-        //         metadata.num_pols,
-        //         metadata.GetBaselines()));
+        auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
+        auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
+        auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
 
-        //     input_queues.push_back(queue);
-        //     output_integrations->push_back(std::queue<cpu::IntegrationResult>());
-        //     output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
-        // }
+        auto integration = cpu::Integration(
+            ms,
+            0, //TODO increment
+            metadata.channels,
+            metadata.GetBaselines(),
+            metadata.num_pols,
+            metadata.GetBaselines());
 
-        // for(int i = 0; i < directions.size(); ++i)
-        // {
-        //     metadata.SetDD(directions[i]);
-        //     metadata.SetWv();
-        //     metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            input_queues.push_back(std::vector<cuda::DeviceIntegration>());
 
-        //     auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
-        //     icrar::gpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
-        // }
+            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory data could be reused
+            
+            output_integrations->push_back(std::queue<cpu::IntegrationResult>());
+            output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
+        }
 
-        // return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            metadata.SetDD(directions[i]);
+            metadata.SetWv();
+            metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
+            
+            auto hostMetadata = icrar::cpu::MetaData(metadata);
+            //hostMetadata.SetDD(directions[i]);
+            hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
+            
+            std::cout << "device metatadata: " << i << "/" << directions.size() << std::endl;
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
+            icrar::cuda::PhaseRotate(hostMetadata, deviceMetadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+        }
+        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
     void PhaseRotate(
@@ -144,20 +148,19 @@ namespace cuda
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
     {
-        // see https://forums.developer.nvidia.com/t/complex-number-exponential-function/24696/2
-        cuDoubleComplex res;
-        sincos(z.y, &res.y, &res.x);
-        double t = exp(z.x);
-        res.x *= t;
-        res.y *= t;
-        return res;
-    }
+        // see https://forums.decuCexpveloper.nvidia.com/t/complex-number-exponential-function/24696/2
+        double resx = 0.0;
+        double resy = 0.0;
+        double zx = cuCreal(z);
+        double zy = cuCimag(z);
 
-    // template<int Dims>
-    // __device__ __forceinline__ cuDoubleComplex cuCexp(const Eigen::Tensor<cuDoubleComplex, Dims>& tensor)
-    // {
+        sincos(zy, &resy, &resx);
         
-    // }
+        double t = exp(zx);
+        resx *= t;
+        resy *= t;
+        return make_cuDoubleComplex(resx, resy);
+    }
 
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pintegration_data, int integration_data_rows, int integration_data_cols, int integration_data_depth,
@@ -189,6 +192,7 @@ namespace cuda
             for(int channel = 0; channel < constants.channels; channel++)
             {
                 double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+
                 cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
                 for(int polarization = 0; polarization < polarizations; polarization++)
@@ -296,5 +300,4 @@ namespace cuda
 
         return std::make_pair(A, I);
     }
-}
 }

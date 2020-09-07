@@ -26,9 +26,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-namespace icrar
-{
-namespace cpu
+namespace icrar::cpu
 {
     Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
@@ -38,7 +36,7 @@ namespace cpu
     , baselines(baselines)
     {
         data = ms.GetVis(channels, baselines, polarizations);
-        uvw = ToUVWVector(ms.GetCoords(index, baselines));
+        m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
@@ -47,8 +45,12 @@ namespace cpu
         Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.data.data(), rhs.data.size());
         
         return datav.isApprox(rhsdatav)
-        && uvw == rhs.uvw
+        && m_uvw == rhs.m_uvw
         && integration_number == rhs.integration_number;
     }
-}
+
+    const std::vector<icrar::MVuvw>& Integration::GetUVW() const
+    {
+        return m_uvw;
+    }
 }

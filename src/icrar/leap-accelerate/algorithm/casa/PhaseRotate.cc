@@ -74,11 +74,15 @@ namespace casalib
         int solutionInterval)
     {
         auto metadata = casalib::MetaData(ms);
-        
-        metadata.stations = ms.GetNumStations();
+
+#if _DEBUG
+        std::cout << "channels: " << metadata.channels << std::endl;
+        std::cout << "baselines:" << metadata.GetBaselines() << std::endl;
+        std::cout << "polarizations: " << metadata.num_pols << std::endl;
+#endif
 
         auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();        
+        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
         auto input_queues = std::vector<std::queue<Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
@@ -241,7 +245,7 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-            if(baseline % 1000 == 1)
+            if(baseline % 1000 == 0)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }

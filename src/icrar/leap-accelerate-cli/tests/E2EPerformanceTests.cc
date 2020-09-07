@@ -71,8 +71,7 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+
         }
 
         void TearDown() override
@@ -82,20 +81,26 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl)
         {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+
+            //std::string filename = std::string(TEST_DATA_DIR) + "/1197637968.ms";
+            //ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
+
             const double THRESHOLD = 0.01;
             
 
             std::vector<casacore::MVDirection> directions =
             {
                 casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
-                casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+                // casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
+                // casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
+                // casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
+                // casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
+                // casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
+                // casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
+                // casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
+                // casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
             if(impl == ComputeImplementation::casa)
@@ -109,7 +114,7 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                //icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
+                icrar::cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else
             {
@@ -118,7 +123,7 @@ namespace icrar
         }
     };
 
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda); }
 }

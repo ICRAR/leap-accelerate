@@ -25,6 +25,8 @@
 #include <casacore/ms/MeasurementSets.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+
 #include <eigen3/Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -59,11 +61,6 @@ namespace icrar
 namespace cpu
 {
     class MetaData;
-    
-    using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
-    >;
 
     /**
      * @brief 

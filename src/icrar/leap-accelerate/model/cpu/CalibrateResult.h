@@ -25,6 +25,10 @@
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
+#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -35,38 +39,55 @@
 
 #include <boost/optional.hpp>
 
+#include <queue>
 #include <vector>
 #include <array>
 #include <complex>
 
 
-namespace icrar::casalib
+namespace icrar::cpu
 {
-    class MeasurementSet;
-
-    class Integration
+    class IntegrationResult
     {
+        icrar::MVDirection m_direction;
+        int m_integration_number;
+        boost::optional<std::vector<casacore::Array<double>>> m_data;
+
     public:
-        //Integration();
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
-
-        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
-
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
-        int integration_number;
-
-        union
+        IntegrationResult(
+            icrar::MVDirection direction,
+            int integration_number,
+            boost::optional<std::vector<casacore::Array<double>>> data)
+            : m_direction(direction)
+            , m_integration_number(integration_number)
+            , m_data(data)
         {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
-            struct
-            {
-                size_t index;
-                size_t x;
-                size_t channels;
-                size_t baselines;
-            };
-        };
 
-        bool operator==(const Integration& rhs) const;
+        }
     };
+
+    class CalibrationResult
+    {
+        icrar::MVDirection m_direction;
+        std::vector<casacore::Matrix<double>> m_data;
+
+    public:
+        CalibrationResult(
+            const icrar::MVDirection& direction,
+            const std::vector<casacore::Matrix<double>>& data)
+            : m_direction(direction)
+            , m_data(data)
+        {
+        }
+
+        const icrar::MVDirection GetDirection() const { return m_direction; }
+        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+
+        //bool operator==(const CalibrationResult& rhs) const;
+    };
+
+    using CalibrateResult = std::pair<
+        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
+        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
+    >;
 }

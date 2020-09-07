@@ -53,7 +53,7 @@ namespace icrar
         std::unique_ptr<casacore::MSColumns> m_msc;
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
-        int m_baselines;
+        int m_stations;
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations);

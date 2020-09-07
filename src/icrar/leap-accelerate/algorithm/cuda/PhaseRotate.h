@@ -26,6 +26,7 @@
 #include "device_launch_parameters.h"
 
 #include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
@@ -58,16 +59,11 @@ namespace icrar::cuda
     class DeviceMetaData;
     class DeviceIntegration;
 
-    using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
-    >;
-
     /**
      * @brief 
      * 
      */
-    CalibrateResult Calibrate(
+    cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval = 3600);

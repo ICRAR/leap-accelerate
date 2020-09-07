@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/model/casa/CalibrateResult.h>
+
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/ms/MeasurementSets.h>
@@ -49,13 +51,9 @@ namespace icrar
     }
 }
 
-namespace icrar
-{
-namespace casalib
+namespace icrar::casalib
 {
     struct MetaData;
-
-    using CalibrateResult = std::pair<std::unique_ptr<std::vector<std::queue<IntegrationResult>>>, std::unique_ptr<std::vector<std::queue<CalibrationResult>>>>;
 
     /**
      * @brief 
@@ -107,5 +105,4 @@ namespace casalib
         const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
-}
 }

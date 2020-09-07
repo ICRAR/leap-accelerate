@@ -142,7 +142,7 @@ namespace cpu
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;
-        auto& uvw = integration.uvw;
+        auto& uvw = integration.GetUVW();
         auto parameters = integration.parameters;
 
         metadata.CalcUVW(uvw);

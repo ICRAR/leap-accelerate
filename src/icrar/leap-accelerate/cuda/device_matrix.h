@@ -28,6 +28,8 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
+#include <boost/noncopyable.hpp>
+
 #include <vector>
 
 namespace icrar
@@ -42,7 +44,7 @@ namespace cuda
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
     template<typename T>
-    class device_matrix
+    class device_matrix : boost::noncopyable
     {
         size_t m_rows;
         size_t m_cols;
@@ -61,6 +63,7 @@ namespace cuda
         : m_rows(rows)
         , m_cols(cols)
         {
+            std::cout << "device_matrix " << rows << "x" << cols << std::endl;
             size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)

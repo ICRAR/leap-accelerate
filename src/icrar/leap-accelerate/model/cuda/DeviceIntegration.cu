@@ -36,6 +36,16 @@ namespace cuda
     , channels(integration.channels)
     , baselines(integration.baselines)
     {
+
     }
+
+    // void DeviceIntegration::ToHost(cpu::Integration& host) const
+    // {
+    //     data.ToHost(host.GetData());
+    //     host.index = index;
+    //     host.x = x;
+    //     host.channels = channels;
+    //     host.baselines = baselines;
+    // }
 }
 }

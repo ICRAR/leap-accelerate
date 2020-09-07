@@ -64,7 +64,7 @@ namespace cpu
         m_constants.dlm_dec = metadata.dlm_dec;
 
         oldUVW = ToUVWVector(metadata.oldUVW);
-        // UVW = ToUVW(metadata.uvw);
+        //UVW = ToUVW(metadata.uvw);
 
         A = ToMatrix(metadata.A);
         I = ToMatrix<int>(metadata.I);

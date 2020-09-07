@@ -44,21 +44,19 @@
 #include <complex>
 
 
-namespace icrar
-{
-namespace cpu
+namespace icrar::cpu
 {
     class MeasurementSet;
 
     class Integration
     {
+        std::vector<icrar::MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+
     public:
-        //Integration();
         Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
-        std::vector<icrar::MVuvw> uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d 
         int integration_number;
 
         union
@@ -74,45 +72,7 @@ namespace cpu
         };
 
         bool operator==(const Integration& rhs) const;
+
+        const std::vector<icrar::MVuvw>& GetUVW() const;
     };
-
-    class IntegrationResult
-    {
-        icrar::MVDirection m_direction;
-        int m_integration_number;
-        boost::optional<std::vector<casacore::Array<double>>> m_data;
-
-    public:
-        IntegrationResult(
-            icrar::MVDirection direction,
-            int integration_number,
-            boost::optional<std::vector<casacore::Array<double>>> data)
-            : m_direction(direction)
-            , m_integration_number(integration_number)
-            , m_data(data)
-        {
-
-        }
-    };
-
-    class CalibrationResult
-    {
-        icrar::MVDirection m_direction;
-        std::vector<casacore::Matrix<double>> m_data;
-
-    public:
-        CalibrationResult(
-            const icrar::MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
-            : m_direction(direction)
-            , m_data(data)
-        {
-        }
-
-        const icrar::MVDirection GetDirection() const { return m_direction; }
-        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
-
-        //bool operator==(const CalibrationResult& rhs) const;
-    };
-}
 }

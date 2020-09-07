@@ -26,9 +26,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-namespace icrar
-{
-namespace casalib
+namespace icrar::casalib
 {
     Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
@@ -50,5 +48,4 @@ namespace casalib
         && uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }
-}
 }

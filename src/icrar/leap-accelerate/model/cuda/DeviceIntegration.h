@@ -45,18 +45,12 @@
 
 #include <cuComplex.h>
 
-namespace icrar
-{
-namespace cpu
+namespace icrar::cpu
 {
     class Integration;
 }
-}
 
-
-namespace icrar
-{
-namespace cuda
+namespace icrar::cuda
 {
     class DeviceIntegration
     {
@@ -78,5 +72,4 @@ namespace cuda
 
         DeviceIntegration(const icrar::cpu::Integration& integration);
     };
-}
 }

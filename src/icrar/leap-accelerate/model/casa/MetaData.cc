@@ -60,7 +60,6 @@ namespace casalib
         auto msmc = ms.GetMSMainColumns();
 
         this->m_initialized = false;
-        this->stations = 0;
         this->nantennas = 0;
         this->solution_interval = 3601;
 
@@ -80,7 +79,9 @@ namespace casalib
             this->freq_start_hz = msc->spectralWindow().refFrequency().get(0);
             this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
-        this->stations = pms->antenna().nrow();
+
+        this->stations = 0;
+        this->stations = ms.GetNumStations();
         if(pms->nrow() > 0)
         {
             auto time_inc_sec = msc->interval().get(0);
