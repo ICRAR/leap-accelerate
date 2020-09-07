@@ -66,7 +66,7 @@ namespace casalib
 {
     // leap_remote_calibration
     CalibrateResult Calibrate(
-        const casacore::MeasurementSet& ms,
+        const casacore::MeasurementSet* ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,

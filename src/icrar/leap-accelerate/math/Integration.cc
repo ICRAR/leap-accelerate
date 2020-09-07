@@ -24,14 +24,14 @@
 
 namespace icrar
 {
-    Integration::Integration(const casacore::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+    Integration::Integration(const casacore::MeasurementSet* ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)
     , channels(channels)
     , baselines(baselines)
     {
-        auto vms = std::make_unique<casacore::MeasurementSet>(ms);
+        auto vms = std::make_unique<casacore::MeasurementSet>(*ms);
         auto msc = std::make_unique<casacore::MSColumns>(*vms);
         auto msmc = std::make_unique<casacore::MSMainColumns>(*vms);
 
