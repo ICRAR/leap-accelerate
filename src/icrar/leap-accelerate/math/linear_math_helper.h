@@ -38,19 +38,9 @@ namespace icrar
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
-        auto m = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
-
-        auto it = value.begin();
-        for(int col = 0; col < shape[1]; ++col)
-        {
-            for(int row = 0; row < shape[0]; ++row)
-            {
-                //eigen column major format
-                m(row, col) = *it;
-                it++;
-            }
-        }
-        return m;
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T, int R, int C>
@@ -62,19 +52,9 @@ namespace icrar
             throw std::invalid_argument("matrix shape does not match template");
         }
 
-        auto m = Eigen::Matrix<T, R, C>();
-
-        // column major to column major
-        auto it = value.begin();
-        for(int col = 0; col < C; ++col)
-        {
-            for(int row = 0; row < R; ++row)
-            {
-                m(row, col) = *it;
-                it++;
-            }
-        }
-        return m;
+        auto output = Eigen::Matrix<T, R, C>();
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T, int R, int C>
