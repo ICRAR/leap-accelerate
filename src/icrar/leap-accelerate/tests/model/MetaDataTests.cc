@@ -55,8 +55,7 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+
         }
 
         void TearDown() override
@@ -76,6 +75,41 @@ namespace icrar
 
         void TestReadFromFile()
         {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
+            auto meta = icrar::casalib::MetaData(*ms);
+
+            ASSERT_EQ(false, meta.m_initialized);
+            //ASSERT_EQ(4853, meta.nantennas);
+            ASSERT_EQ(48, meta.channels);
+            ASSERT_EQ(4, meta.num_pols);
+            ASSERT_EQ(128, meta.stations);
+            ASSERT_EQ(8256, meta.GetBaselines());
+            ASSERT_EQ(1, meta.rows);
+            ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
+            ASSERT_EQ(640000, meta.freq_inc_hz);
+            ASSERT_EQ(3601, meta.solution_interval);
+
+            ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
+            ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
+
+            ASSERT_EQ(4754, meta.A.shape()[0]);
+            ASSERT_EQ(128, meta.A.shape()[1]);
+            ASSERT_EQ(128, meta.Ad.shape()[0]);
+            ASSERT_EQ(4754, meta.Ad.shape()[1]);
+            ASSERT_EQ(4754, meta.I.shape()[0]);
+
+            ASSERT_EQ(98, meta.A1.shape()[0]);
+            ASSERT_EQ(128, meta.A1.shape()[1]);
+            ASSERT_EQ(128, meta.Ad1.shape()[0]);
+            ASSERT_EQ(98, meta.Ad1.shape()[1]);
+            ASSERT_EQ(98, meta.I1.shape()[0]);
+        }
+
+        void TestReadFromFileOverrideStations()
+        {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
@@ -83,7 +117,7 @@ namespace icrar
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(126, meta.stations);
-            ASSERT_EQ(8256, meta.GetBaselines());
+            ASSERT_EQ(8001, meta.GetBaselines());
             ASSERT_EQ(1, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
@@ -142,6 +176,7 @@ namespace icrar
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }
