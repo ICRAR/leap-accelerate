@@ -102,11 +102,11 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::unique_ptr<std::vector<std::queue<IntegrationResult>>> pintegrations;
-            std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
+            std::vector<std::queue<IntegrationResult>> integrations;
+            std::vector<std::queue<CalibrationResult>> calibrations;
             if(impl == Impl::casa)
             {
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(&ms, metadata, directions, 126, 3600);
+                std::tie(integrations, calibrations) = icrar::casalib::Calibrate(&ms, metadata, directions, 126, 3600);
             }
             else if(impl == Impl::eigen)
             {
@@ -123,8 +123,6 @@ namespace icrar
             {
                 throw std::invalid_argument("impl");
             }
-            auto& integrations = *pintegrations;
-            auto& calibrations = *pcalibrations;
 
             auto expected = GetExpectedCalibration();
             
