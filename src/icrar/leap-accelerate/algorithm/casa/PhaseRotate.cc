@@ -71,8 +71,8 @@ namespace casalib
         boost::optional<int> overrideStations,
         int solutionInterval)
     {
-        auto output_integrations = std::make_unique<std::vector<std::queue<IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<CalibrationResult>>>();
+        auto output_integrations = std::vector<std::queue<IntegrationResult>>();
+        auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         
         if(overrideStations.is_initialized())
         {
@@ -92,16 +92,13 @@ namespace casalib
                 metadata.GetBaselines()));
 
             input_queues.push_back(queue);
-            output_integrations->push_back(std::queue<IntegrationResult>());
-            output_calibrations->push_back(std::queue<CalibrationResult>());
+            output_integrations.push_back(std::queue<IntegrationResult>());
+            output_calibrations.push_back(std::queue<CalibrationResult>());
         }
-
-        std::cout << "direction count " << directions.size() << std::endl;
-        std::cout << "input count " << input_queues.size() << std::endl;
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
@@ -153,12 +150,12 @@ namespace casalib
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
 
+                Eigen::VectorXi e_i = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
+                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+                
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    Eigen::VectorXi e_i = ToVector(metadata.I);
-                    Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
-                    casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-
                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
@@ -172,7 +169,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(CalibrationResult(direction, cal));
+        output_calibrations.push(icrar::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
@@ -185,8 +182,6 @@ namespace casalib
 
         if(!metadata.dd.is_initialized())
         {
-            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
-            
             metadata.SetDD(direction);
             metadata.SetWv();
             metadata.m_initialized = true;

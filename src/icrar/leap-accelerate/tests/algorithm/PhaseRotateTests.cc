@@ -416,11 +416,11 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::unique_ptr<std::vector<std::queue<IntegrationResult>>> pintegrations;
-            std::unique_ptr<std::vector<std::queue<CalibrationResult>>> pcalibrations;
+            std::vector<std::queue<IntegrationResult>> integrations;
+            std::vector<std::queue<CalibrationResult>> calibrations;
             if(impl == ComputeImplementation::casa)
             {
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
+                std::tie(integrations, calibrations) = icrar::casalib::Calibrate(*ms, metadata, directions, 126, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
@@ -437,8 +437,6 @@ namespace icrar
             {
                 throw std::invalid_argument("impl");
             }
-            auto& integrations = *pintegrations;
-            auto& calibrations = *pcalibrations;
 
             auto expected = GetExpectedCalibration();
 
@@ -1076,7 +1074,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
