@@ -61,8 +61,8 @@ namespace cpu
     class MetaData;
     
     using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
+        std::vector<std::queue<cpu::IntegrationResult>>,
+        std::vector<std::queue<cpu::CalibrationResult>>
     >;
 
     /**

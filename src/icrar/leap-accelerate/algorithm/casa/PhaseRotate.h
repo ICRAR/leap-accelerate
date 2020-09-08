@@ -55,7 +55,7 @@ namespace casalib
 {
     struct MetaData;
 
-    using CalibrateResult = std::pair<std::unique_ptr<std::vector<std::queue<IntegrationResult>>>, std::unique_ptr<std::vector<std::queue<CalibrationResult>>>>;
+    using CalibrateResult = std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>>;
 
     /**
      * @brief 

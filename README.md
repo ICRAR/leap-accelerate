@@ -16,9 +16,7 @@ LEAP-Accelerate includes:
 
 ### Linux
 
-`mkdir build && cd build`
-
-`mdir linux && cd linux`
+`mkdir -p build/linux/{Debug,Release} && cd build/linux`
 
 `export CUDA_HOME=/usr/local/cuda`
 
@@ -26,7 +24,17 @@ LEAP-Accelerate includes:
 
 `export PATH=$PATH:$CUDA_HOME/bin`
 
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda"`
+#### Debug
+
+`cd Debug`
+
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
+
+#### Release
+
+`cd Release`
+
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 
@@ -58,6 +66,7 @@ eigen3.3.7 is required, see .travis/before_install_bionic.sh
 * cuda 10.1
 * boost 1.71.0
 * casacore 3.1.2
+* eigen 3.3.90
 
 #### Minimum Versions Compatibility
 
@@ -71,11 +80,16 @@ eigen3.3.7 is required, see .travis/before_install_bionic.sh
 
 Testing provided via googletest. To test using CTest use the following command in build/linux:
 
-`make test`
+`make test` or `ctest`
 
-To test using the google test runner, use the following command:
+for verbose output use:
 
 `ctest --verbose`
+
+To test using the google test runner, the test binaries can be executed directly using the following commands:
+
+`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
+`./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
 
 ## Doxygen
 
@@ -101,7 +115,7 @@ or
 * gprof
 * google-perftools
 
-## Deploy
+## Cluster Deployment
 
 * module help
 * module load

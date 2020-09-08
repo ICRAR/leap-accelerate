@@ -80,7 +80,7 @@ namespace casalib
             this->freq_start_hz = msc->spectralWindow().refFrequency().get(0);
             this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
-        this->stations = pms->antenna().nrow();
+        this->stations = ms.GetNumStations();
         if(pms->nrow() > 0)
         {
             auto time_inc_sec = msc->interval().get(0);
@@ -171,17 +171,17 @@ namespace casalib
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 
-        dd3d(0,0) = cos(dlm_ra) * cos(dlm_dec);
-        dd3d(0,1) = -sin(dlm_ra);
-        dd3d(0,2) = cos(dlm_ra) * sin(dlm_dec);
+        dd3d(0,0) = std::cos(dlm_ra) * std::cos(dlm_dec);
+        dd3d(0,1) = -std::sin(dlm_ra);
+        dd3d(0,2) = std::cos(dlm_ra) * std::sin(dlm_dec);
         
-        dd3d(1,0) = sin(dlm_ra) * cos(dlm_dec);
-        dd3d(1,1) = cos(dlm_ra);
-        dd3d(1,2) = sin(dlm_ra) * sin(dlm_dec);
+        dd3d(1,0) = std::sin(dlm_ra) * std::cos(dlm_dec);
+        dd3d(1,1) = std::cos(dlm_ra);
+        dd3d(1,2) = std::sin(dlm_ra) * std::sin(dlm_dec);
 
-        dd3d(2,0) = -sin(dlm_dec);
+        dd3d(2,0) = -std::sin(dlm_dec);
         dd3d(2,1) = 0;
-        dd3d(2,2) = cos(dlm_dec);
+        dd3d(2,2) = std::cos(dlm_dec);
     }
 
     void MetaData::SetDD(const icrar::MVDirection& direction)

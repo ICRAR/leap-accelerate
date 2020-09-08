@@ -65,8 +65,8 @@ namespace cpu
 
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
+        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
@@ -77,12 +77,11 @@ namespace cpu
                 i,
                 metadata.channels,
                 metadata.GetBaselines(),
-                metadata.num_pols,
-                metadata.GetBaselines()));
+                metadata.num_pols));
 
             input_queues.push_back(queue);
-            output_integrations->push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
+            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -92,10 +91,9 @@ namespace cpu
             metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
 
             auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
-            icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+            icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
-        std::cout << "returning" << std::endl;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 

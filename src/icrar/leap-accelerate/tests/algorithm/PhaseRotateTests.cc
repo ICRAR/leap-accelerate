@@ -81,6 +81,194 @@ namespace icrar
             
         }
 
+        void PhaseRotateTest(ComputeImplementation impl)
+        {
+            const double THRESHOLD = 0.01;
+            
+            std::vector<casacore::MVDirection> directions =
+            {
+                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513)
+                // casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
+                // casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
+                // casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
+                // casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
+                // casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
+                // casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
+                // casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
+                // casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+            };
+
+            std::vector<std::queue<casalib::IntegrationResult>> integrations;
+            std::vector<std::queue<casalib::CalibrationResult>> calibrations;
+            if(impl == ComputeImplementation::casa)
+            {
+                std::tie(integrations, calibrations) = casalib::Calibrate(*ms, directions, 3600);
+            }
+            else if(impl == ComputeImplementation::eigen)
+            {
+                std::vector<std::queue<cpu::IntegrationResult>> pintegrations;
+                std::vector<std::queue<cpu::CalibrationResult>> pcalibrations;
+                std::tie(pintegrations, pcalibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
+            }
+            else if(impl == ComputeImplementation::cuda)
+            {
+                // auto metadatahost = icrar::cpu::MetaData(metadata);
+                // auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
+                // icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
+            }
+            else
+            {
+                throw std::invalid_argument("impl");
+            }
+
+            auto expected = GetExpectedCalibration();
+            auto nDirections = 1;
+
+            ASSERT_EQ(nDirections, calibrations.size());
+            for(int i = 0; i < nDirections; i++)
+            {
+                casacore::MVDirection direction;
+                std::vector<double> calibration;
+                std::tie(direction, calibration) = expected[0];
+
+                ASSERT_EQ(1, calibrations[i].size());
+                const auto& result = calibrations[i].front();
+                ASSERT_EQ(1, result.GetData().size());
+
+                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
+            }
+        }
+
+        void RotateVisibilitiesTest(ComputeImplementation impl)
+        {
+            const double THRESHOLD = 0.01;
+
+            auto metadata = casalib::MetaData(*ms);
+
+            auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
+
+            auto integration = casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
+            boost::optional<cpu::MetaData> metadataOptionalOutput;
+            if(impl == ComputeImplementation::casa)
+            {
+                auto integration = casalib::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols);
+
+                casalib::RotateVisibilities(integration, metadata, direction);
+                metadataOptionalOutput = cpu::MetaData(metadata);
+            }
+            if(impl == ComputeImplementation::eigen)
+            {
+                auto integration = cpu::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols);
+
+                auto metadatahost = cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
+                cpu::RotateVisibilities(integration, metadatahost);
+                metadataOptionalOutput = metadatahost;
+            }
+            if(impl == ComputeImplementation::cuda)
+            {
+                auto integration = cpu::Integration(
+                    *ms,
+                    0,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols);
+
+                auto metadatahost = cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
+                auto metadatadevice = cuda::DeviceMetaData(metadatahost);
+                auto deviceIntegration = cuda::DeviceIntegration(integration);
+                cuda::RotateVisibilities(deviceIntegration, metadatadevice);
+                metadatadevice.ToHost(metadatahost);
+                metadataOptionalOutput = metadatahost;
+            }
+            ASSERT_TRUE(metadataOptionalOutput.is_initialized());
+            cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
+
+            // =======================
+            // Build expected results
+            // Test case generic
+            auto expectedIntegration = cpu::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
+            expectedIntegration.baselines = metadata.GetBaselines();
+            expectedIntegration.uvw = ToUVWVector(integration.uvw);
+
+            //TODO: don't rely on eigen implementation for expected values
+            auto expectedMetadata = cpu::MetaData(metadata, ToDirection(direction), ToUVWVector(integration.uvw));
+            expectedMetadata.oldUVW = metadataOutput.oldUVW;
+
+            //Test case specific
+            expectedMetadata.dd = Eigen::Matrix3d();
+            expectedMetadata.dd <<
+             0.46856701,  0.86068501, -0.19916391,
+            -0.79210108,  0.50913781,  0.33668172,
+             0.39117878,  0.0,         0.92031471;
+
+            ASSERT_EQ(8001, expectedIntegration.baselines);
+            ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
+            expectedMetadata.avg_data = Eigen::MatrixXcd::Zero(expectedIntegration.baselines, metadata.num_pols);
+
+
+            // ==========
+            // ASSERT
+            auto cthreshold = std::complex<double>(0.001, 0.001);
+            ASSERT_EQ(8001, metadataOutput.avg_data.rows());
+            ASSERT_EQ(4, metadataOutput.avg_data.cols());
+            ASSERT_EQCD(std::complex<double>( 138.51683763999509,  53.836993695468195), metadataOutput.avg_data(0,0), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-166.53972390770514, -428.41528489902191), metadataOutput.avg_data(0,1), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>( 627.49838424722282,  247.35526329205342), metadataOutput.avg_data(0,2), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-156.39233528909833, -270.13422448036732), metadataOutput.avg_data(0,3), THRESHOLD);
+            
+            // =============
+            // ASSERT OBJECT
+            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
+            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD); // TODO: too much data to hard code
+            //ASSERT_EQ(expectedIntegration, integration);
+        }
+
+        void PhaseMatrixFunction0Test(ComputeImplementation impl)
+        {
+            int refAnt = 0;
+            bool map = true;
+
+            try
+            {
+                if(impl == ComputeImplementation::casa)
+                {
+                    const casacore::Vector<int32_t> a1;
+                    const casacore::Vector<int32_t> a2;
+                    casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
+                if(impl == ComputeImplementation::eigen)
+                {
+                    auto a1 = Eigen::VectorXi();
+                    auto a2 = Eigen::VectorXi();
+                    cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
+                if(impl == ComputeImplementation::cuda)
+                {
+                    const Eigen::VectorXi a1;
+                    const Eigen::VectorXi a2;
+                    cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
+                }
+            }
+            catch(std::invalid_argument& e)
+            {
+                
+            }
+            catch(...)
+            {
+                FAIL() << "Expected std::invalid_argument";
+            }
+        }
+
         std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetExpectedCalibration()
         {
             std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
@@ -397,200 +585,6 @@ namespace icrar
             }));
 
             return output;
-        }
-
-        void PhaseRotateTest(ComputeImplementation impl)
-        {
-            const double THRESHOLD = 0.01;
-            
-            auto metadata = icrar::casalib::MetaData(*ms);
-
-            std::vector<casacore::MVDirection> directions =
-            {
-                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513)
-                // casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                // casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                // casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                // casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                // casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                // casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                // casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                // casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
-            };
-
-            std::unique_ptr<std::vector<std::queue<casalib::IntegrationResult>>> pintegrations;
-            std::unique_ptr<std::vector<std::queue<casalib::CalibrationResult>>> pcalibrations;
-            if(impl == ComputeImplementation::casa)
-            {
-                std::tie(pintegrations, pcalibrations) = icrar::casalib::Calibrate(*ms, directions, 3600);
-            }
-            else if(impl == ComputeImplementation::eigen)
-            {
-                std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>> pintegrations;
-                std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>> pcalibrations;
-                std::tie(pintegrations, pcalibrations) = icrar::cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
-            }
-            else if(impl == ComputeImplementation::cuda)
-            {
-                // auto metadatahost = icrar::cpu::MetaData(metadata);
-                // auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                // icrar::cuda::Calibrate(metadatadevice, direction, input, output_integrations, output_calibrations);
-            }
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
-            auto& integrations = *pintegrations;
-            auto& calibrations = *pcalibrations;
-
-            auto expected = GetExpectedCalibration();
-            auto nDirections = 1;
-
-            ASSERT_EQ(nDirections, calibrations.size());
-            for(int i = 0; i < nDirections; i++)
-            {
-                casacore::MVDirection direction;
-                std::vector<double> calibration;
-                std::tie(direction, calibration) = expected[0];
-
-                ASSERT_EQ(1, calibrations[i].size());
-                const auto& result = calibrations[i].front();
-                ASSERT_EQ(1, result.GetData().size());
-
-                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
-            }
-        }
-
-        void RotateVisibilitiesTest(ComputeImplementation impl)
-        {
-            const double THRESHOLD = 0.01;
-
-            auto metadata = casalib::MetaData(*ms);
-            metadata.stations = 126;
-            auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
-
-            boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
-            if(impl == ComputeImplementation::casa)
-            {
-                auto integration = icrar::casalib::Integration(
-                    *ms,
-                    0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols,
-                    metadata.GetBaselines());
-
-                icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput = icrar::cpu::MetaData(metadata);
-            }
-            if(impl == ComputeImplementation::eigen)
-            {
-                auto integration = icrar::cpu::Integration(
-                    *ms,
-                    0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols,
-                    metadata.GetBaselines());
-
-                auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
-                icrar::cpu::RotateVisibilities(integration, metadatahost);
-                metadataOptionalOutput = metadatahost;
-            }
-            if(impl == ComputeImplementation::cuda)
-            {
-                auto integration = icrar::cpu::Integration(
-                    *ms,
-                    0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols,
-                    metadata.GetBaselines());
-
-                auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.uvw);
-                auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
-                auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
-                metadatadevice.ToHost(metadatahost);
-                metadataOptionalOutput = metadatahost;
-            }
-            ASSERT_TRUE(metadataOptionalOutput.is_initialized());
-            icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
-
-            // =======================
-            // Build expected results
-            // Test case generic
-            auto expectedIntegration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines());
-            expectedIntegration.baselines = metadata.GetBaselines();
-            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
-
-            //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), ToDirection(direction), ToUVWVector(expectedIntegration.uvw));
-            expectedMetadata.oldUVW = metadataOutput.oldUVW;
-
-            //Test case specific
-            expectedMetadata.dd = Eigen::Matrix3d();
-            expectedMetadata.dd <<
-             0.46856701,  0.86068501, -0.19916391,
-            -0.79210108,  0.50913781,  0.33668172,
-             0.39117878,  0.0,         0.92031471;
-
-            ASSERT_EQ(8001, expectedIntegration.baselines);
-            ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
-            expectedMetadata.avg_data = Eigen::MatrixXcd::Zero(expectedIntegration.baselines, metadata.num_pols);
-
-
-            // ==========
-            // ASSERT
-            auto cthreshold = std::complex<double>(0.001, 0.001);
-            ASSERT_EQ(8001, metadataOutput.avg_data.rows());
-            ASSERT_EQ(4, metadataOutput.avg_data.cols());
-            ASSERT_EQCD(std::complex<double>( 138.51683763999509,  53.836993695468195), metadataOutput.avg_data(0,0), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>(-166.53972390770514, -428.41528489902191), metadataOutput.avg_data(0,1), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>( 627.49838424722282,  247.35526329205342), metadataOutput.avg_data(0,2), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>(-156.39233528909833, -270.13422448036732), metadataOutput.avg_data(0,3), THRESHOLD);
-            
-            // =============
-            // ASSERT OBJECT
-            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
-            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD); // TODO: too much data to hard code
-            //ASSERT_EQ(expectedIntegration, integration);
-        }
-
-        void PhaseMatrixFunction0Test(ComputeImplementation impl)
-        {
-            int refAnt = 0;
-            bool map = true;
-
-            try
-            {
-                if(impl == ComputeImplementation::casa)
-                {
-                    const casacore::Vector<int32_t> a1;
-                    const casacore::Vector<int32_t> a2;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
-                }
-                if(impl == ComputeImplementation::eigen)
-                {
-                    auto a1 = Eigen::VectorXi();
-                    auto a2 = Eigen::VectorXi();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
-                }
-                if(impl == ComputeImplementation::cuda)
-                {
-                    const Eigen::VectorXi a1;
-                    const Eigen::VectorXi a2;
-                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
-                }
-            }
-            catch(std::invalid_argument& e)
-            {
-                
-            }
-            catch(...)
-            {
-                FAIL() << "Expected std::invalid_argument";
-            }
         }
 
         Eigen::MatrixXd GetExpectedA()
@@ -1053,11 +1047,11 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Array<std::int32_t> casaI;
-                std::tie(casaA, casaI) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1, map);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1, map);
 
                 casacore::Matrix<double> casaA1;
                 casacore::Array<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, map);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0, map);
 
                 A = ToMatrix(casaA);
                 I = ToVector(casaI);
@@ -1068,16 +1062,16 @@ namespace icrar
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, -1, map);
-                std::tie(A1, I1) = icrar::cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1, map);
+                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
 
             }
             if(impl == ComputeImplementation::cuda)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = icrar::cuda::PhaseMatrixFunction(ea1, ea2, -1, map);
-                std::tie(A1, I1) = icrar::cuda::PhaseMatrixFunction(ea1, ea2, 0, map);
+                std::tie(A, I) = cuda::PhaseMatrixFunction(ea1, ea2, -1, map);
+                std::tie(A1, I1) = cuda::PhaseMatrixFunction(ea1, ea2, 0, map);
             }
 
             auto IExpected = GetExpectedI();

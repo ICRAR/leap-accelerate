@@ -129,17 +129,17 @@ namespace cpu
         MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         
         MetaData(icrar::MeasurementSet& ms);
-        MetaData(
-            const Constants& constants,
-            const double* A, int ARows, int ACols,
-            const int* I, int ILength,
-            const double* Ad, int AdRows, int AdCols,
-            const double* A1, int A1Rows, int A1Cols,
-            Eigen::Matrix3d& dd,
-            const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
-        {
-            // TODO
-        }
+        // MetaData(
+        //     const Constants& constants,
+        //     const double* A, int ARows, int ACols,
+        //     const int* I, int ILength,
+        //     const double* Ad, int AdRows, int AdCols,
+        //     const double* A1, int A1Rows, int A1Cols,
+        //     Eigen::Matrix3d& dd,
+        //     const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
+        // {
+        //     // TODO
+        // }
 
         const Constants& GetConstants() const;
 
