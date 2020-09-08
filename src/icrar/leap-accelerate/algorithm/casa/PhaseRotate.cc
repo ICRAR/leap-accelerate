@@ -91,9 +91,6 @@ namespace casalib
             output_calibrations.push_back(std::queue<CalibrationResult>());
         }
 
-        std::cout << "direction count " << directions.size() << std::endl;
-        std::cout << "input count " << input_queues.size() << std::endl;
-
         for(int i = 0; i < directions.size(); ++i)
         {
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
@@ -179,8 +176,6 @@ namespace casalib
 
         if(!metadata.dd.is_initialized())
         {
-            //metadata['nbaseline']=metadata['stations']*(metadata['stations']-1)/2
-            
             metadata.SetDD(direction);
             metadata.SetWv();
             metadata.m_initialized = true;
