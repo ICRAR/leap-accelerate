@@ -196,7 +196,6 @@ namespace casalib
         assert(uvw.size() == integration.baselines);
 
         assert(integration_data.dimension(0) == metadata.channels);
-        std::cout << integration_data.dimension(1) << ":" << integration.baselines << std::endl;
         assert(integration_data.dimension(1) == integration.baselines);
         assert(integration_data.dimension(2) == metadata.num_pols);
         assert(metadata.oldUVW.size() == integration.baselines);

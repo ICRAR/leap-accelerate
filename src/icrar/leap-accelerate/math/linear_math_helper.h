@@ -34,12 +34,6 @@
 
 namespace icrar
 {
-    // template<typename T>
-    // Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const Eigen::Tensor<T, 2> value)
-    // {
-
-    // }
-
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const casacore::Matrix<T>& value)
     {

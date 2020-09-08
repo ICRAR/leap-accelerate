@@ -143,7 +143,7 @@ namespace icrar
     };
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(MetaDataTests, DISABLED_TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }
