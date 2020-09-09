@@ -46,15 +46,20 @@ namespace icrar
     class MeasurementSet;
 }
 
-namespace icrar::cpu
+namespace icrar
+{
+namespace cpu
 {
     class Integration;
     class IntegrationResult;
     class CalibrationResult;
     class MetaData;
 }
+}
 
-namespace icrar::cuda
+namespace icrar
+{
+namespace cuda
 {
     class DeviceMetaData;
     class DeviceIntegration;
@@ -88,4 +93,5 @@ namespace icrar::cuda
          const Eigen::VectorXi& a2,
          int refAnt,
          bool map);
+}
 }

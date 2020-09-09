@@ -48,7 +48,7 @@ namespace icrar::casalib
     {
     public:
         //Integration();
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
+        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 

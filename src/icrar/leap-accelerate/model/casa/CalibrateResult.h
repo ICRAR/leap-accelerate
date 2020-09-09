@@ -80,8 +80,8 @@ namespace icrar::casalib
     };
 
     using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<CalibrationResult>>>
+        std::vector<std::queue<IntegrationResult>>,
+        std::vector<std::queue<CalibrationResult>>
     >;
 
 }

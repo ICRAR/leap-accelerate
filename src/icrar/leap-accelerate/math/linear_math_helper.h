@@ -36,29 +36,13 @@
 
 namespace icrar
 {
-    // template<typename T>
-    // Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const Eigen::Tensor<T, 2> value)
-    // {
-
-    // }
-
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
-        auto m = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
-
-        auto it = value.begin();
-        for(int col = 0; col < shape[1]; ++col)
-        {
-            for(int row = 0; row < shape[0]; ++row)
-            {
-                //eigen column major format
-                m(row, col) = *it;
-                it++;
-            }
-        }
-        return m;
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T, int R, int C>
@@ -70,19 +54,9 @@ namespace icrar
             throw std::invalid_argument("matrix shape does not match template");
         }
 
-        auto m = Eigen::Matrix<T, R, C>();
-
-        // column major to column major
-        auto it = value.begin();
-        for(int col = 0; col < C; ++col)
-        {
-            for(int row = 0; row < R; ++row)
-            {
-                m(row, col) = *it;
-                it++;
-            }
-        }
-        return m;
+        auto output = Eigen::Matrix<T, R, C>();
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T, int R, int C>
@@ -98,48 +72,19 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, 3, 3> ToMatrix3x3(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T> value)
     {
-        if(value.shape()[0] != 3 && value.shape()[1] != 3)
-        {
-            throw std::runtime_error("matrix must be 3x3");
-        }
-
-        auto m = Eigen::Matrix<T, 3, 3>();
-
-        // column major to column major
-        auto it = value.begin();
-        for(int col = 0; col < 3; ++col)
-        {
-            for(int row = 0; row < 3; ++row)
-            {
-                m(row, col) = *it;
-                it++;
-            }
-        }
-        return m;
-    }
-
-    template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T>& value)
-    {
-        auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
-        for(int i = 0; i < value.size(); ++i)
-        {
-            v(i) = value(casacore::IPosition(1, i));
-        }
-        return v;
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(const std::vector<T>& value)
     {
-        auto v = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
-        for(int i = 0; i < value.size(); i++)
-        {
-            v(i) = value[i];
-        }
-        return v;
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
     }
 
 

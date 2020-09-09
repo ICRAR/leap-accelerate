@@ -44,7 +44,9 @@
 #include <complex>
 
 
-namespace icrar::cpu
+namespace icrar
+{
+namespace cpu
 {
     class MeasurementSet;
 
@@ -53,7 +55,7 @@ namespace icrar::cpu
         std::vector<icrar::MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
 
     public:
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
+        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
@@ -75,4 +77,5 @@ namespace icrar::cpu
 
         const std::vector<icrar::MVuvw>& GetUVW() const;
     };
+}
 }

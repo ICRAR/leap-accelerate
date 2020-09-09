@@ -76,7 +76,7 @@ namespace cpu
 
         if(metadata.dd.is_initialized())
         {
-            dd = ToMatrix3x3(metadata.dd.value());
+            dd = ToMatrix<double, 3, 3>(metadata.dd.value());
         }
         else
         {

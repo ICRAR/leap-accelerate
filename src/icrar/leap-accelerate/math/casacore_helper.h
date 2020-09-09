@@ -53,7 +53,7 @@ namespace icrar
     casacore::MVuvw Dot(const casacore::MVuvw& v1, const casacore::Matrix<T>& v2)
     {
         auto uvw = ToUVW(v1);
-        auto mat = ToMatrix3x3(v2);
+        auto mat = ToMatrix<T, 3, 3>(v2);
         return ToCasaUVW(Dot(uvw, mat));
     }
 

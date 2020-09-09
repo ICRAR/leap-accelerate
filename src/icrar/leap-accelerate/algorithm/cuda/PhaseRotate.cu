@@ -59,7 +59,9 @@ using Radians = double;
 
 using namespace casacore;
 
-namespace icrar::cuda
+namespace icrar
+{
+namespace cuda
 {
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
@@ -68,8 +70,8 @@ namespace icrar::cuda
     {
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
+        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
 
         auto integration = cpu::Integration(
@@ -77,8 +79,7 @@ namespace icrar::cuda
             0, //TODO increment
             metadata.channels,
             metadata.GetBaselines(),
-            metadata.num_pols,
-            metadata.GetBaselines());
+            metadata.num_pols);
 
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -86,8 +87,8 @@ namespace icrar::cuda
 
             input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory data could be reused
             
-            output_integrations->push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
+            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -105,7 +106,7 @@ namespace icrar::cuda
             std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
 #endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-            icrar::cuda::PhaseRotate(hostMetadata, deviceMetadata, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
+            icrar::cuda::PhaseRotate(hostMetadata, deviceMetadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -192,22 +193,25 @@ namespace icrar::cuda
         // loop over baselines
         for(int baseline = 0; baseline < integration_baselines; ++baseline)
         {
-             const double pi = CUDART_PI;
-             double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-             shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-             shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
+            shiftFactor +=
+            ( 
+                constants.phase_centre_ra_rad * oldUVW[baseline].x
+                - constants.phase_centre_dec_rad * oldUVW[baseline].y
+            );
+            shiftFactor -= direction.x * uvw[baseline].x - direction.y * uvw[baseline].y;
+            shiftFactor *= 2 * CUDART_PI;
 
-             // loop over channels
-             for(int channel = 0; channel < constants.channels; channel++)
-             {
-                 double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+            // loop over channels
+            for(int channel = 0; channel < constants.channels; channel++)
+            {
+                double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
+                cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
 
-                 cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
-
-                 for(int polarization = 0; polarization < polarizations; polarization++)
-                 {
-                     integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
-                 }
+                for(int polarization = 0; polarization < polarizations; polarization++)
+                {
+                    integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
+                }
 
                 bool hasNaN = false;
                 for(int polarization = 0; polarization < polarizations; polarization++)
@@ -380,4 +384,5 @@ namespace icrar::cuda
 
         return std::make_pair(A, I);
     }
+}
 }

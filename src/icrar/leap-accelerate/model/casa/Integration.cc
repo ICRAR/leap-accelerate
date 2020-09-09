@@ -28,7 +28,7 @@
 
 namespace icrar::casalib
 {
-    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)

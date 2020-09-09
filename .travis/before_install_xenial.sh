@@ -25,7 +25,7 @@
 # MA 02111-1307  USA
 #
 
-# Eigen 3.3.9
+# Eigen 3.3.90
 git clone https://gitlab.com/libeigen/eigen.git
 cd eigen
 git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d

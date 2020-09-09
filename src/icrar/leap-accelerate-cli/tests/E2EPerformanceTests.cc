@@ -117,7 +117,7 @@ namespace icrar
             else if(impl == ComputeImplementation::cuda)
             {
                 std::cout << "calibrating using cuda..." << std::endl;
-                auto result = icrar::cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else
             {

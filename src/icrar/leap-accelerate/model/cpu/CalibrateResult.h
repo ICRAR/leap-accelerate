@@ -44,8 +44,9 @@
 #include <array>
 #include <complex>
 
-
-namespace icrar::cpu
+namespace icrar
+{
+namespace cpu
 {
     class IntegrationResult
     {
@@ -87,7 +88,8 @@ namespace icrar::cpu
     };
 
     using CalibrateResult = std::pair<
-        std::unique_ptr<std::vector<std::queue<cpu::IntegrationResult>>>,
-        std::unique_ptr<std::vector<std::queue<cpu::CalibrationResult>>>
+        std::vector<std::queue<cpu::IntegrationResult>>,
+        std::vector<std::queue<cpu::CalibrationResult>>
     >;
+}
 }
