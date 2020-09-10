@@ -24,8 +24,8 @@
 
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 #include <gtest/gtest.h>
 

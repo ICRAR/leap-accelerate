@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace icrar
 {
