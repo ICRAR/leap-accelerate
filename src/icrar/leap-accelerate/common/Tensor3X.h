@@ -20,8 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
-#include <eigen3/Eigen/Core>
-//#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <Eigen/Core>
+//#include <unsupported/Eigen/CXX11/Tensor>
 
 namespace icrar
 {
