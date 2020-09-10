@@ -93,7 +93,7 @@ namespace icrar
         const MVDirection& direction,
         casalib::MetaData& metadata)
     {
-        icrar::Integration integration;
-        icrar::casalib::RotateVisibilities(integration, metadata, direction);
+        //icrar::Integration integration;
+        //icrar::casalib::RotateVisibilities(integration, metadata, direction);
     }
 }

@@ -29,6 +29,8 @@
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -48,13 +50,18 @@ namespace casalib
 {
     struct MetaData;
 
+    using CalibrateResult = std::pair<std::vector<std::queue<IntegrationResult>>, std::vector<std::queue<CalibrationResult>>>;
+
     /**
      * @brief 
      * 
-     * @param metadata 
-     * @param directions 
      */
-    void RemoteCalibration(MetaData& metadata, const std::vector<casacore::MVDirection>& directions);
+    CalibrateResult Calibrate(
+        const casacore::MeasurementSet* ms,
+        MetaData& metadata,
+        const std::vector<casacore::MVDirection>& directions,
+        boost::optional<int> overrideStations,
+        int solutionInterval = 3600);
 
     /**
      * @brief 

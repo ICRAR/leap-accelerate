@@ -65,7 +65,7 @@ namespace casalib
 
         boost::optional<casacore::Matrix<double>> dd;
 
-        boost::optional<casacore::Matrix<std::complex<double>>> avg_data; 
+        boost::optional<casacore::Matrix<std::complex<double>>> avg_data;
 
         union
         {
@@ -93,14 +93,16 @@ namespace casalib
         casacore::Matrix<double> A1; // Antennas with baseline PhaseMatrix
         casacore::Matrix<double> Ad1; //A1 inverse
 
-        casacore::Array<int> I1;
-        casacore::Array<int> I;
+        casacore::Vector<int> I1;
+        casacore::Vector<int> I;
 
     public:
         MetaData();
         MetaData(std::istream& input);
         MetaData(const casacore::MeasurementSet& ms);
         
+        int GetBaselines() { return stations * (stations + 1) / 2; }
+
         /**
          * @brief 
          * 

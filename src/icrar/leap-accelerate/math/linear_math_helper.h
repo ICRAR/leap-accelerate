@@ -54,7 +54,6 @@ namespace icrar
 
         auto output = Eigen::Matrix<T, R, C>();
         std::copy(value.begin(), value.end(), output.reshaped().begin());
-        //memcpy(output.data(), value.data(), R * C * sizeof(T));
         return output;
     }
 
@@ -72,6 +71,14 @@ namespace icrar
 
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
+    {
+        auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
+        std::copy(value.begin(), value.end(), output.reshaped().begin());
+        return output;
+    }
+
+    template<typename T>
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(const std::vector<T>& value)
     {
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         std::copy(value.begin(), value.end(), output.reshaped().begin());

@@ -138,7 +138,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
 
-        int STATIONS = A.cols() - 1; //TODO verify correctness
+        int STATIONS = A.cols(); //TODO verify correctness
 
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
         I.setConstant(1);
@@ -161,19 +161,21 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         if(refAnt < 0)
         {
             refAnt = 0;
-            A(k, refAnt) = 1;
-            k++;
-            
-            auto Atemp = Eigen::MatrixXd(k, STATIONS);
-            Atemp = A(Eigen::seq(0, k), Eigen::seq(0, STATIONS));
-            A.resize(0,0);
-            A = Atemp;
-
-            auto Itemp = Eigen::VectorXi(k);
-            Itemp = I(Eigen::seq(0, k));
-            I.resize(0);
-            I = Itemp;
         }
+
+        A(k, refAnt) = 1;
+        k++;
+        
+        auto Atemp = Eigen::MatrixXd(k, STATIONS);
+        Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
+        A.resize(0,0);
+        A = Atemp;
+
+        auto Itemp = Eigen::VectorXi(k);
+        Itemp = I(Eigen::seqN(0, k));
+        I.resize(0);
+        I = Itemp;
+    
 
         return std::make_pair(A, I);
     }

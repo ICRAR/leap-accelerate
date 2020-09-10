@@ -80,7 +80,8 @@ namespace icrar
             //ASSERT_EQ(4853, meta.nantennas);
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(128, meta.stations);
+            ASSERT_EQ(128, meta.stations); //LEAP-Cal ovverides stations to 126
+            ASSERT_EQ(8256, meta.GetBaselines());
             ASSERT_EQ(1, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
@@ -89,18 +90,17 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            //TODO: verify these values
-            ASSERT_EQ(4754, meta.A.shape()[0]); //4854?
-            ASSERT_EQ(127, meta.A.shape()[1]); //128?
-            ASSERT_EQ(127, meta.Ad.shape()[0]); //128?
-            ASSERT_EQ(4754, meta.Ad.shape()[1]); //4854?
-            ASSERT_EQ(4754, meta.I.shape()[0]); //4854?
+            ASSERT_EQ(4754, meta.A.shape()[0]);
+            ASSERT_EQ(128, meta.A.shape()[1]);
+            ASSERT_EQ(128, meta.Ad.shape()[0]);
+            ASSERT_EQ(4754, meta.Ad.shape()[1]);
+            ASSERT_EQ(4754, meta.I.shape()[0]);
 
-            ASSERT_EQ(4854, meta.A1.shape()[0]);
+            ASSERT_EQ(98, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(4854, meta.Ad1.shape()[1]);
-            ASSERT_EQ(4854, meta.I1.shape()[0]);
+            ASSERT_EQ(98, meta.Ad1.shape()[1]);
+            ASSERT_EQ(98, meta.I1.shape()[0]);
         }
 
         void TestSetWv()
@@ -141,7 +141,7 @@ namespace icrar
     };
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(MetaDataTests, DISABLED_TestReadFromFile) { TestReadFromFile(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }

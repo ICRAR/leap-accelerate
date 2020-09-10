@@ -24,6 +24,8 @@
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
+#include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/ms/MeasurementSets.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <eigen3/Eigen/Core>
@@ -62,40 +64,9 @@ namespace icrar
             };
         };
 
-        bool operator==(const Integration& rhs) const
-        {
-            // There should be a nicer way of doing this, using Eigen::Tensor is one of them
-            bool dimsEqual = true;
-            dimsEqual &= data.rows() == rhs.data.rows();
-            dimsEqual &= data.cols() == rhs.data.cols();
-            for(int row = 0; row < data.rows(); ++row)
-            {
-                for(int col = 0; col < data.cols(); ++col)
-                {
-                    dimsEqual &= data(row,col).size() == rhs.data(row,col).size();
-                }
-            }
-            if(!dimsEqual) return false;
+        Integration(const casacore::MeasurementSet* ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
 
-            bool dataEqual = true;
-            for(int row = 0; row < data.rows(); ++row)
-            {
-                for(int col = 0; col < data.cols(); ++col)
-                {
-                    for(int depth = 0; depth < data(row,col).cols(); ++depth)
-                    {
-                        if(data(row, col)(depth) != rhs.data(row, col)(depth))
-                        {
-                            dataEqual = false;
-                            break;
-                        }
-                    }
-                }
-            }
-            return dataEqual
-            && uvw == rhs.uvw
-            && integration_number == rhs.integration_number;
-        }
+        bool operator==(const Integration& rhs) const;
     };
 
     class IntegrationResult
@@ -120,16 +91,21 @@ namespace icrar
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<casacore::Array<double>> m_data;
+        std::vector<casacore::Matrix<double>> m_data;
 
     public:
         CalibrationResult(
             casacore::MVDirection direction,
-            std::vector<casacore::Array<double>> data)
+            std::vector<casacore::Matrix<double>> data)
             : m_direction(direction)
             , m_data(data)
         {
 
         }
+
+        const casacore::MVDirection GetDirection() const { return m_direction; }
+        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+
+        //bool operator==(const CalibrationResult& rhs) const;
     };
 }
