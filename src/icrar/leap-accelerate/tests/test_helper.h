@@ -25,9 +25,9 @@
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
 #include <gtest/gtest.h>
