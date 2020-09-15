@@ -65,7 +65,6 @@ namespace cuda
         device_vector(size_t count, const T* data = nullptr)
         : m_count(count)
         {
-            std::cout << "device_vector " << count << std::endl;
             size_t byteSize = count * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)

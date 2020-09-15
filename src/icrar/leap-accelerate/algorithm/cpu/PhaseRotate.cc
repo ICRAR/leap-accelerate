@@ -169,8 +169,7 @@ namespace cpu
                 metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline](0)
                 - metadata.GetConstants().phase_centre_dec_rad * metadata.oldUVW[baseline](1)
             );
-
-
+            
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;

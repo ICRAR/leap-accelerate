@@ -111,8 +111,7 @@ namespace icrar
         // clamp num_baselines
         if (start_row + num_baselines > total_rows)
         {
-            //TODO: may want to throw
-            num_baselines = total_rows - start_row;
+            throw icrar::exception("ms out of range", __FILE__, __LINE__);
         }
 
         // Create the slicers for the column.

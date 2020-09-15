@@ -63,7 +63,6 @@ namespace cuda
         : m_rows(rows)
         , m_cols(cols)
         {
-            std::cout << "device_matrix " << rows << "x" << cols << std::endl;
             size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)

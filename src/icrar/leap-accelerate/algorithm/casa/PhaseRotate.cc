@@ -118,6 +118,7 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            std::cout << "done phaserote " << i << std::endl;
         }
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
@@ -163,6 +164,7 @@ namespace casalib
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
+                std::cout << "mapping..." << std::endl;
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
@@ -177,17 +179,24 @@ namespace casalib
                 Eigen::VectorXi e_i = ToVector(metadata.I);
                 Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                
+            
+                assert(metadata.I.size() == metadata.A.size());
+                assert(dInt.rows() == metadata.A.size());
+                assert(avg_data_slice.rows() == metadata.A.size());
+
+
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
                 
+                std::cout << "dintcolumn" << std::endl;
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
                 assert(dIntColumn.shape()[1] == 1);
 
+                std::cout << "pushback..." << std::endl;
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
@@ -276,6 +285,7 @@ namespace casalib
 
                 if(!hasNaN)
                 {
+#if _DEBUG
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -290,10 +300,12 @@ namespace casalib
                         << metadata.avg_data.get()(baseline, 2) << "|"
                         << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
                     }
+#endif
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
+#if _DEBUG
                     if(baseline == 0)
                     {
                         std::cout << "after : |"
@@ -302,6 +314,7 @@ namespace casalib
                         << metadata.avg_data.get()(baseline, 2) << "|"
                         << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
                     }
+#endif
                 }
             }
         }

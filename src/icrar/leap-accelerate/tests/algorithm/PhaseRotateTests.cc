@@ -97,6 +97,7 @@ namespace icrar
     class PhaseRotateTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
+        std::unique_ptr<icrar::MeasurementSet> ms2;
 
     protected:
 
@@ -113,6 +114,9 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+
+            std::string filename2 = std::string(TEST_DATA_DIR) + "/1197638568-split.ms";
+            ms2 = std::make_unique<icrar::MeasurementSet>(filename2, 126);
         }
 
         void TearDown() override
@@ -258,10 +262,10 @@ namespace icrar
             auto cthreshold = std::complex<double>(0.001, 0.001);
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
-            ASSERT_EQCD(std::complex<double>( 138.51683763999509,  53.836993695468195), metadataOutput.avg_data(0,0), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>(-166.53972390770514, -428.41528489902191), metadataOutput.avg_data(0,1), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>( 627.49838424722282,  247.35526329205342), metadataOutput.avg_data(0,2), THRESHOLD);
-            ASSERT_EQCD(std::complex<double>(-156.39233528909833, -270.13422448036732), metadataOutput.avg_data(0,3), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-18.733685278333724,  149.59337317943573), metadataOutput.avg_data(0,0), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>( 383.91613554954529, -272.36856329441071), metadataOutput.avg_data(0,1), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>(-32.724725462496281,  681.10801546275616), metadataOutput.avg_data(0,2), THRESHOLD);
+            ASSERT_EQCD(std::complex<double>( 206.11409425735474, -244.23817884922028), metadataOutput.avg_data(0,3), THRESHOLD);
             
             // =============
             // ASSERT OBJECT
@@ -1049,13 +1053,7 @@ namespace icrar
 
         void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
         {
-            //int nantennas = 10;
-            //int nstations = 1;
-
-            auto pms = ms->GetMS();
             auto msmc = ms->GetMSMainColumns();
-
-            int nstations = pms->antenna().nrow(); //128
 
             //select the first epoch only
             casacore::Vector<double> time = msmc->time().getColumn();
@@ -1113,11 +1111,11 @@ namespace icrar
 
             auto IExpected = GetExpectedI();
 
-            ASSERT_EQ(4754, A.rows());
+            ASSERT_EQ(4754, A.rows()); //-32=4754, -split=5152
             ASSERT_EQ(128, A.cols());
             ASSERT_EQ(4754, I.size());
 
-            ASSERT_EQ(98, A1.rows());
+            ASSERT_EQ(98, A1.rows()); //-32=98, -split=102
             ASSERT_EQ(128, A1.cols());
             ASSERT_EQ(98, I1.size());
 
@@ -1137,11 +1135,11 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }
