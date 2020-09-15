@@ -22,6 +22,8 @@
 
 #include "linear_math_helper.h"
 
+#include <icrar/leap-accelerate/exception/exception.h>
+
 namespace icrar
 {
     icrar::MVuvw ToUVW(const casacore::MVuvw& value)
@@ -108,5 +110,10 @@ namespace icrar
         };
         std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
         return res;
+    }
+
+    std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
+    {
+        THROW_NOT_IMPLEMENTED();
     }
 }

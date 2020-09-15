@@ -23,6 +23,7 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
@@ -31,6 +32,7 @@
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/measures/Measures/MDirection.h>
+
 
 #include <CLI/CLI.hpp>
 #include <boost/optional.hpp>
@@ -150,6 +152,11 @@ namespace icrar
             return *m_measurementSet;
         }
 
+        std::vector<icrar::MVDirection>& GetDirections()
+        {
+            return m_directions;
+        }
+
         ComputeImplementation GetComputeImplementation()
         {
             return m_computeImplementation;
@@ -188,13 +195,13 @@ int main(int argc, char** argv)
     case ComputeImplementation::casa:
     {
         std::vector<casacore::MVDirection> directions;
-        icrar::casalib::Calibrate(args.GetMeasurementSet(), directions, 16001);
+        icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
         break;
     }
     case ComputeImplementation::eigen:
     {
         std::vector<icrar::MVDirection> directions; //ZenithDirection(ms);
-        icrar::cpu::Calibrate(args.GetMeasurementSet(), directions, 16001);
+        icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
         break;
     }
     case ComputeImplementation::cuda:
