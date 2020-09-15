@@ -25,7 +25,7 @@
 # MA 02111-1307  USA
 #
 
-./before_install.sh
+.travis/before_install.sh
 
 # Kernsuite Casacore
 sudo apt-get install software-properties-common
