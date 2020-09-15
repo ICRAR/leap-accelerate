@@ -25,7 +25,7 @@
 # MA 02111-1307  USA
 #
 
-.travis/before_install.sh
+bash .travis/before_install.sh
 
 # CUDA 10.0
 wget http://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda-repo-ubuntu1804-10-0-local-10.0.130-410.48_1.0-1_amd64
