@@ -36,4 +36,4 @@ export EIGEN3_DIR=/usr/local/include/
 
 # Test Data
 wget "https://aus01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fcloudstor.aarnet.edu.au%2Fplus%2Fs%2FNJRXKpU30ax77uO%2Fdownload&amp;data=02%7C01%7Ccallan.gray%40uwa.edu.au%7Cbccd03a140084ca8067d08d858912c75%7C05894af0cb2846d8871674cdb46e2226%7C1%7C0%7C637356727822343686&amp;sdata=GNb8DDTqJU785Mgf5dJJmKn1I2L4tT6vXVo9EdMwbUU%3D&amp;reserved=0" -O ./testdata/1197638568-split.tar.gz
-tar xvzf 1197638568-split.tar.gz
+tar -C ./testdata/ -xvf ./testdata/1197638568-split.tar.gz
