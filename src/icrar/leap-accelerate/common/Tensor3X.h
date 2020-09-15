@@ -34,19 +34,30 @@ namespace icrar
     template<typename T>
     bool isApprox(const Tensor3X<T>& lhs, const Tensor3X<T>& rhs, double tolerance)
     {
-        for(int x = 0; x < rhs.dimension(0); ++x)
+        auto dimsEqual = [&]() { return lhs.dimensions() == rhs.dimensions(); };
+        auto dataEqual = [&]()
         {
-            for(int y = 0; y < rhs.dimension(1); ++y)
+            // TODO: optimize, try
+            // return std::inner_product(lhs.data(), lhs.data() + lhs.size(), rhs.data(), true, std::logical_and<bool>, [&tolerance](auto e1, auto e2) {
+            //     return std::abs(e1 - e2) > tolerance;
+            // });
+
+            for(int x = 0; x < rhs.dimension(0); ++x)
             {
-                for(int z = 0; z < rhs.dimension(2); ++z)
+                for(int y = 0; y < rhs.dimension(1); ++y)
                 {
-                    if(abs(lhs(x, y, z) - rhs(x, y, z)) > tolerance)
+                    for(int z = 0; z < rhs.dimension(2); ++z)
                     {
-                        return false;
+                        if(abs(lhs(x, y, z) - rhs(x, y, z)) > tolerance)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
-        }
-        return true;
+            return true;
+        };
+
+        return dimsEqual() && dataEqual();
     }
 }

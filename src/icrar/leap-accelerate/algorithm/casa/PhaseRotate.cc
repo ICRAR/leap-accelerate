@@ -83,13 +83,13 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.push(Integration(
+            queue.emplace(
                 ms,
                 i,
                 metadata.channels,
                 metadata.GetBaselines(),
                 metadata.num_pols,
-                metadata.GetBaselines()));
+                metadata.GetBaselines());
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
@@ -223,7 +223,7 @@ namespace casalib
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
 
                 bool hasNaN = false;

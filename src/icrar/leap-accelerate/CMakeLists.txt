@@ -20,9 +20,6 @@ set(private_headers
     math/math.h
 )
 set(sources
-
-    common/Tensor3X.cc
-
     exception/exception.cc
 
     ms/utils.cc

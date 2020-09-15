@@ -111,8 +111,9 @@ namespace icrar
         // clamp num_baselines
         if (start_row + num_baselines > total_rows)
         {
-            //TODO: may want to throw
-            num_baselines = total_rows - start_row;
+            std::stringstream ss;
+            ss << "row selection [" << start_row << "," << start_row + num_baselines << "] exceeds total range [" << 0 << "," << total_rows << "]";
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
         // Create the slicers for the column.

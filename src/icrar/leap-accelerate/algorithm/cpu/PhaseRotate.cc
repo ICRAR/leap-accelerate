@@ -105,7 +105,7 @@ namespace cpu
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(channel, baseline, polarization) *= std::exp(1.0i * shiftRad);
                 }
 
                 bool hasNaN = false;
