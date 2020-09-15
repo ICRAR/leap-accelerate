@@ -144,6 +144,8 @@ namespace icrar
 
         void TestSetWv()
         {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
@@ -151,6 +153,8 @@ namespace icrar
 
         void TestCudaBufferCopy()
         {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             auto direction = casacore::MVDirection(0.0, 0.0);
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
