@@ -54,7 +54,9 @@ namespace icrar
     struct Arguments
     {
         InputType source = InputType::FILENAME;
-        boost::optional<std::string> filePath;
+        boost::optional<std::string> filePath; // Measurement set filepath
+        boost::optional<std::string> configPath; // Config filepath
+
         boost::optional<std::string> stations;
         boost::optional<std::string> directions;
         ComputeImplementation implementation = ComputeImplementation::casa;
@@ -65,6 +67,9 @@ namespace icrar
         InputType m_source;
         boost::optional<std::string> m_filePath;
 
+        /**
+         * Constants
+         */
         boost::optional<std::string> m_stations;
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
@@ -115,6 +120,24 @@ namespace icrar
                 throw new std::runtime_error("only stream in and file input are currently supported");
                 break;
             }
+
+            if(args.configPath.is_initialized())
+            {
+                throw std::runtime_error("config not supported");
+            }
+            else
+            {
+                if(args.directions.is_initialized())
+                {
+                    throw std::runtime_error("stations required");
+                }
+                else
+                {
+                    m_directions = ParseDirections(args.directions.get());
+                }
+                m_stations = args.stations;
+                m_computeImplementation = icrar::ComputeImplementation::casa;
+            }
         }
 
         std::istream& GetInputStream()
@@ -142,8 +165,8 @@ int main(int argc, char** argv)
 
     //Parse Arguments
     Arguments rawArgs;
-    app.add_option("-s,--source", rawArgs.source, "input source type");
-    app.add_option("-t,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
+    app.add_option("-i,--input-type", rawArgs.source, "input source type");
+    app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "A help string");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     try
