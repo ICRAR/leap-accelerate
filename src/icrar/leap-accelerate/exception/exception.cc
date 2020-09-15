@@ -27,7 +27,7 @@ namespace icrar
     exception::exception(std::string msg, std::string file, int line)
     {
         std::strstream ss;
-        ss << file << ":" << line << " " << msg;
+        ss << file << ":" << line << " " << msg << std::endl;
         m_message = ss.str();
     }
 

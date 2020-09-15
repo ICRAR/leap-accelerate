@@ -3,7 +3,8 @@ set(TEST_TARGET LeapAccelerateCLI.Tests)
 
 set(sources
   main.cc
-    
+
+  JSONHelperTests.cc    
   E2EPerformanceTests.cc
 )
 

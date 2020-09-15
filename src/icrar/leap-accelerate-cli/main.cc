@@ -20,14 +20,14 @@
  * MA 02111 - 1307  USA
  */
 
+
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
-
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/measures/Measures/MDirection.h>
@@ -55,6 +55,7 @@ namespace icrar
     {
         InputType source = InputType::FILENAME;
         boost::optional<std::string> filePath;
+        boost::optional<std::string> stations;
         boost::optional<std::string> directions;
         ComputeImplementation implementation = ComputeImplementation::casa;
     };
@@ -63,6 +64,8 @@ namespace icrar
     {
         InputType m_source;
         boost::optional<std::string> m_filePath;
+
+        boost::optional<std::string> m_stations;
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -140,8 +143,9 @@ int main(int argc, char** argv)
     //Parse Arguments
     Arguments rawArgs;
     app.add_option("-s,--source", rawArgs.source, "input source type");
+    app.add_option("-t,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "A help string");
-    app.add_option("-d,--directions", rawArgs.directions);
+    app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     try
     {
         app.parse(argc, argv);

@@ -94,7 +94,7 @@ namespace icrar
 
     icrar::MVDirection ToDirection(const casacore::MVDirection& value)
     {
-        return icrar::MVDirection(value.get()[0], value.get()[1], value.get()[2]);
+        return icrar::MVDirection(value(0), value(1), value(2));
     }
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)

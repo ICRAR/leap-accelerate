@@ -77,6 +77,7 @@ find_package(LAPACK)
 find_package(Casacore REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(RapidJSON REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
