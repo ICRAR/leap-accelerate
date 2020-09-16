@@ -69,17 +69,17 @@ namespace cuda
 
         oldUVW = ToUVW(metadata.oldUVW);
 
-        A = ConvertMatrix(metadata.A);
-        I = ConvertMatrix<int>(metadata.I);
-        Ad = ConvertMatrix(metadata.Ad);
+        A = ToMatrix(metadata.A);
+        I = ToMatrix<int>(metadata.I);
+        Ad = ToMatrix(metadata.Ad);
 
-        A1 = ConvertMatrix(metadata.A1);
-        I1 = ConvertMatrix<int>(metadata.I1);
-        Ad1 = ConvertMatrix(metadata.Ad1);
+        A1 = ToMatrix(metadata.A1);
+        I1 = ToMatrix<int>(metadata.I1);
+        Ad1 = ToMatrix(metadata.Ad1);
 
         if(metadata.dd.is_initialized())
         {
-            dd = ConvertMatrix<double, 3, 3>(metadata.dd.value());
+            dd = ToMatrix<double, 3, 3>(metadata.dd.value());
         }
         else
         {
@@ -88,7 +88,7 @@ namespace cuda
 
         if(metadata.avg_data.is_initialized())
         {
-            avg_data = ConvertMatrix(metadata.avg_data.value());
+            avg_data = ToMatrix(metadata.avg_data.value());
         }
         else
         {
@@ -111,13 +111,13 @@ namespace cuda
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
 
-        A = ConvertMatrix(metadata.A);
-        I = ConvertMatrix<int>(metadata.I);
-        Ad = ConvertMatrix(metadata.Ad);
+        A = ToMatrix(metadata.A);
+        I = ToMatrix<int>(metadata.I);
+        Ad = ToMatrix(metadata.Ad);
 
-        A1 = ConvertMatrix(metadata.A1);
-        I1 = ConvertMatrix<int>(metadata.I1);
-        Ad1 = ConvertMatrix(metadata.Ad1);
+        A1 = ToMatrix(metadata.A1);
+        I1 = ToMatrix<int>(metadata.I1);
+        Ad1 = ToMatrix(metadata.Ad1);
 
         SetWv();
         SetDD(direction);
@@ -126,7 +126,7 @@ namespace cuda
 
         if(metadata.avg_data.is_initialized())
         {
-            avg_data = ConvertMatrix(metadata.avg_data.value());
+            avg_data = ToMatrix(metadata.avg_data.value());
         }
     }
 
@@ -239,7 +239,7 @@ namespace cuda
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
         UVW.ToHost(uvwTemp);
-        MetaData result = MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVW(uvwTemp));
+        MetaData result = MetaData(casalib::MetaData(), casacore::MVDirection(), ToCasaUVWVector(uvwTemp));
         ToHost(result);
         return result;
     }

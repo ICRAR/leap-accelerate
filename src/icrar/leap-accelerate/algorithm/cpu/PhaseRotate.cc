@@ -23,11 +23,10 @@
 
 #include "PhaseRotate.h"
 
-#include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/Integration.h>
 
+#include <icrar/leap-accelerate/model/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -74,13 +73,13 @@ namespace cpu
     void RotateVisibilities(Integration& integration, cuda::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        auto& data = integration.data;
+        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;
         auto& uvw = metadata.UVW;
         auto parameters = integration.parameters;
 
         assert(uvw.size() == integration.baselines);
-        assert(data.rows() == metadata.m_constants.channels);
-        assert(data.cols() == integration.baselines);
+        assert(integration_data.dimension(0) == metadata.m_constants.channels);
+        assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.m_constants.channel_wavelength.size() == metadata.m_constants.channels);
         assert(metadata.avg_data.rows() == integration.baselines);
@@ -89,28 +88,40 @@ namespace cpu
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline](2) - metadata.oldUVW[baseline](2); // check these are correct
-            shiftFactor = shiftFactor + 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline](0));
-            shiftFactor = shiftFactor - 2 * pi * (metadata.direction(0) * uvw[baseline](0) - metadata.direction(1) * uvw[baseline](1));
+            constexpr double pi = boost::math::constants::pi<double>();
+            double shiftFactor = -2 * pi * uvw[baseline](2) - metadata.oldUVW[baseline](2);
+            shiftFactor += 2 * pi * (metadata.m_constants.phase_centre_ra_rad * metadata.oldUVW[baseline](0));
+            shiftFactor -= 2 * pi * (metadata.direction(0) * uvw[baseline](0) - metadata.direction(1) * uvw[baseline](1));
 
+#if _DEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.m_constants.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.m_constants.channel_wavelength[channel];
 
-                data(channel, baseline) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-
-                if(!data(channel, baseline).hasNaN())
+                for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
-                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
+                }
+
+                bool hasNaN = false;
+                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
+                for(int i = 0; i < polarizations.dimension(0); ++i)
+                {
+                    hasNaN |= polarizations(i).real() == NAN || polarizations(i).imag() == NAN;
+                }
+
+                if(!hasNaN)
+                {
+                    for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                     {
-                        metadata.avg_data(baseline, i) += data(channel, baseline)(i);
+                        metadata.avg_data(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
                 }
             }

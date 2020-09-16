@@ -27,9 +27,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
-#include <icrar/leap-accelerate/utils.h>
 #include <icrar/leap-accelerate/model/MetaData.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
 
@@ -66,7 +65,7 @@ namespace casalib
 {
     // leap_remote_calibration
     CalibrateResult Calibrate(
-        const casacore::MeasurementSet* ms,
+        const icrar::MeasurementSet& ms,
         MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
         boost::optional<int> overrideStations,
@@ -84,7 +83,13 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.push(Integration(ms, i, metadata.channels, metadata.GetBaselines(), metadata.num_pols, metadata.GetBaselines())); //TODO read uvw
+            queue.emplace(
+                ms,
+                i,
+                metadata.channels,
+                metadata.GetBaselines(),
+                metadata.num_pols,
+                metadata.GetBaselines());
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
@@ -136,17 +141,17 @@ namespace casalib
 
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
-                auto indexes = ConvertVector(metadata.I1);
+                auto indexes = ToVector(metadata.I1);
 
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ConvertMatrix(avg_data)(indexes, 0))); // 1st pol only
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
                 assert(cal1.shape()[1] == 1);
 
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
 
-                Eigen::VectorXi e_i = ConvertVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = ConvertMatrix(avg_data)(e_i, Eigen::all);
+                Eigen::VectorXi e_i = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
                 
                 for(int n = 0; n < metadata.I.size(); ++n)
@@ -170,7 +175,8 @@ namespace casalib
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
     {
         using namespace std::literals::complex_literals;
-        auto& data = integration.data;
+        
+        auto& integration_data = integration.data;
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
@@ -188,12 +194,12 @@ namespace casalib
         metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
-        assert(data.rows() == metadata.channels);
-        assert(data.cols() == integration.baselines);
+
+        assert(integration_data.dimension(0) == metadata.channels);
+        assert(integration_data.dimension(1) == integration.baselines);
+        assert(integration_data.dimension(2) == metadata.num_pols);
         assert(metadata.oldUVW.size() == integration.baselines);
         assert(metadata.channel_wavelength.size() == metadata.channels);
-
-        std::cout << "uvw is " << uvw[0] << std::endl;
 
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
@@ -215,14 +221,24 @@ namespace casalib
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
 
-                Eigen::VectorXcd v = data(channel, baseline);
-                data(channel, baseline) = v * std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
-
-                if(!data(channel, baseline).hasNaN())
+                for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                 {
-                    for(int i = 0; i < data(channel, baseline).cols(); i++)
+                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
+                }
+
+                bool hasNaN = false;
+
+                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
+                for(int i = 0; i < polarizations.dimension(0); ++i)
+                {
+                    hasNaN |= polarizations(i).real() == NAN || polarizations(i).imag() == NAN;
+                }
+
+                if(!hasNaN)
+                {
+                    for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
-                        metadata.avg_data.get()(baseline, i) += data(channel, baseline)(i);
+                        metadata.avg_data.get()(casacore::IPosition(2, baseline, polarization)) += integration_data(channel, baseline, polarization);
                     }
                 }
             }

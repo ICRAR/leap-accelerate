@@ -20,16 +20,18 @@ set(private_headers
     math/math.h
 )
 set(sources
-    utils.cc
-    
+    exception/exception.cc
+
+    ms/utils.cc
+    ms/MeasurementSet.cc
+
     model/MetaData.cc
-
-    math/Integration.cc
+    model/Integration.cc
+    
     math/linear_math_helper.cc
-
-    math/casa/matrix_invert.cc
     math/casa/vector.cc
     math/casa/matrix.cc
+    math/casa/matrix_invert.cc
 
     math/cpu/vector.cc
     
@@ -55,6 +57,7 @@ set(cuda_headers
 set(cuda_sources
     cuda/cuda_info.cu
     model/cuda/MetaDataCuda.cu
+    model/cuda/DeviceIntegration.cu
 
     math/cuda/vector.cu
     math/cuda/matrix.cu

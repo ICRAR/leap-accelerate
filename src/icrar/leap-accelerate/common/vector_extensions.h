@@ -1,3 +1,4 @@
+
 /**
 *    ICRAR - International Centre for Radio Astronomy Research
 *    (c) UWA - The University of Western Australia
@@ -22,27 +23,17 @@
 
 #pragma once
 
-#include <exception>
-#include <string>
-#include <strstream>
+#include <vector>
 
-namespace icrar
+template<typename T>
+bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
 {
-    class exception : public std::exception
+    for(size_t i = 0; i < lhs.size(); ++i)
     {
-        std::string m_message;
-
-    public:
-        exception(std::string msg, std::string file, int line);
-
-        virtual const char* what() const noexcept override;
-    };
-
-    class not_implemented_exception : public icrar::exception
-    {
-    public:
-        not_implemented_exception(std::string file, int line);
-    };
+        if(std::abs(lhs[i] - rhs[i]) >= threshold)
+        {
+            return false;
+        }
+    }
+    return true;
 }
-
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)

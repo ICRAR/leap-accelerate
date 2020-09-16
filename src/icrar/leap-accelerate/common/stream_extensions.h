@@ -1,3 +1,4 @@
+
 /**
 *    ICRAR - International Centre for Radio Astronomy Research
 *    (c) UWA - The University of Western Australia
@@ -22,27 +23,48 @@
 
 #pragma once
 
-#include <exception>
-#include <string>
-#include <strstream>
+#include <iostream>
+#include <iomanip>
+#include <vector>
+#include <set>
+#include <map>
 
-namespace icrar
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
-    class exception : public std::exception
-    {
-        std::string m_message;
-
-    public:
-        exception(std::string msg, std::string file, int line);
-
-        virtual const char* what() const noexcept override;
-    };
-
-    class not_implemented_exception : public icrar::exception
-    {
-    public:
-        not_implemented_exception(std::string file, int line);
-    };
+    os << std::setprecision(15);
+    os << "{";
+    for (int i = 0; i < v.size(); ++i)
+    { 
+        os << v[i]; 
+        if (i != v.size() - 1) 
+            os << ", "; 
+    } 
+    os << "}\n"; 
+    return os;
 }
 
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
+{
+    os << "{"; 
+    for (auto it : v)
+    {
+        os << it; 
+        if (it != *v.rbegin()) 
+            os << ", "; 
+    } 
+    os << "}\n"; 
+    return os;
+}
+
+template <typename T, typename S> 
+std::ostream& operator<<(std::ostream& os, const std::map<T, S>& v) 
+{ 
+    for (auto it : v)
+    {
+        os << it.first << " : "
+           << it.second << "\n";
+    }
+    return os; 
+}

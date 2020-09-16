@@ -20,14 +20,44 @@
  * MA 02111 - 1307  USA
  */
 
-#include <Eigen/Core>
-//#include <unsupported/Eigen/CXX11/Tensor>
+#pragma once
+
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
+#include <eigen3/Eigen/Core>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 namespace icrar
 {
     template<typename T>
-    using Tensor3X = Eigen::Matrix<Eigen::Matrix<T, Eigen::Dynamic, 1>, Eigen::Dynamic, Eigen::Dynamic>;
+    using Tensor3X = Eigen::Tensor<T, 3>;
 
-    //template<typename T>
-    //using Tensor3X = Eigen::Tensor<T, 3>;
+    template<typename T>
+    bool isApprox(const Tensor3X<T>& lhs, const Tensor3X<T>& rhs, double tolerance)
+    {
+        auto dimsEqual = [&]() { return lhs.dimensions() == rhs.dimensions(); };
+        auto dataEqual = [&]()
+        {
+            // TODO: optimize, try
+            // return std::inner_product(lhs.data(), lhs.data() + lhs.size(), rhs.data(), true, std::logical_and<bool>, [&tolerance](auto e1, auto e2) {
+            //     return std::abs(e1 - e2) > tolerance;
+            // });
+
+            for(int x = 0; x < rhs.dimension(0); ++x)
+            {
+                for(int y = 0; y < rhs.dimension(1); ++y)
+                {
+                    for(int z = 0; z < rhs.dimension(2); ++z)
+                    {
+                        if(abs(lhs(x, y, z) - rhs(x, y, z)) > tolerance)
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        };
+
+        return dimsEqual() && dataEqual();
+    }
 }

@@ -35,7 +35,7 @@
 namespace icrar
 {
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ConvertMatrix(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
         auto output = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>(shape[0], shape[1]);
@@ -44,7 +44,7 @@ namespace icrar
     }
 
     template<typename T, int R, int C>
-    Eigen::Matrix<T, R, C> ConvertMatrix(const casacore::Matrix<T>& value)
+    Eigen::Matrix<T, R, C> ToMatrix(const casacore::Matrix<T>& value)
     {
         auto shape = value.shape();
         if(shape[0] != R || shape[1] != C)
@@ -70,7 +70,7 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ConvertVector(casacore::Array<T> value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T> value)
     {
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         std::copy(value.begin(), value.end(), output.reshaped().begin());
@@ -85,15 +85,19 @@ namespace icrar
         return output;
     }
 
+
     template<typename T>
     casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
         return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
 
+    icrar::MVuvw ToUVW(const casacore::MVuvw& value);
     icrar::MVuvw ToUVW(const casacore::MVPosition& value);
     std::vector<icrar::MVuvw> ToUVW(const std::vector<casacore::MVuvw>& value);
 
-    casacore::MVuvw ToCasaUVW(icrar::MVuvw value);
-    std::vector<casacore::MVuvw> ToCasaUVW(const std::vector<icrar::MVuvw>& value);
+    casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
+    std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
+    std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
+
 }

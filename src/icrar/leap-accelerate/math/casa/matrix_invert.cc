@@ -31,12 +31,12 @@ namespace casalib
 {
     casacore::Matrix<double> PseudoInverse(const casacore::Matrix<double>& a)
     {
-        return ConvertMatrix(cpu::PseudoInverse(ConvertMatrix(a)));
+        return ConvertMatrix(cpu::PseudoInverse(ToMatrix(a)));
     }
 
     casacore::Matrix<double> SVDPseudoInverse(const casacore::Matrix<double>& a, double epsilon)
     {
-        return ConvertMatrix(cpu::SVDPseudoInverse(ConvertMatrix(a), epsilon));
+        return ConvertMatrix(cpu::SVDPseudoInverse(ToMatrix(a), epsilon));
     }
 }
 }

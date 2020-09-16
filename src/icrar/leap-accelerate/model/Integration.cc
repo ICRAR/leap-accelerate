@@ -21,37 +21,30 @@
  */
 
 #include "Integration.h"
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/ms/utils.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 
 namespace icrar
 {
-    Integration::Integration(const casacore::MeasurementSet* ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)
     , channels(channels)
     , baselines(baselines)
     {
-        auto vms = std::make_unique<casacore::MeasurementSet>(*ms);
-        auto msc = std::make_unique<casacore::MSColumns>(*vms);
-        auto msmc = std::make_unique<casacore::MSMainColumns>(*vms);
-
-        data = Eigen::Matrix<Eigen::VectorXcd, Eigen::Dynamic, Eigen::Dynamic>(channels, baselines);
-        for(int row = 0; row < data.rows(); ++row)
-        {
-            for(int col = 0; col < data.cols(); ++col)
-            {
-                data(row, col) = Eigen::VectorXcd::Zero(polarizations);
-            }
-        }
-
-        uvw = std::vector<casacore::MVuvw>();
-
-        uvw.resize(uvws);
+        data = ms.GetVis(channels, baselines, polarizations);
+        uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        return data == rhs.data
+        Eigen::Map<const Eigen::VectorXcd> datav(data.data(), data.size());
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.data.data(), rhs.data.size());
+        
+        return datav.isApprox(rhsdatav)
         && uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }

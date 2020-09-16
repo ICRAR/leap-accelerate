@@ -20,29 +20,25 @@
 *    MA 02111-1307  USA
 */
 
-#pragma once
-
-#include <exception>
-#include <string>
-#include <strstream>
+#include "exception.h"
 
 namespace icrar
 {
-    class exception : public std::exception
+    exception::exception(std::string msg, std::string file, int line)
     {
-        std::string m_message;
+        std::strstream ss;
+        ss << file << ":" << line << " " << msg;
+        m_message = ss.str();
+    }
 
-    public:
-        exception(std::string msg, std::string file, int line);
-
-        virtual const char* what() const noexcept override;
-    };
-
-    class not_implemented_exception : public icrar::exception
+    const char* exception::what() const noexcept
     {
-    public:
-        not_implemented_exception(std::string file, int line);
-    };
+        return m_message.c_str();
+    }
+
+    not_implemented_exception::not_implemented_exception(std::string file, int line)
+    : exception("not implemented", file, line)
+    {}
 }
 
 #define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)

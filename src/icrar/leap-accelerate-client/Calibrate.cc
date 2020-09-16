@@ -24,7 +24,7 @@
 
 #include <icrar/leap-accelerate/model/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -61,10 +61,10 @@ namespace icrar
 
     void LeapHandleRemoteMS(std::string ms_filename)
     {
-        MeasurementSet ms = MeasurementSet(ms_filename);
+        //MeasurementSet ms = MeasurementSet(ms_filename);
         throw std::runtime_error("not implemented");
 
-        casalib::MetaData metadata = casalib::MetaData(ms);
+        //::MetaData metadata = casalib::MetaData(ms);
     }
 
     void ClientLeapRemoteCalibration(std::string host, short port, std::string ms_path, const std::vector<MVDirection>& directions, boost::optional<int> overrideStations, int solutionInterval=3600)

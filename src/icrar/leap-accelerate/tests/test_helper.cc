@@ -21,6 +21,18 @@
  */
 
 #include "test_helper.h"
+#include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
+
+void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    if(std::abs(expected.real() - actual.real()) > tolerance || std::abs(expected.imag() - actual.imag()) > tolerance)
+    {
+        std::cerr << file << ":" << line << " " << ln << "!=" << rn << "\n";
+    }
+    EXPECT_NEAR(expected.real(), actual.real(), tolerance);
+    EXPECT_NEAR(expected.imag(), actual.imag(), tolerance);
+}
 
 template<typename T>
 void assert_meq(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
@@ -36,7 +48,7 @@ void assert_meq(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T,
         {
             for(int row = 0; row < actual.rows(); ++row)
             {
-                if(abs(expected(row, col) - actual(row, col)) > tolerance)
+                if(std::abs(expected(row, col) - actual(row, col)) > tolerance)
                 {
                     std::cerr << "expected(" << row << ", " << col << ") == " << expected(row, col) << "\n";
                     std::cerr << "actual(" << row << ", " << col << ") == " << actual(row, col) << "\n";
@@ -89,7 +101,7 @@ void assert_meqcd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actu
 }
 
 template<typename T>
-void assert_veq(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, double tolerance, std::string file, int line)
+void assert_veq(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -110,17 +122,44 @@ void assert_veq(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, 
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string file, int line)
+void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
-    assert_veq<int>(expected, actual, tolerance, file, line);
+    assert_veq<int>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string file, int line)
+void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
-    assert_veq<double>(expected, actual, tolerance, file, line);
+    assert_veq<double>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string file, int line)
+template<typename T>
+void assert_veq(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    ASSERT_EQ(expected.size(), actual.size());
+    if(!isApprox(expected, actual, tolerance))
+    {
+        std::cerr << ln << " != " << rn << "\n";
+        std::cerr << file << ":" << line << " std::vector elements differ at:\n" << std::setprecision(15);
+        
+        for(int i = 0; i < actual.size(); ++i)
+        {
+            if(abs(expected[i] - actual[i]) > tolerance)
+            {
+                std::cerr << "expected[" << i << "] == " << expected[i] << "\n";
+                std::cerr << "actual[" << i << "] == " << actual[i] << "\n";
+            }
+        }
+        std::cerr << std::endl;
+    }
+    ASSERT_TRUE(isApprox(expected, actual, tolerance));
+}
+
+void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+{
+    assert_veq<double>(expected, actual, tolerance, ln, rn, file, line);
+}
+
+void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line)
 {
     if(!(expected == actual))
     {

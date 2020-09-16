@@ -24,7 +24,6 @@
 
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
-#include <icrar/leap-accelerate/utils.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -120,7 +119,7 @@ public:
         }
         
         //Convert to eigen matrix and back
-        Eigen::Matrix<double, 5, 5> em = icrar::ConvertMatrix<double, 5, 5>(m);
+        Eigen::Matrix<double, 5, 5> em = icrar::ToMatrix<double, 5, 5>(m);
         casacore::Matrix<double> cm = icrar::ConvertMatrix<double, 5, 5>(em);
         
 
@@ -168,9 +167,21 @@ public:
             inc += 1.0;
         }
     }
+
+    void test_uvw_to_icrar()
+    {
+        casacore::MVuvw casa = casacore::MVuvw(1,2,3);
+        icrar::MVuvw uvw = icrar::ToUVW(casa);
+
+        ASSERT_EQ(1, uvw(0));
+        ASSERT_EQ(2, uvw(1));
+        ASSERT_EQ(3, uvw(2));
+    }
 };
 
 TEST_F(casacore_eigen_tests, test_column_major) { test_column_major(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa) { test_matrix_casa(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
 TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
+
+TEST_F(casacore_eigen_tests, test_uvw_to_icrar) { test_uvw_to_icrar(); }

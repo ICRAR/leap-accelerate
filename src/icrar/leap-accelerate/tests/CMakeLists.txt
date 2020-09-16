@@ -10,7 +10,9 @@ set(sources
   math/eigen_tests.cc
   math/vector_tests.cc
   math/matrix_tests.cc
-  
+
+  ms/MSUtilsTests.cc
+
   model/MetaDataTests.cc
   
   algorithm/PhaseRotateTests.cc

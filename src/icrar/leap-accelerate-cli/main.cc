@@ -20,9 +20,14 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/utils.h>
-#include <icrar/leap-accelerate/math/Integration.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/model/Integration.h>
+
+#include <icrar/leap-accelerate/model/MetaData.h>
+
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 
@@ -35,85 +40,97 @@
 #include <string>
 #include <exception>
 
-using namespace icrar;
-
-enum class InputType
+namespace icrar
 {
-    STREAM,
-    FILE_STREAM,
-    FILENAME,
-    APACHE_ARROW
-};
-
-struct Arguments
-{
-    InputType source = InputType::FILENAME;
-    boost::optional<std::string> fileName;
-};
-
-class ArgumentsValidated
-{
-    InputType m_source;
-    boost::optional<std::string> m_fileName;
-
-    /**
-     * Resources
-     */
-    std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
-    std::ifstream m_fileStream;
-    std::istream* m_inputStream = nullptr; // Cached reference to the input stream
-
-public:
-    ArgumentsValidated(const Arguments&& args)
-        : m_source(args.source)
-        , m_fileName(args.fileName)
+    enum class InputType
     {
-        switch (m_source)
+        STREAM,
+        FILE_STREAM,
+        FILENAME,
+        APACHE_ARROW
+    };
+
+    struct Arguments
+    {
+        InputType source = InputType::FILENAME;
+        boost::optional<std::string> filePath;
+        boost::optional<std::string> directions;
+        ComputeImplementation implementation = ComputeImplementation::casa;
+    };
+
+    class ArgumentsValidated
+    {
+        InputType m_source;
+        boost::optional<std::string> m_filePath;
+        std::vector<MVDirection> m_directions;
+        ComputeImplementation m_computeImplementation;
+
+        /**
+         * Resources
+         */
+        std::unique_ptr<MeasurementSet> m_measurementSet;
+        std::ifstream m_fileStream;
+        std::istream* m_inputStream = nullptr; // Cached reference to the input stream
+
+    public:
+        ArgumentsValidated(const Arguments&& args)
+            : m_source(args.source)
+            , m_filePath(args.filePath)
         {
-        case InputType::STREAM:
-            m_inputStream = &std::cin;
-            break;
-        case InputType::FILE_STREAM:
-            if (m_fileName.is_initialized())
+            switch (m_source)
             {
-                m_fileStream = std::ifstream(args.fileName.value());
-                m_inputStream = &m_fileStream;
-                m_measurementSet = ParseMeasurementSet(*m_inputStream);
+            case InputType::STREAM:
+                m_inputStream = &std::cin;
+                break;
+            case InputType::FILE_STREAM:
+                if (m_filePath.is_initialized())
+                {
+                    m_fileStream = std::ifstream(args.filePath.value());
+                    m_inputStream = &m_fileStream;
+                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream);
+                }
+                else
+                {
+                    throw std::runtime_error("source filename not provided");
+                }
+                break;
+            case InputType::FILENAME:
+                if (m_filePath.is_initialized())
+                {
+                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get());
+                }
+                else
+                {
+                    throw std::runtime_error("source filename not provided");
+                }
+                break;
+            case InputType::APACHE_ARROW:
+                throw new std::runtime_error("only stream in and file input are currently supported");
+                break;
+            default:
+                throw new std::runtime_error("only stream in and file input are currently supported");
+                break;
             }
-            else
-            {
-                throw std::runtime_error("source filename not provided");
-            }
-            break;
-        case InputType::FILENAME:
-            if (m_fileName.is_initialized())
-            {
-                m_measurementSet = std::make_unique<casacore::MeasurementSet>(m_fileName.get());
-            }
-            else
-            {
-                throw std::runtime_error("source filename not provided");
-            }
-            break;
-        case InputType::APACHE_ARROW:
-            throw new std::runtime_error("only stream in and file input are currently supported");
-            break;
-        default:
-            throw new std::runtime_error("only stream in and file input are currently supported");
-            break;
         }
-    }
 
-    std::istream& GetInputStream()
-    {
-        return *m_inputStream;
-    }
+        std::istream& GetInputStream()
+        {
+            return *m_inputStream;
+        }
 
-    casacore::MeasurementSet& GetMeasurementSet()
-    {
-        return *m_measurementSet;
-    }
-};
+        MeasurementSet& GetMeasurementSet()
+        {
+            return *m_measurementSet;
+        }
+
+        ComputeImplementation GetComputeImplementation()
+        {
+            return m_computeImplementation;
+        }
+    };
+}
+
+using namespace icrar;
 
 int main(int argc, char** argv)
 {
@@ -121,8 +138,9 @@ int main(int argc, char** argv)
 
     //Parse Arguments
     Arguments rawArgs;
-    app.add_option("-s,--source", rawArgs.source, "input source");
-    app.add_option("-f,--file", rawArgs.fileName, "A help string");
+    app.add_option("-s,--source", rawArgs.source, "input source type");
+    app.add_option("-f,--filepath", rawArgs.filePath, "A help string");
+    app.add_option("-d,--directions", rawArgs.directions);
     try
     {
         app.parse(argc, argv);
@@ -134,10 +152,30 @@ int main(int argc, char** argv)
     ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
 
     std::cout << "running LEAP-Accelerate:" << std::endl;
-    auto metadata = std::make_unique<casalib::MetaData>(args.GetMeasurementSet());
 
     std::vector<casacore::MVDirection> directions; //ZenithDirection(ms);
     auto queue = std::queue<Integration>();
 
-    icrar::casalib::Calibrate(&args.GetMeasurementSet(), *metadata, directions, boost::none);
+    switch(args.GetComputeImplementation())
+    {
+    case ComputeImplementation::casa:
+    {
+        auto metadata = casalib::MetaData(args.GetMeasurementSet());
+        icrar::casalib::Calibrate(args.GetMeasurementSet(), metadata, directions, boost::none);
+        break;
+    }
+    case ComputeImplementation::eigen:
+    {
+        THROW_NOT_IMPLEMENTED();
+        //icrar::cpu::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
+        //break;
+    }
+    case ComputeImplementation::cuda:
+    {
+        THROW_NOT_IMPLEMENTED();
+        //icrar::cuda::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
+        //break;
+    }
+    }
 }
+

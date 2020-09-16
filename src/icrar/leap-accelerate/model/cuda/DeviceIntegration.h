@@ -22,24 +22,54 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+
+#include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/Integration.h>
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
+#include <icrar/leap-accelerate/cuda/device_tensor.h>
+
 #include <casacore/measures/Measures/MDirection.h>
+#include <casacore/casa/Quanta/MVuvw.h>
 
-#include <casacore/casa/Arrays/Matrix.h>
+#include <eigen3/Eigen/Core>
 
-#include <istream>
+#include <boost/optional.hpp>
+
 #include <iostream>
-#include <iterator>
 #include <string>
-#include <exception>
 #include <memory>
 #include <vector>
+#include <complex>
+
+#include <cuComplex.h>
 
 namespace icrar
 {
-    std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(std::istream& input);
+namespace cuda
+{
+    class DeviceIntegration
+    {
+    public:
+        icrar::cuda::device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
+        int integration_number;
 
-    //std::unique_ptr<casacore::MeasurementSet> ParseMeasurementSet(boost::filesystem::path& path);
+        union
+        {
+            std::array<size_t, 4> parameters; // index, 0, channels, baselines
+            struct
+            {
+                size_t index;
+                size_t x;
+                size_t channels;
+                size_t baselines;
+            };
+        };
+
+        DeviceIntegration(const icrar::Integration& integration);
+    };
+}
 }

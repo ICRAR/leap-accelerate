@@ -22,15 +22,15 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/Tensor3X.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
-#include <casacore/casa/Arrays/Matrix.h>
-#include <casacore/ms/MeasurementSets.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
-//#include <unsupported/Eigen/CXX11/Tensor>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -41,30 +41,30 @@
 
 namespace icrar
 {
+    class MeasurementSet;
+
     class Integration
     {
     public:
         //Integration();
+        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
 
-        Eigen::Matrix<Eigen::VectorXcd, -1, -1> data; //data is an array data[nch][nbl][npol]
-        //Eigen::Tensor<std::complex<double>, 3> data;
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
 
         union
         {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
+            std::array<size_t, 4> parameters; // index, 0, channels, baselines
             struct
             {
-                int index;
-                int x;
-                int channels;
-                int baselines;
+                size_t index;
+                size_t x;
+                size_t channels;
+                size_t baselines;
             };
         };
-
-        Integration(const casacore::MeasurementSet* ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws); //TODO: read uvw from MeasurementSet (remote_cal ln333)
 
         bool operator==(const Integration& rhs) const;
     };
@@ -95,12 +95,11 @@ namespace icrar
 
     public:
         CalibrationResult(
-            casacore::MVDirection direction,
-            std::vector<casacore::Matrix<double>> data)
+            const casacore::MVDirection& direction,
+            const std::vector<casacore::Matrix<double>>& data)
             : m_direction(direction)
             , m_data(data)
         {
-
         }
 
         const casacore::MVDirection GetDirection() const { return m_direction; }

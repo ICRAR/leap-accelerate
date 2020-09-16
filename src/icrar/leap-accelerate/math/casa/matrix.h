@@ -35,8 +35,8 @@ namespace casalib
     template<typename T>
     void multiply(const casacore::Matrix<T>& a, const casacore::Matrix<T>& b, casacore::Matrix<T>& c)
     {
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> eb = ConvertMatrix(b);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ToMatrix(a);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> eb = ToMatrix(b);
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ec = ea * eb;
         c = ConvertMatrix(ec);
     }
@@ -52,8 +52,8 @@ namespace casalib
     template<typename T>
     void multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ConvertMatrix(a);
-        Eigen::Matrix<T, Eigen::Dynamic, 1> eb = ConvertVector(b);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ea = ToMatrix(a);
+        Eigen::Matrix<T, Eigen::Dynamic, 1> eb = ToVector(b);
         Eigen::Matrix<T, Eigen::Dynamic, 1> ec = ea * eb;
         c = ConvertVector(ec);
     }

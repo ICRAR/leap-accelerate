@@ -20,9 +20,23 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include "DeviceIntegration.h"
+#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/casacore_helper.h>
+
+#include <icrar/leap-accelerate/model/Integration.h>
 
 namespace icrar
 {
-    constexpr double speed_of_light = 299792458.0;
+namespace cuda
+{
+    DeviceIntegration::DeviceIntegration(const icrar::Integration& integration)
+    : data(integration.data)
+    , index(integration.index)
+    , x(integration.x)
+    , channels(integration.channels)
+    , baselines(integration.baselines)
+    {
+    }
+}
 }

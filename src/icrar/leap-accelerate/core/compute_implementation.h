@@ -20,9 +20,12 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
 namespace icrar
 {
-    constexpr double speed_of_light = 299792458.0;
+    enum class ComputeImplementation
+    {
+        casa, // Compute implementation using casa math libraries
+        eigen, // Compute implementation using eigen
+        cuda // Compute implementation use nvidia cuda
+    };
 }

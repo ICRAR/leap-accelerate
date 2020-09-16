@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/math/casa/matrix_invert.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -39,6 +38,11 @@
 #include <memory>
 #include <vector>
 #include <complex>
+
+namespace icrar
+{
+    class MeasurementSet;
+}
 
 namespace icrar
 {
@@ -99,7 +103,7 @@ namespace casalib
     public:
         MetaData();
         MetaData(std::istream& input);
-        MetaData(const casacore::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms);
         
         int GetBaselines() { return stations * (stations + 1) / 2; }
 

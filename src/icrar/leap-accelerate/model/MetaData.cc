@@ -26,6 +26,10 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -37,24 +41,30 @@ namespace icrar
 namespace casalib
 {
     MetaData::MetaData()
+    : A()
+    , Ad()
+    , I()
+    , A1()
+    , Ad1()
+    , I1()
     {
         
     }
 
-    MetaData::MetaData(const casacore::MeasurementSet& ms)
+    MetaData::MetaData(const icrar::MeasurementSet& ms)
     {
-        auto rms = casacore::MeasurementSet(ms);
-        auto msc = std::make_unique<casacore::MSColumns>(rms);
-        auto msmc = std::make_unique<casacore::MSMainColumns>(rms);
+        auto pms = ms.GetMS();
+        auto msc = ms.GetMSColumns();
+        auto msmc = ms.GetMSMainColumns();
 
         this->m_initialized = false;
         this->stations = 0;
         this->nantennas = 0;
         this->solution_interval = 3601;
 
-        this->rows = ms.polarization().nrow();
+        this->rows = pms->polarization().nrow();
         this->num_pols = 0;
-        if(ms.polarization().nrow() > 0)
+        if(pms->polarization().nrow() > 0)
         {
             this->num_pols = msc->polarization().numCorr().get(0);
         }
@@ -62,21 +72,21 @@ namespace casalib
         this->channels = 0;
         this->freq_start_hz = 0;
         this->freq_inc_hz = 0;
-        if(ms.spectralWindow().nrow() > 0)
+        if(pms->spectralWindow().nrow() > 0)
         {
             this->channels = msc->spectralWindow().numChan().get(0);
             this->freq_start_hz = msc->spectralWindow().refFrequency().get(0);
             this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
-        this->stations = ms.antenna().nrow();
-        if(ms.nrow() > 0)
+        this->stations = pms->antenna().nrow();
+        if(pms->nrow() > 0)
         {
             auto time_inc_sec = msc->interval().get(0);
         }
 
         this->phase_centre_ra_rad = 0;
         this->phase_centre_dec_rad = 0;
-        if(ms.field().nrow() > 0)
+        if(pms->field().nrow() > 0)
         {
             Vector<MDirection> dir;
             msc->field().phaseDirMeasCol().get(0, dir, true);
@@ -104,7 +114,6 @@ namespace casalib
             if(time[i] == time[0]) nEpochs++;
         }
         auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
-
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
@@ -125,10 +134,6 @@ namespace casalib
         this->A1 = A1;
         this->Ad1 = Ad1;
         this->I1 = I1;
-
-        //preallocate
-        //this->dd;
-        //this->avg_data;
     }
 
     MetaData::MetaData(std::istream& input)
@@ -150,8 +155,6 @@ namespace casalib
             auto uvw = icrar::Dot(oldUVW[n], dd.value());
             uvws.push_back(uvw);
         }
-
-        //this->avg_data = Eigen::MatrixXcd(uvws.size(), num_pols);
     }
 
     // TODO: rename to CalcDD or UpdateDD
