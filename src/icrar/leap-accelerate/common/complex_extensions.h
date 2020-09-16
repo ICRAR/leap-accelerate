@@ -28,8 +28,5 @@
 template<typename T>
 bool isApprox(const std::complex<T>& lhs, const std::complex<T>& rhs, T threshold)
 {
-    if(std::abs(lhs - rhs) >= threshold)
-    {
-        return false;
-    }
+    return std::abs(lhs - rhs) < threshold);
 }

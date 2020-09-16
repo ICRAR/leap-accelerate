@@ -24,7 +24,7 @@
 
 #include <casacore/ms/MeasurementSets.h>
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <string>
 #include <memory>

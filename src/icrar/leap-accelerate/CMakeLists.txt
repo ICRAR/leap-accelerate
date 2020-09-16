@@ -20,9 +20,6 @@ set(private_headers
     math/math.h
 )
 set(sources
-
-    common/Tensor3X.cc
-
     exception/exception.cc
 
     ms/utils.cc
@@ -111,7 +108,7 @@ target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
 
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-#target_link_libraries(${TARGET_NAME} Eigen3::Eigen) not supported on xenial
+target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
