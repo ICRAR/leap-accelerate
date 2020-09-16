@@ -31,9 +31,6 @@
 #include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
-#include <casacore/measures/Measures/MDirection.h>
-
-
 #include <CLI/CLI.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
@@ -53,17 +50,25 @@ namespace icrar
         APACHE_ARROW
     };
 
+    /**
+     * Raw set of command line interface arguments
+     */
     struct Arguments
     {
         InputType source = InputType::FILENAME;
-        boost::optional<std::string> filePath; // Measurement set filepath
-        boost::optional<std::string> configPath; // Config filepath
+        boost::optional<std::string> filePath = boost::none; // Measurement set filepath
+        boost::optional<std::string> configPath = boost::none; // Config filepath
 
-        boost::optional<std::string> stations;
-        boost::optional<std::string> directions;
+        boost::optional<std::string> stations = boost::none;
+        boost::optional<std::string> directions = boost::none;
         ComputeImplementation implementation = ComputeImplementation::casa;
+
+        Arguments() {}
     };
 
+    /**
+     * Validated set of command line arguments
+     */
     class ArgumentsValidated
     {
         InputType m_source;
@@ -72,7 +77,7 @@ namespace icrar
         /**
          * Constants
          */
-        boost::optional<std::string> m_stations;
+        boost::optional<std::string> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -84,9 +89,11 @@ namespace icrar
         std::istream* m_inputStream = nullptr; // Cached reference to the input stream
 
     public:
-        ArgumentsValidated(const Arguments&& args)
+        ArgumentsValidated(const Arguments& args)
             : m_source(args.source)
             , m_filePath(args.filePath)
+            , m_stations(args.stations)
+            , m_computeImplementation(icrar::ComputeImplementation::casa)
         {
             switch (m_source)
             {
@@ -125,20 +132,20 @@ namespace icrar
 
             if(args.configPath.is_initialized())
             {
+                // Configuration via json config
                 throw std::runtime_error("config not supported");
             }
             else
             {
-                if(args.directions.is_initialized())
+                // Configuration via arguments
+                if(!args.directions.is_initialized())
                 {
-                    throw std::runtime_error("stations required");
+                    throw std::runtime_error("directions argument not provided");
                 }
                 else
                 {
                     m_directions = ParseDirections(args.directions.get());
                 }
-                m_stations = args.stations;
-                m_computeImplementation = icrar::ComputeImplementation::casa;
             }
         }
 
@@ -172,10 +179,12 @@ int main(int argc, char** argv)
 
     //Parse Arguments
     Arguments rawArgs;
-    app.add_option("-i,--input-type", rawArgs.source, "input source type");
+    //app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
-    app.add_option("-f,--filepath", rawArgs.filePath, "A help string");
+    app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
+    app.add_option("-c,--compute", rawArgs.implementation, "Compute optimization type");
+
     try
     {
         app.parse(argc, argv);
@@ -186,22 +195,21 @@ int main(int argc, char** argv)
     }
     ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
 
+    //=========================
+    // Calibration to std::cout
+    //=========================
     std::cout << "running LEAP-Accelerate:" << std::endl;
-
     auto queue = std::queue<casalib::Integration>();
-
     switch(args.GetComputeImplementation())
     {
     case ComputeImplementation::casa:
     {
-        std::vector<casacore::MVDirection> directions;
-        icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+        auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
         break;
     }
     case ComputeImplementation::eigen:
     {
-        std::vector<icrar::MVDirection> directions; //ZenithDirection(ms);
-        icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+        auto result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
         break;
     }
     case ComputeImplementation::cuda:

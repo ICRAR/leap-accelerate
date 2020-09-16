@@ -164,7 +164,6 @@ namespace casalib
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
-                std::cout << "mapping..." << std::endl;
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
@@ -191,12 +190,10 @@ namespace casalib
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
                 
-                std::cout << "dintcolumn" << std::endl;
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
                 assert(dIntColumn.shape()[1] == 1);
 
-                std::cout << "pushback..." << std::endl;
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
