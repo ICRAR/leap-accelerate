@@ -25,7 +25,7 @@
 #include <casacore/ms/MeasurementSets.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <boost/optional.hpp>
 

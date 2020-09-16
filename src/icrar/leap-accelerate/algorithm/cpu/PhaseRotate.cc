@@ -157,24 +157,27 @@ namespace cpu
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline](2) - metadata.oldUVW[baseline](2);
-            shiftFactor = shiftFactor - 2 * pi *
-            (
-                metadata.direction(0) * uvw[baseline](0)
-                - metadata.direction(1) * uvw[baseline](1)
-            );
-            shiftFactor = shiftFactor + 2 * pi *
+            constexpr double pi = boost::math::constants::pi<double>();
+            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2));
+
+            shiftFactor += 2 * pi *
             (
                 metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline](0)
                 - metadata.GetConstants().phase_centre_dec_rad * metadata.oldUVW[baseline](1)
             );
 
+            shiftFactor -= 2 * pi *
+            (
+                metadata.direction(0) * uvw[baseline](0)
+                - metadata.direction(1) * uvw[baseline](1)
+            );
 
+#if NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
@@ -183,7 +186,7 @@ namespace cpu
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
                 bool hasNaN = false;

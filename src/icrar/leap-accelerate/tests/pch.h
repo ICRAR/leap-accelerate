@@ -25,10 +25,10 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Array.h>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/LU>
-#include <eigen3/Eigen/Sparse>
-#include <eigen3/Eigen/SVD>
+#include <Eigen/Core>
+#include <Eigen/LU>
+#include <Eigen/Sparse>
+#include <Eigen/SVD>
 
 #include <cuda_runtime.h>
 

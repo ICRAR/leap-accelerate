@@ -87,7 +87,7 @@ namespace icrar
         for(int row = 0; row < value.rows(); ++row)
         {
             auto vector = value(row, Eigen::all);
-            res.push_back(ToCasaUVW(icrar::MVuvw(vector(0), vector(1), vector(2))));
+            res.emplace_back(vector(0), vector(1), vector(2));
         }
         return res;
     }
