@@ -38,7 +38,7 @@ namespace icrar
     {
         // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
         std::vector<icrar::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
-        auto lambda = [](casacore::MVuvw x)
+        auto lambda = [](const casacore::MVuvw& x)
         {
             return icrar::MVuvw(x(0), x(1), x(2));
         };
@@ -96,5 +96,10 @@ namespace icrar
         res.reserve(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
         return res;
+    }
+
+    casacore::MVDirection ConvertDirection(const icrar::MVDirection& value)
+    {
+        return casacore::MVDirection(value(0), value(1), value(2));
     }
 }

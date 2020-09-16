@@ -51,8 +51,6 @@
 
 using Radians = double;
 
-using namespace casacore;
-
 namespace icrar
 {
 namespace cpu
@@ -88,7 +86,7 @@ namespace cpu
         {
             metadata.SetDD(directions[i]);
             metadata.SetWv();
-            metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
+            metadata.avg_data = casacore::Matrix<std::complex<double>>(metadata.GetBaselines(), metadata.num_pols);
 
             auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
             icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);

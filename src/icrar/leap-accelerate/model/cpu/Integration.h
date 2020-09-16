@@ -63,7 +63,7 @@ namespace cpu
 
         union
         {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
+            std::array<size_t, 4> parameters; // index, 0, channels, baselines
             struct
             {
                 size_t index;
