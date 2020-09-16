@@ -45,7 +45,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-6, doxygen, libgsl-dev, libboost1.58-all-dev]
+      packages: [g++-6, doxygen, libgsl-dev, rapidjson-dev, libboost1.58-all-dev]
     env: COMPILER=g++-6 CUDA=9 PYTHON=python3
   - os: linux
     dist:
@@ -56,7 +56,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, libgsl-dev, libboost1.65-all-dev]
+      packages: [g++-8, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.65-all-dev]
     env: COMPILER=g++-8 CUDA=10 PYTHON=python3
 
 # We "source" it because it exports variables
