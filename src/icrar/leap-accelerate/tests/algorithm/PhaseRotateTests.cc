@@ -62,24 +62,26 @@ namespace icrar
 
         for(auto& queues : result.first)
         {
-            int index = output_integrations.size() + 1;
+            int index = output_integrations.size();
             output_integrations.push_back(std::queue<cpu::IntegrationResult>());
             while(!queues.empty())
             {
                 auto& integrationResult = queues.front();
                 output_integrations[index].push(cpu::IntegrationResult(
                     ToDirection(integrationResult.GetDirection()),
-                    0, //TODO convert
+                    integrationResult.GetIntegrationNumber(),
                     integrationResult.GetData()
                 ));
                 queues.pop();
             }
         }
 
+        std::cout << "integrations converted" << std::endl;
+
         for(auto& queues : result.second)
         {
-            int index = output_calibrations.size() + 1;
-            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());   
+            int index = output_calibrations.size();
+            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
             while(!queues.empty())
             {
                 auto& calibrationResult = queues.front();
@@ -90,6 +92,8 @@ namespace icrar
                 queues.pop();
             }
         }
+
+        std::cout << "calibrations converted" << std::endl;
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -115,8 +119,8 @@ namespace icrar
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
 
-            std::string filename2 = std::string(TEST_DATA_DIR) + "/1197638568-split.ms";
-            ms2 = std::make_unique<icrar::MeasurementSet>(filename2, 126);
+            //std::string filename2 = std::string(TEST_DATA_DIR) + "/1197638568-split.ms";
+            //ms2 = std::make_unique<icrar::MeasurementSet>(filename2, 126);
         }
 
         void TearDown() override
@@ -132,15 +136,16 @@ namespace icrar
 
             std::vector<casacore::MVDirection> directions =
             {
-                casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
-                casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+                { -0.4606549305661674,-0.29719233792392513 },
+                //{ -0.753231018062671,-0.44387635324622354 },
+                //{ -0.6207547100721282,-0.2539086572881469 },
+                //{ -0.41958660604621867,-0.03677626900108552 },
+                //{ -0.41108685258900596,-0.08638012622791202 },
+                //{ -0.7782459495668798,-0.4887860989684432 },
+                //{ -0.17001324965728973,-0.28595644149463484 },
+                //{ -0.7129444556035118,-0.365286407171852 },
+                //{ -0.1512764129166089,-0.21161026349648748 }
+
             };
 
             std::vector<std::queue<cpu::IntegrationResult>> integrations;
@@ -148,6 +153,7 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 auto pair = icrar::casalib::Calibrate(*ms, directions, 3600);
+                std::cout << "converting..." << std::endl;
                 std::tie(integrations, calibrations) = ToCalibrateResult(pair);
             }
             else if(impl == ComputeImplementation::eigen)

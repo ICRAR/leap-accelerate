@@ -31,7 +31,8 @@
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
+
 #include <vector>
 
 namespace icrar
@@ -87,22 +88,42 @@ namespace icrar
         return output;
     }
 
-
+    /**
+     * @brief Converts an Eigen3 column-vector into a casacore Array
+     * 
+     * @tparam T 
+     * @param value 
+     * @return casacore::Array<T> 
+     */
     template<typename T>
     casacore::Array<T> ConvertVector(Eigen::Matrix<T, Eigen::Dynamic, 1> value)
     {
         return casacore::Array<T>(casacore::IPosition(value.rows()), value.data());
     }
 
+    /**
+     * @brief Converts a casacore UVW value to an icrar UVW value
+     * 
+     * @param value 
+     * @return icrar::MVuvw 
+     */
     icrar::MVuvw ToUVW(const casacore::MVuvw& value);
     icrar::MVuvw ToUVW(const casacore::MVPosition& value);
-    std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
-    std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value);
 
+    std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
+    
+    /**
+     * @brief Converts a column-major matrix of size Nx3 into a vector of UVWs
+     * 
+     * @param value 
+     * @return std::vector<icrar::MVuvw> 
+     */
+    std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value);
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value);
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value);
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value);
 
     icrar::MVDirection ToDirection(const casacore::MVDirection& value);
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value);
+    casacore::MVDirection ConvertDirection(const icrar::MVDirection& value);
 }

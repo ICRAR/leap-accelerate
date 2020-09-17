@@ -74,12 +74,6 @@ namespace casalib
         int solutionInterval)
     {
         auto metadata = casalib::MetaData(ms);
-
-#if _DEBUG
-        std::cout << "channels: " << metadata.channels << std::endl;
-        std::cout << "baselines:" << metadata.GetBaselines() << std::endl;
-        std::cout << "polarizations: " << metadata.num_pols << std::endl;
-#endif
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -87,38 +81,26 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.push(Integration(
+            queue.emplace(
                 ms,
                 i,
                 metadata.channels,
                 metadata.GetBaselines(),
-                metadata.num_pols));
+                metadata.num_pols);
 
-#if _DEBUG
+#if NDEBUG
             assert(metadata.GetChannels() == queue.front().data.dimension(0)); //metadata.channels
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.GetPolarizations() == queue.front().data.dimension(2)); //metadata.polarizations
-            std::cout << "==== integration data " << queue.front().data.dimensions() << std::endl;
-            std::cout << "==== integration data(0,0)" << queue.front().data.chip(0, 0).chip(0, 0) << std::endl;
-            std::cout << "==== integration data(1,0)" << queue.front().data.chip(1, 0).chip(0, 0) << std::endl;
-            std::cout << "==== integration data(2,0)" << queue.front().data.chip(2, 0).chip(0, 0) << std::endl;
-            std::cout << "==== integration data(3,0)" << queue.front().data.chip(3, 0).chip(0, 0) << std::endl;
-            std::cout << "==== integration data(4,0)" << queue.front().data.chip(4, 0).chip(0, 0) << std::endl;
 #endif
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());
         }
 
-#if _DEBUG
-        std::cout << "direction count " << directions.size() << std::endl;
-        std::cout << "input count " << input_queues.size() << std::endl;
-#endif
-
         for(int i = 0; i < directions.size(); ++i)
         {
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
-            std::cout << "done phaserote " << i << std::endl;
         }
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
@@ -144,7 +126,7 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-#if _DEBUG
+#if NDEBUG
                 std::cout << "rotate visibilities" << std::endl;
                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
                 std::cout << "direction:" << direction.get() << std::endl;
@@ -180,10 +162,9 @@ namespace casalib
                 Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
             
-                assert(metadata.I.size() == metadata.A.size());
-                assert(dInt.rows() == metadata.A.size());
-                assert(avg_data_slice.rows() == metadata.A.size());
-
+                //assert(metadata.I.size() == metadata.A.size());
+                //assert(dInt.shape()[0] == metadata.A.size());
+                //assert(avg_data_slice.shape()[0] == metadata.A.size());
 
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
@@ -191,12 +172,10 @@ namespace casalib
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum);
                 }
                 
-                std::cout << "dintcolumn" << std::endl;
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 dIntColumn = dIntColumn.reform(IPosition(2, dIntColumn.shape()[0], dIntColumn.shape()[1]));
                 assert(dIntColumn.shape()[1] == 1);
 
-                std::cout << "pushback..." << std::endl;
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
@@ -226,8 +205,7 @@ namespace casalib
 
         metadata.CalcUVW(uvw);
 
-#if _DEBUG
-		std::cout << "integration_data(4,0,0):" << integration_data(4, 0, 0) << std::endl;
+#if NDEBUG
         std::cout << "DD:" << metadata.dd.get() << std::endl;
         //std::cout << "uvw:" << uvw << std::endl;
         //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
@@ -260,10 +238,12 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-            if(baseline % 1000 == 0)
+#if NDEBUG
+            if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
@@ -272,7 +252,7 @@ namespace casalib
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, 1.0) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
 
                 bool hasNaN = false;
@@ -285,7 +265,7 @@ namespace casalib
 
                 if(!hasNaN)
                 {
-#if _DEBUG
+#if NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -305,7 +285,7 @@ namespace casalib
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
-#if _DEBUG
+#if NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "after : |"
@@ -318,8 +298,7 @@ namespace casalib
                 }
             }
         }
-          
-#if _DEBUG
+#if NDEBUG
         std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
 #endif
     }

@@ -25,9 +25,9 @@
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/Eigen/LU>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/LU>
 
 #include <iostream>
 #include <string>

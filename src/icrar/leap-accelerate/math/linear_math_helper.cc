@@ -38,9 +38,9 @@ namespace icrar
     {
         // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
         std::vector<icrar::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
-        auto lambda = [](casacore::MVuvw x)
+        auto lambda = [](const casacore::MVuvw& x)
         {
-            return icrar::MVuvw(x.get()[0], x.get()[1], x.get()[2]);
+            return icrar::MVuvw(x(0), x(1), x(2));
         };
         std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
 
@@ -55,27 +55,21 @@ namespace icrar
 
         for(int row = 0; row < value.rows(); ++row)
         {
-            auto vector = value(row, Eigen::all);
-            res.push_back(icrar::MVuvw(vector(0), vector(1), vector(2)));
+            res.emplace_back(value(row, 0), value(row, 1), value(row, 2));
         }
         return res;
     }
 
     casacore::MVuvw ToCasaUVW(const icrar::MVuvw& value)
     {
-        return casacore::MVuvw(value[0], value[1], value[2]);
+        return casacore::MVuvw(value(0), value(1), value(2));
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
-        std::vector<casacore::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
+        auto res = std::vector<casacore::MVuvw>();
         res.reserve(value.size());
-        auto lambda = [](icrar::MVuvw x)
-        {
-            return casacore::MVuvw(x(0), x(1), x(2));
-        };
-        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
+        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaUVW);
         return res;
     }
 
@@ -86,27 +80,26 @@ namespace icrar
 
         for(int row = 0; row < value.rows(); ++row)
         {
-            auto vector = value(row, Eigen::all);
-            res.push_back(ToCasaUVW(icrar::MVuvw(vector(0), vector(1), vector(2))));
+            res.emplace_back(value(row, 0), value(row, 1), value(row, 2));
         }
         return res;
     }
 
     icrar::MVDirection ToDirection(const casacore::MVDirection& value)
     {
-        return icrar::MVDirection(value.get()[0], value.get()[1], value.get()[2]);
+        return icrar::MVDirection(value(0), value(1), value(2));
     }
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
-        std::vector<icrar::MVDirection> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
+        auto res = std::vector<icrar::MVDirection>();
         res.reserve(value.size());
-        auto lambda = [](casacore::MVDirection x)
-        {
-            return icrar::MVDirection(x.get()[0], x.get()[1], x.get()[2]);
-        };
-        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
+        std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
         return res;
+    }
+
+    casacore::MVDirection ConvertDirection(const icrar::MVDirection& value)
+    {
+        return casacore::MVDirection(value(0), value(1), value(2));
     }
 }

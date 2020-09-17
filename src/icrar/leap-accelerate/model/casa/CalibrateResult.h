@@ -57,6 +57,7 @@ namespace icrar::casalib
 
         const casacore::MVDirection GetDirection() const { return m_direction; }
         const boost::optional<std::vector<casacore::Array<double>>>& GetData() const { return m_data; }
+        int GetIntegrationNumber() const { return m_integration_number; }
     };
 
     class CalibrationResult
