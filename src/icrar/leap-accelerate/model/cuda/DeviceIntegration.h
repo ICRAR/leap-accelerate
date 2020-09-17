@@ -60,12 +60,12 @@ namespace cuda
     class DeviceIntegration
     {
     public:
-        icrar::cuda::device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
         int integration_number;
+        icrar::cuda::device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
 
         union
         {
-            std::array<size_t, 4> parameters; // index, 0, channels, baselines
+            std::array<size_t, 4> parameters;
             struct
             {
                 size_t index;

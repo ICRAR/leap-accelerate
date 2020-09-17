@@ -245,7 +245,6 @@ namespace icrar
 
             //TODO: don't rely on eigen implementation for expected values
             auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), ToDirection(direction), ToUVWVector(expectedIntegration.uvw));
-            expectedMetadata.oldUVW = metadataOutput.oldUVW;
 
             //Test case specific
             expectedMetadata.dd = Eigen::Matrix3d();
