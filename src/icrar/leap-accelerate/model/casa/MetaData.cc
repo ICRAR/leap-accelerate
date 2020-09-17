@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
