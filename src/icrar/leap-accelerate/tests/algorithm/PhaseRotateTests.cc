@@ -67,16 +67,14 @@ namespace icrar
             while(!queues.empty())
             {
                 auto& integrationResult = queues.front();
-                output_integrations[index].push(cpu::IntegrationResult(
+                output_integrations[index].emplace(
                     ToDirection(integrationResult.GetDirection()),
                     integrationResult.GetIntegrationNumber(),
                     integrationResult.GetData()
-                ));
+                );
                 queues.pop();
             }
         }
-
-        std::cout << "integrations converted" << std::endl;
 
         for(auto& queues : result.second)
         {
@@ -85,15 +83,13 @@ namespace icrar
             while(!queues.empty())
             {
                 auto& calibrationResult = queues.front();
-                output_calibrations[index].push(cpu::CalibrationResult(
+                output_calibrations[index].emplace(
                     ToDirection(calibrationResult.GetDirection()),
                     calibrationResult.GetData()
-                ));
+                );
                 queues.pop();
             }
         }
-
-        std::cout << "calibrations converted" << std::endl;
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -101,7 +97,7 @@ namespace icrar
     class PhaseRotateTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
-        std::unique_ptr<icrar::MeasurementSet> ms2;
+        //std::unique_ptr<icrar::MeasurementSet> ms2;
 
     protected:
 
