@@ -27,7 +27,7 @@
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <boost/optional.hpp>
 
@@ -61,6 +61,11 @@ namespace icrar
 namespace cpu
 {
     class MetaData;
+    
+    using CalibrateResult = std::pair<
+        std::vector<std::queue<IntegrationResult>>,
+        std::vector<std::queue<CalibrationResult>>
+    >;
 
     /**
      * @brief 
@@ -79,11 +84,11 @@ namespace cpu
      * @param input 
      */
     void PhaseRotate(
-        cpu::MetaData& metadata,
+        MetaData& metadata,
         const icrar::MVDirection& directions,
-        std::vector<cpu::Integration>& input,
-        std::queue<cpu::IntegrationResult>& output_integrations,
-        std::queue<cpu::CalibrationResult>& output_calibrations);
+        std::vector<Integration>& input,
+        std::queue<IntegrationResult>& output_integrations,
+        std::queue<CalibrationResult>& output_calibrations);
 
     /**
      * @brief Performs averaging over each baseline, channel and polarization.
@@ -92,8 +97,8 @@ namespace cpu
      * @param metadata 
      */
     void RotateVisibilities(
-        cpu::Integration& integration,
-        cpu::MetaData& metadata);
+        Integration& integration,
+        MetaData& metadata);
 
     /**
      * @brief Form Phase Matrix

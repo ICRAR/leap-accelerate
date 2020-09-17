@@ -29,9 +29,9 @@
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -57,7 +57,7 @@ namespace icrar::casalib
 
         union
         {
-            std::array<int, 4> parameters; // index, 0, channels, baselines
+            std::array<size_t, 4> parameters; // index, 0, channels, baselines
             struct
             {
                 size_t index;

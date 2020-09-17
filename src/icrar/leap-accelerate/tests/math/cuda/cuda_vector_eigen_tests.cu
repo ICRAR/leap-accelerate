@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/math/cuda/vector_eigen.cuh>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <gtest/gtest.h>
 
