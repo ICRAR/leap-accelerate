@@ -168,6 +168,7 @@ namespace icrar
             // copy from device back to host
             icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
 
+#if _DEBUG
             std::cout << uvw[0] << std::endl;
             std::cout << expectedMetadataHost.oldUVW[0] << std::endl;
             std::cout << metaDataHost.oldUVW[0] << std::endl;
@@ -175,7 +176,7 @@ namespace icrar
             
             std::cout << expectedMetadataHost.UVW[0] << std::endl;
             std::cout << metaDataHost.UVW[0] << std::endl;
-
+#endif
 
             ASSERT_MDEQ(expectedMetadataHost, metaDataHost, THRESHOLD);
         }

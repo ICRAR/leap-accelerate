@@ -63,7 +63,6 @@ namespace cpu
             , m_integration_number(integration_number)
             , m_data(data)
         {
-
         }
     };
 

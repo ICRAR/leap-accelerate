@@ -129,7 +129,10 @@ namespace cuda
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
-            output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+            output_integrations.push(cpu::IntegrationResult(
+                direction,
+                integration.integration_number,
+                (boost::optional<std::vector<casacore::Array<double>>>)boost::none));
         }
         deviceMetadata.ToHost(hostMetadata);
         

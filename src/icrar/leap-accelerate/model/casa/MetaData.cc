@@ -188,7 +188,7 @@ namespace casalib
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
-        SetDD(ConvertDirection(direction));
+        SetDD(ToCasaDirection(direction));
     }
 
     /**

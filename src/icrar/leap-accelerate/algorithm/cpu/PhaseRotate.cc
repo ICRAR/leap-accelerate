@@ -170,7 +170,7 @@ namespace cpu
                 - metadata.direction(1) * uvw[baseline](1)
             );
 
-#if NDEBUG
+#if _DEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;

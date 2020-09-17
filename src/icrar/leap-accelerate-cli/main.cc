@@ -193,31 +193,41 @@ int main(int argc, char** argv)
     {
         return app.exit(e);
     }
-    ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
 
-    //=========================
-    // Calibration to std::cout
-    //=========================
-    std::cout << "running LEAP-Accelerate:" << std::endl;
-    auto queue = std::queue<casalib::Integration>();
-    switch(args.GetComputeImplementation())
+    try
     {
-    case ComputeImplementation::casa:
-    {
-        auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
-        break;
+        ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
+
+        //=========================
+        // Calibration to std::cout
+        //=========================
+        std::cout << "running LEAP-Accelerate:" << std::endl;
+        auto queue = std::queue<casalib::Integration>();
+        switch(args.GetComputeImplementation())
+        {
+        case ComputeImplementation::casa:
+        {
+            std::cout << "calibrate" << std::endl;
+            auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            break;
+        }
+        case ComputeImplementation::eigen:
+        {
+            auto result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            break;
+        }
+        case ComputeImplementation::cuda:
+        {
+            THROW_NOT_IMPLEMENTED();
+            //icrar::cuda::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
+            //break;
+        }
+        }
+        std::cout << "done" << std::endl;
     }
-    case ComputeImplementation::eigen:
+    catch(const std::exception& e)
     {
-        auto result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
-        break;
-    }
-    case ComputeImplementation::cuda:
-    {
-        THROW_NOT_IMPLEMENTED();
-        //icrar::cuda::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
-        //break;
-    }
+        std::cerr << e.what() << '\n';
     }
 }
 

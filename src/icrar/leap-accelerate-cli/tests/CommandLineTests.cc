@@ -20,6 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
+#include "icrar/leap-accelerate/config.h"
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -44,8 +45,10 @@ namespace icrar
         std::string src_dir;
 
         CommandLineTests() {
-            bin_dir = "../../../../bin/";
-            src_dir = "../../../../../../";
+            std::cout << PROJECT_SOURCE_DIR << std::endl;
+
+            bin_dir = PROJECT_BINARY_DIR;
+            src_dir = PROJECT_SOURCE_DIR;
         }
 
         ~CommandLineTests() override
