@@ -67,8 +67,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        auto res = std::vector<casacore::MVuvw>();
-        res.reserve(value.size());
+        auto res = std::vector<casacore::MVuvw>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaUVW);
         return res;
     }
@@ -92,8 +91,7 @@ namespace icrar
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        auto res = std::vector<icrar::MVDirection>();
-        res.reserve(value.size());
+        auto res = std::vector<icrar::MVDirection>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
         return res;
     }
@@ -105,8 +103,7 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
     {
-        auto res = std::vector<casacore::MVDirection>();
-        res.reserve(value.size());
+        auto res = std::vector<casacore::MVDirection>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaDirection);
         return res;
     }
