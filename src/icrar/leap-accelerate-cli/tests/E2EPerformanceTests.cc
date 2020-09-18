@@ -130,7 +130,7 @@ namespace icrar
     TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197638568-32.ms", 126); }
     TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126); }
 
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
 }
