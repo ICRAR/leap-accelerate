@@ -41,14 +41,12 @@ namespace icrar
     class CommandLineTests : public ::testing::Test
     {
     protected:
-        std::string bin_dir;
-        std::string src_dir;
+        std::string m_binDir;
+        std::string m_srcDir;
 
         CommandLineTests() {
-            std::cout << PROJECT_SOURCE_DIR << std::endl;
-
-            bin_dir = PROJECT_BINARY_DIR;
-            src_dir = PROJECT_SOURCE_DIR;
+            m_binDir = PROJECT_BINARY_DIR;
+            m_srcDir = PROJECT_SOURCE_DIR;
         }
 
         ~CommandLineTests() override
@@ -56,16 +54,26 @@ namespace icrar
 
         }
 
-        void TestSimple()
+        void TestHelp()
         {
-            std::string command = bin_dir + "LeapAccelerateCLI";
-            command += " -f " + src_dir + "testdata/1197638568-32.ms";
-            command += " -d [[0.0,0.0]]";
+            std::string command = m_binDir + "LeapAccelerateCLI";
+            command += " --help";
+
+            std::cout << command << std::endl;
+            ASSERT_EQ(0, system(command.c_str()));
+        }
+
+        void TestSingle()
+        {
+            std::string command = m_binDir + "LeapAccelerateCLI";
+            command += " -f " + m_srcDir + "testdata/1197638568-32.ms";
+            command += " -d [[1.0,0.0]]";
 
             std::cout << command << std::endl;
             ASSERT_EQ(0, system(command.c_str()));
         }
     };
 
-    TEST_F(CommandLineTests, TestSimple) { TestSimple(); }
+    TEST_F(CommandLineTests, TestHelp) { TestHelp(); }
+    TEST_F(CommandLineTests, TestSingle) { TestSingle(); }
 }
