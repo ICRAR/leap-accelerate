@@ -63,6 +63,14 @@ namespace cpu
             , m_integration_number(integration_number)
             , m_data(data)
         {
+        }
+
+        IntegrationResult(
+            icrar::MVDirection direction,
+            int integration_number)
+            : m_direction(direction)
+            , m_integration_number(integration_number)
+        {
 
         }
     };
