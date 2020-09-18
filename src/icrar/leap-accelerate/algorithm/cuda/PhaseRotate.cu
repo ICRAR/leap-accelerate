@@ -103,7 +103,7 @@ namespace cuda
             //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
             hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
             
-#ifdef NDEBUG
+#ifdef _DEBUG
             std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
 #endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
@@ -121,19 +121,18 @@ namespace cuda
         std::queue<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
-#ifdef NDEBUG
+#ifdef _DEBUG
         int integration_number = 0;
 #endif
         for(auto& integration : input)
         {
-#ifdef NDEBUG
+#ifdef _DEBUG
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.push(cpu::IntegrationResult(
                 direction,
-                integration.integration_number,
-                boost::none));
+                integration.integration_number));
         }
         deviceMetadata.ToHost(hostMetadata);
         
