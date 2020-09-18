@@ -41,13 +41,13 @@ namespace icrar::casalib
     {
         casacore::MVDirection m_direction;
         int m_integration_number;
-        boost::optional<std::vector<casacore::Array<double>>> m_data;
+        boost::optional<std::vector<casacore::Vector<double>>> m_data;
 
     public:
         IntegrationResult(
             casacore::MVDirection direction,
             int integration_number,
-            boost::optional<std::vector<casacore::Array<double>>> data)
+            boost::optional<std::vector<casacore::Vector<double>>> data)
             : m_direction(direction)
             , m_integration_number(integration_number)
             , m_data(data)
@@ -56,7 +56,7 @@ namespace icrar::casalib
         }
 
         const casacore::MVDirection GetDirection() const { return m_direction; }
-        const boost::optional<std::vector<casacore::Array<double>>>& GetData() const { return m_data; }
+        const boost::optional<std::vector<casacore::Vector<double>>>& GetData() const { return m_data; }
         int GetIntegrationNumber() const { return m_integration_number; }
     };
 

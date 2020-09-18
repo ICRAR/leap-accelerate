@@ -45,6 +45,7 @@
 #include <cuComplex.h>
 #include <math_constants.h>
 
+#include <vector>
 #include <complex>
 #include <istream>
 #include <iostream>
@@ -132,7 +133,7 @@ namespace cuda
             output_integrations.push(cpu::IntegrationResult(
                 direction,
                 integration.integration_number,
-                (boost::optional<std::vector<casacore::Array<double>>>)boost::none));
+                boost::none));
         }
         deviceMetadata.ToHost(hostMetadata);
         
