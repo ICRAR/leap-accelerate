@@ -22,13 +22,12 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/model/casa/CalibrateResult.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-
 #include <icrar/leap-accelerate/common/vector_extensions.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -38,6 +37,9 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Dense>
 #include <eigen3/unsupported/Eigen/CXX11/Tensor>
+
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
 
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
@@ -96,25 +98,49 @@ namespace cpu
 
         //bool operator==(const CalibrationResult& rhs) const;
 
-        friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
+        void Serialize(std::ostream& os) const;
+
+        // friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
+        // {
+        //     os << "direction: " << value.GetDirection() << '\n';
+        //     os << "data: " << value.GetData();
+        //     return os;
+        // }
+
+    private:
+        template<typename Writer>
+        void CreateJsonStrFormat(Writer& writer) const
         {
-            os << value.GetDirection();
-            os << value.GetData();
-            return os;
+            assert(m_data.size() == 1);
+            assert(m_data[0].rows() == 1);
+
+            writer.StartObject();
+            writer.String("direction");
+            writer.StartArray();
+            for(auto& v : m_direction)
+            {
+                writer.Double(v);
+            }
+            writer.EndArray();
+
+            writer.String("data");
+            writer.StartArray();
+            for(auto& v : m_data[0])
+            {
+                writer.Double(v);
+            }
+            writer.EndArray();
+
+            writer.EndObject();
         }
     };
-
-    // class CalibrateResult : boost::noncopyable
-    // {
-    // public:
-    //     const std::vector<std::queue<cpu::IntegrationResult>>& first();
-    //     const std::vector<std::queue<cpu::CalibrationResult>>& second();
-    // };
 
     using CalibrateResult = std::pair<
         std::vector<std::vector<cpu::IntegrationResult>>,
         std::vector<std::vector<cpu::CalibrationResult>>
     >;
+
+    cpu::CalibrateResult ToCalibrateResult(casalib::CalibrateResult& result);
 
     void PrintResult(const CalibrateResult& result);
 }

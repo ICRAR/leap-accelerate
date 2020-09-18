@@ -38,6 +38,8 @@ set(sources
     math/casa/matrix_invert.cc
     math/cpu/vector.cc
 
+    core/compute_implementation.cc
+
     json/json_helper.cc
     
     algorithm/casa/PhaseRotate.cc

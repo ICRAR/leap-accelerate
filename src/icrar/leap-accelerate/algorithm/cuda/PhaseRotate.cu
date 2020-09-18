@@ -156,7 +156,7 @@ namespace cuda
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push(cpu::CalibrationResult(direction, cal));
+        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)

@@ -57,11 +57,11 @@ namespace icrar
     {
         InputType source = InputType::FILENAME;
         boost::optional<std::string> filePath = boost::none; // Measurement set filepath
-        boost::optional<std::string> configPath = boost::none; // Config filepath
+        boost::optional<std::string> configFilePath = boost::none; // Config filepath
 
-        boost::optional<std::string> stations = boost::none;
+        boost::optional<int> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
-        ComputeImplementation implementation = ComputeImplementation::casa;
+        boost::optional<std::string> implementation = std::string("casa");
 
         Arguments() {}
     };
@@ -77,7 +77,7 @@ namespace icrar
         /**
          * Constants
          */
-        boost::optional<std::string> m_stations; // Overriden number of stations
+        boost::optional<int> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -93,8 +93,15 @@ namespace icrar
             : m_source(args.source)
             , m_filePath(args.filePath)
             , m_stations(args.stations)
-            , m_computeImplementation(icrar::ComputeImplementation::casa)
         {
+            if(args.implementation.is_initialized())
+            {
+                if(!TryParseComputeImplementation(args.implementation.get(), m_computeImplementation))
+                {
+                    throw std::invalid_argument("invalid implementation argument");
+                }
+            }
+            
             switch (m_source)
             {
             case InputType::STREAM:
@@ -105,7 +112,7 @@ namespace icrar
                 {
                     m_fileStream = std::ifstream(args.filePath.value());
                     m_inputStream = &m_fileStream;
-                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, boost::none);
+                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, m_stations);
                 }
                 else
                 {
@@ -115,32 +122,32 @@ namespace icrar
             case InputType::FILENAME:
                 if (m_filePath.is_initialized())
                 {
-                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get(), boost::none);
+                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get(), m_stations);
                 }
                 else
                 {
-                    throw std::runtime_error("source filename not provided");
+                    throw std::invalid_argument("source filename not provided");
                 }
                 break;
             case InputType::APACHE_ARROW:
-                throw new std::runtime_error("only stream in and file input are currently supported");
+                throw new std::invalid_argument("only stream in and file input are currently supported");
                 break;
             default:
-                throw new std::runtime_error("only stream in and file input are currently supported");
+                throw new std::invalid_argument("only stream in and file input are currently supported");
                 break;
             }
 
-            if(args.configPath.is_initialized())
+            if(args.configFilePath.is_initialized())
             {
                 // Configuration via json config
-                throw std::runtime_error("config not supported");
+                throw std::invalid_argument("config not supported");
             }
             else
             {
                 // Configuration via arguments
                 if(!args.directions.is_initialized())
                 {
-                    throw std::runtime_error("directions argument not provided");
+                    throw std::invalid_argument("directions argument not provided");
                 }
                 else
                 {
@@ -183,7 +190,8 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-c,--compute", rawArgs.implementation, "Compute optimization type");
+    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type");
+    app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
 
     try
     {
@@ -201,12 +209,12 @@ int main(int argc, char** argv)
         //=========================
         // Calibration to std::cout
         //=========================
-        std::cout << "running LEAP-Accelerate:" << std::endl;
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:
         {
             casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
         case ComputeImplementation::eigen:
@@ -222,7 +230,6 @@ int main(int argc, char** argv)
             //break;
         }
         }
-        std::cout << "done" << std::endl;
         return 0;
     }
     catch(const std::exception& e)
