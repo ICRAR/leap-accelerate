@@ -202,18 +202,17 @@ int main(int argc, char** argv)
         // Calibration to std::cout
         //=========================
         std::cout << "running LEAP-Accelerate:" << std::endl;
-        auto queue = std::queue<casalib::Integration>();
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:
         {
-            std::cout << "calibrate" << std::endl;
-            auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
             break;
         }
         case ComputeImplementation::eigen:
         {
-            auto result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::PrintResult(result);
             break;
         }
         case ComputeImplementation::cuda:
@@ -224,10 +223,12 @@ int main(int argc, char** argv)
         }
         }
         std::cout << "done" << std::endl;
+        return 0;
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
+        return -1;
     }
 }
 

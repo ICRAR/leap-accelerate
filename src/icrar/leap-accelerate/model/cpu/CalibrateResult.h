@@ -29,6 +29,8 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
+#include <icrar/leap-accelerate/common/vector_extensions.h>
+
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -38,6 +40,7 @@
 #include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <queue>
 #include <vector>
@@ -92,11 +95,27 @@ namespace cpu
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
         //bool operator==(const CalibrationResult& rhs) const;
+
+        friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
+        {
+            os << value.GetDirection();
+            os << value.GetData();
+            return os;
+        }
     };
 
+    // class CalibrateResult : boost::noncopyable
+    // {
+    // public:
+    //     const std::vector<std::queue<cpu::IntegrationResult>>& first();
+    //     const std::vector<std::queue<cpu::CalibrationResult>>& second();
+    // };
+
     using CalibrateResult = std::pair<
-        std::vector<std::queue<cpu::IntegrationResult>>,
-        std::vector<std::queue<cpu::CalibrationResult>>
+        std::vector<std::vector<cpu::IntegrationResult>>,
+        std::vector<std::vector<cpu::CalibrationResult>>
     >;
+
+    void PrintResult(const CalibrateResult& result);
 }
 }

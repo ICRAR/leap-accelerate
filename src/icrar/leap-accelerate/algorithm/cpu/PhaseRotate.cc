@@ -63,8 +63,8 @@ namespace cpu
 
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
@@ -78,8 +78,8 @@ namespace cpu
                 metadata.num_pols));
 
             input_queues.push_back(queue);
-            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -99,14 +99,14 @@ namespace cpu
         cpu::MetaData& metadata,
         const icrar::MVDirection& direction,
         std::vector<cpu::Integration>& input,
-        std::queue<cpu::IntegrationResult>& output_integrations,
-        std::queue<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::IntegrationResult>& output_integrations,
+        std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.push(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+            output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
 
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
@@ -132,7 +132,7 @@ namespace cpu
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push(cpu::CalibrationResult(direction, cal));
+        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)

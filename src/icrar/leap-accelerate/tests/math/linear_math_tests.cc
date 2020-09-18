@@ -93,7 +93,7 @@ namespace icrar
             // EXPECT_EQ(1.0, direction.get()(0)); //arctan(2/1)
             // EXPECT_EQ(2.0, direction.get()(1)); //arctan(3/sqrt(1^2 + 2^2))
 
-            auto direction2 = casacore::MVDirection(1.0, 2.0); // spherical to cartesian
+            auto direction2 = casacore::MVDirection(1.0, 0.0); // spherical to cartesian
             //EXPECT_EQ(1.0, direction2(0));
             //EXPECT_EQ(2.0, direction2(1));
             //EXPECT_EQ(0.0, direction2(2));

@@ -1,4 +1,3 @@
-
 /**
 *    ICRAR - International Centre for Radio Astronomy Research
 *    (c) UWA - The University of Western Australia
@@ -23,33 +22,22 @@
 
 #pragma once
 
-#include <iostream>
-#include <iomanip>
-#include <vector>
-#include <set>
-#include <map>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
-template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
+namespace icrar
 {
-    os << "{"; 
-    for (auto it : v)
+namespace cpu
+{
+    void PrintResult(const CalibrateResult& result)
     {
-        os << it; 
-        if (it != *v.rbegin()) 
-            os << ", "; 
-    } 
-    os << "}\n"; 
-    return os;
-}
-
-template <typename T, typename S> 
-std::ostream& operator<<(std::ostream& os, const std::map<T, S>& v) 
-{ 
-    for (auto it : v)
-    {
-        os << it.first << " : "
-           << it.second << "\n";
+        for(auto& calibrations : result.second)
+        {
+            for(auto& calibration : calibrations)
+            {
+                std::cout << calibration << std::endl;
+            }
+        }
     }
-    return os; 
+}
 }

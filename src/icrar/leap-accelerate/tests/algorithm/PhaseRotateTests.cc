@@ -57,17 +57,17 @@ namespace icrar
 {
     cpu::CalibrateResult ToCalibrateResult(casalib::CalibrateResult& result)
     {
-        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
 
         for(auto& queues : result.first)
         {
             int index = output_integrations.size();
-            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             while(!queues.empty())
             {
                 auto& integrationResult = queues.front();
-                output_integrations[index].emplace(
+                output_integrations[index].emplace_back(
                     ToDirection(integrationResult.GetDirection()),
                     integrationResult.GetIntegrationNumber(),
                     integrationResult.GetData()
@@ -79,11 +79,11 @@ namespace icrar
         for(auto& queues : result.second)
         {
             int index = output_calibrations.size();
-            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
             while(!queues.empty())
             {
                 auto& calibrationResult = queues.front();
-                output_calibrations[index].emplace(
+                output_calibrations[index].emplace_back(
                     ToDirection(calibrationResult.GetDirection()),
                     calibrationResult.GetData()
                 );
@@ -144,12 +144,11 @@ namespace icrar
 
             };
 
-            std::vector<std::queue<cpu::IntegrationResult>> integrations;
-            std::vector<std::queue<cpu::CalibrationResult>> calibrations;
+            std::vector<std::vector<cpu::IntegrationResult>> integrations;
+            std::vector<std::vector<cpu::CalibrationResult>> calibrations;
             if(impl == ComputeImplementation::casa)
             {
                 auto pair = icrar::casalib::Calibrate(*ms, directions, 3600);
-                std::cout << "converting..." << std::endl;
                 std::tie(integrations, calibrations) = ToCalibrateResult(pair);
             }
             else if(impl == ComputeImplementation::eigen)

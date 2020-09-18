@@ -30,6 +30,7 @@ set(sources
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
+    model/cpu/CalibrateResult.cc
     
     math/linear_math_helper.cc
     math/casa/vector.cc

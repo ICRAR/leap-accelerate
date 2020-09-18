@@ -71,8 +71,8 @@ namespace cuda
     {
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
 
         auto integration = cpu::Integration(
@@ -88,8 +88,8 @@ namespace cuda
 
             input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory data could be reused
             
-            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -117,8 +117,8 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const icrar::MVDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::queue<cpu::IntegrationResult>& output_integrations,
-        std::queue<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::IntegrationResult>& output_integrations,
+        std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
 #ifdef _DEBUG
@@ -130,7 +130,7 @@ namespace cuda
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
-            output_integrations.push(cpu::IntegrationResult(
+            output_integrations.push_back(cpu::IntegrationResult(
                 direction,
                 integration.integration_number));
         }
@@ -156,7 +156,7 @@ namespace cuda
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push(cpu::CalibrationResult(direction, cal));
+        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
