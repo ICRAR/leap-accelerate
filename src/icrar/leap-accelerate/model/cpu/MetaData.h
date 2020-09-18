@@ -117,29 +117,19 @@ namespace cpu
         Eigen::VectorXi I1;
         Eigen::MatrixXd Ad1;
 
-    public:
         std::vector<icrar::MVuvw> oldUVW; // late initialized
         std::vector<icrar::MVuvw> UVW; // late initialized
-
+    
+    public:
         icrar::MVDirection direction; // late initialized
         Eigen::Matrix3d dd; // late initialized
         Eigen::MatrixXcd avg_data; // late initialized
 
+
+        MetaData(icrar::MeasurementSet& ms);
         MetaData(const casalib::MetaData& metadata);
         MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         
-        MetaData(icrar::MeasurementSet& ms);
-        // MetaData(
-        //     const Constants& constants,
-        //     const double* A, int ARows, int ACols,
-        //     const int* I, int ILength,
-        //     const double* Ad, int AdRows, int AdCols,
-        //     const double* A1, int A1Rows, int A1Cols,
-        //     Eigen::Matrix3d& dd,
-        //     const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
-        // {
-        //     // TODO
-        // }
 
         const Constants& GetConstants() const;
 
@@ -150,6 +140,9 @@ namespace cpu
         const Eigen::MatrixXd& GetA1() const;
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
+
+        const std::vector<icrar::MVuvw>& GetOldUVW() const { return oldUVW; }
+        const std::vector<icrar::MVuvw>& GetUVW() const { return UVW; }
 
         void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
         void SetDD(const icrar::MVDirection& direction);

@@ -148,7 +148,7 @@ namespace cpu
         assert(uvw.size() == integration.baselines);
         assert(integration_data.dimension(0) == metadata.GetConstants().channels);
         assert(integration_data.dimension(1) == integration.baselines);
-        assert(metadata.oldUVW.size() == integration.baselines);
+        assert(metadata.GetOldUVW().size() == integration.baselines);
         assert(metadata.avg_data.rows() == integration.baselines);
         assert(metadata.avg_data.cols() == metadata.GetConstants().num_pols);
         
@@ -156,12 +156,12 @@ namespace cpu
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             constexpr double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2));
+            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
             shiftFactor += 2 * pi *
             (
-                metadata.GetConstants().phase_centre_ra_rad * metadata.oldUVW[baseline](0)
-                - metadata.GetConstants().phase_centre_dec_rad * metadata.oldUVW[baseline](1)
+                metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
+                - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
             );
 
             shiftFactor -= 2 * pi *
