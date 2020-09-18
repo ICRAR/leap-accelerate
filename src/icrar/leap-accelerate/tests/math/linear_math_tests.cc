@@ -42,6 +42,30 @@ namespace icrar
 
         void TearDown() override {}
 
+        void TestMVDirection()
+        {
+            constexpr double a = 1.0;
+            constexpr double b = 2.0;
+            constexpr double c = 3.0;
+
+            auto direction = casacore::MVDirection(a, b, c); //Normalization in constructor
+            EXPECT_EQ(direction(0), direction.getVector()(0));
+            EXPECT_EQ(direction(1), direction.getVector()(1));
+            EXPECT_EQ(direction(2), direction.getVector()(2));
+
+            EXPECT_EQ(a / std::sqrt(a*a + b*b + c*c), direction(0)); // p2 normalized
+            EXPECT_EQ(b / std::sqrt(a*a + b*b + c*c), direction(1)); // p2 normalized
+            EXPECT_EQ(c / std::sqrt(a*a + b*b + c*c), direction(2)); // p2 normalized
+
+            // EXPECT_EQ(1.0, direction.get()(0)); //arctan(2/1)
+            // EXPECT_EQ(2.0, direction.get()(1)); //arctan(3/sqrt(1^2 + 2^2))
+
+            auto direction2 = casacore::MVDirection(1.0, 2.0); // spherical to cartesian
+            //EXPECT_EQ(1.0, direction2(0));
+            //EXPECT_EQ(2.0, direction2(1));
+            //EXPECT_EQ(0.0, direction2(2));
+        }
+
         void TestConvertVector()
         {
             auto expected = Eigen::VectorXd(2);
@@ -75,28 +99,13 @@ namespace icrar
                 ToUVW(ToCasaUVW(expected)));
         }
 
-        void TestMVDirection()
+        void TestConvertUVWVector()
         {
-            constexpr double a = 1.0;
-            constexpr double b = 2.0;
-            constexpr double c = 3.0;
+            auto expected = std::vector<icrar::MVuvw>{{1.0, 2.0, 3.0}};
 
-            auto direction = casacore::MVDirection(a, b, c);
-            EXPECT_EQ(direction(0), direction.getVector()(0));
-            EXPECT_EQ(direction(1), direction.getVector()(1));
-            EXPECT_EQ(direction(2), direction.getVector()(2));
-
-            EXPECT_EQ(a / std::sqrt(a*a + b*b + c*c), direction(0)); // p2 normalized
-            EXPECT_EQ(b / std::sqrt(a*a + b*b + c*c), direction(1)); // p2 normalized
-            EXPECT_EQ(c / std::sqrt(a*a + b*b + c*c), direction(2)); // p2 normalized
-
-            // EXPECT_EQ(1.0, direction.get()(0)); //arctan(2/1)
-            // EXPECT_EQ(2.0, direction.get()(1)); //arctan(3/sqrt(1^2 + 2^2))
-
-            auto direction2 = casacore::MVDirection(1.0, 0.0); // spherical to cartesian
-            //EXPECT_EQ(1.0, direction2(0));
-            //EXPECT_EQ(2.0, direction2(1));
-            //EXPECT_EQ(0.0, direction2(2));
+            ASSERT_EQ(
+                expected,
+                ToUVWVector(ToCasaUVWVector(expected)));
         }
 
         void TestConvertMVDirection()
@@ -109,9 +118,13 @@ namespace icrar
         }
     };
 
+    TEST_F(linear_math_tests, TestMVDirection) { TestMVDirection(); }
+
     TEST_F(linear_math_tests, TestConvertVector) { TestConvertVector(); }
     TEST_F(linear_math_tests, TestConvertMatrix) { TestConvertMatrix(); }
+
     TEST_F(linear_math_tests, TestConvertUVW) { TestConvertUVW(); }
+    TEST_F(linear_math_tests, TestConvertUVWVector) { TestConvertUVWVector(); }
 
     TEST_F(linear_math_tests, TestMVDirection) { TestMVDirection(); }
     TEST_F(linear_math_tests, TestConvertMVDirection) { TestConvertMVDirection(); }

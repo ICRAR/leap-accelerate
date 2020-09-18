@@ -103,10 +103,8 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
     {
-        std::cout << "to direction vector ..."  << value.size() << std::endl;
         auto res = std::vector<casacore::MVDirection>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaDirection);
-        std::cout << "to direction vector" << std::endl;
         return res;
     }
 }
