@@ -28,6 +28,17 @@
 
 namespace icrar::cpu
 {
+    Integration::Integration(const icrar::casalib::Integration& integration)
+    : integration_number(integration.integration_number)
+    , index(integration.index)
+    , x(integration.x)
+    , channels(integration.channels)
+    , baselines(integration.baselines)
+    , m_uvw(ToUVWVector(integration.uvw))
+    {
+        m_data = Eigen::Tensor<std::complex<double>, 3>(integration.data);
+    }
+
     Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
     , index(0)
@@ -35,14 +46,14 @@ namespace icrar::cpu
     , channels(channels)
     , baselines(baselines)
     {
-        data = ms.GetVis(channels, baselines, polarizations);
+        m_data = ms.GetVis(channels, baselines, polarizations);
         m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(data.data(), data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.data.data(), rhs.data.size());
+        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
         
         return datav.isApprox(rhsdatav)
         && m_uvw == rhs.m_uvw

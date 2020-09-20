@@ -153,6 +153,7 @@ namespace icrar
             metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
+            boost::optional<icrar::cpu::Integration> integrationOptionalOutput;
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
             {
@@ -164,6 +165,7 @@ namespace icrar
                     metadata.num_pols);
 
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
+                integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
             if(impl == ComputeImplementation::eigen)
@@ -177,6 +179,7 @@ namespace icrar
 
                 auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.GetUVW());
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
+                integrationOptionalOutput = integration;
                 metadataOptionalOutput = metadatahost;
             }
             if(impl == ComputeImplementation::cuda)
@@ -193,8 +196,12 @@ namespace icrar
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
                 metadatadevice.ToHost(metadatahost);
+                integrationOptionalOutput = integration;
                 metadataOptionalOutput = metadatahost;
             }
+            ASSERT_TRUE(integrationOptionalOutput.is_initialized());
+            icrar::cpu::Integration& integrationOutput = integrationOptionalOutput.get();
+
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
 
@@ -221,9 +228,9 @@ namespace icrar
             expectedConstants.dlm_dec = -0.52976729677658152;
             auto expectedDD = Eigen::Matrix3d();
             expectedDD <<
-             0.46856701,  0.86068501, -0.19916391,
-            -0.79210108,  0.50913781,  0.33668172,
-             0.39117878,  0.0,         0.92031471;
+            0.829190784405378,  -0.27686967701806, -0.48557782589931875,
+            0.23891767921195933,  0.960907478349459, -0.13991125977581673,
+            0.505332549532647,                  0,  0.862924686390901;
 
             //========
             // ASSERT
@@ -242,21 +249,40 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedConstants.dlm_ra, metadataOutput.GetConstants().dlm_ra);
             EXPECT_DOUBLE_EQ(expectedConstants.dlm_dec, metadataOutput.GetConstants().dlm_dec);
             ASSERT_TRUE(expectedConstants == metadataOutput.GetConstants());        
+            
+            EXPECT_DOUBLE_EQ(expectedDD(0,0), metadataOutput.dd(0,0));
+            EXPECT_DOUBLE_EQ(expectedDD(0,1), metadataOutput.dd(0,1));
+            EXPECT_DOUBLE_EQ(expectedDD(0,2), metadataOutput.dd(0,2));
+            EXPECT_DOUBLE_EQ(expectedDD(1,0), metadataOutput.dd(1,0));
+            EXPECT_DOUBLE_EQ(expectedDD(1,1), metadataOutput.dd(1,1));
+            EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.dd(1,2));
+            EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.dd(2,0));
+            EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.dd(2,1));
+            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));;
+
+            EXPECT_EQ(8001, integrationOutput.GetUVW().size());
+            EXPECT_EQ(icrar::MVuvw(0, 0, 0), integrationOutput.GetUVW()[0]);
+            EXPECT_DOUBLE_EQ(-75.219106714973222, integrationOutput.GetUVW()[1](0));
+            EXPECT_DOUBLE_EQ(189.21609723238763, integrationOutput.GetUVW()[1](1));
+            EXPECT_DOUBLE_EQ(202.80041582431284, integrationOutput.GetUVW()[1](2));
+            EXPECT_EQ(icrar::MVuvw(-75.219106714973222, 189.21609723238763, 202.80041582431284), integrationOutput.GetUVW()[1]);
 
             auto cthreshold = std::complex<double>(0.001, 0.001);
+
+            // ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
+            // ASSERT_EQCD(-24.9622-30.7819i, integrationOutput.GetData()(0,1,0), THRESHOLD);
+            // ASSERT_EQCD(-16.0242+31.1452i, integrationOutput.GetData()(0,2,0), THRESHOLD);
+
+            ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
+            ASSERT_EQCD(-13.063621662117066+37.416248097476874i, integrationOutput.GetData()(0,1,0), THRESHOLD);
+            ASSERT_EQCD( 29.728701605883046-18.52026514887983i, integrationOutput.GetData()(0,2,0), THRESHOLD);
+
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
             ASSERT_EQCD(std::complex<double>(-18.733685278333724,  149.59337317943573), metadataOutput.avg_data(0,0), THRESHOLD);
             ASSERT_EQCD(std::complex<double>( 383.91613554954529, -272.36856329441071), metadataOutput.avg_data(0,1), THRESHOLD);
             ASSERT_EQCD(std::complex<double>(-32.724725462496281,  681.10801546275616), metadataOutput.avg_data(0,2), THRESHOLD);
             ASSERT_EQCD(std::complex<double>( 206.11409425735474, -244.23817884922028), metadataOutput.avg_data(0,3), THRESHOLD);
-
-
-            // =============
-            // ASSERT OBJECT
-            //ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
-            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
-            //ASSERT_EQ(expectedIntegration, integration);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)

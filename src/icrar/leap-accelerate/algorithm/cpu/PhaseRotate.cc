@@ -138,7 +138,7 @@ namespace cpu
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.data;
+        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
         auto& uvw = integration.GetUVW();
         auto parameters = integration.parameters;
 
@@ -156,6 +156,14 @@ namespace cpu
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             constexpr double pi = boost::math::constants::pi<double>();
+
+            if(baseline == 1)
+            {
+                std::cout << "uvw[1]:" << 
+                uvw[baseline]
+                << std::endl;
+            }
+
             double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
             shiftFactor += 2 * pi *
@@ -170,12 +178,12 @@ namespace cpu
                 - metadata.direction(1) * uvw[baseline](1)
             );
 
-#if _DEBUG
+//#if _DEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-#endif
+//#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
@@ -184,7 +192,8 @@ namespace cpu
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    //integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
 
                 bool hasNaN = false;

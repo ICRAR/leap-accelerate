@@ -219,6 +219,14 @@ namespace casalib
         {
             // For baseline
             const double pi = boost::math::constants::pi<double>();
+
+            if(baseline == 1)
+            {
+                std::cout << "uvw[1]:" << 
+                uvw[baseline]
+                << std::endl;
+            }
+
             double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
             shiftFactor = shiftFactor + 2 * pi *
             (
@@ -231,12 +239,12 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-#if _DEBUG
+//#if _DEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-#endif
+//#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)

@@ -94,6 +94,8 @@ namespace cpu
         }
 
         const icrar::MVDirection GetDirection() const { return m_direction; }
+
+        //TODO: change type
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
         //bool operator==(const CalibrationResult& rhs) const;

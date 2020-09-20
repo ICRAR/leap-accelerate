@@ -26,10 +26,12 @@
 
 void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
+    std::cerr << std::setprecision(15);
     if(std::abs(expected.real() - actual.real()) > tolerance || std::abs(expected.imag() - actual.imag()) > tolerance)
     {
         std::cerr << file << ":" << line << " " << ln << "!=" << rn << "\n";
-        std::cerr << "got " << actual.real() << " + " << actual.imag() << "i\n"; 
+        std::cerr << "expected: " << expected.real() << " + " << expected.imag() << "i\n"; 
+        std::cerr << "got: " << actual.real() << " + " << actual.imag() << "i\n"; 
     }
     EXPECT_NEAR(expected.real(), actual.real(), tolerance);
     EXPECT_NEAR(expected.imag(), actual.imag(), tolerance);
