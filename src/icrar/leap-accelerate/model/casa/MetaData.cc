@@ -170,8 +170,8 @@ namespace casalib
         }
 
         auto& dd3d = dd.value();
-        dlm_ra = direction.get()[0] - phase_centre_ra_rad;
-        dlm_dec = direction.get()[1] - phase_centre_dec_rad;
+        dlm_ra = direction(0) - phase_centre_ra_rad;
+        dlm_dec = direction(1) - phase_centre_dec_rad;
 
         dd3d(0,0) = std::cos(dlm_ra) * std::cos(dlm_dec);
         dd3d(0,1) = -std::sin(dlm_ra);

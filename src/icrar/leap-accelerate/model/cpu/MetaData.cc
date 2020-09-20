@@ -79,6 +79,7 @@ namespace cpu
     MetaData::MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
     {
         m_constants.nantennas = metadata.nantennas;
+        m_constants.nbaselines = metadata.GetBaselines();
         m_constants.channels = metadata.channels;
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;

@@ -23,6 +23,7 @@
 #include "linear_math_helper.h"
 
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 namespace icrar
 {
@@ -31,10 +32,10 @@ namespace icrar
         return icrar::MVuvw(value(0), value(1), value(2));
     }
 
-    icrar::MVuvw ToUVW(const casacore::MVPosition& value)
-    {
-        return icrar::MVuvw(value(0), value(1), value(2));
-    }
+    // icrar::MVuvw ToUVW(const casacore::MVPosition& value)
+    // {
+    //     return icrar::MVuvw(value(0), value(1), value(2));
+    // }
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
     {
@@ -67,9 +68,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        auto res = std::vector<casacore::MVuvw>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaUVW);
-        return res;
+        return vector_map<casacore::MVuvw, icrar::MVuvw>(value, ToCasaUVW);
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value)
@@ -91,9 +90,7 @@ namespace icrar
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        auto res = std::vector<icrar::MVDirection>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
-        return res;
+        return vector_map<icrar::MVDirection, casacore::MVDirection>(value, ToDirection);
     }
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
@@ -103,8 +100,6 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
     {
-        auto res = std::vector<casacore::MVDirection>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaDirection);
-        return res;
+        return vector_map<casacore::MVDirection, icrar::MVDirection>(value, ToCasaDirection);
     }
 }

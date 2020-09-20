@@ -139,7 +139,9 @@ namespace icrar
                 
                 ASSERT_EQ(1, result.GetData().size());
                 std::cout << result.GetData()[0] << std::endl;
-                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD); //TODO: assert with LEAP-Cal
+
+                //TODO: assert with LEAP-Cal
+                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
             }
         }
 
@@ -200,26 +202,47 @@ namespace icrar
             // Build expected results
             // Test case generic
             auto expectedIntegration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
-            expectedIntegration.baselines = metadata.GetBaselines();
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
-
-            //TODO: don't rely on eigen implementation for expected values
-            auto expectedMetadata = icrar::cpu::MetaData(casalib::MetaData(*ms), ToDirection(direction), ToUVWVector(expectedIntegration.uvw));
-
-            //Test case specific
-            expectedMetadata.dd = Eigen::Matrix3d();
-            expectedMetadata.dd <<
+            
+            //TODO: don't rely on casa implementation for expected values
+            auto expectedConstants = icrar::cpu::Constants();
+            expectedConstants.nantennas = 0;
+            expectedConstants.nbaselines = 8001;
+            expectedConstants.channels = 48;
+            expectedConstants.num_pols = 4;
+            expectedConstants.stations = 126;
+            expectedConstants.rows = 1;
+            expectedConstants.solution_interval = 3601;
+            expectedConstants.freq_start_hz = 1.39195e+08;
+            expectedConstants.freq_inc_hz = 640000;
+            expectedConstants.phase_centre_ra_rad = 0.57595865315812877;
+            expectedConstants.phase_centre_dec_rad = 0.10471975511965978;
+            expectedConstants.dlm_ra = 0.28053489943768872;
+            expectedConstants.dlm_dec = -0.52976729677658152;
+            auto expectedDD = Eigen::Matrix3d();
+            expectedDD <<
              0.46856701,  0.86068501, -0.19916391,
             -0.79210108,  0.50913781,  0.33668172,
              0.39117878,  0.0,         0.92031471;
 
-            ASSERT_EQ(8001, expectedIntegration.baselines);
-            ASSERT_EQ(4, expectedMetadata.GetConstants().num_pols);
-            expectedMetadata.avg_data = Eigen::MatrixXcd::Zero(expectedIntegration.baselines, metadata.num_pols);
-
-
-            // ==========
+            //========
             // ASSERT
+            //========
+            EXPECT_DOUBLE_EQ(expectedConstants.nantennas, metadataOutput.GetConstants().nantennas);
+            EXPECT_DOUBLE_EQ(expectedConstants.nbaselines, metadataOutput.GetConstants().nbaselines);
+            EXPECT_DOUBLE_EQ(expectedConstants.channels, metadataOutput.GetConstants().channels);
+            EXPECT_DOUBLE_EQ(expectedConstants.num_pols, metadataOutput.GetConstants().num_pols);
+            EXPECT_DOUBLE_EQ(expectedConstants.stations, metadataOutput.GetConstants().stations);
+            EXPECT_DOUBLE_EQ(expectedConstants.rows, metadataOutput.GetConstants().rows);
+            EXPECT_DOUBLE_EQ(expectedConstants.solution_interval, metadataOutput.GetConstants().solution_interval);
+            EXPECT_DOUBLE_EQ(expectedConstants.freq_start_hz, metadataOutput.GetConstants().freq_start_hz);
+            EXPECT_DOUBLE_EQ(expectedConstants.freq_inc_hz, metadataOutput.GetConstants().freq_inc_hz);
+            EXPECT_DOUBLE_EQ(expectedConstants.phase_centre_ra_rad, metadataOutput.GetConstants().phase_centre_ra_rad);
+            EXPECT_DOUBLE_EQ(expectedConstants.phase_centre_dec_rad, metadataOutput.GetConstants().phase_centre_dec_rad);
+            EXPECT_DOUBLE_EQ(expectedConstants.dlm_ra, metadataOutput.GetConstants().dlm_ra);
+            EXPECT_DOUBLE_EQ(expectedConstants.dlm_dec, metadataOutput.GetConstants().dlm_dec);
+            ASSERT_TRUE(expectedConstants == metadataOutput.GetConstants());        
+
             auto cthreshold = std::complex<double>(0.001, 0.001);
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
@@ -227,11 +250,11 @@ namespace icrar
             ASSERT_EQCD(std::complex<double>( 383.91613554954529, -272.36856329441071), metadataOutput.avg_data(0,1), THRESHOLD);
             ASSERT_EQCD(std::complex<double>(-32.724725462496281,  681.10801546275616), metadataOutput.avg_data(0,2), THRESHOLD);
             ASSERT_EQCD(std::complex<double>( 206.11409425735474, -244.23817884922028), metadataOutput.avg_data(0,3), THRESHOLD);
-            
+
+
             // =============
             // ASSERT OBJECT
-            ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
-            // TODO: too much data to hard code
+            //ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
             //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
             //ASSERT_EQ(expectedIntegration, integration);
         }
@@ -820,10 +843,10 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

@@ -25,6 +25,7 @@
 
 #include <iostream>
 #include <vector>
+#include <functional>
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
@@ -40,15 +41,49 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
     return os;
 }
 
-template<typename T>
-bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
+namespace icrar
 {
-    for(size_t i = 0; i < lhs.size(); ++i)
+    /**
+     * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 
+     * 
+     * @tparam T 
+     * @param lhs 
+     * @param rhs 
+     * @param threshold 
+     * @return true 
+     * @return false 
+     */
+    template<typename T>
+    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
     {
-        if(std::abs(lhs[i] - rhs[i]) >= threshold)
+        if(lhs.size() != rhs.size())
         {
             return false;
         }
+        
+        for(size_t i = 0; i < lhs.size(); ++i)
+        {
+            if(std::abs(lhs[i] - rhs[i]) >= threshold)
+            {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
+
+    /**
+     * @brief Performs a std::transform on a newly allocated std::vector 
+     * 
+     * @tparam T The input vector type
+     * @tparam R the output vector type
+     * @param vector 
+     * @return std::vector<R> 
+     */
+    template<typename R, typename T>
+    std::vector<R> vector_map(const std::vector<T>& vector, std::function<R(const T&)> lambda)
+    {
+        auto result = std::vector<R>(vector.size());
+        std::transform(vector.cbegin(), vector.cend(), result.begin(), lambda);
+        return result;
+    }
 }

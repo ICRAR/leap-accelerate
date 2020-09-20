@@ -137,7 +137,7 @@ template<typename T>
 void assert_veq(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
     ASSERT_EQ(expected.size(), actual.size());
-    if(!isApprox(expected, actual, tolerance))
+    if(!icrar::isApprox(expected, actual, tolerance))
     {
         std::cerr << ln << " != " << rn << "\n";
         std::cerr << file << ":" << line << " std::vector elements differ at:\n" << std::setprecision(15);
@@ -152,7 +152,7 @@ void assert_veq(const std::vector<T>& expected, const std::vector<T>& actual, do
         }
         std::cerr << std::endl;
     }
-    ASSERT_TRUE(isApprox(expected, actual, tolerance));
+    ASSERT_TRUE(icrar::isApprox(expected, actual, tolerance));
 }
 
 void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
