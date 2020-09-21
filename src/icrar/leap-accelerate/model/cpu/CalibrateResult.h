@@ -114,7 +114,7 @@ namespace cpu
         void CreateJsonStrFormat(Writer& writer) const
         {
             assert(m_data.size() == 1);
-            assert(m_data[0].rows() == 1);
+            assert(m_data[0].shape()[0] == 1);
 
             writer.StartObject();
             writer.String("direction");
