@@ -82,7 +82,8 @@ namespace icrar
     template<typename R, typename T>
     std::vector<R> vector_map(const std::vector<T>& vector, std::function<R(const T&)> lambda)
     {
-        auto result = std::vector<R>(vector.size());
+        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
+        auto result = std::vector<R>(vector.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
         std::transform(vector.cbegin(), vector.cend(), result.begin(), lambda);
         return result;
     }

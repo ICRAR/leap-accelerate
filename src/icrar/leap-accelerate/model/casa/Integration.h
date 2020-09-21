@@ -47,7 +47,17 @@ namespace icrar::casalib
     class Integration
     {
     public:
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
+        /**
+         * @brief Construct a new Integration object
+         * 
+         * @param integrationNumber the id of the integration
+         * @param ms 
+         * @param index the row index of the uvw
+         * @param channels the number of channels
+         * @param baselines the number of baselines
+         * @param polarizations the number of polarizations
+         */
+        Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 

@@ -89,11 +89,21 @@ namespace icrar
 
         unsigned int GetNumChannels() const;
 
+        unsigned int GetNumRows() const;
+
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;
+
+        Eigen::Tensor<std::complex<double>, 3> GetVis(
+            std::uint32_t startBaseline,
+            std::uint32_t startChannel,
+            std::uint32_t nChannels,
+            std::uint32_t nBaselines,
+            std::uint32_t nPolarizations) const;
+        Eigen::Tensor<std::complex<double>, 3> GetVis() const;
+
+    private:
         Eigen::MatrixX3d GetCoords(unsigned int start_row, unsigned int nBaselines) const;
 
-        Eigen::Tensor<std::complex<double>, 3> GetVis(std::uint32_t nChannels, std::uint32_t nBaselines, std::uint32_t nPolarizations) const;
-        Eigen::Tensor<std::complex<double>, 3> GetVis() const;
     };
 }

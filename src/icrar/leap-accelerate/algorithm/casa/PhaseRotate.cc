@@ -81,17 +81,24 @@ namespace casalib
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
-            queue.emplace(
-                ms,
-                i,
-                metadata.channels,
-                metadata.GetBaselines(),
-                metadata.num_pols);
+            int startRow = 0;
+            int integrationNumber = 0;
+            while((startRow + ms.GetNumBaselines()) < ms.GetNumRows())
+            {
+                queue.emplace(
+                    integrationNumber++,
+                    ms,
+                    startRow,
+                    metadata.channels,
+                    metadata.GetBaselines(),
+                    metadata.num_pols);
+                startRow += metadata.GetBaselines();
+            }
 
 #ifndef NDEBUG
-            assert(metadata.GetChannels() == queue.front().data.dimension(0)); //metadata.channels
+            assert(metadata.channels == queue.front().data.dimension(0)); //metadata.channels
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
-            assert(metadata.GetPolarizations() == queue.front().data.dimension(2)); //metadata.polarizations
+            assert(metadata.num_pols == queue.front().data.dimension(2)); //metadata.polarizations
 #endif
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
@@ -233,22 +240,47 @@ namespace casalib
                 - direction(1) * uvw[baseline](1)
             );
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-#endif
+//#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
 
+#ifndef NDEBUG
+                    if(baseline == 1)
+                    {
+                        std::cout << "=== channel : " << channel << " === "<< std::endl;
+                        std::cout << "shiftFactor: " << shiftFactor << std::endl;
+                        std::cout << "wavelength: " << metadata.channel_wavelength[channel] << std::endl;
+                        std::cout << "shiftRad: " << shiftRad << std::endl;
+                        std::cout << "data before: |"
+                        << integration_data(channel, baseline, 0) << "|"
+                        << integration_data(channel, baseline, 1) << "|"
+                        << integration_data(channel, baseline, 2) << "|"
+                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                    }
+#endif
                 for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                 {
                     integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
+
+#ifndef NDEBUG
+                    if(baseline == 1)
+                    {
+                        std::cout << "data after : |"
+                        << integration_data(channel, baseline, 0) << "|"
+                        << integration_data(channel, baseline, 1) << "|"
+                        << integration_data(channel, baseline, 2) << "|"
+                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                    }
+#endif
 
                 bool hasNaN = false;
 
@@ -264,6 +296,7 @@ namespace casalib
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
+                        std::cout << "shiftrad: " << shiftrad << std::endl;
                         std::cout << "data : |"
                         << integration_data(channel, baseline, 0) << "|"
                         << integration_data(channel, baseline, 1) << "|"

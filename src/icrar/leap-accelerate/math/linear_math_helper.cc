@@ -27,26 +27,19 @@
 
 namespace icrar
 {
-    icrar::MVuvw ToUVW(const casacore::MVuvw& value)
-    {
-        return icrar::MVuvw(value(0), value(1), value(2));
-    }
-
     // icrar::MVuvw ToUVW(const casacore::MVPosition& value)
     // {
     //     return icrar::MVuvw(value(0), value(1), value(2));
     // }
 
+    icrar::MVuvw ToUVW(const casacore::MVuvw& value)
+    {
+        return icrar::MVuvw(value(0), value(1), value(2));
+    }
+
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
     {
-        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
-        std::vector<icrar::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
-        auto lambda = [](const casacore::MVuvw& x)
-        {
-            return icrar::MVuvw(x(0), x(1), x(2));
-        };
-        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
-        return res;
+        return vector_map<icrar::MVuvw, casacore::MVuvw>(value, ToUVW);
     }
 
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value)

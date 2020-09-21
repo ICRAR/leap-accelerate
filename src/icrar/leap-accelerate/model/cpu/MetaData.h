@@ -130,7 +130,7 @@ namespace cpu
 
         MetaData(const casalib::MetaData& metadata);
         MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
-        
+        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
 
         const Constants& GetConstants() const;
 

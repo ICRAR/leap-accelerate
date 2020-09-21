@@ -112,6 +112,8 @@ namespace icrar
         return res;
     }
 
+    //icrar::MVuvw ToUVW(const casacore::MVPosition& value);
+    
     /**
      * @brief Converts a casacore UVW value to an icrar UVW value
      * 
@@ -119,7 +121,6 @@ namespace icrar
      * @return icrar::MVuvw 
      */
     icrar::MVuvw ToUVW(const casacore::MVuvw& value);
-    icrar::MVuvw ToUVW(const casacore::MVPosition& value);
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value);
     

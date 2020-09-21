@@ -138,7 +138,7 @@ namespace icrar
                 const auto& result = calibrations[i].front();
                 
                 ASSERT_EQ(1, result.GetData().size());
-                std::cout << result.GetData()[0] << std::endl;
+                std::cout << std::setprecision(15) << "calibration result: " << result.GetData()[0] << std::endl;
 
                 //TODO: assert with LEAP-Cal
                 ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
@@ -164,6 +164,7 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 auto integration = casalib::Integration(
+                    0,
                     *ms,
                     0,
                     metadata.channels,
@@ -177,6 +178,7 @@ namespace icrar
             if(impl == ComputeImplementation::eigen)
             {
                 auto integration = cpu::Integration(
+                    0,
                     *ms,
                     0,
                     metadata.channels,
@@ -191,6 +193,7 @@ namespace icrar
             if(impl == ComputeImplementation::cuda)
             {
                 auto integration = icrar::cpu::Integration(
+                    0,
                     *ms,
                     0,
                     metadata.channels,
@@ -214,8 +217,8 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
-            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
+            auto expectedIntegration = icrar::casalib::Integration(0, *ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
+            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
 
             auto expectedConstants = icrar::cpu::Constants();
             expectedConstants.nantennas = 0;
@@ -320,6 +323,143 @@ namespace icrar
         }
 
         std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetExpectedCalibration()
+        {
+            std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
+            output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>{
+                1501684040553.83,
+                -15832697842.3052,
+                0,
+                0,
+                -15278077348.7985,
+                -15662765140.364,
+                -16193590487.4912,
+                -15324772907.1228,
+                -12950614077.7772,
+                0,
+                0,
+                0,
+                -15191049239.1642,
+                -11506210521.2537,
+                -15159347844.5347,
+                0,
+                42360205630.1721,
+                -15473834471.3154,
+                0,
+                0,
+                -15319879367.3853,
+                162846582670.418,
+                -12228438496.0012,
+                -15249939324.031,
+                -12042556566.1373,
+                -14308130032.3359,
+                0,
+                -15296690111.4944,
+                371922658436.567,
+                -10767323626.8333,
+                0,
+                18566432834.9002,
+                -13273453132.8522,
+                -14972020843.1001,
+                0,
+                -15134189322.2847,
+                -11488208067.7871,
+                -15166452230.3227,
+                0,
+                0,
+                121867533600.811,
+                -22547850412.426,
+                -130683025397.051,
+                -13991725928.3328,
+                -15254327843.1914,
+                -15236430820.7022,
+                -15497053097.7052,
+                -26287057483.6001,
+                -15306657953.8956,
+                0,
+                74505082300.4003,
+                0,
+                -15184142089.1352,
+                -15185851164.1482,
+                -1436654208.88229,
+                -24382686296.6048,
+                -184478269022.941,
+                -17240686646.6619,
+                -15492292078.408,
+                -18656094721.6891,
+                0,
+                0,
+                0,
+                0,
+                0,
+                -11285188427.3984,
+                -37938184567.0438,
+                -16972945424.4325,
+                -15750990353.5465,
+                -15333197730.014,
+                0,
+                0,
+                -1530466038059.11,
+                -12706848360.2559,
+                6786056728.25857,
+                -15665970194.0093,
+                -4023039953.32051,
+                -6767932949.55859,
+                -393176646400.526,
+                -14613033060.3677,
+                0,
+                -11722952658.2905,
+                -15554576608.6545,
+                -10188419842.3262,
+                21680968998.7197,
+                -21948680112.5864,
+                -14542399372.6902,
+                0,
+                -15352854412.9753,
+                -14024252045.4773,
+                -9302482751.86255,
+                0,
+                -15343127074.5952,
+                0,
+                0,
+                0,
+                -37522054745.2334,
+                -15319928657.1311,
+                -15822061191.2812,
+                -19218343386.7693,
+                -18843427516.8655,
+                -35766052991.9961,
+                -19968349048.6535,
+                -73771558451.9016,
+                -15989999434.7307,
+                -15418125690.5202,
+                -5540042672.03841,
+                -20283244423.0281,
+                -15324001818.6821,
+                -15333160006.9441,
+                -13370893286.2097,
+                0,
+                -18107735856.0019,
+                -19859455024.9822,
+                -15079663406.5134,
+                0,
+                -15817564586.2588,
+                19266942341.1589,
+                -20746625582.0906,
+                -16297550327.5515,
+                -11840429205.5332,
+                -153450761719.789,
+                -63858888648.272,
+                -15332227371.0598,
+                -13917146644.7859,
+                -15025338337.156,
+                -47392446168.4036,
+                -15592661923.4937,
+            }));
+
+            return output;
+        }
+
+        std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetPythonCalibration()
         {
             std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
             output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>{
@@ -870,7 +1010,7 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
     TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -108,6 +109,12 @@ namespace cpu
         {
             avg_data = ToMatrix(metadata.avg_data.value());
         }
+    }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    : MetaData(casalib::MetaData(ms), direction, uvws)
+    {
+        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
     }
 
     const Constants& MetaData::GetConstants() const

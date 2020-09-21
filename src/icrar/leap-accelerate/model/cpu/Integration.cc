@@ -39,15 +39,21 @@ namespace icrar::cpu
         m_data = Eigen::Tensor<std::complex<double>, 3>(integration.data);
     }
 
-    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
+    Integration::Integration(
+        unsigned int integrationNumber,
+        const icrar::MeasurementSet& ms,
+        unsigned int index,
+        unsigned int channels,
+        unsigned int baselines,
+        unsigned int polarizations)
     : integration_number(integrationNumber)
-    , index(0)
+    , index(index)
     , x(0)
     , channels(channels)
     , baselines(baselines)
     {
-        m_data = ms.GetVis(channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
+        m_data = ms.GetVis(index, 0, channels, baselines, polarizations);
+        m_uvw = ToUVWVector(ms.GetCoords());
     }
 
     bool Integration::operator==(const Integration& rhs) const

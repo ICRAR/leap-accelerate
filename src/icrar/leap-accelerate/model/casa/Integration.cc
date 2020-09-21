@@ -28,15 +28,15 @@
 
 namespace icrar::casalib
 {
-    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
+    Integration::Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
-    , index(0)
+    , index(index)
     , x(0)
     , channels(channels)
     , baselines(baselines)
     {
-        data = ms.GetVis(channels, baselines, polarizations);
-        uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
+        data = ms.GetVis(index, 0, channels, baselines, polarizations);
+        uvw = ToCasaUVWVector(ms.GetCoords());
     }
 
     bool Integration::operator==(const Integration& rhs) const

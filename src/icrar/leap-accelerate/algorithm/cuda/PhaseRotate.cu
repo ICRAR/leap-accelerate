@@ -76,8 +76,9 @@ namespace cuda
         auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
 
         auto integration = cpu::Integration(
+            0,
             ms,
-            0, //TODO increment
+            0, //TODO: increment
             metadata.channels,
             metadata.GetBaselines(),
             metadata.num_pols);

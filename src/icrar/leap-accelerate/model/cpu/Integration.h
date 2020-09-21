@@ -61,7 +61,13 @@ namespace cpu
          * @brief Construct a new Integration object from the equivalent casalib object
          */
         Integration(const icrar::casalib::Integration& integration);
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
+        Integration(
+            unsigned int integrationNumber,
+            const icrar::MeasurementSet& ms,
+            unsigned int index,
+            unsigned int channels,
+            unsigned int baselines,
+            unsigned int polarizations);
 
 
         int integration_number;
@@ -82,7 +88,17 @@ namespace cpu
 
         const std::vector<icrar::MVuvw>& GetUVW() const;
 
+        [[deprecated("Use GetVis()")]]
         const Eigen::Tensor<std::complex<double>, 3>& GetData() const { return m_data; }
+
+        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
+
+
+        /**
+         * @brief Get the Data object of size (polarizations, baselines, channels)
+         * 
+         * @return Eigen::Tensor<std::complex<double>, 3>& 
+         */
         Eigen::Tensor<std::complex<double>, 3>& GetData() { return m_data; }
     };
 }

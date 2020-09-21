@@ -60,23 +60,29 @@ namespace cpu
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
-
-        auto metadata = icrar::casalib::MetaData(ms);
-
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
+        auto uvw = ToUVWVector(ms.GetCoords());
+        
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto queue = std::vector<cpu::Integration>(); 
-            queue.push_back(cpu::Integration(
-                ms,
-                i,
-                metadata.channels,
-                metadata.GetBaselines(),
-                metadata.num_pols));
-
+            auto queue = std::vector<cpu::Integration>();
+            unsigned int startRow = 0;
+            unsigned int integrationNumber = 0;
+            while(startRow < ms.GetNumRows())
+            {
+                unsigned int numRows = std::min(ms.GetNumBaselines(), (int)ms.GetNumRows() - startRow);
+                queue.push_back(Integration(
+                    integrationNumber++,
+                    ms,
+                    numRows,
+                    ms.GetNumChannels(),
+                    ms.GetNumBaselines(),
+                    ms.GetNumPols()));
+                startRow += ms.GetNumBaselines();
+            }
             input_queues.push_back(queue);
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
@@ -84,12 +90,8 @@ namespace cpu
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            metadata.SetDD(directions[i]);
-            metadata.SetWv();
-            metadata.avg_data = casacore::Matrix<std::complex<double>>(metadata.GetBaselines(), metadata.num_pols);
-
-            auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
-            icrar::cpu::PhaseRotate(metadatahost, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            auto metadata = icrar::cpu::MetaData(ms, directions[i], uvw);
+            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
@@ -170,23 +172,48 @@ namespace cpu
                 - metadata.direction(1) * metadata.GetUVW()[baseline](1)
             );
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-#endif
+//#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
 
+#ifndef NDEBUG
+                if(baseline == 1)
+                {
+                    std::cout << "=== channel : " << channel << " === "<< std::endl;
+                    std::cout << "shiftFactor: " << shiftFactor << std::endl;
+                    std::cout << "wavelength: " << metadata.GetConstants().GetChannelWavelength(channel) << std::endl;
+                    std::cout << "shiftRad: " << shiftRad << std::endl;
+                    std::cout << "data before: |"
+                    << integration_data(channel, baseline, 0) << "|"
+                    << integration_data(channel, baseline, 1) << "|"
+                    << integration_data(channel, baseline, 2) << "|"
+                    << integration_data(channel, baseline, 3) << "|" << std::endl;
+                }
+#endif
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
+                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                     integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
+#ifndef NDEBUG
+                if(baseline == 1)
+                {
+                    std::cout << "data after : |"
+                    << integration_data(channel, baseline, 0) << "|"
+                    << integration_data(channel, baseline, 1) << "|"
+                    << integration_data(channel, baseline, 2) << "|"
+                    << integration_data(channel, baseline, 3) << "|" << std::endl;
+                }
+#endif
                 bool hasNaN = false;
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
                 for(int i = 0; i < polarizations.dimension(0); ++i)
@@ -196,10 +223,36 @@ namespace cpu
 
                 if(!hasNaN)
                 {
+#ifndef NDEBUG
+                    if(baseline == 0)
+                    {
+                        std::cout << "=== channel : " << channel << " === "<< std::endl;
+                        std::cout << "data : |"
+                        << integration_data(channel, baseline, 0) << "|"
+                        << integration_data(channel, baseline, 1) << "|"
+                        << integration_data(channel, baseline, 2) << "|"
+                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                        std::cout << "before : |"
+                        << metadata.avg_data(baseline, 0) << "|"
+                        << metadata.avg_data(baseline, 1) << "|"
+                        << metadata.avg_data(baseline, 2) << "|"
+                        << metadata.avg_data(baseline, 3) << "|" << std::endl;
+                    }
+#endif
                     for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                     {
                         metadata.avg_data(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
+#ifndef NDEBUG
+                    if(baseline == 0)
+                    {
+                        std::cout << "after : |"
+                        << metadata.avg_data(baseline, 0) << "|"
+                        << metadata.avg_data(baseline, 1) << "|"
+                        << metadata.avg_data(baseline, 2) << "|"
+                        << metadata.avg_data(baseline, 3) << "|" << std::endl;
+                    }
+#endif
                 }
             }
         }
