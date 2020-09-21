@@ -50,13 +50,13 @@ namespace cpu
 {
     class IntegrationResult
     {
-        icrar::MVDirection m_direction;
+        MVDirection m_direction;
         int m_integration_number;
         boost::optional<std::vector<casacore::Array<double>>> m_data;
 
     public:
         IntegrationResult(
-            icrar::MVDirection direction,
+            MVDirection direction,
             int integration_number,
             boost::optional<std::vector<casacore::Array<double>>> data)
             : m_direction(direction)
@@ -66,7 +66,7 @@ namespace cpu
         }
 
         IntegrationResult(
-            icrar::MVDirection direction,
+            MVDirection direction,
             int integration_number)
             : m_direction(direction)
             , m_integration_number(integration_number)
@@ -77,19 +77,19 @@ namespace cpu
 
     class CalibrationResult
     {
-        icrar::MVDirection m_direction;
+        MVDirection m_direction;
         std::vector<casacore::Matrix<double>> m_data;
 
     public:
         CalibrationResult(
-            const icrar::MVDirection& direction,
+            const MVDirection& direction,
             const std::vector<casacore::Matrix<double>>& data)
             : m_direction(direction)
             , m_data(data)
         {
         }
 
-        const icrar::MVDirection GetDirection() const { return m_direction; }
+        const MVDirection GetDirection() const { return m_direction; }
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
         //bool operator==(const CalibrationResult& rhs) const;
