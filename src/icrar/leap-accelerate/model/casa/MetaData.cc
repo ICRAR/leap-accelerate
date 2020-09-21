@@ -186,8 +186,6 @@ namespace casalib
         dd3d(2,0) = -std::sin(dlm_dec);
         dd3d(2,1) = 0;
         dd3d(2,2) = std::cos(dlm_dec);
-
-        std::cout << "dd:" << dd3d << std::endl;
     }
 
     void MetaData::SetDD(const icrar::MVDirection& direction)

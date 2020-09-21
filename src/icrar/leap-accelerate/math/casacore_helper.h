@@ -91,6 +91,7 @@ namespace icrar
         for(T t : value)
         {
             *result_it = lambda(t);
+            result_it++;
         }
         return result;
     }
@@ -104,6 +105,7 @@ namespace icrar
         for(T t : value)
         {
             *result_it = lambda(t);
+            result_it++;
         }
         return result;
     }
