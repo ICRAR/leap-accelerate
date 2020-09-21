@@ -256,10 +256,18 @@ namespace cuda
             auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
     
             // loop over baselines
-            const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+            constexpr double twoPi = 2 * CUDART_PI;
+            double shiftFactor = -(twoPi) * uvw[baseline].z - oldUVW[baseline].z;
+            shiftFactor += twoPi *
+            (
+                constants.phase_centre_ra_rad * oldUVW[baseline].x
+                - constants.phase_centre_dec_rad * oldUVW[baseline].y
+            );
+            shiftFactor -= twoPi *
+            (
+                direction.x * uvw[baseline].x
+                - direction.y * uvw[baseline].y
+            );
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);

@@ -52,7 +52,7 @@ namespace cpu
 
     class Integration
     {
-        std::vector<icrar::MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
 
     public:
         Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
