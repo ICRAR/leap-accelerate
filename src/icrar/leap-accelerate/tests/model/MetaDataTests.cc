@@ -151,6 +151,20 @@ namespace icrar
             ASSERT_EQ(48, meta.channel_wavelength.size());
         }
 
+        void TestChannelWavelengths()
+        {
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+            auto casaMetadata = icrar::casalib::MetaData(*ms);
+            casaMetadata.SetWv();
+
+            ASSERT_EQ(48, casaMetadata.channel_wavelength.size());
+            EXPECT_DOUBLE_EQ(2.1537588131757608, casaMetadata.channel_wavelength[0]);
+            
+            auto cpuMetadata = icrar::cpu::MetaData(casaMetadata, icrar::MVDirection(), std::vector<icrar::MVuvw>());
+            EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
+        }
+
         void TestCudaBufferCopy()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
@@ -176,5 +190,6 @@ namespace icrar
     TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
+    TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }

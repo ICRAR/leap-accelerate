@@ -97,7 +97,7 @@ namespace cpu
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
-            return speed_of_light / (freq_inc_hz + i * freq_inc_hz);
+            return speed_of_light / (freq_start_hz + i * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;

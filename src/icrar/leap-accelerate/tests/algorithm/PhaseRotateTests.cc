@@ -153,6 +153,12 @@ namespace icrar
             metadata.stations = 126;
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
+            //auto eigenuvw = ToUVWVector(ms->GetCoords(index, baselines));
+            //auto casauvw = ToCasaUVWVector(ms->GetCoords(index, baselines));
+            //std::cout << "eigenuvw[1]" << eigenuvw[1] << std::endl;
+            //std::cout << "casauvw[1]" << casauvw[1] << std::endl;
+            //assert(uvw[1](0) == -75.219106714973222);
+
             boost::optional<icrar::cpu::Integration> integrationOptionalOutput;
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
@@ -210,8 +216,7 @@ namespace icrar
             // Test case generic
             auto expectedIntegration = icrar::casalib::Integration(*ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords(0, metadata.GetBaselines()));
-            
-            //TODO: don't rely on casa implementation for expected values
+
             auto expectedConstants = icrar::cpu::Constants();
             expectedConstants.nantennas = 0;
             expectedConstants.nbaselines = 8001;
@@ -258,14 +263,7 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.dd(1,2));
             EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.dd(2,0));
             EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.dd(2,1));
-            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));;
-
-            EXPECT_EQ(8001, integrationOutput.GetUVW().size());
-            EXPECT_EQ(icrar::MVuvw(0, 0, 0), integrationOutput.GetUVW()[0]);
-            EXPECT_DOUBLE_EQ(-75.219106714973222, integrationOutput.GetUVW()[1](0));
-            EXPECT_DOUBLE_EQ(189.21609723238763, integrationOutput.GetUVW()[1](1));
-            EXPECT_DOUBLE_EQ(202.80041582431284, integrationOutput.GetUVW()[1](2));
-            EXPECT_EQ(icrar::MVuvw(-75.219106714973222, 189.21609723238763, 202.80041582431284), integrationOutput.GetUVW()[1]);
+            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));
 
             auto cthreshold = std::complex<double>(0.001, 0.001);
 
@@ -274,8 +272,8 @@ namespace icrar
             // ASSERT_EQCD(-16.0242+31.1452i, integrationOutput.GetData()(0,2,0), THRESHOLD);
 
             ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
-            ASSERT_EQCD(-13.063621662117066+37.416248097476874i, integrationOutput.GetData()(0,1,0), THRESHOLD);
-            ASSERT_EQCD( 29.728701605883046-18.52026514887983i, integrationOutput.GetData()(0,2,0), THRESHOLD);
+            ASSERT_EQCD(35.6735722091204 + 17.2635476789549i, integrationOutput.GetData()(0,1,0), THRESHOLD);
+            ASSERT_EQCD(25.3136137725085 + -24.2077854859281i, integrationOutput.GetData()(0,2,0), THRESHOLD);
 
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());

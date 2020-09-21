@@ -88,7 +88,7 @@ namespace casalib
                 metadata.GetBaselines(),
                 metadata.num_pols);
 
-#if _DEBUG
+#ifndef NDEBUG
             assert(metadata.GetChannels() == queue.front().data.dimension(0)); //metadata.channels
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.GetPolarizations() == queue.front().data.dimension(2)); //metadata.polarizations
@@ -126,7 +126,7 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-#if _DEBUG
+#ifndef NDEBUG
                 std::cout << "rotate visibilities" << std::endl;
                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
                 std::cout << "direction:" << direction.get() << std::endl;
@@ -199,7 +199,7 @@ namespace casalib
 
         metadata.CalcUVW(uvw);
 
-#if _DEBUG
+#ifndef NDEBUG
         std::cout << "DD:" << metadata.dd.get() << std::endl;
         //std::cout << "uvw:" << uvw << std::endl;
         //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
@@ -220,14 +220,8 @@ namespace casalib
             // For baseline
             const double pi = boost::math::constants::pi<double>();
 
-            if(baseline == 1)
-            {
-                std::cout << "uvw[1]:" << 
-                uvw[baseline]
-                << std::endl;
-            }
-
             double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+
             shiftFactor = shiftFactor + 2 * pi *
             (
                 metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
@@ -235,16 +229,16 @@ namespace casalib
             );
             shiftFactor = shiftFactor - 2 * pi *
             (
-                direction.get()[0] * uvw[baseline](0)
-                - direction.get()[1] * uvw[baseline](1)
+                direction(0) * uvw[baseline](0)
+                - direction(1) * uvw[baseline](1)
             );
 
-//#if _DEBUG
+#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-//#endif
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
@@ -266,7 +260,7 @@ namespace casalib
 
                 if(!hasNaN)
                 {
-#if _DEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -286,7 +280,7 @@ namespace casalib
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
-#if _DEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "after : |"
@@ -299,7 +293,7 @@ namespace casalib
                 }
             }
         }
-#if _DEBUG
+#ifndef NDEBUG
         std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
 #endif
     }

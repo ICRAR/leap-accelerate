@@ -139,13 +139,13 @@ namespace cpu
     {
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
-        auto& uvw = integration.GetUVW();
-        auto parameters = integration.parameters;
 
-        metadata.CalcUVW(uvw);
+        auto parameters = integration.parameters;
+        metadata.CalcUVW(integration.GetUVW());
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
-        assert(uvw.size() == integration.baselines);
+        assert(integration.GetUVW().size() == integration.baselines);
+        assert(metadata.GetUVW() == integration.baselines);
         assert(integration_data.dimension(0) == metadata.GetConstants().channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.GetOldUVW().size() == integration.baselines);
@@ -157,33 +157,25 @@ namespace cpu
         {
             constexpr double pi = boost::math::constants::pi<double>();
 
-            if(baseline == 1)
-            {
-                std::cout << "uvw[1]:" << 
-                uvw[baseline]
-                << std::endl;
-            }
-
-            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = -2 * pi * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
             shiftFactor += 2 * pi *
             (
                 metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
                 - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
             );
-
             shiftFactor -= 2 * pi *
             (
-                metadata.direction(0) * uvw[baseline](0)
-                - metadata.direction(1) * uvw[baseline](1)
+                metadata.direction(0) * metadata.GetUVW()[baseline](0)
+                - metadata.direction(1) * metadata.GetUVW()[baseline](1)
             );
 
-//#if _DEBUG
+#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
-//#endif
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
@@ -192,8 +184,7 @@ namespace cpu
 
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
-                    //integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
-                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
                 bool hasNaN = false;
