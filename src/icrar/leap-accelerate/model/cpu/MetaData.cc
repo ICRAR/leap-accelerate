@@ -161,8 +161,9 @@ namespace cpu
     {
         this->direction = direction;
 
-        m_constants.dlm_ra = direction(0) - m_constants.phase_centre_ra_rad;
-        m_constants.dlm_dec = direction(1) - m_constants.phase_centre_dec_rad;
+        Eigen::Vector2d polar_direction = icrar::to_polar(direction); 
+        m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
+        m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
         dd = Eigen::Matrix3d();
         dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);

@@ -240,7 +240,6 @@ namespace casalib
         //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
         std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
         std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
-
 #endif
 
         assert(uvw.size() == integration.baselines);
@@ -294,11 +293,11 @@ namespace casalib
                         std::cout << "shiftFactor: " << shiftFactor << std::endl;
                         std::cout << "wavelength: " << metadata.channel_wavelength[channel] << std::endl;
                         std::cout << "shiftRad: " << shiftRad << std::endl;
-                        // std::cout << "data before (" << channel << "," << baseline << ") : |"
-                        // << integration_data(0, baseline, channel) << "|"
-                        // << integration_data(1, baseline, channel) << "|"
-                        // << integration_data(2, baseline, channel) << "|"
-                        // << integration_data(3, baseline, channel) << "|" << std::endl;
+                        std::cout << "data before (" << channel << "," << baseline << ") : |"
+                        << integration_data(0, baseline, channel) << "|"
+                        << integration_data(1, baseline, channel) << "|"
+                        << integration_data(2, baseline, channel) << "|"
+                        << integration_data(3, baseline, channel) << "|" << std::endl;
                     }
 #endif
                 for(int polarization = 0; polarization < metadata.num_pols; polarization++)

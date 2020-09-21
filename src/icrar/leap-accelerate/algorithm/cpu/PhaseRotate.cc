@@ -141,7 +141,17 @@ namespace cpu
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
         auto parameters = integration.parameters;
+
         metadata.CalcUVW(integration.GetUVW());
+
+#ifndef NDEBUG
+        std::cout << "====" << integration.integration_number << "====" << std::endl;
+        std::cout << "DD:" << metadata.dd << std::endl;
+        //std::cout << "uvw:" << uvw << std::endl;
+        //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
+        std::cout << "phase_centre_ra_rad:" << metadata.GetConstants().phase_centre_ra_rad << std::endl;
+        std::cout << "phase_centre_dec_rad:" << metadata.GetConstants().phase_centre_dec_rad << std::endl;
+#endif
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
         assert(integration.GetUVW().size() == integration.baselines);
@@ -152,6 +162,8 @@ namespace cpu
         assert(metadata.avg_data.rows() == integration.baselines);
         assert(metadata.avg_data.cols() == metadata.GetConstants().num_pols);
         
+        const auto polar_direction = icrar::to_polar(metadata.direction);
+
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
@@ -166,13 +178,17 @@ namespace cpu
             );
             shiftFactor -= 2 * pi *
             (
-                metadata.direction(0) * metadata.GetUVW()[baseline](0)
-                - metadata.direction(1) * metadata.GetUVW()[baseline](1)
+                polar_direction(0) * metadata.GetUVW()[baseline](0)
+                - polar_direction(1) * metadata.GetUVW()[baseline](1)
             );
 
 #ifndef NDEBUG
-            if(baseline % 1000 == 1)
+            if(baseline == 1)
             {
+                std::cout << "uvw[0]: " << metadata.GetUVW()[0] << std::endl;
+                std::cout << "uvw[1]: " << metadata.GetUVW()[1] << std::endl;
+                std::cout << "oldUvw[0]: " << metadata.GetOldUVW()[0] << std::endl;
+                std::cout << "oldUvw[1]: " << metadata.GetOldUVW()[1] << std::endl;
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
 #endif
@@ -189,17 +205,17 @@ namespace cpu
                     std::cout << "shiftFactor: " << shiftFactor << std::endl;
                     std::cout << "wavelength: " << metadata.GetConstants().GetChannelWavelength(channel) << std::endl;
                     std::cout << "shiftRad: " << shiftRad << std::endl;
-                    std::cout << "data before: |"
-                    << integration_data(channel, baseline, 0) << "|"
-                    << integration_data(channel, baseline, 1) << "|"
-                    << integration_data(channel, baseline, 2) << "|"
-                    << integration_data(channel, baseline, 3) << "|" << std::endl;
+                    std::cout << "data before (" << channel << "," << baseline << ") : |"
+                    << integration_data(0, baseline, channel) << "|"
+                    << integration_data(1, baseline, channel) << "|"
+                    << integration_data(2, baseline, channel) << "|"
+                    << integration_data(3, baseline, channel) << "|" << std::endl;
                 }
 #endif
-                for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
+                for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
-                    integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
+                    //integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
+                    integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
 #ifndef NDEBUG
@@ -213,10 +229,10 @@ namespace cpu
                 }
 #endif
                 bool hasNaN = false;
-                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
-                for(int i = 0; i < polarizations.dimension(0); ++i)
+                const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
+                for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    hasNaN |= polarizations(i).real() == NAN || polarizations(i).imag() == NAN;
+                    hasNaN |= isnan(polarizations(polarization).real()) || isnan(polarizations(polarization).imag());
                 }
 
                 if(!hasNaN)
@@ -237,9 +253,9 @@ namespace cpu
                         << metadata.avg_data(baseline, 3) << "|" << std::endl;
                     }
 #endif
-                    for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
+                    for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
-                        metadata.avg_data(baseline, polarization) += integration_data(channel, baseline, polarization);
+                        metadata.avg_data(baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
 #ifndef NDEBUG
                     if(baseline == 0)

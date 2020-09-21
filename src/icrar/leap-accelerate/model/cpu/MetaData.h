@@ -129,6 +129,7 @@ namespace cpu
         MetaData(icrar::MeasurementSet& ms);
 
         MetaData(const casalib::MetaData& metadata);
+        [[deprecated]]
         MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
 
