@@ -88,7 +88,7 @@ namespace casalib
                 metadata.GetBaselines(),
                 metadata.num_pols);
 
-#if NDEBUG
+#ifndef NDEBUG
             assert(metadata.GetChannels() == queue.front().data.dimension(0)); //metadata.channels
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.GetPolarizations() == queue.front().data.dimension(2)); //metadata.polarizations
@@ -126,7 +126,7 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-#if NDEBUG
+#ifndef NDEBUG
                 std::cout << "rotate visibilities" << std::endl;
                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
                 std::cout << "direction:" << direction.get() << std::endl;
@@ -199,7 +199,7 @@ namespace casalib
 
         metadata.CalcUVW(uvw);
 
-#if NDEBUG
+#ifndef NDEBUG
         std::cout << "DD:" << metadata.dd.get() << std::endl;
         //std::cout << "uvw:" << uvw << std::endl;
         //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
@@ -231,7 +231,7 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-#if NDEBUG
+#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
@@ -258,7 +258,7 @@ namespace casalib
 
                 if(!hasNaN)
                 {
-#if NDEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -278,7 +278,7 @@ namespace casalib
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
-#if NDEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "after : |"
@@ -291,7 +291,7 @@ namespace casalib
                 }
             }
         }
-#if NDEBUG
+#ifndef NDEBUG
         std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
 #endif
     }

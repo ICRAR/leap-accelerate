@@ -35,7 +35,9 @@
 #include <array>
 #include <complex>
 
-namespace icrar::casalib
+namespace icrar
+{
+namespace casalib
 {
     class IntegrationResult
     {
@@ -84,5 +86,5 @@ namespace icrar::casalib
         std::vector<std::queue<IntegrationResult>>,
         std::vector<std::queue<CalibrationResult>>
     >;
-
+}
 }
