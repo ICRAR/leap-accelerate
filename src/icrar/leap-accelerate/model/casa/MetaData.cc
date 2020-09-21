@@ -170,8 +170,10 @@ namespace casalib
         }
 
         auto& dd3d = dd.value();
-        dlm_ra = direction(0) - phase_centre_ra_rad;
-        dlm_dec = direction(1) - phase_centre_dec_rad;
+
+        //NOTE: using polar direction
+        dlm_ra = direction.get()[0] - phase_centre_ra_rad;
+        dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 
         dd3d(0,0) = std::cos(dlm_ra) * std::cos(dlm_dec);
         dd3d(0,1) = -std::sin(dlm_ra);
@@ -184,6 +186,8 @@ namespace casalib
         dd3d(2,0) = -std::sin(dlm_dec);
         dd3d(2,1) = 0;
         dd3d(2,2) = std::cos(dlm_dec);
+
+        std::cout << "dd:" << dd3d << std::endl;
     }
 
     void MetaData::SetDD(const icrar::MVDirection& direction)

@@ -59,7 +59,7 @@ namespace icrar::casalib
          */
         Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
 
-        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[npol][nbl][nch]
 
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;

@@ -123,7 +123,7 @@ namespace icrar
         std::uint32_t nBaselines,
         std::uint32_t nPolarizations) const
     {
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nChannels, nBaselines, nPolarizations);
+        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
         icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
         return visibilities;
     }

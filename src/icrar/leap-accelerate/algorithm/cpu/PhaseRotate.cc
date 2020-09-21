@@ -64,8 +64,6 @@ namespace cpu
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
-        auto uvw = ToUVWVector(ms.GetCoords());
-        
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
@@ -90,7 +88,7 @@ namespace cpu
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto metadata = icrar::cpu::MetaData(ms, directions[i], uvw);
+            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>()); //UVW per integration
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
@@ -184,7 +182,7 @@ namespace cpu
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
                 if(baseline == 1)
                 {
                     std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -197,14 +195,14 @@ namespace cpu
                     << integration_data(channel, baseline, 2) << "|"
                     << integration_data(channel, baseline, 3) << "|" << std::endl;
                 }
-#endif
+//#endif
                 for(int polarization = 0; polarization < integration_data.dimension(2); ++polarization)
                 {
                     integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                     integration_data(channel, baseline, polarization) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
                 if(baseline == 1)
                 {
                     std::cout << "data after : |"
@@ -213,7 +211,7 @@ namespace cpu
                     << integration_data(channel, baseline, 2) << "|"
                     << integration_data(channel, baseline, 3) << "|" << std::endl;
                 }
-#endif
+//#endif
                 bool hasNaN = false;
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 0).chip(baseline, 0);
                 for(int i = 0; i < polarizations.dimension(0); ++i)

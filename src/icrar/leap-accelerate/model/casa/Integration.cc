@@ -36,7 +36,7 @@ namespace icrar::casalib
     , baselines(baselines)
     {
         data = ms.GetVis(index, 0, channels, baselines, polarizations);
-        uvw = ToCasaUVWVector(ms.GetCoords());
+        uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
