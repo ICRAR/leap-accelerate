@@ -92,8 +92,7 @@ namespace cuda
         for(int i = 0; i < directions.size(); ++i)
         {
             input_queues.push_back(std::vector<cuda::DeviceIntegration>());
-
-            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory data could be reused
+            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory could be reused?
             
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
@@ -144,6 +143,9 @@ namespace cuda
         deviceMetadata.ToHost(hostMetadata);
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+
+        std::cout << avg_data_angles << std::endl;
+
         auto& indexes = hostMetadata.GetI1();
 
         auto cal1 = hostMetadata.GetAd1() * avg_data_angles(indexes, 0); // 1st pol only
@@ -227,7 +229,7 @@ namespace cuda
                 for(int polarization = 0; polarization < polarizations; polarization++)
                 {
                     auto n = integration_data(channel, baseline, polarization);
-                    hasNaN |= n.x == NAN || n.y == NAN;
+                    hasNaN |= isnan(n.x) || isnan(n.y);
                 }
 
                 if(!hasNaN)

@@ -88,7 +88,7 @@ namespace cpu
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>()); //UVW per integration
+            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>()); //TODO: UVW per integration
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
@@ -154,9 +154,9 @@ namespace cpu
 #endif
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
-        assert(integration.GetUVW().size() == integration.baselines);
-        assert(metadata.GetUVW() == integration.baselines);
-        assert(integration_data.dimension(0) == metadata.GetConstants().channels);
+        assert(integration.GetUVW().size() == metadata.GetConstants().nbaselines);
+        assert(metadata.GetUVW().size() == metadata.GetConstants().nbaselines);
+        assert(integration_data.dimension(2) == metadata.GetConstants().channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.GetOldUVW().size() == integration.baselines);
         assert(metadata.avg_data.rows() == integration.baselines);

@@ -114,7 +114,7 @@ namespace cpu
         void CreateJsonStrFormat(Writer& writer) const
         {
             assert(m_data.size() == 1);
-            assert(m_data[0].rows() == 1);
+            assert(m_data[0].shape()[1] == 1);
 
             writer.StartObject();
             writer.String("direction");
@@ -142,7 +142,7 @@ namespace cpu
         std::vector<std::vector<cpu::CalibrationResult>>
     >;
 
-    cpu::CalibrateResult ToCalibrateResult(casalib::CalibrateResult& result);
+    icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
 
     void PrintResult(const CalibrateResult& result);
 }

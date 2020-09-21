@@ -40,7 +40,9 @@
 #include <complex>
 
 
-namespace icrar::casalib
+namespace icrar
+{
+namespace casalib
 {
     class MeasurementSet;
 
@@ -78,4 +80,5 @@ namespace icrar::casalib
 
         bool operator==(const Integration& rhs) const;
     };
+}
 }
