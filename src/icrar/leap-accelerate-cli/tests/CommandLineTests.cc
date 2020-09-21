@@ -67,6 +67,7 @@ namespace icrar
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
             command += " -f " + m_srcDir + "testdata/1197638568-32.ms";
+            command += " -s 126";
             command += " -d [[1.0,0.0]]";
 
             std::cout << command << std::endl;
@@ -77,6 +78,7 @@ namespace icrar
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
             command += " -f " + m_srcDir + "testdata/1197638568-32.ms";
+            command += " -s 126";
             command += " -i casa";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"
@@ -98,6 +100,7 @@ namespace icrar
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
             command += " -f " + m_srcDir + "testdata/1197638568-32.ms";
+            command += " -s 126";
             command += " -i eigen";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"

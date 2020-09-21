@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/cuda/cuda_info.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -69,6 +70,11 @@ namespace cuda
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+        if(GetCudaDeviceCount() == 0)
+        {
+            throw std::runtime_error("Could not find CUDA device");
+        }
+
         auto metadata = icrar::casalib::MetaData(ms);
 
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();

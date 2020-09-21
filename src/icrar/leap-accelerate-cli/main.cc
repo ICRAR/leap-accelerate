@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 #include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
@@ -225,9 +226,9 @@ int main(int argc, char** argv)
         }
         case ComputeImplementation::cuda:
         {
-            THROW_NOT_IMPLEMENTED();
-            //icrar::cuda::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
-            //break;
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::PrintResult(result);
+            break;
         }
         }
         return 0;

@@ -214,7 +214,6 @@ namespace cpu
 #endif
                 for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    //integration_data(channel, baseline, polarization) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                     integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));
                 }
 
