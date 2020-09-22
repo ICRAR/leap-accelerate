@@ -88,7 +88,7 @@ namespace casalib
                 metadata.GetBaselines(),
                 metadata.num_pols);
 
-#if NDEBUG
+#ifndef NDEBUG
             assert(metadata.GetChannels() == queue.front().data.dimension(0)); //metadata.channels
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.GetPolarizations() == queue.front().data.dimension(2)); //metadata.polarizations
