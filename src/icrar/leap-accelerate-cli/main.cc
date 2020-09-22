@@ -60,7 +60,7 @@ namespace icrar
         boost::optional<std::string> filePath = boost::none; // Measurement set filepath
         boost::optional<std::string> configFilePath = boost::none; // Config filepath
 
-        boost::optional<int> stations = boost::none;
+        boost::optional<int> stations;
         boost::optional<std::string> directions = boost::none;
         boost::optional<std::string> implementation = std::string("casa");
 
