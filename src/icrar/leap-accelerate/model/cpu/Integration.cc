@@ -55,7 +55,7 @@ namespace cpu
     , baselines(baselines)
     {
         m_data = ms.GetVis(index, 0, channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords());
+        m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const

@@ -69,13 +69,12 @@ namespace cpu
             auto queue = std::vector<cpu::Integration>();
             unsigned int startRow = 0;
             unsigned int integrationNumber = 0;
-            while(startRow < ms.GetNumRows())
+            while((startRow + ms.GetNumBaselines()) < ms.GetNumRows())
             {
-                unsigned int numRows = std::min(ms.GetNumBaselines(), (int)ms.GetNumRows() - startRow);
                 queue.push_back(Integration(
                     integrationNumber++,
                     ms,
-                    numRows,
+                    startRow,
                     ms.GetNumChannels(),
                     ms.GetNumBaselines(),
                     ms.GetNumPols()));
@@ -109,10 +108,23 @@ namespace cpu
             output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
 
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        auto& indexes = metadata.GetI1();
+#ifndef NDEBUG
+        std::cout << "output avg_data[0,0]:" << metadata.avg_data(0,0) << std::endl;
+#endif
 
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        
+#ifndef NDEBUG
+                std::cout << "avg_data_angles[0,0]:" << avg_data_angles(0,0) << std::endl;
+                std::cout << "Ad1(0,0)" << metadata.GetAd1()(0,0) << std::endl;
+#endif
+        auto& indexes = metadata.GetI1();
         auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
+
+#ifndef NDEBUG
+                std::cout << "avg_data_t" << avg_data_t << std::endl; //Only last value incorrect
+#endif
+
         auto cal1 = metadata.GetAd1() * avg_data_t;
         assert(cal1.cols() == 1);
 
@@ -122,8 +134,11 @@ namespace cpu
         
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            Eigen::MatrixXd cumsum = metadata.GetA().data()[n] * cal1;
+            Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
             double sum = cumsum.sum();
+#ifndef NDEBUG
+                    std::cout << "cumsum " << n << ": " << sum << std::endl; //Only last value incorrect
+#endif
             dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
 
@@ -221,12 +236,13 @@ namespace cpu
                 if(baseline == 1)
                 {
                     std::cout << "data after : |"
-                    << integration_data(channel, baseline, 0) << "|"
-                    << integration_data(channel, baseline, 1) << "|"
-                    << integration_data(channel, baseline, 2) << "|"
-                    << integration_data(channel, baseline, 3) << "|" << std::endl;
+                    << integration_data(0, baseline, channel) << "|"
+                    << integration_data(1, baseline, channel) << "|"
+                    << integration_data(2, baseline, channel) << "|"
+                    << integration_data(3, baseline, channel) << "|" << std::endl;
                 }
 #endif
+
                 bool hasNaN = false;
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
@@ -237,14 +253,14 @@ namespace cpu
                 if(!hasNaN)
                 {
 #ifndef NDEBUG
-                    if(baseline == 0)
+                    if(baseline == 1)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
                         std::cout << "data : |"
-                        << integration_data(channel, baseline, 0) << "|"
-                        << integration_data(channel, baseline, 1) << "|"
-                        << integration_data(channel, baseline, 2) << "|"
-                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                        << integration_data(0, baseline, channel) << "|"
+                        << integration_data(1, baseline, channel) << "|"
+                        << integration_data(2, baseline, channel) << "|"
+                        << integration_data(3, baseline, channel) << "|" << std::endl;
                         std::cout << "before : |"
                         << metadata.avg_data(baseline, 0) << "|"
                         << metadata.avg_data(baseline, 1) << "|"
@@ -257,7 +273,7 @@ namespace cpu
                         metadata.avg_data(baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
 #ifndef NDEBUG
-                    if(baseline == 0)
+                    if(baseline == 1)
                     {
                         std::cout << "after : |"
                         << metadata.avg_data(baseline, 0) << "|"

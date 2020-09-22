@@ -140,8 +140,6 @@ namespace cpu
         {
             UVW.push_back(uvws[n] * dd);
         }
-
-        avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
     }
 
     // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)

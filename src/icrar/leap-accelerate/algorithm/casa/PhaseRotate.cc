@@ -144,9 +144,9 @@ namespace casalib
             }
             else
             {
-#ifndef NDEBUG
+//#ifndef NDEBUG
                 std::cout << "output avg_data[0,0]:" << metadata.avg_data.get()(0,0) << std::endl;
-#endif
+//#endif
 
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
@@ -285,21 +285,21 @@ namespace casalib
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-
 #ifndef NDEBUG
-                    if(baseline == 1)
-                    {
-                        std::cout << "=== channel : " << channel << " === "<< std::endl;
-                        std::cout << "shiftFactor: " << shiftFactor << std::endl;
-                        std::cout << "wavelength: " << metadata.channel_wavelength[channel] << std::endl;
-                        std::cout << "shiftRad: " << shiftRad << std::endl;
-                        std::cout << "data before (" << channel << "," << baseline << ") : |"
-                        << integration_data(0, baseline, channel) << "|"
-                        << integration_data(1, baseline, channel) << "|"
-                        << integration_data(2, baseline, channel) << "|"
-                        << integration_data(3, baseline, channel) << "|" << std::endl;
-                    }
+                if(baseline == 1)
+                {
+                    std::cout << "=== channel : " << channel << " === "<< std::endl;
+                    std::cout << "shiftFactor: " << shiftFactor << std::endl;
+                    std::cout << "wavelength: " << metadata.channel_wavelength[channel] << std::endl;
+                    std::cout << "shiftRad: " << shiftRad << std::endl;
+                    std::cout << "data before (" << channel << "," << baseline << ") : |"
+                    << integration_data(0, baseline, channel) << "|"
+                    << integration_data(1, baseline, channel) << "|"
+                    << integration_data(2, baseline, channel) << "|"
+                    << integration_data(3, baseline, channel) << "|" << std::endl;
+                }
 #endif
+
                 for(int polarization = 0; polarization < metadata.num_pols; polarization++)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
