@@ -73,7 +73,7 @@ namespace cpu
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
+        const std::vector<MVDirection>& directions,
         int solutionInterval = 3600);
 
     /**
@@ -85,7 +85,7 @@ namespace cpu
      */
     void PhaseRotate(
         MetaData& metadata,
-        const icrar::MVDirection& directions,
+        const MVDirection& directions,
         std::vector<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);

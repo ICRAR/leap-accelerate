@@ -26,7 +26,9 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-namespace icrar::cpu
+namespace icrar
+{
+namespace cpu
 {
     Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
@@ -53,4 +55,5 @@ namespace icrar::cpu
     {
         return m_uvw;
     }
+}
 }

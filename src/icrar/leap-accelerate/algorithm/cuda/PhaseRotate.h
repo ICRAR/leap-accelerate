@@ -69,8 +69,8 @@ namespace cuda
      * 
      */
     cpu::CalibrateResult Calibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
+        const MeasurementSet& ms,
+        const std::vector<MVDirection>& directions,
         int solutionInterval = 3600);
 
     /**
@@ -79,7 +79,7 @@ namespace cuda
     void PhaseRotate(
         cpu::MetaData& hostMetadata,
         DeviceMetaData& deviceMetadata,
-        const icrar::MVDirection& direction,
+        const MVDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
         std::queue<cpu::IntegrationResult>& output_integrations,
         std::queue<cpu::CalibrationResult>& output_calibrations);

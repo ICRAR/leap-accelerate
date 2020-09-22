@@ -149,7 +149,6 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 auto pair = icrar::casalib::Calibrate(*ms, directions, 3600);
-                std::cout << "converting..." << std::endl;
                 std::tie(integrations, calibrations) = ToCalibrateResult(pair);
             }
             else if(impl == ComputeImplementation::eigen)

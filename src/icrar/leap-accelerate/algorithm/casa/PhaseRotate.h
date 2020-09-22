@@ -51,7 +51,9 @@ namespace icrar
     }
 }
 
-namespace icrar::casalib
+namespace icrar
+{
+namespace casalib
 {
     struct MetaData;
 
@@ -105,4 +107,5 @@ namespace icrar::casalib
         const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
         bool map=false);
+}
 }
