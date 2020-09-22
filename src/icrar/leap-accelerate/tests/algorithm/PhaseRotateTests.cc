@@ -58,7 +58,6 @@ namespace icrar
     class PhaseRotateTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
-        //std::unique_ptr<icrar::MeasurementSet> ms2;
 
     protected:
 
@@ -75,9 +74,6 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
-
-            //std::string filename2 = std::string(TEST_DATA_DIR) + "/1197638568-split.ms";
-            //ms2 = std::make_unique<icrar::MeasurementSet>(filename2, 126);
         }
 
         void TearDown() override
@@ -522,201 +518,7 @@ namespace icrar
 
         Eigen::MatrixXd GetExpectedA()
         {
-            Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(4754, 128);
-            expected(0, 0) = 1;
-            expected(1, 0) = 1;
-            expected(2, 0) = 1;
-            expected(3, 0) = 1;
-            expected(4, 0) = 1;
-            expected(5, 0) = 1;
-            expected(6, 0) = 1;
-            expected(7, 0) = 1;
-            expected(8, 0) = 1;
-            expected(9, 0) = 1;
-            expected(10, 0) = 1;
-            expected(11, 0) = 1;
-            expected(12, 0) = 1;
-            expected(13, 0) = 1;
-            expected(14, 0) = 1;
-            expected(15, 0) = 1;
-            expected(16, 0) = 1;
-            expected(17, 0) = 1;
-            expected(18, 0) = 1;
-            expected(19, 0) = 1;
-            expected(20, 0) = 1;
-            expected(21, 0) = 1;
-            expected(22, 0) = 1;
-            expected(23, 0) = 1;
-            expected(24, 0) = 1;
-            expected(25, 0) = 1;
-            expected(26, 0) = 1;
-            expected(27, 0) = 1;
-            expected(28, 0) = 1;
-            expected(29, 0) = 1;
-            expected(30, 0) = 1;
-            expected(31, 0) = 1;
-            expected(32, 0) = 1;
-            expected(33, 0) = 1;
-            expected(34, 0) = 1;
-            expected(35, 0) = 1;
-            expected(36, 0) = 1;
-            expected(37, 0) = 1;
-            expected(38, 0) = 1;
-            expected(39, 0) = 1;
-            expected(40, 0) = 1;
-            expected(41, 0) = 1;
-            expected(42, 0) = 1;
-            expected(43, 0) = 1;
-            expected(44, 0) = 1;
-            expected(45, 0) = 1;
-            expected(46, 0) = 1;
-            expected(47, 0) = 1;
-            expected(48, 0) = 1;
-            expected(49, 0) = 1;
-            expected(50, 0) = 1;
-            expected(51, 0) = 1;
-            expected(52, 0) = 1;
-            expected(53, 0) = 1;
-            expected(54, 0) = 1;
-            expected(55, 0) = 1;
-            expected(56, 0) = 1;
-            expected(57, 0) = 1;
-            expected(58, 0) = 1;
-            expected(59, 0) = 1;
-            expected(60, 0) = 1;
-            expected(61, 0) = 1;
-            expected(62, 0) = 1;
-            expected(63, 0) = 1;
-            expected(64, 0) = 1;
-            expected(65, 0) = 1;
-            expected(66, 0) = 1;
-            expected(67, 0) = 1;
-            expected(68, 0) = 1;
-            expected(69, 0) = 1;
-            expected(70, 0) = 1;
-            expected(71, 0) = 1;
-            expected(72, 0) = 1;
-            expected(73, 0) = 1;
-            expected(74, 0) = 1;
-            expected(75, 0) = 1;
-            expected(76, 0) = 1;
-            expected(77, 0) = 1;
-            expected(78, 0) = 1;
-            expected(79, 0) = 1;
-            expected(80, 0) = 1;
-            expected(81, 0) = 1;
-            expected(82, 0) = 1;
-            expected(83, 0) = 1;
-            expected(84, 0) = 1;
-            expected(85, 0) = 1;
-            expected(86, 0) = 1;
-            expected(87, 0) = 1;
-            expected(88, 0) = 1;
-            expected(89, 0) = 1;
-            expected(90, 0) = 1;
-            expected(91, 0) = 1;
-            expected(92, 0) = 1;
-            expected(93, 0) = 1;
-            expected(94, 0) = 1;
-            expected(95, 0) = 1;
-            expected(96, 0) = 1;
-            expected(0, 1) = -1;
-            expected(1, 4) = -1;
-            expected(2, 5) = -1;
-            expected(3, 6) = -1;
-            expected(4, 7) = -1;
-            expected(5, 8) = -1;
-            expected(6, 12) = -1;
-            expected(7, 13) = -1;
-            expected(8, 14) = -1;
-            expected(9, 16) = -1;
-            expected(10, 17) = -1;
-            expected(11, 20) = -1;
-            expected(12, 21) = -1;
-            expected(13, 22) = -1;
-            expected(14, 23) = -1;
-            expected(15, 24) = -1;
-            expected(16, 25) = -1;
-            expected(17, 27) = -1;
-            expected(18, 28) = -1;
-            expected(19, 29) = -1;
-            expected(20, 31) = -1;
-            expected(21, 32) = -1;
-            expected(22, 33) = -1;
-            expected(23, 35) = -1;
-            expected(24, 36) = -1;
-            expected(25, 37) = -1;
-            expected(26, 40) = -1;
-            expected(27, 41) = -1;
-            expected(28, 42) = -1;
-            expected(29, 43) = -1;
-            expected(30, 44) = -1;
-            expected(31, 45) = -1;
-            expected(32, 46) = -1;
-            expected(33, 47) = -1;
-            expected(34, 48) = -1;
-            expected(35, 50) = -1;
-            expected(36, 52) = -1;
-            expected(37, 53) = -1;
-            expected(38, 54) = -1;
-            expected(39, 55) = -1;
-            expected(40, 56) = -1;
-            expected(41, 57) = -1;
-            expected(42, 58) = -1;
-            expected(43, 59) = -1;
-            expected(44, 65) = -1;
-            expected(45, 66) = -1;
-            expected(46, 67) = -1;
-            expected(47, 68) = -1;
-            expected(48, 69) = -1;
-            expected(49, 72) = -1;
-            expected(50, 73) = -1;
-            expected(51, 74) = -1;
-            expected(52, 75) = -1;
-            expected(53, 76) = -1;
-            expected(54, 77) = -1;
-            expected(55, 78) = -1;
-            expected(56, 79) = -1;
-            expected(57, 81) = -1;
-            expected(58, 82) = -1;
-            expected(59, 83) = -1;
-            expected(60, 84) = -1;
-            expected(61, 85) = -1;
-            expected(62, 86) = -1;
-            expected(63, 88) = -1;
-            expected(64, 89) = -1;
-            expected(65, 90) = -1;
-            expected(66, 92) = -1;
-            expected(67, 96) = -1;
-            expected(68, 97) = -1;
-            expected(69, 98) = -1;
-            expected(70, 99) = -1;
-            expected(71, 100) = -1;
-            expected(72, 101) = -1;
-            expected(73, 102) = -1;
-            expected(74, 103) = -1;
-            expected(75, 104) = -1;
-            expected(76, 105) = -1;
-            expected(77, 106) = -1;
-            expected(78, 107) = -1;
-            expected(79, 108) = -1;
-            expected(80, 109) = -1;
-            expected(81, 110) = -1;
-            expected(82, 112) = -1;
-            expected(83, 113) = -1;
-            expected(84, 114) = -1;
-            expected(85, 116) = -1;
-            expected(86, 117) = -1;
-            expected(87, 118) = -1;
-            expected(88, 119) = -1;
-            expected(89, 120) = -1;
-            expected(90, 121) = -1;
-            expected(91, 122) = -1;
-            expected(92, 123) = -1;
-            expected(93, 124) = -1;
-            expected(94, 125) = -1;
-            expected(95, 126) = -1;
-            expected(96, 127) = -1;
+            Eigen::MatrixXd expected = Eigen::MatrixXd::Zero(4754, 128); //TODO: emergent, validate with LEAP-Cal
             return expected;
         }
 
@@ -990,7 +792,7 @@ namespace icrar
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
                 std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1, map);
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
+                std::tie(A1, I1) = cpu::Pcd .haseMatrixFunction(ea1, ea2, 0, map);
 
             }
             if(impl == ComputeImplementation::cuda)
@@ -1011,11 +813,11 @@ namespace icrar
             ASSERT_EQ(128, A1.cols());
             ASSERT_EQ(98, I1.size());
 
-            //TODO update
+            //TODO: print out to comma seperated row major form
             //ASSERT_MEQ(GetExpectedA(), A, 0.001);
             //ASSERT_VEQI(GetExpectedI(), I, 0.001);
             //ASSERT_MEQ(GetExpectedA1(), A1, 0.001);
-            //ASSERT_VEQI(GetExpectedI1(), I1, 0.001);
+            //ASSERT_VEQI(GetExpectedI1(), I1, 0.001);clearclea
         }
     };
 
