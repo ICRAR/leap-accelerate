@@ -23,7 +23,7 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -133,23 +133,12 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-        casacore::Matrix<double> A1;
-        casacore::Vector<std::int32_t> I1;
-        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
-        casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
 
-        casacore::Matrix<double> A;
-        casacore::Vector<std::int32_t> I;
-        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
-
-        m_A = ToMatrix(A);
-        m_I = ToMatrix<int>(I);
-        m_Ad = ToMatrix(Ad);
-
-        m_A1 = ToMatrix(A1);
-        m_I1 = ToMatrix<int>(I1);
-        m_Ad1 = ToMatrix(Ad1);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
+        
+        m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        m_Ad = icrar::cpu::PseudoInverse(m_A);
 
         SetDD(direction);
         CalcUVW(uvws);

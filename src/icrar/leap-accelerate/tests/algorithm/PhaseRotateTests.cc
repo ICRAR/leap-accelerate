@@ -151,9 +151,7 @@ namespace icrar
         {
             using namespace std::complex_literals;
             const double THRESHOLD = 0.01;
-
-            auto metadata = casalib::MetaData(*ms);
-            metadata.stations = 126;
+            
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
             //auto eigenuvw = ToUVWVector(ms->GetCoords(index, baselines));
@@ -166,32 +164,52 @@ namespace icrar
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
             {
+                auto metadata = casalib::MetaData(*ms);
                 auto integration = casalib::Integration(
                     0,
                     *ms,
                     0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols);
-
+                    ms->GetNumChannels(),
+                    ms->GetNumBaselines(),
+                    ms->GetNumPols());
+#ifdef PROFILING
+                auto startTime = std::chrono::high_resolution_clock::now();
+#endif
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
+#ifdef PROFILING
+                auto endTime = std::chrono::high_resolution_clock::now();
+#endif
                 integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
+
+#ifdef PROFILING
+                std::cout << "casa time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+#endif
             }
             if(impl == ComputeImplementation::eigen)
             {
+                
                 auto integration = cpu::Integration(
                     0,
                     *ms,
                     0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols);
+                    ms->GetNumChannels(),
+                    ms->GetNumBaselines(),
+                    ms->GetNumPols());
 
                 auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+#ifdef PROFILING
+                auto startTime = std::chrono::high_resolution_clock::now();
+#endif
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
+#ifdef PROFILING
+                auto endTime = std::chrono::high_resolution_clock::now(); //remove the polar conversion?
+#endif
                 integrationOptionalOutput = integration;
                 metadataOptionalOutput = metadatahost;
+#ifdef PROFILING
+                std::cout << "eigen time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+#endif          
             }
             if(impl == ComputeImplementation::cuda)
             {
@@ -199,9 +217,9 @@ namespace icrar
                     0,
                     *ms,
                     0,
-                    metadata.channels,
-                    metadata.GetBaselines(),
-                    metadata.num_pols);
+                    ms->GetNumChannels(),
+                    ms->GetNumBaselines(),
+                    ms->GetNumPols());
 
                 auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
@@ -220,7 +238,7 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = icrar::casalib::Integration(0, *ms, 0, metadata.channels, metadata.GetBaselines(), metadata.num_pols);
+            auto expectedIntegration = icrar::casalib::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
 
             auto expectedConstants = icrar::cpu::Constants();

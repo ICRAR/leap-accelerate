@@ -179,8 +179,6 @@ namespace casalib
         auto& uvw = integration.uvw;
         auto parameters = integration.parameters;
 
-        std::cout << std::setprecision(15);
-
         if(!metadata.dd.is_initialized())
         {
             metadata.SetDD(direction);
