@@ -203,7 +203,7 @@ namespace icrar
                     metadata.GetBaselines(),
                     metadata.num_pols);
 
-                auto metadatahost = icrar::cpu::MetaData(metadata, ToDirection(direction), integration.GetUVW());
+                auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
@@ -229,7 +229,7 @@ namespace icrar
             expectedConstants.channels = 48;
             expectedConstants.num_pols = 4;
             expectedConstants.stations = 126;
-            expectedConstants.rows = 1;
+            expectedConstants.rows = 63089;
             expectedConstants.solution_interval = 3601;
             expectedConstants.freq_start_hz = 1.39195e+08;
             expectedConstants.freq_inc_hz = 640000;

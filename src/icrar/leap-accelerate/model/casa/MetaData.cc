@@ -64,7 +64,7 @@ namespace casalib
         this->nantennas = 0;
         this->solution_interval = 3601;
 
-        this->rows = pms->polarization().nrow();
+        this->rows = msmc->uvw().nrow(); // pms->polarization().nrow();
         this->num_pols = 0;
         if(pms->polarization().nrow() > 0)
         {

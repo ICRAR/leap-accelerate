@@ -23,6 +23,8 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -47,16 +49,16 @@ namespace cpu
         m_constants.dlm_ra = metadata.dlm_ra;
         m_constants.dlm_dec = metadata.dlm_dec;
 
-        oldUVW = ToUVWVector(metadata.oldUVW);
-        //UVW = ToUVW(metadata.uvw);
+        m_oldUVW = ToUVWVector(metadata.oldUVW);
+        //m_UVW = ToUVW(metadata.uvw);
 
-        A = ToMatrix(metadata.A);
-        I = ToMatrix<int>(metadata.I);
-        Ad = ToMatrix(metadata.Ad);
+        m_A = ToMatrix(metadata.A);
+        m_I = ToMatrix<int>(metadata.I);
+        m_Ad = ToMatrix(metadata.Ad);
 
-        A1 = ToMatrix(metadata.A1);
-        I1 = ToMatrix<int>(metadata.I1);
-        Ad1 = ToMatrix(metadata.Ad1);
+        m_A1 = ToMatrix(metadata.A1);
+        m_I1 = ToMatrix<int>(metadata.I1);
+        m_Ad1 = ToMatrix(metadata.Ad1);
 
         if(metadata.dd.is_initialized())
         {
@@ -77,44 +79,80 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
     {
-        m_constants.nantennas = metadata.nantennas;
-        m_constants.nbaselines = metadata.GetBaselines();
-        m_constants.channels = metadata.channels;
-        m_constants.num_pols = metadata.num_pols;
-        m_constants.stations = metadata.stations;
-        m_constants.rows = metadata.rows;
-        m_constants.solution_interval = metadata.solution_interval;
-        m_constants.freq_start_hz = metadata.freq_start_hz;
-        m_constants.freq_inc_hz = metadata.freq_inc_hz;
-        m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
-        m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
-        m_constants.dlm_ra = metadata.dlm_ra;
-        m_constants.dlm_dec = metadata.dlm_dec;
+        auto pms = ms.GetMS();
+        auto msc = ms.GetMSColumns();
+        auto msmc = ms.GetMSMainColumns();
 
-        A = ToMatrix(metadata.A);
-        I = ToMatrix<int>(metadata.I);
-        Ad = ToMatrix(metadata.Ad);
+        m_constants.nantennas = 0;
+        m_constants.nbaselines = ms.GetNumBaselines();
 
-        A1 = ToMatrix(metadata.A1);
-        I1 = ToMatrix<int>(metadata.I1);
-        Ad1 = ToMatrix(metadata.Ad1);
+        m_constants.channels = 0;
+        m_constants.freq_start_hz = 0;
+        m_constants.freq_inc_hz = 0;
+        if(pms->spectralWindow().nrow() > 0)
+        {
+            m_constants.channels = msc->spectralWindow().numChan().get(0);
+            m_constants.freq_start_hz = msc->spectralWindow().refFrequency().get(0);
+            m_constants.freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(casacore::IPosition(1,0));
+        }
+
+        m_constants.rows = ms.GetNumRows();
+        m_constants.num_pols = ms.GetNumPols();
+        m_constants.stations = ms.GetNumStations();
+
+        m_constants.solution_interval = 3601;
+
+        m_constants.phase_centre_ra_rad = 0;
+        m_constants.phase_centre_dec_rad = 0;
+        if(pms->field().nrow() > 0)
+        {
+            casacore::Vector<casacore::MDirection> dir;
+            msc->field().phaseDirMeasCol().get(0, dir, true);
+            if(dir.size() > 0)
+            {
+                //auto& v = dir(0).getAngle().getValue();
+                casacore::Vector<double> v = dir(0).getAngle().getValue();
+                m_constants.phase_centre_ra_rad = v(0);
+                m_constants.phase_centre_dec_rad = v(1);
+            }
+        }
+        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+
+
+        //select the first epoch only
+        casacore::Vector<double> time = msmc->time().getColumn();
+        double epoch = time[0];
+        int nEpochs = 0;
+        for(int i = 0; i < time.size(); i++)
+        {
+            if(time[i] == time[0]) nEpochs++;
+        }
+        auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+
+        casacore::Matrix<double> A1;
+        casacore::Vector<std::int32_t> I1;
+        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
+        casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
+
+        casacore::Matrix<double> A;
+        casacore::Vector<std::int32_t> I;
+        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
+        casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
+
+        m_A = ToMatrix(A);
+        m_I = ToMatrix<int>(I);
+        m_Ad = ToMatrix(Ad);
+
+        m_A1 = ToMatrix(A1);
+        m_I1 = ToMatrix<int>(I1);
+        m_Ad1 = ToMatrix(Ad1);
 
         SetDD(direction);
         CalcUVW(uvws);
-        assert(UVW.size() == uvws.size());
-
-        if(metadata.avg_data.is_initialized())
-        {
-            avg_data = ToMatrix(metadata.avg_data.value());
-        }
-    }
-
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
-    : MetaData(casalib::MetaData(ms), direction, uvws)
-    {
-        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
     }
 
     const Constants& MetaData::GetConstants() const
@@ -122,23 +160,23 @@ namespace cpu
         return m_constants;
     }
 
-    const Eigen::MatrixXd& MetaData::GetA() const { return A; }
-    const Eigen::VectorXi& MetaData::GetI() const { return I; }
-    const Eigen::MatrixXd& MetaData::GetAd() const { return Ad; }
+    const Eigen::MatrixXd& MetaData::GetA() const { return m_A; }
+    const Eigen::VectorXi& MetaData::GetI() const { return m_I; }
+    const Eigen::MatrixXd& MetaData::GetAd() const { return m_Ad; }
 
-    const Eigen::MatrixXd& MetaData::GetA1() const { return A1; }
-    const Eigen::VectorXi& MetaData::GetI1() const { return I1; }
-    const Eigen::MatrixXd& MetaData::GetAd1() const { return Ad1; }
+    const Eigen::MatrixXd& MetaData::GetA1() const { return m_A1; }
+    const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
+    const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
     void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
     {
-        this->oldUVW = uvws;
+        m_oldUVW = uvws;
         auto size = uvws.size();
-        this->UVW.clear();
-        this->UVW.reserve(uvws.size());
+        m_UVW.clear();
+        m_UVW.reserve(uvws.size());
         for(int n = 0; n < size; n++)
         {
-            UVW.push_back(uvws[n] * dd);
+            m_UVW.push_back(uvws[n] * dd);
         }
     }
 
@@ -180,14 +218,14 @@ namespace cpu
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants
-        && oldUVW == rhs.oldUVW
-        && UVW == rhs.UVW
-        && A == rhs.A
-        && I == rhs.I
-        && Ad == rhs.Ad
-        && A1 == rhs.A1
-        && I1 == rhs.I1
-        && Ad1 == rhs.Ad1
+        && m_oldUVW == rhs.m_oldUVW
+        && m_UVW == rhs.m_UVW
+        && m_A == rhs.m_A
+        && m_I == rhs.m_I
+        && m_Ad == rhs.m_Ad
+        && m_A1 == rhs.m_A1
+        && m_I1 == rhs.m_I1
+        && m_Ad1 == rhs.m_Ad1
         && dd == rhs.dd
         && avg_data == rhs.avg_data;
     }

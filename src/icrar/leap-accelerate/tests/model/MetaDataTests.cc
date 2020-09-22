@@ -88,7 +88,7 @@ namespace icrar
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(128, meta.stations);
             ASSERT_EQ(8256, meta.GetBaselines());
-            ASSERT_EQ(1, meta.rows);
+            ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
             ASSERT_EQ(3601, meta.solution_interval);
@@ -121,7 +121,7 @@ namespace icrar
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(126, meta.stations);
             ASSERT_EQ(8001, meta.GetBaselines());
-            ASSERT_EQ(1, meta.rows);
+            ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
             ASSERT_EQ(3601, meta.solution_interval);
@@ -161,7 +161,7 @@ namespace icrar
             ASSERT_EQ(48, casaMetadata.channel_wavelength.size());
             EXPECT_DOUBLE_EQ(2.1537588131757608, casaMetadata.channel_wavelength[0]);
             
-            auto cpuMetadata = icrar::cpu::MetaData(casaMetadata, icrar::MVDirection(), std::vector<icrar::MVuvw>());
+            auto cpuMetadata = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
             EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
         }
 
@@ -176,7 +176,7 @@ namespace icrar
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cpu::MetaData(meta, ToDirection(direction), ToUVWVector(uvw));
+            auto expectedMetadataHost = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
             auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
 
             // copy from device back to host

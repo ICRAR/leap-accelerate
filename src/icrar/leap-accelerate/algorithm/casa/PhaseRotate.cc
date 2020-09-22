@@ -94,12 +94,6 @@ namespace casalib
                     metadata.num_pols);
                 startRow += metadata.GetBaselines();
             }
-
-#ifndef NDEBUG
-            assert(metadata.num_pols == queue.front().data.dimension(0)); //metadata.polarizations
-            assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
-            assert(metadata.channels == queue.front().data.dimension(2)); //metadata.channels
-#endif
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());
@@ -134,51 +128,28 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-#ifndef NDEBUG
-                std::cout << "rotate visibilities" << std::endl;
-                std::cout << "integration_number:" << integration.get().integration_number << std::endl;
-                std::cout << "direction:" << direction.get() << std::endl;
-#endif
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
             else
             {
-//#ifndef NDEBUG
-                std::cout << "output avg_data[0,0]:" << metadata.avg_data.get()(0,0) << std::endl;
-//#endif
-
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
-                {
-                    return std::arg(c);
-                };
-
                 if(!metadata.avg_data.is_initialized())
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
+                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+                {
+                    return std::arg(c);
+                };
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
-#ifndef NDEBUG
-                std::cout << "avg_angle[0,0]:" << avg_data(0,0) << std::endl;
-                std::cout << "Ad1(0,0)" << metadata.Ad1(0,0) << std::endl;
-#endif
-
                 auto indexes = ToVector(metadata.I1);
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
 
-#ifndef NDEBUG
-                std::cout << "avg_data_t" << avg_data_t << std::endl; //Only last value incorrect
-#endif
 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
-                assert(cal1.shape()[0] == metadata.channels);
-                assert(cal1.shape()[1] == 1);
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
 
-#ifndef NDEBUG
-                std::cout <<"cal1: " << cal1 << std::endl; //TODO: Ad1 is different
-#endif
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
@@ -188,20 +159,10 @@ namespace casalib
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
-                    casacore::Matrix<double> cumsum = metadata.A.row(n) * cal1.column(0);
-#ifndef NDEBUG
-                    std::cout << "cumsum " << n << ": " << casacore::sum(cumsum) << std::endl; //Only last value incorrect
-#endif
-                    dInt.row(n) = avg_data_slice.row(n) - casacore::sum(cumsum); 
+                    dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
                 }
-#ifndef NDEBUG
-                std::cout << "dInt: " << dInt << std::endl;
-#endif
+
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
-#ifndef NDEBUG
-                std::cout << "dIntColumn: " << dIntColumn << std::endl;
-                std::cout << "product: " << icrar::casalib::multiply(metadata.Ad, dIntColumn) << std::endl;
-#endif
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
@@ -229,18 +190,7 @@ namespace casalib
             metadata.avg_data.get() = 0;
             metadata.m_initialized = true;
         }
-
-
         metadata.CalcUVW(uvw);
-
-#ifndef NDEBUG
-        std::cout << "====" << integration.integration_number << "====" << std::endl;
-        std::cout << "DD:" << metadata.dd.get() << std::endl;
-        //std::cout << "uvw:" << uvw << std::endl;
-        //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
-        std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
-        std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
-#endif
 
         assert(uvw.size() == integration.baselines);
         assert(integration_data.dimension(0) == metadata.num_pols);
@@ -270,51 +220,15 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-#ifndef NDEBUG
-            if(baseline == 1)
-            {
-                std::cout << "uvw[0]: " << uvw[0] << std::endl;
-                std::cout << "uvw[1]: " << uvw[1] << std::endl;
-                std::cout << "oldUvw[0]: " << metadata.oldUVW[0] << std::endl;
-                std::cout << "oldUvw[1]: " << metadata.oldUVW[1] << std::endl;
-                std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
-            }
-#endif
-
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
-#ifndef NDEBUG
-                if(baseline == 1)
-                {
-                    std::cout << "=== channel : " << channel << " === "<< std::endl;
-                    std::cout << "shiftFactor: " << shiftFactor << std::endl;
-                    std::cout << "wavelength: " << metadata.channel_wavelength[channel] << std::endl;
-                    std::cout << "shiftRad: " << shiftRad << std::endl;
-                    std::cout << "data before (" << channel << "," << baseline << ") : |"
-                    << integration_data(0, baseline, channel) << "|"
-                    << integration_data(1, baseline, channel) << "|"
-                    << integration_data(2, baseline, channel) << "|"
-                    << integration_data(3, baseline, channel) << "|" << std::endl;
-                }
-#endif
 
                 for(int polarization = 0; polarization < metadata.num_pols; polarization++)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
-
-#ifndef NDEBUG
-                    if(baseline == 1)
-                    {
-                        std::cout << "data after (" << channel << "," << baseline << ") : |"
-                        << integration_data(0, baseline, channel) << "|"
-                        << integration_data(1, baseline, channel) << "|"
-                        << integration_data(2, baseline, channel) << "|"
-                        << integration_data(3, baseline, channel) << "|" << std::endl;
-                    }
-#endif
 
                 bool hasNaN = false;
 
@@ -326,43 +240,13 @@ namespace casalib
 
                 if(!hasNaN)
                 {
-#ifndef NDEBUG
-                    if(baseline == 1)
-                    {
-                        std::cout << "=== channel : " << channel << " === "<< std::endl;
-                        std::cout << "shiftrad: " << shiftRad << std::endl;
-                        std::cout << "data : |"
-                        << integration_data(0, baseline, channel) << "|"
-                        << integration_data(1, baseline, channel) << "|"
-                        << integration_data(2, baseline, channel) << "|"
-                        << integration_data(3, baseline, channel) << "|" << std::endl;
-                        std::cout << "avg before : |"
-                        << metadata.avg_data.get()(baseline, 0) << "|"
-                        << metadata.avg_data.get()(baseline, 1) << "|"
-                        << metadata.avg_data.get()(baseline, 2) << "|"
-                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
-                    }
-#endif
                     for(int polarization = 0; polarization < metadata.num_pols; polarization++)
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
-#ifndef NDEBUG
-                    if(baseline == 1)
-                    {
-                        std::cout << "avg after : |"
-                        << metadata.avg_data.get()(baseline, 0) << "|"
-                        << metadata.avg_data.get()(baseline, 1) << "|"
-                        << metadata.avg_data.get()(baseline, 2) << "|"
-                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
-                    }
-#endif
                 }
             }
         }
-#ifndef NDEBUG
-        std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
-#endif
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(

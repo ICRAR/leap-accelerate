@@ -87,7 +87,14 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumChannels() const
     {
-        return m_msc->spectralWindow().numChan().get(0);
+        if(m_msc->spectralWindow().nrow() > 0)
+        {
+            return m_msc->spectralWindow().numChan().get(0);
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
