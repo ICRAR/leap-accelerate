@@ -27,10 +27,14 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
-#include <icrar/leap-accelerate/model/MetaData.h>
-#include <icrar/leap-accelerate/model/Integration.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
+
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
+
+#include <icrar/leap-accelerate/common/stream_extensions.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -66,18 +70,12 @@ namespace casalib
     // leap_remote_calibration
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        MetaData& metadata,
         const std::vector<casacore::MVDirection>& directions,
-        boost::optional<int> overrideStations,
         int solutionInterval)
     {
+        auto metadata = casalib::MetaData(ms);
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
-        
-        if(overrideStations.is_initialized())
-        {
-            metadata.stations = overrideStations.get();
-        }
         auto input_queues = std::vector<std::queue<Integration>>();
         
         for(int i = 0; i < directions.size(); ++i)
@@ -88,9 +86,13 @@ namespace casalib
                 i,
                 metadata.channels,
                 metadata.GetBaselines(),
-                metadata.num_pols,
-                metadata.GetBaselines());
+                metadata.num_pols);
 
+#ifndef NDEBUG
+            assert(metadata.channels == queue.front().data.dimension(0)); //metadata.channels
+            assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
+            assert(metadata.num_pols == queue.front().data.dimension(2)); //metadata.polarizations
+#endif
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());
@@ -124,6 +126,11 @@ namespace casalib
 
             if(integration.is_initialized())
             {
+#if NDEBUG
+                std::cout << "rotate visibilities" << std::endl;
+                std::cout << "integration_number:" << integration.get().integration_number << std::endl;
+                std::cout << "direction:" << direction.get() << std::endl;
+#endif
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
             }
@@ -169,7 +176,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(icrar::CalibrationResult(direction, cal));
+        output_calibrations.push(icrar::casalib::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
@@ -193,6 +200,14 @@ namespace casalib
 
         metadata.CalcUVW(uvw);
 
+#if NDEBUG
+        std::cout << "DD:" << metadata.dd.get() << std::endl;
+        //std::cout << "uvw:" << uvw << std::endl;
+        //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
+        std::cout << "phase_centre_ra_rad:" << metadata.phase_centre_ra_rad << std::endl;
+        std::cout << "phase_centre_dec_rad:" << metadata.phase_centre_dec_rad << std::endl;
+#endif
+
         assert(uvw.size() == integration.baselines);
 
         assert(integration_data.dimension(0) == metadata.channels);
@@ -206,15 +221,24 @@ namespace casalib
         {
             // For baseline
             const double pi = boost::math::constants::pi<double>();
-            double shiftFactor = -2 * pi * uvw[baseline].get()[2] - metadata.oldUVW[baseline].get()[2]; // check these are correct
+            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+            shiftFactor = shiftFactor + 2 * pi *
+            (
+                metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
+                - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
+            );
+            shiftFactor = shiftFactor - 2 * pi *
+            (
+                direction.get()[0] * uvw[baseline](0)
+                - direction.get()[1] * uvw[baseline](1)
+            );
 
-            shiftFactor = shiftFactor + 2 * pi * (metadata.phase_centre_ra_rad * metadata.oldUVW[baseline].get()[0]);
-            shiftFactor = shiftFactor - 2 * pi * (direction.get()[0] * uvw[baseline].get()[0] - direction.get()[1] * uvw[baseline].get()[1]);
-
+#if NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
             }
+#endif
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
@@ -236,13 +260,42 @@ namespace casalib
 
                 if(!hasNaN)
                 {
+#if NDEBUG
+                    if(baseline == 0)
+                    {
+                        std::cout << "=== channel : " << channel << " === "<< std::endl;
+                        std::cout << "data : |"
+                        << integration_data(channel, baseline, 0) << "|"
+                        << integration_data(channel, baseline, 1) << "|"
+                        << integration_data(channel, baseline, 2) << "|"
+                        << integration_data(channel, baseline, 3) << "|" << std::endl;
+                        std::cout << "before : |"
+                        << metadata.avg_data.get()(baseline, 0) << "|"
+                        << metadata.avg_data.get()(baseline, 1) << "|"
+                        << metadata.avg_data.get()(baseline, 2) << "|"
+                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
+                    }
+#endif
                     for(int polarization = 0; polarization < integration_data.dimension(2); polarization++)
                     {
-                        metadata.avg_data.get()(casacore::IPosition(2, baseline, polarization)) += integration_data(channel, baseline, polarization);
+                        metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
+#if NDEBUG
+                    if(baseline == 0)
+                    {
+                        std::cout << "after : |"
+                        << metadata.avg_data.get()(baseline, 0) << "|"
+                        << metadata.avg_data.get()(baseline, 1) << "|"
+                        << metadata.avg_data.get()(baseline, 2) << "|"
+                        << metadata.avg_data.get()(baseline, 3) << "|" << std::endl;
+                    }
+#endif
                 }
             }
         }
+#if NDEBUG
+        std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
+#endif
     }
 
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(

@@ -23,14 +23,19 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
+#include <icrar/leap-accelerate/common/MVuvw.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <unsupported/Eigen/CXX11/Tensor>
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Dense>
+#include <eigen3/unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -41,17 +46,19 @@
 
 namespace icrar
 {
+namespace cpu
+{
     class MeasurementSet;
 
     class Integration
     {
     public:
         //Integration();
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws);
+        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
 
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        std::vector<icrar::MVuvw> uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d 
         int integration_number;
 
         union
@@ -71,13 +78,13 @@ namespace icrar
 
     class IntegrationResult
     {
-        casacore::MVDirection m_direction;
+        icrar::MVDirection m_direction;
         int m_integration_number;
         boost::optional<std::vector<casacore::Array<double>>> m_data;
 
     public:
         IntegrationResult(
-            casacore::MVDirection direction,
+            icrar::MVDirection direction,
             int integration_number,
             boost::optional<std::vector<casacore::Array<double>>> data)
             : m_direction(direction)
@@ -90,21 +97,22 @@ namespace icrar
 
     class CalibrationResult
     {
-        casacore::MVDirection m_direction;
+        icrar::MVDirection m_direction;
         std::vector<casacore::Matrix<double>> m_data;
 
     public:
         CalibrationResult(
-            const casacore::MVDirection& direction,
+            const icrar::MVDirection& direction,
             const std::vector<casacore::Matrix<double>>& data)
             : m_direction(direction)
             , m_data(data)
         {
         }
 
-        const casacore::MVDirection GetDirection() const { return m_direction; }
+        const icrar::MVDirection GetDirection() const { return m_direction; }
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
         //bool operator==(const CalibrationResult& rhs) const;
     };
+}
 }

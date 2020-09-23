@@ -18,6 +18,10 @@ set_target_properties(${TARGET_NAME}
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+if (BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
+
 install (
   TARGETS
     ${TARGET_NAME}

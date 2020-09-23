@@ -26,7 +26,7 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/MetaData.h>
+#include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -48,16 +48,23 @@
 #include <vector>
 #include <complex>
 
-#include <cuComplex.h>
-
 namespace icrar
 {
 namespace cuda
 {
+    class DeviceMetaData;
+}
+}
+
+namespace icrar
+{
+namespace cpu
+{
     struct Constants
     {
         int nantennas;
-        //int nbaselines;
+        int nbaselines; //the total number station pairs (excluding self cycles) 
+
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
@@ -67,7 +74,6 @@ namespace cuda
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
-        std::vector<double> channel_wavelength;
 
         union
         {
@@ -89,23 +95,20 @@ namespace cuda
             };
         };
 
-        __device__ __host__ double GetChannelWavelength(int i)
+        __device__ __host__ double GetChannelWavelength(int i) const
         {
             return speed_of_light / (freq_inc_hz + i * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;
-
-
     };
 
     class MetaData
     {
         MetaData() {}
 
-    public:
         Constants m_constants;
-
+        
         Eigen::MatrixXd A;
         Eigen::VectorXi I;
         Eigen::MatrixXd Ad;
@@ -114,62 +117,46 @@ namespace cuda
         Eigen::VectorXi I1;
         Eigen::MatrixXd Ad1;
 
-        std::vector<icrar::MVuvw> oldUVW;
-        std::vector<icrar::MVuvw> UVW;
+    public:
+        std::vector<icrar::MVuvw> oldUVW; // late initialized
+        std::vector<icrar::MVuvw> UVW; // late initialized
 
-        icrar::MVDirection direction;
-        Eigen::Matrix3d dd;
-        Eigen::MatrixXcd avg_data;
+        icrar::MVDirection direction; // late initialized
+        Eigen::Matrix3d dd; // late initialized
+        Eigen::MatrixXcd avg_data; // late initialized
 
         MetaData(const casalib::MetaData& metadata);
-        MetaData(const casalib::MetaData& metadata, const casacore::MVDirection& direction, const std::vector<casacore::MVuvw>& uvws);
+        MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         
-        MetaData(
-            const Constants& constants,
-            const double* A, int ARows, int ACols,
-            const int* I, int ILength,
-            const double* Ad, int AdRows, int AdCols,
-            const double* A1, int A1Rows, int A1Cols,
-            Eigen::Matrix3d& dd,
-            const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
-        {
-            
-        }
+        MetaData(icrar::MeasurementSet& ms);
+        // MetaData(
+        //     const Constants& constants,
+        //     const double* A, int ARows, int ACols,
+        //     const int* I, int ILength,
+        //     const double* Ad, int AdRows, int AdCols,
+        //     const double* A1, int A1Rows, int A1Cols,
+        //     Eigen::Matrix3d& dd,
+        //     const std::complex<double>* avg_data, int avg_dataRows, int avg_dataCols)
+        // {
+        //     // TODO
+        // }
 
         const Constants& GetConstants() const;
 
+        const Eigen::MatrixXd& GetA() const;
+        const Eigen::VectorXi& GetI() const;
+        const Eigen::MatrixXd& GetAd() const;
+
+        const Eigen::MatrixXd& GetA1() const;
+        const Eigen::VectorXi& GetI1() const;
+        const Eigen::MatrixXd& GetAd1() const;
+
         void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
-        void SetDD(const casacore::MVDirection& direction);
-        void SetWv();
+        void SetDD(const icrar::MVDirection& direction);
 
         bool operator==(const MetaData& rhs) const;
+
+        friend class icrar::cuda::DeviceMetaData;
     };
-
-    class DeviceMetaData
-    {
-        DeviceMetaData();
-    public:
-        Constants constants;
-        icrar::cuda::device_matrix<double> A;
-        icrar::cuda::device_vector<int> I;
-        icrar::cuda::device_matrix<double> Ad;
-        
-        icrar::cuda::device_matrix<double> A1;
-        icrar::cuda::device_vector<int> I1;
-        icrar::cuda::device_matrix<double> Ad1;
-
-        icrar::cuda::device_vector<icrar::MVuvw> oldUVW;
-        icrar::cuda::device_vector<icrar::MVuvw> UVW;
-
-        icrar::MVDirection direction;
-        Eigen::Matrix3d dd;
-        icrar::cuda::device_matrix<std::complex<double>> avg_data;
-
-        DeviceMetaData(const MetaData& metadata);
-
-        void ToHost(MetaData& host) const;
-        MetaData ToHost() const;
-        void ToHostAsync(MetaData& host) const;
-    };
-}
+    }
 }

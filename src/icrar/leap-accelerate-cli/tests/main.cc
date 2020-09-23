@@ -1,4 +1,4 @@
-/**
+ /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
  * Copyright by UWA(in the framework of the ICRAR)
@@ -20,11 +20,10 @@
  * MA 02111 - 1307  USA
  */
 
-#include "utils.h"
+#include <gtest/gtest.h>
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-
-namespace icrar
+int main(int argc, char **argv)
 {
-
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
@@ -88,7 +88,7 @@ void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& 
 //void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 //void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
-void assert_metadataeq(const icrar::cuda::MetaData& expected, const icrar::cuda::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
+void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
 
 #define ASSERT_EQCD(expected, actual, tolerance) assert_eqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 

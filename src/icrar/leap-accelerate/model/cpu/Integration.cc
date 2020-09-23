@@ -28,7 +28,9 @@
 
 namespace icrar
 {
-    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations, int uvws)
+namespace cpu
+{
+    Integration::Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
     , index(0)
     , x(0)
@@ -36,7 +38,7 @@ namespace icrar
     , baselines(baselines)
     {
         data = ms.GetVis(channels, baselines, polarizations);
-        uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
+        uvw = ToUVWVector(ms.GetCoords(index, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const
@@ -48,4 +50,5 @@ namespace icrar
         && uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }
+}
 }

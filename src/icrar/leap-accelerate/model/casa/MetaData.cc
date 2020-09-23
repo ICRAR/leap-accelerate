@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
+#include <icrar/leap-accelerate/common/MVDirection.h>
+
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
@@ -78,7 +80,7 @@ namespace casalib
             this->freq_start_hz = msc->spectralWindow().refFrequency().get(0);
             this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
-        this->stations = pms->antenna().nrow();
+        this->stations = ms.GetNumStations();
         if(pms->nrow() > 0)
         {
             auto time_inc_sec = msc->interval().get(0);
@@ -158,7 +160,7 @@ namespace casalib
     }
 
     // TODO: rename to CalcDD or UpdateDD
-    void MetaData::SetDD(const MVDirection& direction)
+    void MetaData::SetDD(const casacore::MVDirection& direction)
     {
         if(!dd.is_initialized())
         {
@@ -182,6 +184,11 @@ namespace casalib
         dd3d(2,2) = std::cos(dlm_dec);
     }
 
+    void MetaData::SetDD(const icrar::MVDirection& direction)
+    {
+        SetDD(ConvertDirection(direction));
+    }
+
     /**
      * @brief Set the wavelength from meta data
      * TODO: rename to CalcWv or UpdateWv
@@ -194,7 +201,7 @@ namespace casalib
             freq_start_hz,
             freq_start_hz + freq_inc_hz * channels,
             freq_inc_hz);
-        
+       
         for(double& v : channel_wavelength)
         {
             v = speed_of_light / v;

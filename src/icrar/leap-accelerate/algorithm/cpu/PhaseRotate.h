@@ -24,7 +24,10 @@
 
 #include <casacore/ms/MeasurementSets.h>
 
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <Eigen/Core>
+
+#include <boost/optional.hpp>
 
 #include <string>
 #include <memory>
@@ -41,13 +44,13 @@ namespace casacore
 
 namespace icrar
 {
-    class Integration;
-    class IntegrationResult;
-    class CalibrationResult;
-    
-    namespace cuda
+    class MeasurementSet;
+
+    namespace cpu
     {
-        struct MetaData;
+        class Integration;
+        class IntegrationResult;
+        class CalibrationResult;
     }
 }
 
@@ -55,15 +58,21 @@ namespace icrar
 {
 namespace cpu
 {
+    class MetaData;
+    
+    using CalibrateResult = std::pair<
+        std::vector<std::queue<IntegrationResult>>,
+        std::vector<std::queue<CalibrationResult>>
+    >;
+
     /**
      * @brief 
      * 
-     * @param metadata 
-     * @param directions 
      */
-    void RemoteCalibration(
-        cuda::MetaData& metadata,
-        const Eigen::Matrix<casacore::MVDirection, Eigen::Dynamic, 1>& directions);
+    CalibrateResult Calibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval = 3600);
 
     /**
      * @brief 
@@ -73,9 +82,9 @@ namespace cpu
      * @param input 
      */
     void PhaseRotate(
-        cuda::MetaData& metadata,
-        const casacore::MVDirection& directions,
-        std::queue<Integration>& input,
+        MetaData& metadata,
+        const icrar::MVDirection& directions,
+        std::vector<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);
 
@@ -87,7 +96,7 @@ namespace cpu
      */
     void RotateVisibilities(
         Integration& integration,
-        cuda::MetaData& metadata);
+        MetaData& metadata);
 
     /**
      * @brief Form Phase Matrix

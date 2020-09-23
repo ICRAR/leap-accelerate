@@ -27,8 +27,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math.h>
 
-#include <icrar/leap-accelerate/model/Integration.h>
-#include <icrar/leap-accelerate/model/cuda/MetaDataCuda.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
@@ -63,12 +63,12 @@ namespace icrar
 {
 namespace cuda
 { 
-    std::queue<IntegrationResult> PhaseRotate(
+    std::queue<cpu::IntegrationResult> PhaseRotate(
         DeviceMetaData& metadata,
         const casacore::MVDirection& direction,
-        std::queue<Integration>& input,
-        std::queue<IntegrationResult>& output_integrations,
-        std::queue<CalibrationResult>& output_calibrations)
+        std::queue<cpu::Integration>& input,
+        std::queue<cpu::IntegrationResult>& output_integrations,
+        std::queue<cpu::CalibrationResult>& output_calibrations)
     {
         throw std::runtime_error("not implemented"); //TODO
     }
@@ -95,7 +95,7 @@ namespace cuda
         int integration_channels,
         int integration_baselines,
         int polarizations,
-        Constants constants,
+        icrar::cpu::Constants constants,
         Eigen::Matrix3d dd,
         double2 direction,
         double3* uvw, int uvwLength,
@@ -153,16 +153,16 @@ namespace cuda
         DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
-        assert(metadata.constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
+        assert(metadata.GetConstants().channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
         assert(integration.baselines == integration.data.GetDimensionSize(1));
-        assert(metadata.constants.num_pols == integration.data.GetDimensionSize(2));
+        assert(metadata.GetConstants().num_pols == integration.data.GetDimensionSize(2));
 
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // unpack metadata
         g_RotateVisibilities<<<1,1,1>>>(
             (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
-            integration.channels, integration.baselines, metadata.constants.num_pols,
-            metadata.constants,
+            integration.channels, integration.baselines, metadata.GetConstants().num_pols,
+            metadata.GetConstants(),
             metadata.dd,
             make_double2(metadata.direction(0), metadata.direction(1)),
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
