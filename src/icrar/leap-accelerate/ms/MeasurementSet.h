@@ -56,9 +56,9 @@ namespace icrar
         int m_stations;
 
     public:
-        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations = (boost::optional<int>)boost::none);
-        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations = (boost::optional<int>)boost::none);
-        MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations = (boost::optional<int>)boost::none);
+        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations);
+        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations);
+        MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         /**
          * @brief Gets a non-null pointer to a casacore::MeasurementSet
