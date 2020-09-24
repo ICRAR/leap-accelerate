@@ -131,7 +131,8 @@ namespace cuda
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.push(cpu::IntegrationResult(
                 direction,
-                integration.integration_number));
+                integration.integration_number,
+                boost::none));
         }
         deviceMetadata.ToHost(hostMetadata);
         
