@@ -139,7 +139,6 @@ namespace cpu
 
         metadata.CalcUVW(integration.GetUVW());
         const auto polar_direction = icrar::to_polar(metadata.direction);
-        std::cout << "direction:" << polar_direction << std::endl;
         
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)

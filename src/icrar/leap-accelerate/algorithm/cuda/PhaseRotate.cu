@@ -247,8 +247,6 @@ namespace cuda
         int integration_channels,
         int integration_baselines,
         int polarizations,
-        double phase_centre_ra_rad,
-        double phase_centre_dec_rad,
         icrar::cpu::Constants constants,
         Eigen::Matrix3d dd,
         double2 direction,
@@ -331,18 +329,13 @@ namespace cuda
             (int)ceil((float)constants.nbaselines / blockSize.x),
             (int)ceil((float)constants.channels / blockSize.y),
             1
-        ); 
+        );
 
-        //TODO: simplify
+        //TODO: simplify polar
         const auto polar_direction = icrar::to_polar(metadata.direction);
-        std::cout << "direction:" << polar_direction << std::endl;
-        std::cout << "ra" << metadata.GetConstants().phase_centre_ra_rad << std::endl;
-        std::cout << "dec" << metadata.GetConstants().phase_centre_dec_rad << std::endl;
         g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
             integration.channels, integration.baselines, constants.num_pols,
-            constants.phase_centre_ra_rad,
-            constants.phase_centre_dec_rad,
             constants,
             metadata.dd,
             make_double2(polar_direction(0), polar_direction(1)),
