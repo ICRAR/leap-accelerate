@@ -132,7 +132,7 @@ namespace cuda
             output_integrations.push(cpu::IntegrationResult(
                 direction,
                 integration.integration_number,
-                boost::none));
+                boost::optional<std::vector<casacore::Vector<double>>>()));
         }
         deviceMetadata.ToHost(hostMetadata);
         
