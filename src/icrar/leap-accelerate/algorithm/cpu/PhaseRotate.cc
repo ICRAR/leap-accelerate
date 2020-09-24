@@ -143,20 +143,21 @@ namespace cpu
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            constexpr double pi = boost::math::constants::pi<double>();
+            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -2 * pi * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
-            shiftFactor += 2 * pi *
+            shiftFactor +=
             (
                 metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
                 - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
             );
-            shiftFactor -= 2 * pi *
+            shiftFactor -=
             (
                 polar_direction(0) * metadata.GetUVW()[baseline](0)
                 - polar_direction(1) * metadata.GetUVW()[baseline](1)
             );
+            shiftFactor *= two_pi;
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)

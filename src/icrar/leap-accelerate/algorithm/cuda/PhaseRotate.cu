@@ -242,6 +242,10 @@ namespace cuda
         }
     }
 
+    /**
+     * @brief Rotates visibilities in parallel for baselines and channels
+     * @note Atomic operator required for writing to @param pavg_data
+     */
     __global__ void g_RotateVisibilitiesBC(
         cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         int integration_channels,
@@ -267,18 +271,19 @@ namespace cuda
             auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
     
             // loop over baselines
-            const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * (uvw[baseline].z - oldUVW[baseline].z);
-            shiftFactor += + 2 * pi *
+            const double two_pi = 2 * CUDART_PI;
+            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
+            shiftFactor +=
             (
                constants.phase_centre_ra_rad * oldUVW[baseline].x
                - constants.phase_centre_dec_rad * oldUVW[baseline].y
             );
-            shiftFactor = shiftFactor - 2 * pi *
+            shiftFactor -=
             (
                 direction.x * uvw[baseline].x
                 - direction.y * uvw[baseline].y
             );
+            shiftFactor *= two_pi;
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
@@ -290,7 +295,7 @@ namespace cuda
                  integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
             }
 
-             bool hasNaN = false;
+            bool hasNaN = false;
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
                 auto n = integration_data(polarization, baseline, channel);

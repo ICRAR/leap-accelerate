@@ -202,21 +202,23 @@ namespace casalib
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            const double pi = boost::math::constants::pi<double>();
+            const double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+            double shiftFactor = -(uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
 
-            shiftFactor = shiftFactor + 2 * pi *
+            shiftFactor +=
             (
                 metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
                 - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
             );
-            shiftFactor = shiftFactor - 2 * pi *
+            shiftFactor -=
             (
                 //NOTE: polar direction
                 direction.get()[0] * uvw[baseline](0)
                 - direction.get()[1] * uvw[baseline](1)
             );
+            shiftFactor *= two_pi;
+
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
