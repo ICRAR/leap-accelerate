@@ -101,9 +101,10 @@ namespace cuda
         Eigen::Matrix3d dd;
         icrar::cuda::device_matrix<std::complex<double>> avg_data;
 
+    public:
         DeviceMetaData(const icrar::cpu::MetaData& metadata);
 
-        const icrar::cpu::Constants& GetConstants() { return constants; }
+        const icrar::cpu::Constants& GetConstants();
 
         void ToHost(icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;

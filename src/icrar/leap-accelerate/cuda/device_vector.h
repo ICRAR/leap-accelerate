@@ -32,7 +32,10 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <boost/noncopyable.hpp>
+
 #include <vector>
+#include <iostream>
 
 namespace icrar
 {
@@ -46,7 +49,7 @@ namespace cuda
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
     template<typename T>
-    class device_vector
+    class device_vector : boost::noncopyable
     {
         size_t m_count;
         T* m_buffer = nullptr;

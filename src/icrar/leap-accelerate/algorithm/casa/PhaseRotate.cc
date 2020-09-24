@@ -126,7 +126,7 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-#if NDEBUG
+#ifndef NDEBUG
                 std::cout << "rotate visibilities" << std::endl;
                 std::cout << "integration_number:" << integration.get().integration_number << std::endl;
                 std::cout << "direction:" << direction.get() << std::endl;
@@ -154,13 +154,12 @@ namespace casalib
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t);
                 assert(cal1.shape()[1] == 1);
 
+                // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
                 dInt = 0;
-
                 Eigen::VectorXi e_i = ToVector(metadata.I);
                 Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                
                 for(int n = 0; n < metadata.I.size(); ++n)
                 {
                     casacore::Matrix<double> cumsum = metadata.A.data()[n] * cal1;
@@ -200,7 +199,7 @@ namespace casalib
 
         metadata.CalcUVW(uvw);
 
-#if NDEBUG
+#ifndef NDEBUG
         std::cout << "DD:" << metadata.dd.get() << std::endl;
         //std::cout << "uvw:" << uvw << std::endl;
         //std::cout << "oldUvw:" << metadata.oldUVW << std::endl;
@@ -209,7 +208,6 @@ namespace casalib
 #endif
 
         assert(uvw.size() == integration.baselines);
-
         assert(integration_data.dimension(0) == metadata.channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(integration_data.dimension(2) == metadata.num_pols);
@@ -233,7 +231,7 @@ namespace casalib
                 - direction.get()[1] * uvw[baseline](1)
             );
 
-#if NDEBUG
+#ifndef NDEBUG
             if(baseline % 1000 == 1)
             {
                 std::cout << "ShiftFactor for baseline " << baseline << " is " << shiftFactor << std::endl;
@@ -260,7 +258,7 @@ namespace casalib
 
                 if(!hasNaN)
                 {
-#if NDEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "=== channel : " << channel << " === "<< std::endl;
@@ -280,7 +278,7 @@ namespace casalib
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(channel, baseline, polarization);
                     }
-#if NDEBUG
+#ifndef NDEBUG
                     if(baseline == 0)
                     {
                         std::cout << "after : |"
@@ -293,7 +291,7 @@ namespace casalib
                 }
             }
         }
-#if NDEBUG
+#ifndef NDEBUG
         std::cout << "metadata.avg_data.get()(0, 0) : " << metadata.avg_data.get()(0, 0) << std::endl;
 #endif
     }

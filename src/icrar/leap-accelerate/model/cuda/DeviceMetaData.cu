@@ -43,7 +43,12 @@ namespace cuda
     , I1(metadata.GetI1())
     , Ad1(metadata.GetAd1())
     {
+        std::cout << "device matrix done" << std::endl;
+    }
 
+    const icrar::cpu::Constants& DeviceMetaData::GetConstants()
+    {
+        return constants;
     }
 
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const

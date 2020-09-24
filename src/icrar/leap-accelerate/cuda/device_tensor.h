@@ -110,7 +110,7 @@ namespace cuda
             if(dim == 0) return m_sizeDim0;
             if(dim == 1) return m_sizeDim1;
             if(dim == 2) return m_sizeDim2;
-            return -1; //TODO: not a great interface
+            return 0; //TODO: not a great interface
         }
 
         __host__ __device__ size_t GetCount() const

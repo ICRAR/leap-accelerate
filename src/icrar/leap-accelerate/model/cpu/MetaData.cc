@@ -30,23 +30,6 @@ namespace icrar
 {
 namespace cpu
 {
-    bool Constants::operator==(const Constants& rhs) const
-    {
-        return nantennas == rhs.nantennas
-        && nbaselines == rhs.nbaselines
-        && channels == rhs.channels
-        && num_pols == rhs.num_pols
-        && stations == rhs.stations
-        && rows == rhs.rows
-        && solution_interval == rhs.solution_interval
-        && freq_start_hz == rhs.freq_start_hz
-        && freq_inc_hz == rhs.freq_inc_hz
-        && phase_centre_ra_rad == rhs.phase_centre_ra_rad
-        && phase_centre_dec_rad == rhs.phase_centre_dec_rad
-        && dlm_ra == rhs.dlm_ra
-        && dlm_dec == rhs.dlm_dec;
-    }
-
     MetaData::MetaData(const casalib::MetaData& metadata)
     {
         m_constants.nantennas = metadata.nantennas;
@@ -64,7 +47,7 @@ namespace cpu
         m_constants.dlm_dec = metadata.dlm_dec;
 
         oldUVW = ToUVWVector(metadata.oldUVW);
-        // UVW = ToUVW(metadata.uvw);
+        //UVW = ToUVW(metadata.uvw);
 
         A = ToMatrix(metadata.A);
         I = ToMatrix<int>(metadata.I);
@@ -200,6 +183,23 @@ namespace cpu
         && Ad1 == rhs.Ad1
         && dd == rhs.dd
         && avg_data == rhs.avg_data;
+    }
+
+    bool Constants::operator==(const Constants& rhs) const
+    {
+        return nantennas == rhs.nantennas
+        && nbaselines == rhs.nbaselines
+        && channels == rhs.channels
+        && num_pols == rhs.num_pols
+        && stations == rhs.stations
+        && rows == rhs.rows
+        && solution_interval == rhs.solution_interval
+        && freq_start_hz == rhs.freq_start_hz
+        && freq_inc_hz == rhs.freq_inc_hz
+        && phase_centre_ra_rad == rhs.phase_centre_ra_rad
+        && phase_centre_dec_rad == rhs.phase_centre_dec_rad
+        && dlm_ra == rhs.dlm_ra
+        && dlm_dec == rhs.dlm_dec;
     }
 }
 }

@@ -25,19 +25,15 @@
 # MA 02111-1307  USA
 #
 
-fail() {
-	echo $1 1>&2
-	exit 1
-}
+# Eigen 3.3.90
+git clone https://gitlab.com/libeigen/eigen.git
+cd eigen
+git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d
+mkdir build && cd build
+cmake ../ && sudo make install
+cd ../../
+export EIGEN3_DIR=/usr/local/include/
 
-cd ${TRAVIS_BUILD_DIR}
-mkdir build
-cd build
-
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_CXX_COMPILER=$COMPILER"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME}"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
-CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG} -O1"
-cmake .. ${CMAKE_OPTIONS} || fail "cmake failed"
-make all -j2 || fail "make failed"
-cd ..
+# Test Data
+wget "https://cloudstor.aarnet.edu.au/plus/s/NJRXKpU30ax77uO/download" -O ./testdata/1197638568-split.tar.gz
+tar -C ./testdata/ -xvf ./testdata/1197638568-split.tar.gz

@@ -52,7 +52,7 @@ namespace icrar
         std::istream_iterator<char> it(std::cin);
         std::istream_iterator<char> end;
         std::string results = std::string(it, end);
-
+        
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
     }
 

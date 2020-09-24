@@ -25,15 +25,9 @@
 # MA 02111-1307  USA
 #
 
-# Eigen 3.3.90
-git clone https://gitlab.com/libeigen/eigen.git
-cd eigen
-git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d
-mkdir build && cd build
-cmake ../ && sudo make install
-cd ../../
-export EIGEN3_DIR=/usr/local/include/
+bash .travis/before_install.sh
 
+# Kernsuite Casacore
 sudo apt-get install software-properties-common
 sudo add-apt-repository -y -s ppa:kernsuite/kern-3
 sudo apt-add-repository -y multiverse
