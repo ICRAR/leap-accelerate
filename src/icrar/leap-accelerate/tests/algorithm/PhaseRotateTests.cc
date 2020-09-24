@@ -74,6 +74,7 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+            std::cout << std::setprecision(15);
         }
 
         void TearDown() override
@@ -149,12 +150,6 @@ namespace icrar
             const double THRESHOLD = 0.01;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
-
-            //auto eigenuvw = ToUVWVector(ms->GetCoords(index, baselines));
-            //auto casauvw = ToCasaUVWVector(ms->GetCoords(index, baselines));
-            //std::cout << "eigenuvw[1]" << eigenuvw[1] << std::endl;
-            //std::cout << "casauvw[1]" << casauvw[1] << std::endl;
-            //assert(uvw[1](0) == -75.219106714973222);
 
             boost::optional<icrar::cpu::Integration> integrationOptionalOutput;
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;

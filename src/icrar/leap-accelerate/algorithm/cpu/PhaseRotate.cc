@@ -137,11 +137,10 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
-        auto parameters = integration.parameters;
-
         metadata.CalcUVW(integration.GetUVW());
         const auto polar_direction = icrar::to_polar(metadata.direction);
-
+        std::cout << "direction:" << polar_direction << std::endl;
+        
         // loop over baselines
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {

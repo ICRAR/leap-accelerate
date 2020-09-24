@@ -43,6 +43,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include <device_functions.h>
 #include <cuComplex.h>
 #include <math_constants.h>
 
@@ -144,8 +145,6 @@ namespace cuda
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
-        std::cout << avg_data_angles << std::endl;
-
         auto& indexes = hostMetadata.GetI1();
 
         auto cal1 = hostMetadata.GetAd1() * avg_data_angles(indexes, 0); // 1st pol only
@@ -222,13 +221,13 @@ namespace cuda
 
                 for(int polarization = 0; polarization < polarizations; polarization++)
                 {
-                    integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
+                    integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
                 }
 
                 bool hasNaN = false;
                 for(int polarization = 0; polarization < polarizations; polarization++)
                 {
-                    auto n = integration_data(channel, baseline, polarization);
+                    auto n = integration_data(polarization, baseline, channel);
                     hasNaN |= isnan(n.x) || isnan(n.y);
                 }
 
@@ -236,7 +235,7 @@ namespace cuda
                 {
                     for(int polarization = 0; polarization < polarizations; ++polarization)
                     {
-                        avg_data(baseline, polarization) = cuCadd(avg_data(baseline, polarization), integration_data(channel, baseline, polarization));
+                        avg_data(baseline, polarization) = cuCadd(avg_data(baseline, polarization), integration_data(polarization, baseline, channel));
                     }
                 }
             }
@@ -244,10 +243,12 @@ namespace cuda
     }
 
     __global__ void g_RotateVisibilitiesBC(
-        cuDoubleComplex* pintegration_data, int integration_data_rows, int integration_data_cols, int integration_data_depth,
+        cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         int integration_channels,
         int integration_baselines,
         int polarizations,
+        double phase_centre_ra_rad,
+        double phase_centre_dec_rad,
         icrar::cpu::Constants constants,
         Eigen::Matrix3d dd,
         double2 direction,
@@ -264,14 +265,22 @@ namespace cuda
 
         if(baseline < integration_baselines && channel < integration_channels)
         {
-            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_rows, integration_data_cols, integration_data_depth);
+            auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_dim0, integration_data_dim1, integration_data_dim2);
             auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
     
             // loop over baselines
             const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+            double shiftFactor = -2 * pi * (uvw[baseline].z - oldUVW[baseline].z);
+            shiftFactor += + 2 * pi *
+            (
+               constants.phase_centre_ra_rad * oldUVW[baseline].x
+               - constants.phase_centre_dec_rad * oldUVW[baseline].y
+            );
+            shiftFactor = shiftFactor - 2 * pi *
+            (
+                direction.x * uvw[baseline].x
+                - direction.y * uvw[baseline].y
+            );
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
@@ -280,39 +289,39 @@ namespace cuda
 
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                integration_data(channel, baseline, polarization) = cuCmul(integration_data(channel, baseline, polarization), exp);
+                 integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
             }
 
-            bool hasNaN = false;
+             bool hasNaN = false;
             for(int polarization = 0; polarization < polarizations; polarization++)
             {
-                auto n = integration_data(channel, baseline, polarization);
-                hasNaN |= n.x == NAN || n.y == NAN;
+                auto n = integration_data(polarization, baseline, channel);
+                hasNaN |= isnan(n.x) || isnan(n.y);
             }
 
             if(!hasNaN)
             {
                 for(int polarization = 0; polarization < polarizations; ++polarization)
                 {
-                    avg_data(baseline, polarization) = cuCadd(avg_data(baseline, polarization), integration_data(channel, baseline, polarization));
+                    atomicAdd(&avg_data(baseline, polarization).x, integration_data(polarization, baseline, channel).x);
+                    atomicAdd(&avg_data(baseline, polarization).y, integration_data(polarization, baseline, channel).y); 
                 }
             }
         }
     }
-
+    
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
-        assert(constants.nbaselines == integration.data.GetDimensionSize(1));
-        assert(integration.baselines == integration.data.GetDimensionSize(1));
-        assert(constants.num_pols == integration.data.GetDimensionSize(2));
-
+        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(2));
+        assert(constants.nbaselines == integration.baselines && integration.baselines == integration.data.GetDimensionSize(1));
+        assert(constants.num_pols == integration.data.GetDimensionSize(0));
+        
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // each block cannot have more than 1024 threads, only threads in a block may share memory
-        // each cuda core can run 32 cuda threads 
+        // each cuda core can run 32 simutaneous threads 
 
         //dim3 grid = dim3(1,1,1);
         //dim3 threads = dim3(constants.channels, constants.nbaselines, constants.num_pols);
@@ -324,17 +333,24 @@ namespace cuda
             1
         ); 
 
+        //TODO: simplify
+        const auto polar_direction = icrar::to_polar(metadata.direction);
+        std::cout << "direction:" << polar_direction << std::endl;
+        std::cout << "ra" << metadata.GetConstants().phase_centre_ra_rad << std::endl;
+        std::cout << "dec" << metadata.GetConstants().phase_centre_dec_rad << std::endl;
         g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
             integration.channels, integration.baselines, constants.num_pols,
+            constants.phase_centre_ra_rad,
+            constants.phase_centre_dec_rad,
             constants,
             metadata.dd,
-            make_double2(metadata.direction(0), metadata.direction(1)),
+            make_double2(polar_direction(0), polar_direction(1)),
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
             (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(),
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
     }
-    
+
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,

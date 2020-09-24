@@ -35,6 +35,7 @@ namespace cuda
     , UVW(metadata.m_UVW)
     , oldUVW(metadata.m_oldUVW)
     , dd(metadata.dd)
+    , direction(metadata.direction)
     , avg_data(metadata.avg_data)
     , A(metadata.GetA())
     , I(metadata.GetI())

@@ -75,25 +75,25 @@ namespace cpu
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        union
-        {
-            std::array<double, 2> phase_centre;
-            struct
-            {
+        // union
+        // {
+        //     std::array<double, 2> phase_centre;
+        //     struct
+        //     {
                 double phase_centre_ra_rad;
                 double phase_centre_dec_rad;
-            };
-        };
+        //     };
+        // };
 
-        union
-        {
-            std::array<double, 2> dlm;
-            struct
-            {
+        // union
+        // {
+        //     std::array<double, 2> dlm;
+        //     struct
+        //     {
                 double dlm_ra;
                 double dlm_dec;
-            };
-        };
+        //    };
+        //};
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
