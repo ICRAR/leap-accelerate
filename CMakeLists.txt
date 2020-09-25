@@ -77,6 +77,8 @@ find_package(GSL)
 find_package(LAPACK)
 find_package(Casacore REQUIRED)
 find_package(Boost REQUIRED)
+find_package(RapidJSON REQUIRED)
+
 #find_package(Eigen3 HINTS /home/calgray/Code/icrar/leap-accelerate/external/eigen-3.3.90 REQUIRED) # header only
 include_directories(external/eigen-3.3.90)
 

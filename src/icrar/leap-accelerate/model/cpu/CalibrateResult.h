@@ -52,24 +52,16 @@ namespace cpu
     {
         MVDirection m_direction;
         int m_integration_number;
-        boost::optional<std::vector<casacore::Array<double>>> m_data;
+        boost::optional<std::vector<casacore::Vector<double>>> m_data;
 
     public:
         IntegrationResult(
-            MVDirection direction,
+            icrar::MVDirection direction,
             int integration_number,
-            boost::optional<std::vector<casacore::Array<double>>> data)
+            boost::optional<std::vector<casacore::Vector<double>>> data)
             : m_direction(direction)
             , m_integration_number(integration_number)
             , m_data(data)
-        {
-        }
-
-        IntegrationResult(
-            MVDirection direction,
-            int integration_number)
-            : m_direction(direction)
-            , m_integration_number(integration_number)
         {
 
         }

@@ -21,7 +21,7 @@
  */
 
 
-//#include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/linear_math_helper.h>
 
@@ -105,18 +105,18 @@ namespace icrar
             std::cout << "polarizations: " <<  ms->GetNumPols() << std::endl;
             if(impl == ComputeImplementation::casa)
             {
-                std::cout << "calibrating using casacore..." << std::endl;
+                std::cout << "calibrating using casacore" << std::endl;
                 auto metadata = casalib::MetaData(*ms);
                 auto res = casalib::Calibrate(*ms, directions, 3600);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                std::cout << "calibrating using cpu..." << std::endl;
+                std::cout << "calibrating using cpu" << std::endl;
                 auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::cout << "calibrating using cuda..." << std::endl;
+                std::cout << "calibrating using cuda" << std::endl;
                 auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
             }
             else

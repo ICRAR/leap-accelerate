@@ -35,8 +35,9 @@ set(sources
     math/casa/vector.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc
-
     math/cpu/vector.cc
+
+    json/json_helper.cc
     
     algorithm/casa/PhaseRotate.cc
     algorithm/cpu/PhaseRotate.cc
@@ -109,10 +110,14 @@ endif()
 
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+
 #target_include_directories(${TARGET_NAME} PUBLIC "external/eigen-3.3.90/Eigen")
+#target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
-#target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
+target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
+
+
 
 if(CASA_ENABLED)
   target_link_libraries(${TARGET_NAME} ${CASACORE_LIBRARIES})
