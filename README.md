@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
 [![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
-Low Frequency Excision of the atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
+Low-frequency Excision of the Atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
 
 LEAP-Accelerate includes:
 
