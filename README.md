@@ -16,13 +16,13 @@ LEAP-Accelerate includes:
 
 ### Linux
 
-`mkdir -p build/linux/{Debug,Release} && cd build/linux`
-
 `export CUDA_HOME=/usr/local/cuda`
 
 `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
 
 `export PATH=$PATH:$CUDA_HOME/bin`
+
+`mkdir -p build/linux/{Debug,Release} && cd build/linux`
 
 #### Debug
 
@@ -44,7 +44,15 @@ LEAP-Accelerate includes:
 
 `module load isl/default`
 
-`cmake ../../ -DCASACORE_ROOT_DIR=/usr/local/casacore -DCUDA_HOST_COMPILER=g++`
+`export CUDA_HOME=/usr/local/cuda`
+
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
+
+`export PATH=$PATH:$CUDA_HOME/bin`
+
+`mkdir -p build && cd build`
+
+`cmake ../../ -DCASACORE_ROOT_DIR=/usr/local/casacore -DCUDA_HOST_COMPILER=g++ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 

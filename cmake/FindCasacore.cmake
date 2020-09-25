@@ -83,7 +83,9 @@ if (NOT CASACORE_FOUND)
     ## Search for the library
     find_library (CASACORE_${_casacore_var}_LIBRARY
       NAMES casa_${_casacore_lib} ${_casacore_lib}
-      HINTS ${CASACORE_ROOT_DIR}
+      HINTS
+      ${CASACORE_ROOT_DIR}
+      "/usr/local/casacore"
       PATH_SUFFIXES lib
       )
     

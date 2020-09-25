@@ -32,6 +32,7 @@
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 
+#include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -91,7 +92,7 @@ namespace casalib
 
         if(pms->field().nrow() > 0)
         {
-            Vector<MDirection> dir;
+            Vector<MDirection> dir; //TODO: Does not link on cluster
             msc->field().phaseDirMeasCol().get(0, dir, true);
             if(dir.size() > 0)
             {
