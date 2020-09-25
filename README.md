@@ -39,8 +39,11 @@ LEAP-Accelerate includes:
 #### Linux Cluster
 
 `module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
+
 `module unload gfortran/default`
+
 `module load isl/default`
+
 `cmake ../../ -DCASACORE_ROOT_DIR=/usr/local/casacore -DCUDA_HOST_COMPILER=g++`
 
 #### Ubuntu/Debian Dependencies
