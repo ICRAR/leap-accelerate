@@ -3,7 +3,7 @@
 ![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
 [![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
-Low-frequency Excision of the Atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
+Low Frequency Excision of the atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
 
 LEAP-Accelerate includes:
 
@@ -35,6 +35,13 @@ LEAP-Accelerate includes:
 `cd Release`
 
 `cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
+
+#### Linux Cluster
+
+`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
+`module unload gfortran/default`
+`module load isl/default`
+`cmake ../../ -DCASACORE_ROOT_DIR=/usr/local/casacore -DCUDA_HOST_COMPILER=g++`
 
 #### Ubuntu/Debian Dependencies
 
@@ -115,8 +122,3 @@ or
 * gprof
 * google-perftools
 
-## Cluster Deployment
-
-* module help
-* module load
-* module list
