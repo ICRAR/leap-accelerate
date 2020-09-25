@@ -43,6 +43,14 @@ namespace icrar
     public:
         not_implemented_exception(std::string file, int line);
     };
+
+    class json_exception : public icrar::exception
+    {
+    public:
+        json_exception(std::string msg, std::string file, int line)
+        : exception("json exception: " + msg, file, line)
+        { }
+    };
 }
 
 #define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)

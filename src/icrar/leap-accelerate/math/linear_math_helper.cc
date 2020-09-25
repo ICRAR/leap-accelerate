@@ -22,6 +22,8 @@
 
 #include "linear_math_helper.h"
 
+#include <icrar/leap-accelerate/exception/exception.h>
+
 namespace icrar
 {
     icrar::MVuvw ToUVW(const casacore::MVuvw& value)
@@ -43,8 +45,6 @@ namespace icrar
             return icrar::MVuvw(x(0), x(1), x(2));
         };
         std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
-
-        assert(value.size() == res.size());
         return res;
     }
 
@@ -67,8 +67,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        auto res = std::vector<casacore::MVuvw>();
-        res.reserve(value.size());
+        auto res = std::vector<casacore::MVuvw>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaUVW);
         return res;
     }
@@ -92,14 +91,20 @@ namespace icrar
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        auto res = std::vector<icrar::MVDirection>();
-        res.reserve(value.size());
+        auto res = std::vector<icrar::MVDirection>(value.size());
         std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
         return res;
     }
 
-    casacore::MVDirection ConvertDirection(const icrar::MVDirection& value)
+    casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
     {
         return casacore::MVDirection(value(0), value(1), value(2));
+    }
+
+    std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
+    {
+        auto res = std::vector<casacore::MVDirection>(value.size());
+        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaDirection);
+        return res;
     }
 }

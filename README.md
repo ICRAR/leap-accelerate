@@ -28,13 +28,17 @@ LEAP-Accelerate includes:
 
 `cd Debug`
 
-`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
 
 #### Release
 
 `cd Release`
 
-`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="/usr/local/cuda" -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
+
+#### Linux Cluster
+
+`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
 
 #### Ubuntu/Debian Dependencies
 
@@ -115,8 +119,3 @@ or
 * gprof
 * google-perftools
 
-## Cluster Deployment
-
-* module help
-* module load
-* module list
