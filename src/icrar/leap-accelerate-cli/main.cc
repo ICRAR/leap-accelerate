@@ -86,10 +86,10 @@ namespace icrar
         std::istream* m_inputStream = nullptr; // Cached reference to the input stream
 
     public:
-        ArgumentsValidated(const Arguments&& args)
-            : m_source(args.source)
-            , m_filePath(args.filePath)
-            , m_stations(args.stations)
+        ArgumentsValidated(Arguments&& args)
+            : m_source(std::move(args.source))
+            , m_filePath(std::move(args.filePath))
+            , m_stations(std::move(args.stations))
             , m_computeImplementation(icrar::ComputeImplementation::casa)
         {
             switch (m_source)
