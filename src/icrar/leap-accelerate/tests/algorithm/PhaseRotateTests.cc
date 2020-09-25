@@ -270,7 +270,8 @@ namespace icrar
             // =============
             // ASSERT OBJECT
             ASSERT_EQ(expectedMetadata.GetConstants().num_pols, metadataOutput.avg_data.cols());
-            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD); // TODO: too much data to hard code
+            // TODO: too much data to hard code
+            //ASSERT_MDEQ(expectedMetadata, metadataOutput, THRESHOLD);
             //ASSERT_EQ(expectedIntegration, integration);
         }
 

@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/linear_math_helper.h>
 
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -188,7 +189,7 @@ namespace casalib
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
-        SetDD(ConvertDirection(direction));
+        SetDD(ToCasaDirection(direction));
     }
 
     /**
