@@ -36,6 +36,10 @@ LEAP-Accelerate includes:
 
 `cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
 
+#### Linux Cluster
+
+`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
+
 #### Ubuntu/Debian Dependencies
 
 20.04 LTS
@@ -115,8 +119,3 @@ or
 * gprof
 * google-perftools
 
-## Cluster Deployment
-
-* module help
-* module load
-* module list

@@ -167,7 +167,7 @@ namespace icrar
 
             // copy from device back to host
             icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
-
+            
             ASSERT_MDEQ(expectedMetadataHost, metaDataHost, THRESHOLD);
         }
     };

@@ -72,14 +72,13 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_package(CUDA REQUIRED)
 enable_language(CUDA)
-
 find_package(GSL)
 find_package(LAPACK)
 find_package(Casacore REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(RapidJSON REQUIRED)
 
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
