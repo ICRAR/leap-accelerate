@@ -103,7 +103,7 @@ namespace cuda
             //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
             hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
             
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
 #endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
@@ -121,12 +121,12 @@ namespace cuda
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
-#ifdef NDEBUG
+#ifndef NDEBUG
         int integration_number = 0;
 #endif
         for(auto& integration : input)
         {
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
@@ -259,10 +259,18 @@ namespace cuda
             auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
     
             // loop over baselines
-            const double pi = CUDART_PI;
-            double shiftFactor = -2 * pi * uvw[baseline].z - oldUVW[baseline].z;
-            shiftFactor = shiftFactor + 2 * pi * (constants.phase_centre_ra_rad * oldUVW[baseline].x);
-            shiftFactor = shiftFactor - 2 * pi * (direction.x * uvw[baseline].x - direction.y * uvw[baseline].y);
+            constexpr double twoPi = 2 * CUDART_PI;
+            double shiftFactor = -(twoPi) * uvw[baseline].z - oldUVW[baseline].z;
+            shiftFactor += twoPi *
+            (
+                constants.phase_centre_ra_rad * oldUVW[baseline].x
+                - constants.phase_centre_dec_rad * oldUVW[baseline].y
+            );
+            shiftFactor -= twoPi *
+            (
+                direction.x * uvw[baseline].x
+                - direction.y * uvw[baseline].y
+            );
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);

@@ -123,37 +123,7 @@ namespace cuda
             return GetCount() * sizeof(T);
         }
 
-        /**auto output_integrations = std::make_unique<std::vector<std::queue<cpu::IntegrationResult>>>();
-        auto output_calibrations = std::make_unique<std::vector<std::queue<cpu::CalibrationResult>>>();
-        auto input_queues = std::vector<std::vector<cpu::Integration>>();
-        
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            auto queue = std::vector<cpu::Integration>(); 
-            queue.push_back(cpu::Integration(
-                ms,
-                i,
-                metadata.channels,
-                metadata.GetBaselines(),
-                metadata.num_pols,
-                metadata.GetBaselines()));
-
-            input_queues.push_back(queue);
-            output_integrations->push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations->push_back(std::queue<cpu::CalibrationResult>());
-        }
-
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            metadata.SetDD(directions[i]);
-            metadata.SetWv();
-            metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
-
-            auto metadatahost = icrar::cpu::MetaData(metadata); // use other constructor
-            icrar::gpu::PhaseRotate(metadatahost, directions[i], input_queues[i], (*output_integrations)[i], (*output_calibrations)[i]);
-        }
-
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+        /**
          * @brief Performs a synchronous copy of data into the device buffer
          * 
          * @param data 

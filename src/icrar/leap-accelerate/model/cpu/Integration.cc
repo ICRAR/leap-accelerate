@@ -26,7 +26,9 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-namespace icrar::cpu
+namespace icrar
+{
+namespace cpu
 {
     Integration::Integration(const icrar::casalib::Integration& integration)
     : integration_number(integration.integration_number)
@@ -64,4 +66,5 @@ namespace icrar::cpu
     {
         return m_uvw;
     }
+}
 }
