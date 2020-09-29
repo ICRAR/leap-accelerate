@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 
+#include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>

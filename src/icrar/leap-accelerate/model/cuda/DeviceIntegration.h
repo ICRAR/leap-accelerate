@@ -33,7 +33,7 @@
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <boost/optional.hpp>
 

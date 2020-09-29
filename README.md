@@ -16,13 +16,13 @@ LEAP-Accelerate includes:
 
 ### Linux
 
-`mkdir -p build/linux/{Debug,Release} && cd build/linux`
-
 `export CUDA_HOME=/usr/local/cuda`
 
 `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
 
 `export PATH=$PATH:$CUDA_HOME/bin`
+
+`mkdir -p build/linux/{Debug,Release} && cd build/linux`
 
 #### Debug
 
@@ -40,11 +40,25 @@ LEAP-Accelerate includes:
 
 `module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
 
+`module unload gfortran/default`
+
+`module load isl/default`
+
+`export CUDA_HOME=/usr/local/cuda`
+
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
+
+`export PATH=$PATH:$CUDA_HOME/bin`
+
+`mkdir -p build && cd build`
+
+`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+
 #### Ubuntu/Debian Dependencies
 
 20.04 LTS
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libeigen3-dev libgsl-dev
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
 
 or
@@ -53,16 +67,13 @@ or
 
 18.04 LTS
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libeigen3-dev libgsl-dev
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
-
-Note:
-eigen3.3.7 is required, see .travis/before_install_bionic.sh
 
 16.04 LTS
 
 * https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
-* sudo apt-get install gcc g++ gdb doxygen casacore-dev libboost1.58-all-dev libeigen3-dev libgsl-dev
+* sudo apt-get install gcc g++ gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 
 #### Recommended Versions Compatibility
 
