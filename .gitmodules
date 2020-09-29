@@ -10,3 +10,6 @@
 [submodule "testdata"]
 	path = testdata
 	url = https://github.com/ICRAR/leap-accelerate-testdata.git
+[submodule "eigen-3.3.90"]
+	path = external/eigen-3.3.90
+	url = https://gitlab.com/libeigen/eigen.git

@@ -45,7 +45,6 @@ namespace icrar
     enum class InputType
     {
         STREAM,
-        FILE_STREAM,
         FILENAME,
         APACHE_ARROW
     };
@@ -71,13 +70,12 @@ namespace icrar
      */
     class ArgumentsValidated
     {
-        InputType m_source;
-        boost::optional<std::string> m_filePath;
-
         /**
          * Constants
          */
-        boost::optional<int> m_stations; // Overriden number of stations
+        InputType m_source; // MeasurementSet source type
+        boost::optional<std::string> m_filePath; // MeasurementSet filepath
+        boost::optional<std::string> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -85,14 +83,13 @@ namespace icrar
          * Resources
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::ifstream m_fileStream;
         std::istream* m_inputStream = nullptr; // Cached reference to the input stream
 
     public:
-        ArgumentsValidated(const Arguments& args)
-            : m_source(args.source)
-            , m_filePath(args.filePath)
-            , m_stations(args.stations)
+        ArgumentsValidated(Arguments&& args)
+            : m_source(std::move(args.source))
+            , m_filePath(std::move(args.filePath))
+            , m_stations(std::move(args.stations))
         {
             if(args.implementation.is_initialized())
             {
@@ -112,7 +109,7 @@ namespace icrar
                 {
                     m_fileStream = std::ifstream(args.filePath.value());
                     m_inputStream = &m_fileStream;
-                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, m_stations);
+                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, boost::none);
                 }
                 else
                 {
@@ -130,7 +127,7 @@ namespace icrar
                 }
                 break;
             case InputType::APACHE_ARROW:
-                throw new std::invalid_argument("only stream in and file input are currently supported");
+                throw new std::runtime_error("only stream in and file input are currently supported");
                 break;
             default:
                 throw new std::invalid_argument("only stream in and file input are currently supported");

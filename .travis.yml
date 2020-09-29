@@ -67,7 +67,7 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-9, doxygen, casacore-dev, libgsl-dev, libboost1.71-all-dev]
+      packages: [g++-9, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.71-all-dev]
     env: COMPILER=g++-9 CUDA=11 PYTHON=python3
 
 # We "source" it because it exports variables

@@ -28,7 +28,7 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 namespace icrar
 {
