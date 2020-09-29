@@ -64,25 +64,33 @@ namespace cpu
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
+        auto startTime = std::chrono::high_resolution_clock::now();
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
 
             int integrations = ms.GetNumRows() / ms.GetNumBaselines();
 
+            unsigned int startRow = 0;
             unsigned int integrationNumber = 0;
-            queue.push_back(Integration(
-                integrationNumber,
-                ms,
-                0,
-                ms.GetNumChannels(),
-                integrations * ms.GetNumBaselines(),
-                ms.GetNumPols()));
+            for(int integrationNumber = 0; integrationNumber < integrations; ++integrationNumber)
+            {
+                queue.push_back(Integration(
+                    integrationNumber,
+                    ms,
+                    integrationNumber * ms.GetNumBaselines(),
+                    ms.GetNumChannels(),
+                    ms.GetNumBaselines(),
+                    ms.GetNumPols()));
+            }
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::cout << "time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+
 
         for(int i = 0; i < directions.size(); ++i)
         {

@@ -58,6 +58,7 @@
 #include <exception>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 using Radians = double;
 
@@ -78,6 +79,7 @@ namespace casalib
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
         
+        auto startTime = std::chrono::high_resolution_clock::now();
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
@@ -101,6 +103,8 @@ namespace casalib
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());
         }
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::cout << "time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
 
         for(int i = 0; i < directions.size(); ++i)
         {

@@ -84,7 +84,7 @@ namespace cuda
         auto integration = cpu::Integration(
             0,
             ms,
-            0, //TODO: increment
+            0,
             metadata.channels,
             metadata.GetBaselines(),
             metadata.num_pols);
@@ -92,7 +92,9 @@ namespace cuda
         for(int i = 0; i < directions.size(); ++i)
         {
             input_queues.push_back(std::vector<cuda::DeviceIntegration>());
-            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory could be reused?
+            
+            //TODO: Integration memory could be reused
+            input_queues[i].push_back(cuda::DeviceIntegration(integration));
             
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());

@@ -61,6 +61,7 @@ namespace cpu
          * @brief Construct a new Integration object from the equivalent casalib object
          */
         Integration(const icrar::casalib::Integration& integration);
+        
         Integration(
             unsigned int integrationNumber,
             const icrar::MeasurementSet& ms,
