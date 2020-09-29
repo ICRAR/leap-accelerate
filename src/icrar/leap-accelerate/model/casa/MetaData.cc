@@ -93,7 +93,7 @@ namespace casalib
 
         if(pms->field().nrow() > 0)
         {
-            Vector<MDirection> dir; //TODO: Does not link on cluster
+            Vector<MDirection> dir;
             msc->field().phaseDirMeasCol().get(0, dir, true);
             if(dir.size() > 0)
             {

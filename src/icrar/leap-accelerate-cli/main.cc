@@ -192,7 +192,6 @@ int main(int argc, char** argv)
         {
         case ComputeImplementation::casa:
         {
-            std::cout << "calibrate" << std::endl;
             auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
             break;
         }

@@ -52,7 +52,7 @@ LEAP-Accelerate includes:
 
 `mkdir -p build && cd build`
 
-`cmake ../../ -DCASACORE_ROOT_DIR=/usr/local/casacore -DCUDA_HOST_COMPILER=g++ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 
