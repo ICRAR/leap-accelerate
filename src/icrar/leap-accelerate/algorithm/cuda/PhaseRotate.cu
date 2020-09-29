@@ -183,6 +183,10 @@ namespace cuda
         return make_cuDoubleComplex(resx, resy);
     }
 
+    /**
+     * @brief Naive single threaded implementation for rotating visibilities 
+     * 
+     */
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pintegration_data, int integration_data_rows, int integration_data_cols, int integration_data_depth,
         int integration_channels,
@@ -312,15 +316,15 @@ namespace cuda
             }
         }
     }
-    
-    __host__ void RotateVisibilities(
+
+    __host__ void RotateVisibilitiesBC(
         DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(2));
-        assert(constants.nbaselines == integration.baselines && integration.baselines == integration.data.GetDimensionSize(1));
-        assert(constants.num_pols == integration.data.GetDimensionSize(0));
+        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetData().GetDimensionSize(2));
+        assert(constants.nbaselines == integration.GetBaselines() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
+        assert(constants.num_pols == integration.GetData().GetDimensionSize(0));
         
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // each block cannot have more than 1024 threads, only threads in a block may share memory
@@ -336,7 +340,7 @@ namespace cuda
             1
         );
 
-        //TODO: simplify polar
+        //TODO: store polar form in advance
         const auto polar_direction = icrar::to_polar(metadata.direction);
         g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
@@ -347,6 +351,11 @@ namespace cuda
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
             (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(),
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
+    }
+
+    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
+    {
+        RotateVisibilitiesBC(integration, metadata);
     }
 
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(

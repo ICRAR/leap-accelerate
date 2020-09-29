@@ -83,7 +83,7 @@ namespace cuda
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations);
 
-    void RotateVisibilities(
+    __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
 
