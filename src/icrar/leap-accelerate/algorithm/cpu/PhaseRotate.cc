@@ -145,7 +145,6 @@ namespace cpu
 
         assert(metadata.GetConstants().nbaselines == integration.baselines);
         assert(integration.GetUVW().size() == integration.baselines);
-        assert(metadata.GetUVW() == integration.baselines);
         assert(integration_data.dimension(0) == metadata.GetConstants().channels);
         assert(integration_data.dimension(1) == integration.baselines);
         assert(metadata.GetOldUVW().size() == integration.baselines);

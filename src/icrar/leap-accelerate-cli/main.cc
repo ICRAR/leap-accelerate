@@ -75,7 +75,7 @@ namespace icrar
          */
         InputType m_source; // MeasurementSet source type
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
-        boost::optional<std::string> m_stations; // Overriden number of stations
+        boost::optional<int> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -103,18 +103,6 @@ namespace icrar
             {
             case InputType::STREAM:
                 m_inputStream = &std::cin;
-                break;
-            case InputType::FILE_STREAM:
-                if (m_filePath.is_initialized())
-                {
-                    m_fileStream = std::ifstream(args.filePath.value());
-                    m_inputStream = &m_fileStream;
-                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, boost::none);
-                }
-                else
-                {
-                    throw std::runtime_error("source filename not provided");
-                }
                 break;
             case InputType::FILENAME:
                 if (m_filePath.is_initialized())
