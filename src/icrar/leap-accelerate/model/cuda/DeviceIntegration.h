@@ -80,6 +80,7 @@ namespace cuda
         size_t GetChannels() const { return channels; }
         size_t GetBaselines() const { return baselines; }
         
+        const device_tensor3<std::complex<double>>& GetData() const { return data; }
         device_tensor3<std::complex<double>>& GetData() { return data; }
 
     };

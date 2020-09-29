@@ -47,7 +47,6 @@
 #include <cuComplex.h>
 #include <math_constants.h>
 
-#include <vector>
 #include <complex>
 #include <istream>
 #include <iostream>
@@ -110,7 +109,7 @@ namespace cuda
             //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
             hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
             
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
 #endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
@@ -128,18 +127,19 @@ namespace cuda
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
-#ifdef NDEBUG
+#ifndef NDEBUG
         int integration_number = 0;
 #endif
         for(auto& integration : input)
         {
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.push_back(cpu::IntegrationResult(
                 direction,
-                integration.integration_number));
+                integration.GetIntegrationNumber(),
+                boost::optional<std::vector<casacore::Vector<double>>>()));
         }
         deviceMetadata.ToHost(hostMetadata);
         
@@ -343,8 +343,8 @@ namespace cuda
         //TODO: store polar form in advance
         const auto polar_direction = icrar::to_polar(metadata.direction);
         g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
-            (cuDoubleComplex*)integration.data.Get(), integration.data.GetDimensionSize(0), integration.data.GetDimensionSize(1), integration.data.GetDimensionSize(2),
-            integration.channels, integration.baselines, constants.num_pols,
+            (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
+            integration.GetChannels(), integration.GetBaselines(), constants.num_pols,
             constants,
             metadata.dd,
             make_double2(polar_direction(0), polar_direction(1)),

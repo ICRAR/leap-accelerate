@@ -94,6 +94,9 @@ namespace casalib
                     metadata.num_pols);
                 startRow += metadata.GetBaselines();
             }
+            assert(metadata.channels == queue.front().data.dimension(2)); //metadata.channels
+            assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
+            assert(metadata.num_pols == queue.front().data.dimension(0)); //metadata.polarizations
             input_queues.push_back(queue);
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());

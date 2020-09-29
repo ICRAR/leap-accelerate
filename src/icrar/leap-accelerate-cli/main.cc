@@ -20,16 +20,16 @@
  * MA 02111 - 1307  USA
  */
 
-
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/json/json_helper.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <CLI/CLI.hpp>
@@ -46,7 +46,6 @@ namespace icrar
     enum class InputType
     {
         STREAM,
-        FILE_STREAM,
         FILENAME,
         APACHE_ARROW
     };
@@ -60,7 +59,7 @@ namespace icrar
         boost::optional<std::string> filePath = boost::none; // Measurement set filepath
         boost::optional<std::string> configFilePath = boost::none; // Config filepath
 
-        boost::optional<int> stations;
+        boost::optional<int> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
         boost::optional<std::string> implementation = std::string("casa");
 
@@ -72,12 +71,11 @@ namespace icrar
      */
     class ArgumentsValidated
     {
-        InputType m_source;
-        boost::optional<std::string> m_filePath;
-
         /**
          * Constants
          */
+        InputType m_source; // MeasurementSet source type
+        boost::optional<std::string> m_filePath; // MeasurementSet filepath
         boost::optional<int> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
@@ -86,14 +84,13 @@ namespace icrar
          * Resources
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::ifstream m_fileStream;
         std::istream* m_inputStream = nullptr; // Cached reference to the input stream
 
     public:
-        ArgumentsValidated(const Arguments& args)
-            : m_source(args.source)
-            , m_filePath(args.filePath)
-            , m_stations(args.stations)
+        ArgumentsValidated(Arguments&& args)
+            : m_source(std::move(args.source))
+            , m_filePath(std::move(args.filePath))
+            , m_stations(std::move(args.stations))
         {
             if(args.implementation.is_initialized())
             {
@@ -108,18 +105,6 @@ namespace icrar
             case InputType::STREAM:
                 m_inputStream = &std::cin;
                 break;
-            case InputType::FILE_STREAM:
-                if (m_filePath.is_initialized())
-                {
-                    m_fileStream = std::ifstream(args.filePath.value());
-                    m_inputStream = &m_fileStream;
-                    m_measurementSet = std::make_unique<MeasurementSet>(*m_inputStream, m_stations);
-                }
-                else
-                {
-                    throw std::runtime_error("source filename not provided");
-                }
-                break;
             case InputType::FILENAME:
                 if (m_filePath.is_initialized())
                 {
@@ -131,7 +116,7 @@ namespace icrar
                 }
                 break;
             case InputType::APACHE_ARROW:
-                throw new std::invalid_argument("only stream in and file input are currently supported");
+                throw new std::runtime_error("only stream in and file input are currently supported");
                 break;
             default:
                 throw new std::invalid_argument("only stream in and file input are currently supported");
@@ -141,7 +126,7 @@ namespace icrar
             if(args.configFilePath.is_initialized())
             {
                 // Configuration via json config
-                throw std::invalid_argument("config not supported");
+                throw std::invalid_argument("json config not supported");
             }
             else
             {

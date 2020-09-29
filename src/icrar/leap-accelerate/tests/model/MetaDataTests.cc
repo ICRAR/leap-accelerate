@@ -23,7 +23,7 @@
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -55,7 +55,8 @@ namespace icrar
 
         void SetUp() override
         {
-
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
         }
 
         void TearDown() override
@@ -65,9 +66,6 @@ namespace icrar
 
         void TestMeasurementSet()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
-
             auto msmc = ms->GetMSMainColumns();
             casacore::Vector<double> time = msmc->time().getColumn();
 
@@ -76,11 +74,11 @@ namespace icrar
 
         }
 
-        void TestReadFromFile()
+        void TestRawReadFromFile()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
-            auto meta = icrar::casalib::MetaData(*ms);
+            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
+            auto meta = icrar::casalib::MetaData(*rawms);
 
             ASSERT_EQ(false, meta.m_initialized);
             //ASSERT_EQ(4853, meta.nantennas);
@@ -111,8 +109,6 @@ namespace icrar
 
         void TestReadFromFileOverrideStations()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
@@ -144,8 +140,6 @@ namespace icrar
 
         void TestSetWv()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
@@ -153,8 +147,6 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto casaMetadata = icrar::casalib::MetaData(*ms);
             casaMetadata.SetWv();
 
@@ -167,8 +159,6 @@ namespace icrar
 
         void TestCudaBufferCopy()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             auto direction = casacore::MVDirection(0.0, 0.0);
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
@@ -187,7 +177,7 @@ namespace icrar
     };
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(MetaDataTests, TestRawReadFromFile) { TestRawReadFromFile(); }
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }

@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 
+#include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -55,13 +56,20 @@ namespace casalib
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
+    : nantennas(0)
+    , num_pols(0)
+    , channels(0)
+    , freq_start_hz(0)
+    , freq_inc_hz(0)
+    , stations(0)
+    , phase_centre_ra_rad(0)
+    , phase_centre_dec_rad(0)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
 
         this->m_initialized = false;
-        this->nantennas = 0;
         this->solution_interval = 3601;
 
         this->rows = msmc->uvw().nrow(); // pms->polarization().nrow();
@@ -71,9 +79,6 @@ namespace casalib
             this->num_pols = msc->polarization().numCorr().get(0);
         }
 
-        this->channels = 0;
-        this->freq_start_hz = 0;
-        this->freq_inc_hz = 0;
         if(pms->spectralWindow().nrow() > 0)
         {
             this->channels = msc->spectralWindow().numChan().get(0);
@@ -81,15 +86,12 @@ namespace casalib
             this->freq_inc_hz = msc->spectralWindow().chanWidth().get(0)(IPosition(1,0));
         }
 
-        this->stations = 0;
         this->stations = ms.GetNumStations();
         if(pms->nrow() > 0)
         {
             auto time_inc_sec = msc->interval().get(0);
         }
 
-        this->phase_centre_ra_rad = 0;
-        this->phase_centre_dec_rad = 0;
         if(pms->field().nrow() > 0)
         {
             Vector<MDirection> dir;

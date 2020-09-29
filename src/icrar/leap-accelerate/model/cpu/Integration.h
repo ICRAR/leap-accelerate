@@ -34,9 +34,9 @@
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Dense>
-#include <eigen3/unsupported/Eigen/CXX11/Tensor>
+#include <Eigen/Core>
+#include <Eigen/Dense>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 #include <boost/optional.hpp>
 
@@ -53,7 +53,7 @@ namespace cpu
 
     class Integration
     {
-        std::vector<icrar::MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //data is an array data[nch][nbl][npol]
 
     public:

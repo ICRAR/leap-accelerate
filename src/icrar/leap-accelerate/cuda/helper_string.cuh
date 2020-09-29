@@ -335,7 +335,7 @@ inline char *sdkFindFilePath(const char *filename,
       }
     }
 
-#ifdef _DEBUG
+#ifdef NDEBUG
     printf("sdkFindFilePath <%s> in %s\n", filename, path.c_str());
 #endif
 

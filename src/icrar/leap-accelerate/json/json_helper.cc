@@ -22,7 +22,7 @@
 
 #include "json_helper.h"
 
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <rapidjson/document.h>
 
