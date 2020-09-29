@@ -141,6 +141,8 @@ namespace casalib
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
+                std::cout << "avg_data(0,0): " << metadata.avg_data.get()(0,0) << std::endl;
+
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);

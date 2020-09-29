@@ -70,18 +70,14 @@ namespace cpu
 
             int integrations = ms.GetNumRows() / ms.GetNumBaselines();
 
-            unsigned int startRow = 0;
             unsigned int integrationNumber = 0;
-            for(int integrationNumber = 0; integrationNumber < integrations; ++integrationNumber)
-            {
-                queue.push_back(Integration(
-                    integrationNumber,
-                    ms,
-                    integrationNumber * ms.GetNumBaselines(),
-                    ms.GetNumChannels(),
-                    ms.GetNumBaselines(),
-                    ms.GetNumPols()));
-            }
+            queue.push_back(Integration(
+                integrationNumber,
+                ms,
+                0,
+                ms.GetNumChannels(),
+                integrations * ms.GetNumBaselines(),
+                ms.GetNumPols()));
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
@@ -110,6 +106,8 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
+        std::cout << "avg_data(0,0): " << metadata.avg_data(0,0) << std::endl;
+
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
         auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
@@ -143,9 +141,12 @@ namespace cpu
         metadata.CalcUVW(integration.GetUVW());
         const auto polar_direction = icrar::to_polar(metadata.direction);
         
-        // loop over baselines
+        // loop over smeared baselines
+        int baselines = metadata.GetConstants().nbaselines;
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
+            int md_baseline = baseline % metadata.GetConstants().nbaselines;
+
             constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
             double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
@@ -182,7 +183,7 @@ namespace cpu
                 {
                     for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
-                        metadata.avg_data(baseline, polarization) += integration_data(polarization, baseline, channel);
+                        metadata.avg_data(md_baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
                 }
             }
