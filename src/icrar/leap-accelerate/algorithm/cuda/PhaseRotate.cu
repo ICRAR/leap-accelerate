@@ -46,7 +46,6 @@
 #include <cuComplex.h>
 #include <math_constants.h>
 
-#include <vector>
 #include <complex>
 #include <istream>
 #include <iostream>
@@ -109,7 +108,7 @@ namespace cuda
             //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
             hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
             
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
 #endif
             auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
@@ -127,18 +126,19 @@ namespace cuda
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
-#ifdef NDEBUG
+#ifndef NDEBUG
         int integration_number = 0;
 #endif
         for(auto& integration : input)
         {
-#ifdef NDEBUG
+#ifndef NDEBUG
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.push_back(cpu::IntegrationResult(
                 direction,
-                integration.integration_number));
+                integration.integration_number,
+                boost::optional<std::vector<casacore::Vector<double>>>()));
         }
         deviceMetadata.ToHost(hostMetadata);
         
@@ -305,10 +305,10 @@ namespace cuda
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
+        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(2));
         assert(constants.nbaselines == integration.data.GetDimensionSize(1));
         assert(integration.baselines == integration.data.GetDimensionSize(1));
-        assert(constants.num_pols == integration.data.GetDimensionSize(2));
+        assert(constants.num_pols == integration.data.GetDimensionSize(0));
 
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // each block cannot have more than 1024 threads, only threads in a block may share memory

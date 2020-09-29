@@ -23,7 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 

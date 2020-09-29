@@ -33,7 +33,7 @@
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 #include <boost/optional.hpp>
 
@@ -61,7 +61,7 @@ namespace cuda
     {
     public:
         int integration_number;
-        icrar::cuda::device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
+        device_tensor3<std::complex<double>> data; //data is an array data[polarizations][baselines][channels]
 
         union
         {

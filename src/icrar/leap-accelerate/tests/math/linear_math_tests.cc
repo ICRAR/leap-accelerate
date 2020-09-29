@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 
 
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <iostream>
 #include <array>
