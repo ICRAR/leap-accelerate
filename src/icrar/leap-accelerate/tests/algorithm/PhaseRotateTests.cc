@@ -20,7 +20,6 @@
  * MA 02111 - 1307  USA
  */
 
-
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -29,23 +28,21 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <gtest/gtest.h>
+
+#include <boost/log/trivial.hpp>
 
 #include <vector>
 #include <set>
@@ -826,7 +823,7 @@ namespace icrar
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
     TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }

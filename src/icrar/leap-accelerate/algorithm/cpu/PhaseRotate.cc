@@ -67,19 +67,22 @@ namespace cpu
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
+
+            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+
             unsigned int startRow = 0;
             unsigned int integrationNumber = 0;
-            while((startRow + ms.GetNumBaselines()) < ms.GetNumRows())
+            for(int integrationNumber = 0; integrationNumber < integrations; ++integrationNumber)
             {
                 queue.push_back(Integration(
-                    integrationNumber++,
+                    integrationNumber,
                     ms,
-                    startRow,
+                    integrationNumber * ms.GetNumBaselines(),
                     ms.GetNumChannels(),
                     ms.GetNumBaselines(),
                     ms.GetNumPols()));
-                startRow += ms.GetNumBaselines();
             }
+
             input_queues.push_back(queue);
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
