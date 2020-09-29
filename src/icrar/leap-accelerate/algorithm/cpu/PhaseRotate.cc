@@ -89,14 +89,16 @@ namespace cpu
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+        std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
 
-
+        startTime = std::chrono::high_resolution_clock::now();
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>()); //TODO: UVW per integration
+            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>());
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        endTime = std::chrono::high_resolution_clock::now();
+        std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -114,7 +116,6 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
-        std::cout << "avg_data(0,0): " << metadata.avg_data(0,0) << std::endl;
 
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();

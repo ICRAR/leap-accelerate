@@ -104,12 +104,16 @@ namespace casalib
             output_calibrations.push_back(std::queue<CalibrationResult>());
         }
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "time: " << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+        std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
 
+        startTime = std::chrono::high_resolution_clock::now();
         for(int i = 0; i < directions.size(); ++i)
         {
+            metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        endTime = std::chrono::high_resolution_clock::now();
+        std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -144,8 +148,6 @@ namespace casalib
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
-
-                std::cout << "avg_data(0,0): " << metadata.avg_data.get()(0,0) << std::endl;
 
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
