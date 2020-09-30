@@ -206,32 +206,6 @@ namespace cpu
         }
     }
 
-    // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)
-    // {
-    //     this->oldUVW = uvws;
-    //     auto size = uvws.size();
-    //     this->UVW.setZero(uvws.size());
-    //     for(int n = 0; n < size; n++)
-    //     {
-    //         UVW(n, Eigen::all) = (uvws[n] * dd);
-    //     }
-
-    //     avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
-    // }
-
-    // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)
-    // {
-    //     this->oldUVW = uvws;
-    //     auto size = uvws.size();
-    //     this->UVW.setZero(uvws.size());
-    //     for(int n = 0; n < size; n++)
-    //     {
-    //         UVW(n, Eigen::all) = (uvws[n] * dd);
-    //     }
-
-    //     avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
-    // }
-
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_constants == rhs.m_constants

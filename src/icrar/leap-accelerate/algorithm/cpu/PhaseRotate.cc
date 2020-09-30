@@ -74,6 +74,8 @@ namespace cpu
 #endif
 
         unsigned int integrationNumber = 0;
+
+        // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         auto integration = Integration(
                 integrationNumber,
@@ -102,6 +104,7 @@ namespace cpu
         for(int i = 0; i < directions.size(); ++i)
         {
             metadata.SetDD(directions[i]);
+            metadata.CalcUVW();
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
@@ -126,6 +129,8 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
+
+        std::cout << "metadata.avg_data(0,0)" << metadata.avg_data(0,0) << std::endl;
 
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
