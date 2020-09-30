@@ -126,7 +126,8 @@ namespace cpu
         Eigen::MatrixXcd avg_data; // late initialized
 
 
-        MetaData(icrar::MeasurementSet& ms);
+        //MetaData(icrar::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const casalib::MetaData& metadata);
 
@@ -143,8 +144,15 @@ namespace cpu
         const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
-        void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
+        
         void SetDD(const icrar::MVDirection& direction);
+        void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
+        
+        /**
+         * @brief Updates the rotated UVW vector member
+         * preconditions - DD is set, oldUVW is set
+         */
+        void CalcUVW();
 
         bool operator==(const MetaData& rhs) const;
 

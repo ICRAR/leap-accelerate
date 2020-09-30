@@ -340,7 +340,6 @@ namespace icrar
         {
             std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
 
-
             output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>{
                 -0.728771850537932,
                 -0.272984982217124,

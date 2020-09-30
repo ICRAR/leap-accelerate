@@ -64,41 +64,44 @@ namespace cpu
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
+#ifdef PROFILING
         auto startTime = std::chrono::high_resolution_clock::now();
+#endif
+        unsigned int integrationNumber = 0;
+        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        auto integration = Integration(
+                integrationNumber,
+                ms,
+                0,
+                ms.GetNumChannels(),
+                integrations * ms.GetNumBaselines(),
+                ms.GetNumPols());
+
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
-
-            int integrations = ms.GetNumRows() / ms.GetNumBaselines();
-
-            unsigned int startRow = 0;
-            unsigned int integrationNumber = 0;
-            for(int integrationNumber = 0; integrationNumber < integrations; ++integrationNumber)
-            {
-                queue.push_back(Integration(
-                    integrationNumber,
-                    ms,
-                    integrationNumber * ms.GetNumBaselines(),
-                    ms.GetNumChannels(),
-                    ms.GetNumBaselines(),
-                    ms.GetNumPols()));
-            }
+            queue.push_back(integration);
 
             input_queues.push_back(queue);
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
+#ifdef PROFILING
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
-
         startTime = std::chrono::high_resolution_clock::now();
+#endif
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>());
+            metadata.SetDD(directions[i]);
+            metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+#ifdef PROFILING
         endTime = std::chrono::high_resolution_clock::now();
         std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
+#endif
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -147,14 +150,14 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
-        metadata.CalcUVW(integration.GetUVW());
+        metadata.CalcUVW();
         const auto polar_direction = icrar::to_polar(metadata.direction);
         
         // loop over smeared baselines
         int baselines = metadata.GetConstants().nbaselines;
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            int md_baseline = baseline % metadata.GetConstants().nbaselines;
+            int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
             constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 

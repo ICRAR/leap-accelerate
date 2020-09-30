@@ -75,8 +75,6 @@ namespace cuda
             throw std::runtime_error("Could not find CUDA device");
         }
 
-        auto metadata = icrar::casalib::MetaData(ms);
-
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
@@ -85,9 +83,9 @@ namespace cuda
             0,
             ms,
             0,
-            metadata.channels,
-            metadata.GetBaselines(),
-            metadata.num_pols);
+            ms.GetNumChannels(),
+            ms.GetNumBaselines(),
+            ms.GetNumPols());
 
         for(int i = 0; i < directions.size(); ++i)
         {
@@ -100,22 +98,15 @@ namespace cuda
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
 
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
         for(int i = 0; i < directions.size(); ++i)
         {
+            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.SetWv();
-            metadata.avg_data = casacore::Matrix<DComplex>(metadata.GetBaselines(), metadata.num_pols);
-            
-            auto hostMetadata = icrar::cpu::MetaData(metadata);
+            metadata.CalcUVW();
 
-            //hostMetadata.SetDD(directions[i]); // TODO: remove casalib
-            hostMetadata.CalcUVW(integration.GetUVW()); // TODO: assuming all uvw the same
-            
-#ifndef NDEBUG
-            std::cout << "device metadata: " << i+1 << "/" << directions.size() << std::endl;
-#endif
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
-            icrar::cuda::PhaseRotate(hostMetadata, deviceMetadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
