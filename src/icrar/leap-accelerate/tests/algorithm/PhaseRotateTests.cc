@@ -142,7 +142,7 @@ namespace icrar
                 //TODO: assert with LEAP-Cal
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
-                ASSERT_MEQ(ToVector(expectedCalibration), ToMatrix(result.GetData()[0]), THRESHOLD);
+                ASSERT_MEQD(ToVector(expectedCalibration), ToMatrix(result.GetData()[0]), THRESHOLD);
             }
         }
 
@@ -176,7 +176,7 @@ namespace icrar
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
 
 #ifdef PROFILING
-                std::cout << "casa time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
+                BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "casa time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
 #endif
             }
             if(impl == ComputeImplementation::eigen)
@@ -943,9 +943,9 @@ namespace icrar
             ASSERT_EQ(98, I1.size());
 
             //TODO: print out to comma seperated row major form
-            //ASSERT_MEQ(GetExpectedA(), A, 0.001);
+            //ASSERT_MEQD(GetExpectedA(), A, 0.001);
             //ASSERT_VEQI(GetExpectedI(), I, 0.001);
-            //ASSERT_MEQ(GetExpectedA1(), A1, 0.001);
+            //ASSERT_MEQD(GetExpectedA1(), A1, 0.001);
             //ASSERT_VEQI(GetExpectedI1(), I1, 0.001);clearclea
         }
     };

@@ -105,6 +105,9 @@ namespace icrar
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
             ASSERT_EQ(98, meta.Ad1.shape()[1]);
             ASSERT_EQ(98, meta.I1.shape()[0]);
+
+            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
+            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
         }
 
         void TestReadFromFileOverrideStations()
@@ -136,6 +139,9 @@ namespace icrar
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
             ASSERT_EQ(98, meta.Ad1.shape()[1]);
             ASSERT_EQ(98, meta.I1.shape()[0]);
+
+            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
+            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
         }
 
         void TestSetWv()

@@ -31,6 +31,8 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
+#include <icrar/leap-accelerate/core/logging.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -41,6 +43,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
 
+
 #include <istream>
 #include <iostream>
 #include <iterator>
@@ -48,6 +51,8 @@
 #include <queue>
 #include <exception>
 #include <memory>
+
+
 
 using Radians = double;
 
@@ -67,6 +72,7 @@ namespace cpu
 #ifdef PROFILING
         auto startTime = std::chrono::high_resolution_clock::now();
 #endif
+
         unsigned int integrationNumber = 0;
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         auto integration = Integration(
@@ -86,9 +92,10 @@ namespace cpu
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
+        
 #ifdef PROFILING
         auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
+        BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "read time: " << ToMSString(endTime - startTime) << std::endl;
         startTime = std::chrono::high_resolution_clock::now();
 #endif
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
@@ -100,7 +107,7 @@ namespace cpu
         }
 #ifdef PROFILING
         endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
+        BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "calc time: " << ToMSString(endTime - startTime) << std::endl;
 #endif
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));

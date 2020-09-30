@@ -39,6 +39,7 @@ set(sources
     math/cpu/vector.cc
 
     core/compute_implementation.cc
+    core/logging.cc
 
     json/json_helper.cc
     

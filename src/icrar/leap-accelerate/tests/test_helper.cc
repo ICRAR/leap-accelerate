@@ -187,12 +187,12 @@ void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::M
     ASSERT_EQ(expected.GetConstants().dlm_dec, actual.GetConstants().dlm_dec);
 
 
-    ASSERT_MEQ(expected.GetA(), actual.GetA(), THRESHOLD);
+    ASSERT_MEQD(expected.GetA(), actual.GetA(), THRESHOLD);
     ASSERT_MEQI(expected.GetI(), actual.GetI(), THRESHOLD);
-    ASSERT_MEQ(expected.GetAd(), actual.GetAd(), THRESHOLD);
-    ASSERT_MEQ(expected.GetA1(), actual.GetA1(), THRESHOLD);
+    ASSERT_MEQD(expected.GetAd(), actual.GetAd(), THRESHOLD);
+    ASSERT_MEQD(expected.GetA1(), actual.GetA1(), THRESHOLD);
     ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
-    ASSERT_MEQ(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
+    ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
     ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
     ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);
