@@ -130,8 +130,6 @@ namespace cpu
             output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
         }
 
-        std::cout << "metadata.avg_data(0,0)" << metadata.avg_data(0,0) << std::endl;
-
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
         auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only

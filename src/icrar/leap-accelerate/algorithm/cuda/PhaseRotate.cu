@@ -132,13 +132,11 @@ namespace cuda
         }
         deviceMetadata.ToHost(hostMetadata);
         
-        std::cout << "metadata.avg_data(0,0)" << hostMetadata.avg_data(0,0) << std::endl;
-
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-
         auto& indexes = hostMetadata.GetI1();
+        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
-        auto cal1 = hostMetadata.GetAd1() * avg_data_angles(indexes, 0); // 1st pol only
+        auto cal1 = hostMetadata.GetAd1() * avg_data_t;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
         Eigen::VectorXi i = hostMetadata.GetI();
@@ -146,12 +144,13 @@ namespace cuda
         
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)
         {
-            Eigen::MatrixXd cumsum = hostMetadata.GetA().data()[n] * cal1;
+            Eigen::MatrixXd cumsum = hostMetadata.GetA()(n, Eigen::all) * cal1;
             double sum = cumsum.sum();
             dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
 
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
+        assert(dIntColumn.cols() == 1);
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
