@@ -284,14 +284,6 @@ namespace icrar
 
             auto cthreshold = std::complex<double>(0.001, 0.001);
 
-            // ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
-            // ASSERT_EQCD(-24.9622-30.7819i, integrationOutput.GetData()(0,1,0), THRESHOLD);
-            // ASSERT_EQCD(-16.0242+31.1452i, integrationOutput.GetData()(0,2,0), THRESHOLD);
-
-            //ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
-            //ASSERT_EQCD(35.6735722091204 + 17.2635476789549i, integrationOutput.GetData()(0,1,0), THRESHOLD);
-            //ASSERT_EQCD(25.3136137725085 + -24.2077854859281i, integrationOutput.GetData()(0,2,0), THRESHOLD);
-
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
             ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.avg_data(1,0), THRESHOLD);
