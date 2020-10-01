@@ -27,11 +27,12 @@ namespace icrar
 namespace log
 {
     /**
-     * @brief Initializes
+     * @brief Initializes boost logging
      * 
      */
     void Initialize()
     {
+        //TODO: this currently does not link on cluster builds
         // boost::log::add_file_log
         // (
         //     boost::log::keywords::file_name = "sample_%N.log",/*< file name pattern >*/

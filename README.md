@@ -38,6 +38,10 @@ LEAP-Accelerate includes:
 
 #### Linux Cluster
 
+`mkdir -p build && cd build`
+
+`git submodule update --init --recursive`
+
 `module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
 
 `module unload gfortran/default`
@@ -49,8 +53,6 @@ LEAP-Accelerate includes:
 `export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
 
 `export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build && cd build`
 
 `cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
@@ -81,13 +83,12 @@ or
 * cuda 10.1
 * boost 1.71.0
 * casacore 3.1.2
-* eigen 3.3.90
 
 #### Minimum Versions Compatibility
 
 * g++ 6.3.0
 * cuda 9.0
-* boost 1.63.0 (1.55.0 available)
+* boost 1.63.0
 * cmake 3.15.1
 * casacore 3.1.2
 
