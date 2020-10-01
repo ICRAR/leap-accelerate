@@ -71,13 +71,13 @@ namespace cpu
             unsigned int integrationNumber = 0;
             while((startRow + ms.GetNumBaselines()) < ms.GetNumRows())
             {
-                queue.push_back(Integration(
+                queue.emplace_back(
                     integrationNumber++,
                     ms,
                     startRow,
                     ms.GetNumChannels(),
                     ms.GetNumBaselines(),
-                    ms.GetNumPols()));
+                    ms.GetNumPols());
                 startRow += ms.GetNumBaselines();
             }
             input_queues.push_back(queue);
@@ -105,7 +105,7 @@ namespace cpu
         for(auto& integration : input)
         {
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+            output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
@@ -129,7 +129,7 @@ namespace cpu
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
+        output_calibrations.emplace_back(direction, cal);
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
@@ -173,7 +173,7 @@ namespace cpu
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    hasNaN |= isnan(polarizations(polarization).real()) || isnan(polarizations(polarization).imag());
+                    hasNaN |= std::isnan(polarizations(polarization).real()) || std::isnan(polarizations(polarization).imag());
                 }
 
                 if(!hasNaN)

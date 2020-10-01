@@ -26,6 +26,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <type_traits>
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
@@ -76,12 +77,16 @@ namespace icrar
      * 
      * @tparam T The input vector type
      * @tparam R the output vector type
+     * @tparam function of signature R(const T&)
      * @param vector 
      * @return std::vector<R> 
      */
-    template<typename R, typename T>
-    std::vector<R> vector_map(const std::vector<T>& vector, std::function<R(const T&)> lambda)
+    template<typename R, typename T, typename Op>
+    std::vector<R> vector_map(const std::vector<T>& vector, Op lambda)
     {
+        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
+
+        // TODO: Could optimize by using lambda type as a template parameter instead of std::function
         // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
         auto result = std::vector<R>(vector.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
         std::transform(vector.cbegin(), vector.cend(), result.begin(), lambda);
