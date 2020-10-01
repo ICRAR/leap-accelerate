@@ -79,7 +79,9 @@ namespace casalib
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
         
+#ifdef PROFILING
         auto startTime = std::chrono::high_resolution_clock::now();
+#endif
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
@@ -103,17 +105,20 @@ namespace casalib
             output_integrations.push_back(std::queue<IntegrationResult>());
             output_calibrations.push_back(std::queue<CalibrationResult>());
         }
+#ifdef PROFILING
         auto endTime = std::chrono::high_resolution_clock::now();
         std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
-
         startTime = std::chrono::high_resolution_clock::now();
+#endif
         for(int i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+#ifdef PROFILING
         endTime = std::chrono::high_resolution_clock::now();
         std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
+#endif
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }

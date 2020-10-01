@@ -78,7 +78,6 @@ namespace cpu
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         auto integration = Integration(
-                queue.emplace_back(
                 integrationNumber,
                 ms,
                 0,

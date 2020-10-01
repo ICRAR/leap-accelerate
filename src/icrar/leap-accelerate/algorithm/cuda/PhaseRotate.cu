@@ -94,7 +94,7 @@ namespace cuda
             input_queues.push_back(std::vector<cuda::DeviceIntegration>());
             
             //TODO: Integration memory could be reused
-            input_queues[i].emplace_back(integration); //TODO: Integration memory could be reused?
+            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory could be reused?
             
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
@@ -125,10 +125,10 @@ namespace cuda
         for(auto& integration : input)
         {
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
-            output_integrations.emplace_back(
+            output_integrations.push_back(cpu::IntegrationResult(
                 direction,
                 integration.GetIntegrationNumber(),
-                boost::optional<std::vector<casacore::Vector<double>>>());
+                boost::optional<std::vector<casacore::Vector<double>>>()));
         }
         deviceMetadata.ToHost(hostMetadata);
         
@@ -154,7 +154,7 @@ namespace cuda
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
@@ -318,7 +318,7 @@ namespace cuda
     {
         const auto& constants = metadata.GetConstants(); 
         assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetData().GetDimensionSize(2));
-        assert(constants.nbaselines == integration.GetBaselines() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
+        assert(constants.nbaselines == metadata.avg_data.GetRows() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetData().GetDimensionSize(0));
         
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
