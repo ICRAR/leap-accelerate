@@ -38,6 +38,8 @@ LEAP-Accelerate includes:
 
 #### Linux Cluster
 
+`git submodule update --init --recursive`
+
 `mkdir -p build && cd build`
 
 `module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
@@ -54,7 +56,13 @@ LEAP-Accelerate includes:
 
 `cmake ../ -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
 
-(alternatively can configure usingwhich explicit cuda location)
+An explicit cuda location can be specified using the following configuration commands:
+
+`export CUDA_HOME=/usr/local/cuda-9.0`
+
+`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
+
+`export PATH=$PATH:$CUDA_HOME/bin`
 
 `cmake ../ -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} -DCUDA_SDK_ROOT_DIR=${CUDA_HOME} -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
 

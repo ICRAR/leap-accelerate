@@ -44,7 +44,8 @@ namespace icrar
         std::string m_binDir;
         std::string m_srcDir;
 
-        CommandLineTests() {
+        CommandLineTests()
+        {
             m_binDir = PROJECT_BINARY_DIR;
             m_srcDir = PROJECT_SOURCE_DIR;
         }
