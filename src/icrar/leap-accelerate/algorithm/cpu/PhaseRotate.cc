@@ -78,6 +78,7 @@ namespace cpu
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
         auto integration = Integration(
+                queue.emplace_back(
                 integrationNumber,
                 ms,
                 0,
@@ -127,9 +128,8 @@ namespace cpu
         for(auto& integration : input)
         {
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.push_back(cpu::IntegrationResult(direction, integration.integration_number, boost::none));
+            output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         auto& indexes = metadata.GetI1();
         auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
@@ -152,7 +152,7 @@ namespace cpu
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
+        output_calibrations.emplace_back(direction, cal);
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
@@ -198,7 +198,7 @@ namespace cpu
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
-                    hasNaN |= isnan(polarizations(polarization).real()) || isnan(polarizations(polarization).imag());
+                    hasNaN |= std::isnan(polarizations(polarization).real()) || std::isnan(polarizations(polarization).imag());
                 }
 
                 if(!hasNaN)

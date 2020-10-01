@@ -246,7 +246,7 @@ namespace casalib
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
                 for(int i = 0; i < metadata.num_pols; ++i)
                 {
-                    hasNaN |= isnan(polarizations(i).real()) || isnan(polarizations(i).imag());
+                    hasNaN |= std::isnan(polarizations(i).real()) || std::isnan(polarizations(i).imag());
                 }
 
                 if(!hasNaN)
