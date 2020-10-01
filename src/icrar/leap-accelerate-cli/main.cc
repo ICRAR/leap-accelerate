@@ -59,7 +59,7 @@ namespace icrar
         boost::optional<std::string> filePath = boost::none; // Measurement set filepath
         boost::optional<std::string> configFilePath = boost::none; // Config filepath
 
-        boost::optional<int> stations = boost::none;
+        boost::optional<std::string> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
         boost::optional<std::string> implementation = std::string("casa");
 
@@ -90,8 +90,12 @@ namespace icrar
         ArgumentsValidated(Arguments&& args)
             : m_source(std::move(args.source))
             , m_filePath(std::move(args.filePath))
-            , m_stations(std::move(args.stations))
         {
+            if(args.stations.is_initialized())
+            {
+                m_stations = std::stoi(args.stations.get());
+            }
+            
             if(args.implementation.is_initialized())
             {
                 if(!TryParseComputeImplementation(args.implementation.get(), m_computeImplementation))
