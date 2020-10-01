@@ -81,8 +81,10 @@ find_package(LAPACK)
 find_package(GSL)
 
 # Local Libraries
+#add_subdirectory(external/eigen-3.3.90) # builds eigen3 tests
 set(EIGEN3_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/external/eigen-3.3.90)
 find_package(Eigen3 REQUIRED)
+
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
 
