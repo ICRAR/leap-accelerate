@@ -22,14 +22,13 @@
 
 #pragma once
 
+#include "cuda_runtime.h"
+
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
-
-#include <icrar/leap-accelerate/cuda/device_vector.h>
-#include <icrar/leap-accelerate/cuda/device_matrix.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>

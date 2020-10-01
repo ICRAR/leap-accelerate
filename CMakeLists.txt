@@ -34,7 +34,6 @@ if (BUILD_TESTING)
   # git submodule update
   # This is a cmake module and needs no further input from you
 
-  #${PROJECT_SOURCE_DIR}
   #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
   add_subdirectory(external/gtest-1.8.1)
@@ -72,9 +71,11 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-enable_language(CUDA)
 
 # Global Libraries
+find_package(CUDA REQUIRED)
+enable_language(CUDA)
+
 find_package(Boost REQUIRED COMPONENTS log)
 find_package(Casacore REQUIRED)
 find_package(LAPACK)

@@ -38,6 +38,8 @@ LEAP-Accelerate includes:
 
 #### Linux Cluster
 
+`mkdir -p build && cd build`
+
 `module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
 
 `module unload gfortran/default`
@@ -50,9 +52,11 @@ LEAP-Accelerate includes:
 
 `export PATH=$PATH:$CUDA_HOME/bin`
 
-`mkdir -p build && cd build`
+`cmake ../ -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
 
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
+(alternatively can configure usingwhich explicit cuda location)
+
+`cmake ../ -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} -DCUDA_SDK_ROOT_DIR=${CUDA_HOME} -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 
