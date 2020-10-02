@@ -28,13 +28,13 @@ LEAP-Accelerate includes:
 
 `cd Debug`
 
-`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
+`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug`
 
 #### Release
 
 `cd Release`
 
-`cmake ../../../ -DCUDA_TOOLKIT_ROOT_DIR="${CUDA_HOME}" -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../ -DCMAKE_BUILD_TYPE=Release`
 
 #### Linux Cluster
 

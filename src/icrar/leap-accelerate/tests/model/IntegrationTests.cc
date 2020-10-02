@@ -21,9 +21,10 @@
 */
 
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
+
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -31,6 +32,8 @@
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
+
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 #include <gtest/gtest.h>
 
@@ -76,33 +79,64 @@ namespace icrar
 
         void TestReadFromFile()
         {
-            // auto meta = icrar::casalib::MetaData(*ms);
+            using namespace std::literals::complex_literals;
+            double THRESHOLD = 0.0001;
 
-            // ASSERT_EQ(false, meta.m_initialized);
-            // //ASSERT_EQ(4853, meta.nantennas);
-            // ASSERT_EQ(48, meta.channels);
-            // ASSERT_EQ(4, meta.num_pols);
-            // ASSERT_EQ(126, meta.stations);
-            // ASSERT_EQ(8001, meta.GetBaselines());
-            // ASSERT_EQ(1, meta.rows);
-            // ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
-            // ASSERT_EQ(640000, meta.freq_inc_hz);
-            // ASSERT_EQ(3601, meta.solution_interval);
+            {
+                //RAW
+                auto vis = ms->GetVis(0, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                auto uvw = ms->GetCoords();
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, vis(4,0,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, uvw(0,0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, uvw(1,0));
 
-            // ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
-            // ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
+                vis = ms->GetVis(ms->GetNumBaselines(), 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, vis(4,0,0), THRESHOLD);
+                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, vis(5,0,0), THRESHOLD);
+            }
+            {
+                //CASA
+                auto casaIntegration = icrar::casalib::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                ASSERT_EQ(4, casaIntegration.data.dimension(0));
+                ASSERT_EQ(8001, casaIntegration.data.dimension(1));
+                ASSERT_EQ(48, casaIntegration.data.dimension(2));
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, casaIntegration.data(0,1,0), THRESHOLD);
+                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, casaIntegration.data(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, casaIntegration.uvw[0](0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, casaIntegration.uvw[1](0));
 
-            // ASSERT_EQ(4754, meta.A.shape()[0]);
-            // ASSERT_EQ(128, meta.A.shape()[1]);
-            // ASSERT_EQ(128, meta.Ad.shape()[0]);
-            // ASSERT_EQ(4754, meta.Ad.shape()[1]);
-            // ASSERT_EQ(4754, meta.I.shape()[0]);
+                casaIntegration = icrar::casalib::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                ASSERT_EQ(4, casaIntegration.data.dimension(0));
+                ASSERT_EQ(8001, casaIntegration.data.dimension(1));
+                ASSERT_EQ(48, casaIntegration.data.dimension(2));
+                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, casaIntegration.data(0,1,0), THRESHOLD);
+                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, casaIntegration.data(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(1236.5613097865571, casaIntegration.uvw[0](0));
+                ASSERT_DOUBLE_EQ(1159.9036887675572, casaIntegration.uvw[1](0));
+            }
+            {
+                //CPU
+                auto integration = cpu::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                ASSERT_EQ(4, integration.GetData().dimension(0));
+                ASSERT_EQ(8001, integration.GetData().dimension(1));
+                ASSERT_EQ(48, integration.GetData().dimension(2));
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetData()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetData()(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
-            // ASSERT_EQ(98, meta.A1.shape()[0]);
-            // ASSERT_EQ(128, meta.A1.shape()[1]);
-            // ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            // ASSERT_EQ(98, meta.Ad1.shape()[1]);
-            // ASSERT_EQ(98, meta.I1.shape()[0]);
+
+                integration = cpu::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
+                ASSERT_EQ(4, integration.GetData().dimension(0));
+                ASSERT_EQ(8001, integration.GetData().dimension(1));
+                ASSERT_EQ(48, integration.GetData().dimension(2));
+                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, integration.GetData()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, integration.GetData()(1,1,0), THRESHOLD);
+                //TODO
+                //ASSERT_DOUBLE_EQ(1236.5613097865571, integration.GetUVW()[0](0));
+                //ASSERT_DOUBLE_EQ(1159.9036887675572, integration.GetUVW()[1](0));
+            }
+
         }
 
         void TestCudaBufferCopy()
@@ -134,6 +168,6 @@ namespace icrar
     };
 
     TEST_F(IntegrationTests, DISABLED_TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(IntegrationTests, DISABLED_TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(IntegrationTests, TestReadFromFile) { TestReadFromFile(); }
     TEST_F(IntegrationTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
 }

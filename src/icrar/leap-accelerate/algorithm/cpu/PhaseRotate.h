@@ -63,8 +63,8 @@ namespace cpu
     class MetaData;
     
     using CalibrateResult = std::pair<
-        std::vector<std::queue<IntegrationResult>>,
-        std::vector<std::queue<CalibrationResult>>
+        std::vector<std::vector<IntegrationResult>>,
+        std::vector<std::vector<CalibrationResult>>
     >;
 
     /**
@@ -87,8 +87,8 @@ namespace cpu
         MetaData& metadata,
         const MVDirection& directions,
         std::vector<Integration>& input,
-        std::queue<IntegrationResult>& output_integrations,
-        std::queue<CalibrationResult>& output_calibrations);
+        std::vector<IntegrationResult>& output_integrations,
+        std::vector<CalibrationResult>& output_calibrations);
 
     /**
      * @brief Performs averaging over each baseline, channel and polarization.

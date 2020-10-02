@@ -23,7 +23,7 @@
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
@@ -90,13 +90,13 @@ namespace icrar
             {
                 casacore::MVDirection(-0.4606549305661674,-0.29719233792392513),
                 casacore::MVDirection(-0.753231018062671,-0.44387635324622354),
-                //casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
-                //casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
-                // casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
-                // casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
-                // casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
-                // casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
-                // casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
+                casacore::MVDirection(-0.6207547100721282,-0.2539086572881469),
+                casacore::MVDirection(-0.41958660604621867,-0.03677626900108552),
+                casacore::MVDirection(-0.41108685258900596,-0.08638012622791202),
+                casacore::MVDirection(-0.7782459495668798,-0.4887860989684432),
+                casacore::MVDirection(-0.17001324965728973,-0.28595644149463484),
+                casacore::MVDirection(-0.7129444556035118,-0.365286407171852),
+                casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
             std::cout << "baselines: " << ms->GetNumBaselines() << std::endl;
@@ -130,7 +130,7 @@ namespace icrar
     TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197638568-32.ms", 126); }
     TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126); }
 
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
 }

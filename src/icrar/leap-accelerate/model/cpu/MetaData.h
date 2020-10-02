@@ -97,7 +97,7 @@ namespace cpu
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
-            return speed_of_light / (freq_inc_hz + i * freq_inc_hz);
+            return speed_of_light / (freq_start_hz + i * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;
@@ -109,16 +109,16 @@ namespace cpu
 
         Constants m_constants;
         
-        Eigen::MatrixXd A;
-        Eigen::VectorXi I;
-        Eigen::MatrixXd Ad;
+        Eigen::MatrixXd m_A;
+        Eigen::VectorXi m_I; // The flagged indexes of A
+        Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
 
-        Eigen::MatrixXd A1;
-        Eigen::VectorXi I1;
-        Eigen::MatrixXd Ad1;
+        Eigen::MatrixXd m_A1;
+        Eigen::VectorXi m_I1;
+        Eigen::MatrixXd m_Ad1;
 
-        std::vector<icrar::MVuvw> oldUVW; // late initialized
-        std::vector<icrar::MVuvw> UVW; // late initialized
+        std::vector<icrar::MVuvw> m_oldUVW; // late initialized
+        std::vector<icrar::MVuvw> m_UVW; // late initialized
     
     public:
         icrar::MVDirection direction; // late initialized
@@ -127,9 +127,8 @@ namespace cpu
 
 
         MetaData(icrar::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const casalib::MetaData& metadata);
-        MetaData(const casalib::MetaData& metadata, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
-        
 
         const Constants& GetConstants() const;
 
@@ -141,8 +140,8 @@ namespace cpu
         const Eigen::VectorXi& GetI1() const;
         const Eigen::MatrixXd& GetAd1() const;
 
-        const std::vector<icrar::MVuvw>& GetOldUVW() const { return oldUVW; }
-        const std::vector<icrar::MVuvw>& GetUVW() const { return UVW; }
+        const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
+        const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
         void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
         void SetDD(const icrar::MVDirection& direction);

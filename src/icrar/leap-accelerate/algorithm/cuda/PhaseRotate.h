@@ -38,7 +38,6 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <queue>
 #include <vector>
 
 namespace icrar
@@ -81,8 +80,8 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const MVDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::queue<cpu::IntegrationResult>& output_integrations,
-        std::queue<cpu::CalibrationResult>& output_calibrations);
+        std::vector<cpu::IntegrationResult>& output_integrations,
+        std::vector<cpu::CalibrationResult>& output_calibrations);
 
     void RotateVisibilities(
         DeviceIntegration& integration,

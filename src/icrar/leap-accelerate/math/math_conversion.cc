@@ -20,9 +20,10 @@
  * MA 02111 - 1307  USA
  */
 
-#include "linear_math_helper.h"
+#include "math_conversion.h"
 
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 namespace icrar
 {
@@ -33,11 +34,7 @@ namespace icrar
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
     {
-        // see https://stackoverflow.com/questions/33379145/equivalent-of-python-map-function-using-lambda
-        std::vector<icrar::MVuvw> res(value.size()); //TODO: this populates with 0, O(n), need to reserve and use back_inserter
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToUVW);
-        assert(value.size() == res.size());
-        return res;
+        return vector_map(value, ToUVW);
     }
 
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value)
@@ -59,9 +56,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        auto res = std::vector<casacore::MVuvw>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaUVW);
-        return res;
+        return vector_map(value, ToCasaUVW);
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value)
@@ -83,9 +78,7 @@ namespace icrar
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        auto res = std::vector<icrar::MVDirection>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToDirection);
-        return res;
+        return vector_map(value, ToDirection);
     }
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
@@ -95,8 +88,21 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
     {
-        auto res = std::vector<casacore::MVDirection>(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), ToCasaDirection);
-        return res;
+        return vector_map(value, ToCasaDirection);
+    }
+
+    Eigen::Vector2d to_polar(const MVDirection& xyz)
+    {
+        auto tmp = Eigen::Vector2d();
+        if (xyz(0) != 0 || xyz(1) != 0)
+        {
+            tmp(0) = std::atan2(xyz(1),xyz(0));
+        }
+        else
+        {
+            tmp(0) = 0.0;
+        }
+        tmp(1) = std::asin(xyz(2));
+        return tmp;
     }
 }

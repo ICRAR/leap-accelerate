@@ -61,7 +61,7 @@ namespace cuda
     {
     public:
         int integration_number;
-        device_tensor3<std::complex<double>> data; //data is an array data[channels][baselines][polarizations]
+        device_tensor3<std::complex<double>> data; //data is an array data[polarizations][baselines][channels]
 
         union
         {

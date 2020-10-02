@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/model/casa/Integration.h>
+
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
@@ -53,11 +54,21 @@ namespace cpu
     class Integration
     {
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
+        Eigen::Tensor<std::complex<double>, 3> m_data; //data is an array data[nch][nbl][npol]
 
     public:
-        Integration(const icrar::MeasurementSet& ms, int integrationNumber, int channels, int baselines, int polarizations);
+        /**
+         * @brief Construct a new Integration object from the equivalent casalib object
+         */
+        Integration(const icrar::casalib::Integration& integration);
+        Integration(
+            unsigned int integrationNumber,
+            const icrar::MeasurementSet& ms,
+            unsigned int index,
+            unsigned int channels,
+            unsigned int baselines,
+            unsigned int polarizations);
 
-        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[nch][nbl][npol]
 
         int integration_number;
 
@@ -76,6 +87,19 @@ namespace cpu
         bool operator==(const Integration& rhs) const;
 
         const std::vector<icrar::MVuvw>& GetUVW() const;
+
+        [[deprecated("Use GetVis()")]]
+        const Eigen::Tensor<std::complex<double>, 3>& GetData() const { return m_data; }
+
+        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
+
+
+        /**
+         * @brief Get the Data object of size (polarizations, baselines, channels)
+         * 
+         * @return Eigen::Tensor<std::complex<double>, 3>& 
+         */
+        Eigen::Tensor<std::complex<double>, 3>& GetData() { return m_data; }
     };
 }
 }

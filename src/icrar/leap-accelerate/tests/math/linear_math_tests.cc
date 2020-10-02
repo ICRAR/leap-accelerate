@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 
 
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <iostream>
 #include <array>
@@ -101,7 +101,11 @@ namespace icrar
 
         void TestConvertUVWVector()
         {
-            auto expected = std::vector<icrar::MVuvw>{{1.0, 2.0, 3.0}};
+            auto expected = std::vector<icrar::MVuvw>
+            {
+                {1.0, 2.0, 3.0},
+                {0.0,0.0,0.0}
+            };
 
             ASSERT_EQ(
                 expected,
@@ -116,6 +120,19 @@ namespace icrar
                 expected,
                 ToDirection(ToCasaDirection(expected)));
         }
+
+        void TestConvertMVDirectionVector()
+        {
+            auto expected = std::vector<icrar::MVDirection>
+            {
+                icrar::MVDirection(1.0, 2.0, 3.0).normalized(),
+                icrar::MVDirection(1.0, 0.0, 0.0).normalized(),
+            };
+
+            ASSERT_EQ(
+                expected,
+                ToDirectionVector(ToCasaDirectionVector(expected)));
+        }
     };
 
     TEST_F(linear_math_tests, TestMVDirection) { TestMVDirection(); }
@@ -127,4 +144,5 @@ namespace icrar
     TEST_F(linear_math_tests, TestConvertUVWVector) { TestConvertUVWVector(); }
 
     TEST_F(linear_math_tests, TestConvertMVDirection) { TestConvertMVDirection(); }
+    TEST_F(linear_math_tests, TestConvertMVDirectionVector) { TestConvertMVDirectionVector(); }
 }

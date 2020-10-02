@@ -23,7 +23,7 @@
 #include "matrix_invert.h"
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 namespace icrar
 {

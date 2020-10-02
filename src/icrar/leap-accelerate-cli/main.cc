@@ -20,15 +20,16 @@
  * MA 02111 - 1307  USA
  */
 
-
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/json/json_helper.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <CLI/CLI.hpp>
@@ -56,11 +57,11 @@ namespace icrar
     {
         InputType source = InputType::FILENAME;
         boost::optional<std::string> filePath = boost::none; // Measurement set filepath
-        boost::optional<std::string> configPath = boost::none; // Config filepath
+        boost::optional<std::string> configFilePath = boost::none; // Config filepath
 
         boost::optional<std::string> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
-        ComputeImplementation implementation = ComputeImplementation::casa;
+        boost::optional<std::string> implementation = std::string("casa");
 
         Arguments() {}
     };
@@ -75,7 +76,7 @@ namespace icrar
          */
         InputType m_source; // MeasurementSet source type
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
-        boost::optional<std::string> m_stations; // Overriden number of stations
+        boost::optional<int> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
 
@@ -89,9 +90,20 @@ namespace icrar
         ArgumentsValidated(Arguments&& args)
             : m_source(std::move(args.source))
             , m_filePath(std::move(args.filePath))
-            , m_stations(std::move(args.stations))
-            , m_computeImplementation(icrar::ComputeImplementation::casa)
         {
+            if(args.stations.is_initialized())
+            {
+                m_stations = std::stoi(args.stations.get());
+            }
+            
+            if(args.implementation.is_initialized())
+            {
+                if(!TryParseComputeImplementation(args.implementation.get(), m_computeImplementation))
+                {
+                    throw std::invalid_argument("invalid implementation argument");
+                }
+            }
+            
             switch (m_source)
             {
             case InputType::STREAM:
@@ -100,32 +112,32 @@ namespace icrar
             case InputType::FILENAME:
                 if (m_filePath.is_initialized())
                 {
-                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get(), boost::none);
+                    m_measurementSet = std::make_unique<MeasurementSet>(m_filePath.get(), m_stations);
                 }
                 else
                 {
-                    throw std::runtime_error("source filename not provided");
+                    throw std::invalid_argument("source filename not provided");
                 }
                 break;
             case InputType::APACHE_ARROW:
                 throw new std::runtime_error("only stream in and file input are currently supported");
                 break;
             default:
-                throw new std::runtime_error("only stream in and file input are currently supported");
+                throw new std::invalid_argument("only stream in and file input are currently supported");
                 break;
             }
 
-            if(args.configPath.is_initialized())
+            if(args.configFilePath.is_initialized())
             {
                 // Configuration via json config
-                throw std::runtime_error("config not supported");
+                throw std::invalid_argument("json config not supported");
             }
             else
             {
                 // Configuration via arguments
                 if(!args.directions.is_initialized())
                 {
-                    throw std::runtime_error("directions argument not provided");
+                    throw std::invalid_argument("directions argument not provided");
                 }
                 else
                 {
@@ -168,7 +180,8 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-c,--compute", rawArgs.implementation, "Compute optimization type");
+    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type");
+    app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
 
     try
     {
@@ -186,32 +199,33 @@ int main(int argc, char** argv)
         //=========================
         // Calibration to std::cout
         //=========================
-        std::cout << "running LEAP-Accelerate:" << std::endl;
-        auto queue = std::queue<casalib::Integration>();
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:
         {
-            auto result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
         case ComputeImplementation::eigen:
         {
-            auto result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::PrintResult(result);
             break;
         }
         case ComputeImplementation::cuda:
         {
-            THROW_NOT_IMPLEMENTED();
-            //icrar::cuda::Calibrate(args.GetMeasurementSet(), *metadata, directions, boost::none);
-            //break;
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::PrintResult(result);
+            break;
         }
         }
-        std::cout << "done" << std::endl;
+        return 0;
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
+        return -1;
     }
 }
 

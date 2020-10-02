@@ -30,7 +30,7 @@ namespace icrar
 namespace cuda
 {
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
-    : data(integration.data)
+    : data(integration.GetData())
     , index(integration.index)
     , x(integration.x)
     , channels(integration.channels)

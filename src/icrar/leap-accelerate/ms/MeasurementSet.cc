@@ -56,6 +56,11 @@ namespace icrar
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
     }
 
+    unsigned int MeasurementSet::GetNumRows() const
+    {
+        return m_msmc->uvw().nrow();
+    }
+
     unsigned int MeasurementSet::GetNumStations() const
     {
         return m_stations;
@@ -82,12 +87,19 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumChannels() const
     {
-        return m_msc->spectralWindow().numChan().get(0);
+        if(m_msc->spectralWindow().nrow() > 0)
+        {
+            return m_msc->spectralWindow().numChan().get(0);
+        }
+        else
+        {
+            return 0;
+        }
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {
-        GetCoords(0, GetNumBaselines());
+        return GetCoords(0, GetNumBaselines());
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row, unsigned int nBaselines) const
@@ -108,15 +120,18 @@ namespace icrar
         auto num_channels = GetNumChannels();
         auto num_baselines = GetNumBaselines();
         auto num_pols = GetNumPols();
-        return GetVis(num_channels, num_baselines, num_pols);
+        return GetVis(0, 0, num_channels, num_baselines, num_pols);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(std::uint32_t nChannels, std::uint32_t nBaselines, std::uint32_t nPolarizations) const
+    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
+        std::uint32_t startBaseline,
+        std::uint32_t startChannel,
+        std::uint32_t nChannels,
+        std::uint32_t nBaselines,
+        std::uint32_t nPolarizations) const
     {
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nChannels, nBaselines, nPolarizations);
-        int start_baseline = 0;
-        int start_channel = 0;
-        icrar::ms_read_vis(*m_measurementSet, start_baseline, start_channel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
+        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
+        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
         return visibilities;
     }
 }

@@ -112,6 +112,8 @@ namespace icrar
         return res;
     }
 
+    //icrar::MVuvw ToUVW(const casacore::MVPosition& value);
+    
     /**
      * @brief Converts a casacore UVW value to an icrar UVW value
      * 
@@ -138,4 +140,12 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value);
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
+
+    /**
+     * @brief Converts a unit catersian direction to polar coordinates
+     * 
+     * @param cartesian 
+     * @return Eigen::Vector2d 
+     */
+    Eigen::Vector2d to_polar(const MVDirection& xyz);
 }

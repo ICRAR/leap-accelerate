@@ -26,10 +26,12 @@
 
 void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
+    std::cerr << std::setprecision(15);
     if(std::abs(expected.real() - actual.real()) > tolerance || std::abs(expected.imag() - actual.imag()) > tolerance)
     {
         std::cerr << file << ":" << line << " " << ln << "!=" << rn << "\n";
-        std::cerr << "got " << actual.real() << " + " << actual.imag() << "i\n"; 
+        std::cerr << "expected: " << expected.real() << " + " << expected.imag() << "i\n"; 
+        std::cerr << "got: " << actual.real() << " + " << actual.imag() << "i\n"; 
     }
     EXPECT_NEAR(expected.real(), actual.real(), tolerance);
     EXPECT_NEAR(expected.imag(), actual.imag(), tolerance);
@@ -137,7 +139,7 @@ template<typename T>
 void assert_veq(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
 {
     ASSERT_EQ(expected.size(), actual.size());
-    if(!isApprox(expected, actual, tolerance))
+    if(!icrar::isApprox(expected, actual, tolerance))
     {
         std::cerr << ln << " != " << rn << "\n";
         std::cerr << file << ":" << line << " std::vector elements differ at:\n" << std::setprecision(15);
@@ -152,7 +154,7 @@ void assert_veq(const std::vector<T>& expected, const std::vector<T>& actual, do
         }
         std::cerr << std::endl;
     }
-    ASSERT_TRUE(isApprox(expected, actual, tolerance));
+    ASSERT_TRUE(icrar::isApprox(expected, actual, tolerance));
 }
 
 void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)

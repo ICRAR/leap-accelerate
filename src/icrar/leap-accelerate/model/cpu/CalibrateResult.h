@@ -22,12 +22,13 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/model/casa/CalibrateResult.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
+#include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -37,7 +38,11 @@
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
 
+#include <rapidjson/writer.h>
+#include <rapidjson/stringbuffer.h>
+
 #include <boost/optional.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <queue>
 #include <vector>
@@ -85,11 +90,51 @@ namespace cpu
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
         //bool operator==(const CalibrationResult& rhs) const;
+
+        void Serialize(std::ostream& os) const;
+
+        // friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
+        // {
+        //     os << "direction: " << value.GetDirection() << '\n';
+        //     os << "data: " << value.GetData();
+        //     return os;
+        // }
+
+    private:
+        template<typename Writer>
+        void CreateJsonStrFormat(Writer& writer) const
+        {
+            assert(m_data.size() == 1);
+            assert(m_data[0].shape()[1] == 1);
+
+            writer.StartObject();
+            writer.String("direction");
+            writer.StartArray();
+            for(auto& v : m_direction)
+            {
+                writer.Double(v);
+            }
+            writer.EndArray();
+
+            writer.String("data");
+            writer.StartArray();
+            for(auto& v : m_data[0])
+            {
+                writer.Double(v);
+            }
+            writer.EndArray();
+
+            writer.EndObject();
+        }
     };
 
     using CalibrateResult = std::pair<
-        std::vector<std::queue<cpu::IntegrationResult>>,
-        std::vector<std::queue<cpu::CalibrationResult>>
+        std::vector<std::vector<cpu::IntegrationResult>>,
+        std::vector<std::vector<cpu::CalibrationResult>>
     >;
+
+    icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
+
+    void PrintResult(const CalibrateResult& result);
 }
 }

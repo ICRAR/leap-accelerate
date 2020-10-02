@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 

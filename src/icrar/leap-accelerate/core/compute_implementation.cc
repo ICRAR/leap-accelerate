@@ -20,21 +20,30 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <string>
+#include <icrar/leap-accelerate/core/compute_implementation.h>
 
 namespace icrar
 {
-    enum class ComputeImplementation
-    {
-        casa, // Compute implementation using casa math libraries
-        eigen, // Compute implementation using eigen
-        cuda // Compute implementation use nvidia cuda
-    };
-
     /**
      * @return true if value was converted succesfully, false otherwise
      */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out);
+    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
+    {
+        if(value == "casa")
+        {
+            out = ComputeImplementation::casa;
+            return true;
+        }
+        else if(value == "eigen")
+        {
+            out = ComputeImplementation::eigen;
+            return true;
+        }
+        else if(value == "cuda")
+        {
+            out = ComputeImplementation::cuda;
+            return true;
+        }
+        return false;
+    }
 }

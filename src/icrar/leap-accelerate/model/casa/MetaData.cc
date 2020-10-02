@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -72,7 +72,8 @@ namespace casalib
         this->m_initialized = false;
         this->solution_interval = 3601;
 
-        this->rows = pms->polarization().nrow();
+        this->rows = msmc->uvw().nrow(); // pms->polarization().nrow();
+        this->num_pols = 0;
         if(pms->polarization().nrow() > 0)
         {
             this->num_pols = msc->polarization().numCorr().get(0);
@@ -171,6 +172,8 @@ namespace casalib
         }
 
         auto& dd3d = dd.value();
+
+        //NOTE: using polar direction
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 

@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/cuda/cuda_info.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -68,15 +69,21 @@ namespace cuda
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+        if(GetCudaDeviceCount() == 0)
+        {
+            throw std::runtime_error("Could not find CUDA device");
+        }
+
         auto metadata = icrar::casalib::MetaData(ms);
 
-        auto output_integrations = std::vector<std::queue<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::queue<cpu::CalibrationResult>>();
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
 
         auto integration = cpu::Integration(
+            0,
             ms,
-            0, //TODO increment
+            0,
             metadata.channels,
             metadata.GetBaselines(),
             metadata.num_pols);
@@ -84,11 +91,10 @@ namespace cuda
         for(int i = 0; i < directions.size(); ++i)
         {
             input_queues.push_back(std::vector<cuda::DeviceIntegration>());
-
-            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory data could be reused
+            input_queues[i].emplace_back(integration); //TODO: Integration memory could be reused?
             
-            output_integrations.push_back(std::queue<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::queue<cpu::CalibrationResult>());
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
 
         for(int i = 0; i < directions.size(); ++i)
@@ -116,8 +122,8 @@ namespace cuda
         DeviceMetaData& deviceMetadata,
         const icrar::MVDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
-        std::queue<cpu::IntegrationResult>& output_integrations,
-        std::queue<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::IntegrationResult>& output_integrations,
+        std::vector<cpu::CalibrationResult>& output_calibrations)
     {
         auto cal = std::vector<casacore::Matrix<double>>();
 #ifndef NDEBUG
@@ -129,14 +135,17 @@ namespace cuda
             std::cout << integration_number++ << "/" << input.size() << std::endl;
 #endif
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
-            output_integrations.push(cpu::IntegrationResult(
+            output_integrations.emplace_back(
                 direction,
                 integration.integration_number,
-                boost::optional<std::vector<casacore::Vector<double>>>()));
+                boost::optional<std::vector<casacore::Vector<double>>>());
         }
         deviceMetadata.ToHost(hostMetadata);
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+
+        std::cout << avg_data_angles << std::endl;
+
         auto& indexes = hostMetadata.GetI1();
 
         auto cal1 = hostMetadata.GetAd1() * avg_data_angles(indexes, 0); // 1st pol only
@@ -156,7 +165,7 @@ namespace cuda
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push(cpu::CalibrationResult(direction, cal));
+        output_calibrations.emplace_back(direction, cal);
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
@@ -220,7 +229,7 @@ namespace cuda
                 for(int polarization = 0; polarization < polarizations; polarization++)
                 {
                     auto n = integration_data(channel, baseline, polarization);
-                    hasNaN |= n.x == NAN || n.y == NAN;
+                    hasNaN |= isnan(n.x) || isnan(n.y);
                 }
 
                 if(!hasNaN)
@@ -296,10 +305,10 @@ namespace cuda
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(0));
+        assert(constants.channels == integration.channels && integration.channels == integration.data.GetDimensionSize(2));
         assert(constants.nbaselines == integration.data.GetDimensionSize(1));
         assert(integration.baselines == integration.data.GetDimensionSize(1));
-        assert(constants.num_pols == integration.data.GetDimensionSize(2));
+        assert(constants.num_pols == integration.data.GetDimensionSize(0));
 
         // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
         // each block cannot have more than 1024 threads, only threads in a block may share memory

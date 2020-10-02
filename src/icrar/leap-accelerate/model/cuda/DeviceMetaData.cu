@@ -32,8 +32,8 @@ namespace cuda
 {
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
     : constants(metadata.GetConstants())
-    , UVW(metadata.UVW)
-    , oldUVW(metadata.oldUVW)
+    , UVW(metadata.m_UVW)
+    , oldUVW(metadata.m_oldUVW)
     , dd(metadata.dd)
     , avg_data(metadata.avg_data)
     , A(metadata.GetA())
@@ -54,15 +54,15 @@ namespace cuda
     {
         metadata.m_constants = constants;
 
-        A.ToHost(metadata.A);
-        I.ToHost(metadata.I);
-        Ad.ToHost(metadata.Ad);
-        A1.ToHost(metadata.A1);
-        I1.ToHost(metadata.I1);
-        Ad1.ToHost(metadata.Ad1);
+        A.ToHost(metadata.m_A);
+        I.ToHost(metadata.m_I);
+        Ad.ToHost(metadata.m_Ad);
+        A1.ToHost(metadata.m_A1);
+        I1.ToHost(metadata.m_I1);
+        Ad1.ToHost(metadata.m_Ad1);
 
-        oldUVW.ToHost(metadata.oldUVW);
-        UVW.ToHost(metadata.UVW);
+        oldUVW.ToHost(metadata.m_oldUVW);
+        UVW.ToHost(metadata.m_UVW);
         metadata.direction = direction;
         metadata.dd = dd;
         avg_data.ToHost(metadata.avg_data);
@@ -74,7 +74,7 @@ namespace cuda
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
         UVW.ToHost(uvwTemp);
-        cpu::MetaData result = cpu::MetaData(casalib::MetaData(), icrar::MVDirection(), uvwTemp);
+        cpu::MetaData result = cpu::MetaData();
         ToHost(result);
         return result;
     }

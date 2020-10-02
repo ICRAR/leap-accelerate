@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/math/linear_math_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
@@ -91,6 +91,7 @@ namespace icrar
         for(T t : value)
         {
             *result_it = lambda(t);
+            result_it++;
         }
         return result;
     }
@@ -104,6 +105,7 @@ namespace icrar
         for(T t : value)
         {
             *result_it = lambda(t);
+            result_it++;
         }
         return result;
     }

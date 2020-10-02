@@ -81,6 +81,7 @@ public:
     template<typename T>
     void test_read_vis()
     {
+        using namespace std::complex_literals;
         unsigned int start_row = 0;
         unsigned int start_channel = 0;
 
@@ -96,7 +97,7 @@ public:
         //num_pols = msc->polarization().numCorr().get(0);
         //num_channels = msc->spectralWindow().numChan().get(0);
 
-        auto visibilities = Eigen::Tensor<std::complex<T>, 3>(num_channels, num_baselines, num_pols);
+        auto visibilities = Eigen::Tensor<std::complex<T>, 3>(num_pols, num_baselines, num_channels);
 
         icrar::ms_read_vis(ms,
             start_row,
@@ -107,7 +108,20 @@ public:
             "DATA",
             (T*)visibilities.data());
 
-        ASSERT_TEQ(GetExpectedVis(), visibilities, TOLERANCE);
+        ASSERT_EQ(num_pols, visibilities.dimension(0));
+        ASSERT_EQ(num_baselines, visibilities.dimension(1));
+        ASSERT_EQ(num_channels, visibilities.dimension(2));
+        ASSERT_EQCD(0.0+0.0i, visibilities(0,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(1,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(2,0,0), TOLERANCE);
+        ASSERT_EQCD(0.0+0.0i, visibilities(3,0,0), TOLERANCE);
+        ASSERT_EQCD(-0.703454494476318 + -24.7045249938965i, visibilities(0,1,0), TOLERANCE);
+        ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, visibilities(1,1,0), TOLERANCE);
+        ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,1,0), TOLERANCE);
+        ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,1,0), TOLERANCE); 
+
+        //TODO: Column major reading
+        //ASSERT_TEQ(GetExpectedVis(), visibilities, TOLERANCE);
     }
 
 private:
@@ -217,7 +231,7 @@ private:
     Eigen::Tensor<std::complex<float>, 3> GetExpectedVis()
     {
         using namespace std::complex_literals;
-        auto v = Eigen::Tensor<std::complex<float>, 3>(2, 3, 4);
+        auto v = Eigen::Tensor<std::complex<float>, 3>(4, 3, 2);
         v.setValues({
             {
                 {{0,0}, {-10.9083,11.3553}, {0,0}, {-21.3128,-9.91422}},

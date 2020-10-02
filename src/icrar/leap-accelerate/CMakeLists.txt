@@ -16,7 +16,7 @@ set(public_headers
 set(private_headers
 
     math/casacore_helper.h
-    math/linear_math_helper.h
+    math/math_conversion.h
     math/math.h
 )
 set(sources
@@ -30,12 +30,15 @@ set(sources
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
+    model/cpu/CalibrateResult.cc
     
-    math/linear_math_helper.cc
+    math/math_conversion.cc
     math/casa/vector.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc
     math/cpu/vector.cc
+
+    core/compute_implementation.cc
 
     json/json_helper.cc
     
