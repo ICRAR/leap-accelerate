@@ -26,7 +26,7 @@
 
 #include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
-#include <Eigen/LU> //Needed for Matrix::inverse()
+#include <Eigen/LU>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <gtest/gtest.h>
