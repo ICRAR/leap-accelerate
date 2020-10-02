@@ -38,10 +38,12 @@ namespace icrar
         virtual const char* what() const noexcept override;
     };
 
-    class not_implemented_exception : public icrar::exception
+    class invalid_argument_exception : public icrar::exception
     {
     public:
-        not_implemented_exception(std::string file, int line);
+        invalid_argument_exception(std::string msg, std::string arg, std::string file, int line)
+        : exception(arg + " invalid argument exception: " + msg, file, line)
+        { }
     };
 
     class json_exception : public icrar::exception
@@ -50,6 +52,12 @@ namespace icrar
         json_exception(std::string msg, std::string file, int line)
         : exception("json exception: " + msg, file, line)
         { }
+    };
+
+    class not_implemented_exception : public icrar::exception
+    {
+    public:
+        not_implemented_exception(std::string file, int line);
     };
 }
 

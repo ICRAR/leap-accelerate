@@ -93,7 +93,6 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
   )
 endif()
 
-#set(CUDA_PROPAGATE_HOST_FLAGS ON)
 
 # Request that the target be built with -std=c++11
 # As this is a public compile feature anything that links to the target
@@ -104,6 +103,7 @@ target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
 # library to be built with -dc as the member functions could be called by
 # other libraries and executables
 set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 11)
+#set(CUDA_PROPAGATE_HOST_FLAGS ON)
 #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)

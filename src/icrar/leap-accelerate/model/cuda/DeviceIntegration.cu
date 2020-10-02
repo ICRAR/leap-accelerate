@@ -29,6 +29,16 @@ namespace icrar
 {
 namespace cuda
 {
+    DeviceIntegration::DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape)
+    : data(shape[0], shape[1], shape[2])
+    , index(0)
+    , x(0)
+    , channels(0)
+    , baselines(0)
+    {
+
+    }
+
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
     : data(integration.GetData())
     , index(integration.index)
@@ -37,6 +47,23 @@ namespace cuda
     , baselines(integration.baselines)
     {
 
+    }
+
+    void DeviceIntegration::SetData(icrar::cpu::Integration& integration)
+    {
+        if(data.GetSize() != integration.GetData().size())
+        {
+            std::ostringstream os;
+            os << "tensor size mismatch: device " << data.GetDimensions() << "(" << data.GetSize() << ")" << "\n";
+            os << "cpu " << integration.GetData().dimensions() << "(" << integration.GetData().size() << ")";
+            throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
+        }
+
+        data.SetDataAsync(integration.GetData().data());
+        index = integration.index;
+        x = integration.x;
+        channels = integration.channels;
+        baselines = integration.baselines;
     }
 
     // void DeviceIntegration::ToHost(cpu::Integration& host) const

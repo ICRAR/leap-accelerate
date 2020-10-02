@@ -77,7 +77,7 @@ namespace cuda
 
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
-        auto input_queues = std::vector<std::vector<cuda::DeviceIntegration>>();
+        auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
@@ -89,26 +89,25 @@ namespace cuda
             integrations * ms.GetNumBaselines(),
             ms.GetNumPols());
 
+        
         for(int i = 0; i < directions.size(); ++i)
-        {
-            input_queues.push_back(std::vector<cuda::DeviceIntegration>());
-            
-            //TODO: Integration memory could be reused
-            input_queues[i].push_back(cuda::DeviceIntegration(integration)); //TODO: Integration memory could be reused?
-            
+        {                
             output_integrations.push_back(std::vector<cpu::IntegrationResult>());
             output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
         }
 
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        input_queue.emplace_back(integration.GetData().dimensions());
+
         for(int i = 0; i < directions.size(); ++i)
         {
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
+            input_queue[0].SetData(integration);
 
             auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
-            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -255,7 +254,6 @@ namespace cuda
         const int integration_baselines = integration_data_dim1;
         const int integration_channels = integration_data_dim2;
         const int md_baselines = constants.nbaselines;
-        const int md_channels = constants.channels;
         const int polarizations = constants.num_pols;
 
         //parallel execution per channel
@@ -351,7 +349,6 @@ namespace cuda
 
     __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
     {
-        //RotateVisibilities(integration, metadata);
         RotateVisibilitiesBC(integration, metadata);
     }
 

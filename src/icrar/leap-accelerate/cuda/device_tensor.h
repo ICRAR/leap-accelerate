@@ -29,6 +29,7 @@
 #include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
 #include <unsupported/Eigen/CXX11/Tensor>
+#include <iostream>
 
 namespace icrar
 {
@@ -55,7 +56,8 @@ namespace cuda
         , m_sizeDim1(sizeDim1)
         , m_sizeDim2(sizeDim2)
         {
-            size_t byteSize = sizeDim0 * sizeDim1 * sizeDim2 * sizeof(T);
+            size_t byteSize = GetByteSize();
+            std::cout << "tensor3:" << sizeDim0 << "x" << sizeDim1 << "x" << sizeDim2 << std::endl;
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)
             {
@@ -113,12 +115,26 @@ namespace cuda
             return 0; //TODO: not a great interface
         }
 
+        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions()
+        {
+            auto res = Eigen::DSizes<Eigen::DenseIndex, 3>();
+            res[0] = m_sizeDim0;
+            res[1] = m_sizeDim1;
+            res[2] = m_sizeDim2;
+            return res;
+        }
+
         __host__ __device__ size_t GetCount() const
         {
             return m_sizeDim0 * m_sizeDim1 * m_sizeDim2;
         }
 
         __host__ __device__ size_t GetSize() const
+        {
+            return GetCount();
+        }
+
+        __host__ __device__ size_t GetByteSize() const
         {
             return GetCount() * sizeof(T);
         }
@@ -131,27 +147,27 @@ namespace cuda
          */
         __host__ void SetDataSync(const T* data)
         {
-            size_t bytes = GetSize();
+            size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
             DebugCudaErrors();
         }
 
         /**
-         * @brief Set the Data Async object
+         * @brief Set the Data asyncronously
          * 
          * @param data 
          * @return __host__ 
          */
         __host__ void SetDataAsync(const T* data)
         {
-            size_t bytes = GetSize();
+            size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
             DebugCudaErrors();
         }
 
         __host__ void ToHost(T* out) const
         {
-            size_t bytes = GetSize();
+            size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpy(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
 
@@ -169,7 +185,7 @@ namespace cuda
 
         __host__ void ToHostASync(T* out) const
         {
-            size_t bytes = GetSize();
+            size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };

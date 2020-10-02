@@ -55,6 +55,10 @@ namespace icrar
 {
 namespace cuda
 {
+    /**
+     * @brief A Cuda memory buffer instance of visibility data for integration
+     * 
+     */
     class DeviceIntegration
     {
         int integration_number;
@@ -72,6 +76,18 @@ namespace cuda
             };
         };
     public:
+        /**
+         * @brief Construct a new Device Integration object where visibilities is a zero tensor of @shape 
+         * 
+         * @param shape 
+         */
+        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+
+        /**
+         * @brief Construct a new Device Integration object with a data syncronous copy
+         * 
+         * @param integration 
+         */
         DeviceIntegration(const icrar::cpu::Integration& integration);
 
         int GetIntegrationNumber() const { return integration_number; }
@@ -82,6 +98,13 @@ namespace cuda
         
         const device_tensor3<std::complex<double>>& GetData() const { return data; }
         device_tensor3<std::complex<double>>& GetData() { return data; }
+
+        /**
+         * @brief Set the Data object
+         * 
+         * @param integration 
+         */
+        void SetData(icrar::cpu::Integration& integration);
 
     };
 }
