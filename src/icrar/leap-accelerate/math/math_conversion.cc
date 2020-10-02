@@ -27,11 +27,6 @@
 
 namespace icrar
 {
-    // icrar::MVuvw ToUVW(const casacore::MVPosition& value)
-    // {
-    //     return icrar::MVuvw(value(0), value(1), value(2));
-    // }
-
     icrar::MVuvw ToUVW(const casacore::MVuvw& value)
     {
         return icrar::MVuvw(value(0), value(1), value(2));
@@ -39,7 +34,7 @@ namespace icrar
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
     {
-        return vector_map<icrar::MVuvw, casacore::MVuvw>(value, ToUVW);
+        return vector_map(value, ToUVW);
     }
 
     std::vector<icrar::MVuvw> ToUVWVector(const Eigen::MatrixXd& value)
@@ -61,7 +56,7 @@ namespace icrar
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const std::vector<icrar::MVuvw>& value)
     {
-        return vector_map<casacore::MVuvw, icrar::MVuvw>(value, ToCasaUVW);
+        return vector_map(value, ToCasaUVW);
     }
 
     std::vector<casacore::MVuvw> ToCasaUVWVector(const Eigen::MatrixX3d& value)
@@ -83,7 +78,7 @@ namespace icrar
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
     {
-        return vector_map<icrar::MVDirection, casacore::MVDirection>(value, ToDirection);
+        return vector_map(value, ToDirection);
     }
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
@@ -93,7 +88,7 @@ namespace icrar
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)
     {
-        return vector_map<casacore::MVDirection, icrar::MVDirection>(value, ToCasaDirection);
+        return vector_map(value, ToCasaDirection);
     }
 
     Eigen::Vector2d to_polar(const MVDirection& xyz)
