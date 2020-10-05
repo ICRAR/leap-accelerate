@@ -173,13 +173,24 @@ namespace casalib
                 Eigen::VectorXi e_i = ToVector(metadata.I);
                 Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                for(int n = 0; n < metadata.I.size(); ++n)
+                for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
                 }
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
+
+
+#ifndef NDEBUG
+                // V == A*G
+                // therefore
+                // G == Ad*V
+                // V-A*G ~= 0
+                auto G = cal.back();
+                double PRECISION = 0.000001;
+                assert(isApprox(V-(ToMatrix(metadata.A) * ToMatrix(G)), 0, PRECISION));
+#endif
                 break;
             }
         }
@@ -284,7 +295,7 @@ namespace casalib
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
+        Matrix<double> A = Matrix<double>(a1.size() + 1, std::max(icrar::ArrayMax(a1), icrar::ArrayMax(a2)) + 1);
         A = 0.0;
 
         Vector<int> I = Vector<int>(a1.size() + 1);
@@ -293,15 +304,15 @@ namespace casalib
         int STATIONS = A.shape()[1]; //TODO verify correctness
         int k = 0;
 
-        for(int n = 0; n < a1.size(); n++)
+        for(size_t n = 0; n < a1.size(); n++)
         {
             if(a1(n) != a2(n))
             {
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
-                    I(k) = n;
+                    A(k, a1(n)) = 1.0; // set scalear
+                    A(k, a2(n)) = -1.0; // set scalear
+                    I(k) = n; //set scalear
                     k++;
                 }
             }

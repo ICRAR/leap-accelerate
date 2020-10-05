@@ -54,12 +54,15 @@ namespace icrar
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
         int m_stations;
+        boost::optional<std::string> m_filepath;
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations);
         MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations);
         MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
+        boost::optional<std::string> GetFilepath() const { return m_filepath; }
+        
         /**
          * @brief Gets a non-null pointer to a casacore::MeasurementSet
          * 

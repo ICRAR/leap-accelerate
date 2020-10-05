@@ -130,7 +130,7 @@ namespace cpu
         casacore::Vector<double> time = msmc->time().getColumn();
         double epoch = time[0];
         int nEpochs = 0;
-        for(int i = 0; i < time.size(); i++)
+        for(size_t i = 0; i < time.size(); i++)
         {
             if(time[i] == time[0]) nEpochs++;
         }

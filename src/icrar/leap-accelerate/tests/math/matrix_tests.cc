@@ -150,7 +150,7 @@ public:
         ASSERT_EQ(m1.cols(), v.cols());
     }
 
-    void test_svd_pseudo_inverse_32()
+    void test_svd_pseudo_inverse_32_degenerate()
     {
         auto m1 = Eigen::MatrixXd(3, 2);
         m1 <<
@@ -169,6 +169,27 @@ public:
         ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
     }
 
+    void test_psuedo_inverse_42()
+    {
+        auto m1 = Eigen::MatrixXd(4, 2);
+        m1 <<
+        1, 2,
+        3, 4,
+        5, 6,
+        7, 8;
+
+        auto m1d = icrar::cpu::SVDPseudoInverse(m1);
+
+        auto expected_m1d = Eigen::MatrixXd(2, 4);
+        expected_m1d <<
+        -1, -0.5, 0, 0.5,
+        0.85, 0.45, 0.05, -0.35;
+
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2), m1d * m1, TOLERANCE);
+    }
+
     [[deprecated]]
     void test_deprecated()
     {
@@ -181,4 +202,6 @@ TEST_F(matrix_tests, test_cpu_square_invert) { test_square_invert(); }
 TEST_F(matrix_tests, test_cpu_pseudo_inverse_33) { test_pseudo_inverse_33(); }
 TEST_F(matrix_tests, test_cpu_pseudo_inverse_32) { test_pseudo_inverse_32(); }
 TEST_F(matrix_tests, test_cpu_svd42) { test_svd42(); }
-TEST_F(matrix_tests, test_cpu_svd_pseudo_inverse_32) { test_svd_pseudo_inverse_32(); }
+
+TEST_F(matrix_tests, test_psuedo_inverse_42) { test_psuedo_inverse_42(); }
+TEST_F(matrix_tests, test_cpu_svd_pseudo_inverse_32_degenerate) { test_svd_pseudo_inverse_32_degenerate(); }
