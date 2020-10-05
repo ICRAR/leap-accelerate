@@ -102,8 +102,8 @@ namespace casalib
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.num_pols == queue.front().data.dimension(0)); //metadata.polarizations
             input_queues.push_back(queue);
-            output_integrations.push_back(std::queue<IntegrationResult>());
-            output_calibrations.push_back(std::queue<CalibrationResult>());
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
         }
 #ifdef PROFILING
         auto endTime = std::chrono::high_resolution_clock::now();
@@ -145,7 +145,7 @@ namespace casalib
             if(integration.is_initialized())
             {
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
-                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+                output_integrations.emplace(direction, integration.get().integration_number, boost::none);
             }
             else
             {
@@ -158,7 +158,7 @@ namespace casalib
                 {
                     return std::arg(c);
                 };
-                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
+                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
                 auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
@@ -184,7 +184,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(icrar::casalib::CalibrationResult(direction, cal));
+        output_calibrations.emplace(direction, cal);
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)

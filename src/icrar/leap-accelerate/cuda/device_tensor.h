@@ -57,7 +57,6 @@ namespace cuda
         , m_sizeDim2(sizeDim2)
         {
             size_t byteSize = GetByteSize();
-            std::cout << "tensor3:" << sizeDim0 << "x" << sizeDim1 << "x" << sizeDim2 << std::endl;
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)
             {

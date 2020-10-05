@@ -92,8 +92,8 @@ namespace cuda
         
         for(int i = 0; i < directions.size(); ++i)
         {                
-            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
         }
 
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
@@ -124,10 +124,10 @@ namespace cuda
         for(auto& integration : input)
         {
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
-            output_integrations.push_back(cpu::IntegrationResult(
+            output_integrations.emplace_back(
                 direction,
                 integration.GetIntegrationNumber(),
-                boost::optional<std::vector<casacore::Vector<double>>>()));
+                boost::optional<std::vector<casacore::Vector<double>>>());
         }
         deviceMetadata.ToHost(hostMetadata);
         
@@ -153,7 +153,7 @@ namespace cuda
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.push_back(cpu::CalibrationResult(direction, cal));
+        output_calibrations.emplace_back(direction, cal);
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)

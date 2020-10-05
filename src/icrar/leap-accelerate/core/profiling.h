@@ -52,9 +52,3 @@ namespace log
 #else
 #define PROFILER_LOG(svr, stream) ()
 #endif
-
-#ifdef PROFILING
-#define PROFILE(operation) operation;
-#else
-#define PROFILE(operation) ()
-#endif

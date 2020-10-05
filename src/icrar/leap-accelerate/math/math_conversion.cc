@@ -106,7 +106,7 @@ namespace icrar
         return tmp;
     }
 
-    std::string ToMSString(std::chrono::_V2::system_clock::duration duration)
+    std::string ToMSString(std::chrono::duration duration)
     {
         std::stringstream ss;
         ss << std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() / 1000000.0 << " ms";

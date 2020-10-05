@@ -153,5 +153,5 @@ namespace icrar
     /**
      * @brief Convert duration to millisecond string
      */
-    std::string ToMSString(std::chrono::_V2::system_clock::duration duration);
+    std::string ToMSString(std::chrono::nanoseconds duration);
 }

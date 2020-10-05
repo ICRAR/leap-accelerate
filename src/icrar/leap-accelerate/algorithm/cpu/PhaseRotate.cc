@@ -91,8 +91,8 @@ namespace cpu
             queue.push_back(integration);
 
             input_queues.push_back(queue);
-            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
         }
         
 #ifdef PROFILING
