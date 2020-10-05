@@ -88,6 +88,7 @@ find_package(Eigen3 REQUIRED)
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
 
+# Local Targets
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)

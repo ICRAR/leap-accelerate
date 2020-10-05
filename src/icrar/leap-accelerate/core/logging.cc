@@ -32,19 +32,26 @@ namespace log
      */
     void Initialize()
     {
-        // boost::log::add_file_log
-        // (
-        //     boost::log::keywords::file_name = "sample_%N.log",/*< file name pattern >*/
-        //     boost::log::keywords::rotation_size = 10 * 1024 * 1024, /*< rotate files every 10 MiB... >*/
-        //     boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
-        //     boost::log::keywords::format = "[%TimeStamp%]: %Message%" /*< log record format >*/
-        // );
+        boost::log::add_file_log
+        (
+            boost::log::keywords::file_name = "sample_%N.log",/*< file name pattern >*/
+            boost::log::keywords::rotation_size = 10 * 1024 * 1024, /*< rotate files every 10 MiB... >*/
+            boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
+            boost::log::keywords::format = "[%TimeStamp%]: %Message%" /*< log record format >*/
+        );
 
         //set log filter
-        // boost::log::core::get()->set_filter
-        // (
-        //     boost::log::trivial::severity >= boost::log::trivial::info
-        // );
+        #ifndef NDEBUG // Release
+        boost::log::core::get()->set_filter
+        (
+            boost::log::trivial::severity >= boost::log::trivial::warning
+        );
+        #else // Debug
+        boost::log::core::get()->set_filter
+        (
+            boost::log::trivial::severity >= boost::log::trivial::info
+        );
+        #endif
     }
 }
 }

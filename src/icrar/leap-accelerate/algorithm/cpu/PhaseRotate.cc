@@ -32,6 +32,7 @@
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -69,9 +70,8 @@ namespace cpu
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
-#ifdef PROFILING
-        auto startTime = std::chrono::high_resolution_clock::now();
-#endif
+        auto timer = profiling_timer();
+        timer.start();
 
         unsigned int integrationNumber = 0;
 
@@ -95,12 +95,14 @@ namespace cpu
             output_calibrations.emplace_back();
         }
         
-#ifdef PROFILING
-        auto endTime = std::chrono::high_resolution_clock::now();
-        BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "read time: " << ToMSString(endTime - startTime) << std::endl;
-        startTime = std::chrono::high_resolution_clock::now();
-#endif
+        timer.stop();
+        timer.log("integration read time");
+        timer.restart();
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+
+        timer.stop();
+        timer.log("metadata read time");
+        timer.restart();
         for(int i = 0; i < directions.size(); ++i)
         {
             metadata.SetDD(directions[i]);
@@ -108,10 +110,9 @@ namespace cpu
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
-#ifdef PROFILING
-        endTime = std::chrono::high_resolution_clock::now();
-        BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "calc time: " << ToMSString(endTime - startTime) << std::endl;
-#endif
+
+        timer.stop();
+        timer.log("PhaseRotate time");
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }

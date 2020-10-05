@@ -583,8 +583,7 @@ void check(T result, char const *const func, const char *const file,
   if (result) {
     fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\" \n", file, line,
             static_cast<unsigned int>(result), _cudaGetErrorEnum(result), func);
-    //checking error will not terminate current thread
-    //exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
   }
 }
 

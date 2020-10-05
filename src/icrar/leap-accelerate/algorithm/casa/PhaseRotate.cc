@@ -33,8 +33,8 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
-
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -74,14 +74,17 @@ namespace casalib
         const std::vector<casacore::MVDirection>& directions,
         int solutionInterval)
     {
+        auto timer = profiling_timer();
+        timer.start();
         auto metadata = casalib::MetaData(ms);
+        timer.stop();
+        timer.log("metadata read time");
+        timer.restart();
+
+
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
-        
-#ifdef PROFILING
-        auto startTime = std::chrono::high_resolution_clock::now();
-#endif
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
@@ -105,20 +108,19 @@ namespace casalib
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
-#ifdef PROFILING
-        auto endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "read time: " << ToMSString(endTime - startTime) << std::endl;
-        startTime = std::chrono::high_resolution_clock::now();
-#endif
+
+        timer.stop();
+        timer.log("integration read time");
+        timer.restart();
+
         for(int i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
-#ifdef PROFILING
-        endTime = std::chrono::high_resolution_clock::now();
-        std::cout << "calc time: " << ToMSString(endTime - startTime) << std::endl;
-#endif
+
+        timer.stop();
+        timer.log("PhaseRotate time");
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }

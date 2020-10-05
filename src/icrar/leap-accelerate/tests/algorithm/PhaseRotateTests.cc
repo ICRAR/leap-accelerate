@@ -144,7 +144,6 @@ namespace icrar
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
                 //ASSERT_EQ(expectedDirection, result.GetDirection());
 
-
                 if(!ToVector(expectedCalibration).isApprox(ToMatrix(result.GetData()[0]), THRESHOLD))
                 {
                     std::cout << i+1 << "/" << expected.size() << " got:\n" << ToMatrix(result.GetData()[0]) << std::endl;
@@ -172,19 +171,10 @@ namespace icrar
                     ms->GetNumChannels(),
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
-#ifdef PROFILING
-                auto startTime = std::chrono::high_resolution_clock::now();
-#endif
+
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-#ifdef PROFILING
-                auto endTime = std::chrono::high_resolution_clock::now();
-#endif
                 integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
-
-#ifdef PROFILING
-                BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << "casa time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
-#endif
             }
             if(impl == ComputeImplementation::eigen)
             {
@@ -198,18 +188,10 @@ namespace icrar
                     ms->GetNumPols());
 
                 auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-#ifdef PROFILING
-                auto startTime = std::chrono::high_resolution_clock::now();
-#endif
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
-#ifdef PROFILING
-                auto endTime = std::chrono::high_resolution_clock::now(); //TODO: remove the polar conversion?
-#endif
+
                 integrationOptionalOutput = integration;
                 metadataOptionalOutput = metadatahost;
-#ifdef PROFILING
-                std::cout << "eigen time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
-#endif          
             }
             if(impl == ComputeImplementation::cuda)
             {
