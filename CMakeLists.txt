@@ -75,9 +75,13 @@ endif (DOXYGEN_FOUND)
 enable_language(CUDA)
 
 # Global Libraries
+add_definitions(-DBOOST_ALL_DYN_LINK)
 find_package(Boost REQUIRED COMPONENTS log log_setup)
+
 find_package(Casacore REQUIRED)
+
 find_package(LAPACK)
+
 find_package(GSL)
 
 # Local Libraries
