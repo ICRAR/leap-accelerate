@@ -24,7 +24,6 @@
 
 #include <exception>
 #include <string>
-#include <strstream>
 
 namespace icrar
 {
@@ -43,6 +42,14 @@ namespace icrar
     public:
         invalid_argument_exception(std::string msg, std::string arg, std::string file, int line)
         : exception(arg + " invalid argument exception: " + msg, file, line)
+        { }
+    };
+
+    class file_exception : public icrar::exception
+    {
+    public:
+        file_exception(std::string msg, std::string filename, std::string file, int line)
+        : exception(filename + " file exception: " + msg, file, line)
         { }
     };
 

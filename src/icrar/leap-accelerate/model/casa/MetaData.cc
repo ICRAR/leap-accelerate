@@ -47,10 +47,10 @@ namespace casalib
     MetaData::MetaData()
     : A()
     , Ad()
-    , I()
     , A1()
     , Ad1()
     , I1()
+    , I()
     {
         
     }
@@ -117,29 +117,38 @@ namespace casalib
         int nEpochs = 0;
         for(int i = 0; i < time.size(); i++)
         {
-            if(time[i] == time[0]) nEpochs++;
+            if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+        
+        if(a1.size() != a2.size())
+        {
+            throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+        }
+        for(size_t i = a2.size(); i < a2.size(); ++i)
+        {
+            if(a1(i) < 0)
+            {
+                throw icrar::file_exception("a1 less than 0", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+            }
+            if(a2(i) < 0)
+            {
+                throw icrar::file_exception("a2 less than 0", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+            }
+        }
 
         //Start calculations
-        casacore::Matrix<double> A1;
-        casacore::Array<std::int32_t> I1;
-        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
-        casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
+        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
+        this->Ad1 = icrar::casalib::PseudoInverse(A1);
 
-        casacore::Matrix<double> A;
-        casacore::Array<std::int32_t> I;
-        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
-        casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
+        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
+        this->Ad = icrar::casalib::PseudoInverse(A);
 
-        this->A = A;
-        this->Ad = Ad;
-        this->I = I;
-        this->A1 = A1;
-        this->Ad1 = Ad1;
-        this->I1 = I1;
+#ifndef NDEBUG
+        assert(isApprox(A*Ad, Eigen::MatrixXd::Identity(A.rows(), A.rows()), PRECISION));
+#endif
     }
 
     MetaData::MetaData(std::istream& input)

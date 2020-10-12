@@ -26,6 +26,7 @@
 namespace icrar
 {
     MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations)
+    : m_filepath(filepath)
     {
         m_measurementSet = std::make_unique<casacore::MeasurementSet>(filepath);
         m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);

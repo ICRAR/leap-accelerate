@@ -43,7 +43,6 @@
 
 #include <boost/math/constants/constants.hpp>
 
-#include <device_functions.h>
 #include <cuComplex.h>
 #include <math_constants.h>
 
@@ -65,6 +64,68 @@ namespace icrar
 {
 namespace cuda
 {
+    double BytesToGigaBytes(size_t bytes)
+    {
+        return bytes / (1024.0 * 1024.0 * 1024.0);
+    }
+
+    cpu::CalibrateResult BatchCalibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval)
+    {
+        if(GetCudaDeviceCount() == 0)
+        {
+            throw std::runtime_error("Could not find CUDA device");
+        }
+
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
+        auto input_queue = std::vector<cuda::DeviceIntegration>();
+
+        // Flooring to remove incomplete measurements
+        int totalbaselines = (ms.GetNumRows() / ms.GetNumBaselines()) * ms.GetNumBaselines();
+
+        size_t memFree, memTotal;
+        cudaMemGetInfo(&memFree, &memTotal);
+        std::cout << BytesToGigaBytes(memFree) << "/" << BytesToGigaBytes(memTotal) << std::endl;
+
+        size_t visSize = ms.GetNumChannels() * totalbaselines * ms.GetNumPols() * sizeof(std::complex<double>);
+        int integrations = std::ceil((double)visSize / (double)memFree);
+        std::cout << "integrations:" << integrations << std::endl;      
+        int baselines = totalbaselines / integrations;
+
+        auto integration = cpu::Integration(
+            0,
+            ms,
+            0,
+            ms.GetNumChannels(),
+            baselines,
+            ms.GetNumPols());
+
+        
+        for(int i = 0; i < directions.size(); ++i)
+        {                
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
+        }
+
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        input_queue.emplace_back(integration.GetData().dimensions());
+
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
+            metadata.SetDD(directions[i]);
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            input_queue[0].SetData(integration);
+
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
+        }
+        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+    }
+
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
@@ -78,6 +139,7 @@ namespace cuda
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
+
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
@@ -103,7 +165,7 @@ namespace cuda
         {
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW();
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
             input_queue[0].SetData(integration);
 
             auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
@@ -371,12 +433,12 @@ namespace cuda
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
 
         int STATIONS = A.cols(); //TODO verify correctness
 
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(1);
+        I.setConstant(-1);
 
         int k = 0;
 

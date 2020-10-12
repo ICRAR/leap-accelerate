@@ -271,8 +271,6 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.dd(2,1));
             EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));
 
-            auto cthreshold = std::complex<double>(0.001, 0.001);
-
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
             ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.avg_data(1,0), THRESHOLD);
