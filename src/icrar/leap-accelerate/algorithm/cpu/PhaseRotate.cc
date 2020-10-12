@@ -66,6 +66,13 @@ namespace cpu
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+        BOOST_LOG_TRIVIAL(info) << "args" << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "baselines: " << ms.GetNumBaselines() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "channels: " << ms.GetNumChannels() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "polarizations: " << ms.GetNumPols() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "directions: " << directions.size() << std::endl;
+
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
