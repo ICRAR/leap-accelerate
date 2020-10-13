@@ -339,7 +339,7 @@ namespace cuda
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt,
-        bool map)
+        const Eigen::Bool& fg)
     {
         if(a1.size() != a2.size())
         {
@@ -349,6 +349,7 @@ namespace cuda
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
+        bool Fg = False
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
@@ -358,7 +359,7 @@ namespace cuda
 
         int STATIONS = A.cols(); //TODO verify correctness
 
-        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
+        Eigen::VectorXi I = Eigen::VectorXi(a1.size());
         I.setConstant(1);
 
         int k = 0;
@@ -367,6 +368,8 @@ namespace cuda
         {
             if(a1(n) != a2(n))
             {
+                if fg.size
+                {   Fg=fg(n) } // else { Fg = False}
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
                     A(k, a1(n)) = 1;
@@ -389,8 +392,8 @@ namespace cuda
         A.resize(0,0);
         A = Atemp;
 
-        auto Itemp = Eigen::VectorXi(k);
-        Itemp = I(Eigen::seqN(0, k));
+        auto Itemp = Eigen::VectorXi(k-1);
+        Itemp = I(Eigen::seqN(0, k-1));
         I.resize(0);
         I = Itemp;
 
