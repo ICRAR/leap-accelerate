@@ -46,7 +46,7 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-6, doxygen, libgsl-dev, rapidjson-dev, libboost1.58-all-dev]
-    env: CXX_COMPILER=/usr/bin/g++-6 CUDA=9 PYTHON=python3
+    env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 CUDA=9 PYTHON=python3
   - os: linux
     dist:
       - bionic
@@ -57,7 +57,7 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-8, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.65-all-dev]
-    env: CXX_COMPILER=usr/bin/g++-8 CUDA=10 PYTHON=python3
+    env: C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CUDA=10 PYTHON=python3
   - os: linux
     dist:
       - focal
@@ -68,7 +68,7 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-9, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.71-all-dev]
-    env: CXX_COMPILER=/usr/bin/g++-9 CUDA=11 PYTHON=python3
+    env: C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CUDA=11 PYTHON=python3
 
 # We "source" it because it exports variables
 install:
