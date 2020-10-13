@@ -7,6 +7,8 @@ file(STRINGS version.txt SOLUTION_NAME_VERSION)
 message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_C_COMPILER $ENV{C_COMPILER})
+set(CMAKE_CXX_COMPILER $ENV{CXX_COMPILER})
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
