@@ -120,18 +120,23 @@ namespace casalib
             if(time[i] == time[0]) nEpochs++;
         }
         auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        // Does this return only the first of the epochs? Which is what is required
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+        casacore::Vector<std::bool> fg = msmc->flags().getColumn()(epochIndices);
+        casacore::Vector<std::double> uv = msmc->uvw().getColumn()(epochIndices);
 
         //Start calculations
         casacore::Matrix<double> A1;
         casacore::Array<std::int32_t> I1;
-        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
+        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, fg); // RefAnt=0
         casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
 
+        // Here we will check for baselines < minimum and add them to flags
+        // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
         casacore::Matrix<double> A;
         casacore::Array<std::int32_t> I;
-        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
+        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1, fg);
         casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
 
         this->A = A;
@@ -174,6 +179,24 @@ namespace casalib
         auto& dd3d = dd.value();
 
         //NOTE: using polar direction
+        //This is the way using astropy -- we need to repeat
+      /*
+      from astropy.coordinates import SkyCoord
+      import astropy.units as u
+
+      # First move to epoch of Obs
+      coords=[(metadata['phase_centre_ra_rad'],metadata['phase_centre_dec_rad'])]
+      c_obs_phase_centre=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                  #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+      coords=[(direction[0],direction[1])]
+      c_obs_direction=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                                  #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+      offset=c_obs_phase_centre.spherical_offsets_to(c_obs_direction)
+      */
+
+        // Also see:
+        // https://stackoverflow.com/questions/25404613/converting-spherical-coordinates-to-cartesian
+
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 

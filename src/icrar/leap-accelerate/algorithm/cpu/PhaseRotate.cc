@@ -191,7 +191,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt,
-        bool map)
+        const Eigen::Bool& fg)  // Guess syntax!!
     {
         if(a1.size() != a2.size())
         {
@@ -201,6 +201,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
         unique.insert(a2.begin(), a2.end());
         int nAnt = unique.size();
+        bool Fg = False
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
@@ -210,7 +211,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         int STATIONS = A.cols(); //TODO verify correctness
 
-        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
+        Eigen::VectorXi I = Eigen::VectorXi(a1.size());
         I.setConstant(1);
 
         int k = 0;
@@ -219,6 +220,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         {
             if(a1(n) != a2(n))
             {
+                if fg.size
+                {   Fg=fg(n) } // else { Fg = False}
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
                     A(k, a1(n)) = 1;
@@ -241,8 +244,8 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         A.resize(0,0);
         A = Atemp;
 
-        auto Itemp = Eigen::VectorXi(k);
-        Itemp = I(Eigen::seqN(0, k));
+        auto Itemp = Eigen::VectorXi(k-1);
+        Itemp = I(Eigen::seqN(0, k-1));
         I.resize(0);
         I = Itemp;
     

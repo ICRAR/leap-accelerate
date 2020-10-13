@@ -106,6 +106,6 @@ namespace casalib
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
         int refAnt=-1,
-        bool map=false);
+        const casacore::Vector<std::bool>& fg);
 }
 }

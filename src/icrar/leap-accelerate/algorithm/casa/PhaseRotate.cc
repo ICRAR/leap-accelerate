@@ -148,8 +148,10 @@ namespace casalib
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
-
+                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // FIX TODO 1st pol only, Only last value incorrect
+                // Target Pol will be first of 1, or first and last of 2 or 4. These could be indepdent or summed
+                // In initial code let us go for summed.
+                // Can I use "-1" for last?
 
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
 
@@ -254,7 +256,7 @@ namespace casalib
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
         int refAnt,
-        bool map)
+        const casacore::Vector<std::bool>& fg)
     {
         if(a1.size() != a2.size())
         {
@@ -264,28 +266,33 @@ namespace casalib
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
+        bool Fg = False
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
+        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1); // Thus A will be maximum antenna _number_ rather than maximum number of antennas. If, for example Ante `1' is missing the column 1 will be all zeros
+        // Cross pairs and reference antenna entries
         A = 0.0;
 
-        Vector<int> I = Vector<int>(a1.size() + 1);
+        Vector<int> I = Vector<int>(a1.size()); // I will be 1 less row than A.
         I = 1;
 
-        int STATIONS = A.shape()[1]; //TODO verify correctness
+        int STATIONS = A.shape()[1]; //TODO verify correctness -- correct
         int k = 0;
 
         for(int n = 0; n < a1.size(); n++)
         {
             if(a1(n) != a2(n))
             {
+                if fg.size
+                {   Fg=fg(n) } // else { Fg = False}
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
+                    if ((refAnt>=0) || Fg==False)) //If There is a ref ant or if the Flag is False (=not flagged)
+                    {    A(k, a1(n)) = 1;
+                         A(k, a2(n)) = -1; } // Otherwise the baseline entry (and therefore weight) is zero
                     I(k) = n;
                     k++;
                 }
@@ -304,8 +311,8 @@ namespace casalib
         A.resize(0,0);
         A = Atemp;
 
-        auto Itemp = casacore::Vector<int>(k);
-        Itemp = I(Slice(0, k));
+        auto Itemp = casacore::Vector<int>(k-1);
+        Itemp = I(Slice(0, k-1));
         I.resize(0);
         I = Itemp;
 
