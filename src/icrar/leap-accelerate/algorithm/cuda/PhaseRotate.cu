@@ -194,10 +194,14 @@ namespace cuda
         deviceMetadata.ToHost(hostMetadata);
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+
+        std::cout << "avg_data_angles(0,0):" << avg_data_angles(0,0) << std::endl;
+
         auto& indexes = hostMetadata.GetI1();
         auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
         auto cal1 = hostMetadata.GetAd1() * avg_data_t;
+        std::cout << "cal1(0,0):" << cal1(0,0) << std::endl;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
         Eigen::VectorXi i = hostMetadata.GetI();

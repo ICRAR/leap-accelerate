@@ -58,8 +58,8 @@ namespace cpu
     {
         constexpr int startChannel = 0;
         size_t size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
-        BOOST_LOG_TRIVIAL(info) << "vis:" << size / (1024.0 * 1024.0 * 1024.0) << " GB" << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "uvw:" << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "vis:" << size / (1024.0 * 1024.0 * 1024.0) << " GB";
+        BOOST_LOG_TRIVIAL(info) << "uvw:";
         m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }

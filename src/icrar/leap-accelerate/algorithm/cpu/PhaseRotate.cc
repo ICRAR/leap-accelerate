@@ -66,12 +66,11 @@ namespace cpu
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
-        BOOST_LOG_TRIVIAL(info) << "args" << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "baselines: " << ms.GetNumBaselines() << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "channels: " << ms.GetNumChannels() << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "polarizations: " << ms.GetNumPols() << std::endl;
-        BOOST_LOG_TRIVIAL(info) << "directions: " << directions.size() << std::endl;
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
 
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
@@ -137,15 +136,28 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        auto& indexes = metadata.GetI1();
-        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
-        auto cal1 = metadata.GetAd1() * avg_data_t;
+
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        
+        Eigen::VectorXi indexes1 = metadata.GetI1();
+        indexes1(indexes1.size() + 1) = 0; // TODO: check -1 behaviour, should result in 0
+        Eigen::VectorXd cal_avg_data = avg_data_angles(indexes1, 0); // 1st pol only
+        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
+
+
+        auto cal1 = metadata.GetAd1() * cal_avg_data;
+        std::cout << "cal1(0):" << cal1(1,0) << std::endl;
+        std::cout << "cal1("<<cal1.rows()-1<<"):" << cal1(cal1.rows()-1,0) << std::endl;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-        Eigen::VectorXi i = metadata.GetI();
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
+        Eigen::VectorXi indexes = metadata.GetI();
+        indexes(indexes.size() + 1) = 0; // HACK
+        
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(indexes, Eigen::all);
+        avg_data_slice(avg_data_slice.rows() - 1, Eigen::all).setConstant(0.0);
+        std::cout << "avg_data_slice(0):" << avg_data_slice(0,0) << std::endl;
+        std::cout << "avg_data_slice("<<avg_data_slice.rows()-1<<"):" << avg_data_slice(avg_data_slice.rows()-1,0) << std::endl;
         
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
@@ -153,6 +165,8 @@ namespace cpu
             double sum = cumsum.sum();
             dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
+        std::cout << "dInt(0,0):" << dInt(0,0) << std::endl;
+        std::cout << "dInt("<<dInt.rows()-1<<",0):" << dInt(dInt.rows()-1,0) << std::endl;
 
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);

@@ -155,18 +155,28 @@ namespace casalib
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
-                
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+
+
+                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
-                };
-                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), getAngle);
+                });
 
+                std::cout << "Calculating.." << std::endl;
                 auto indexes = ToVector(metadata.I1);
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
 
+                indexes(indexes.size() + 1) = 0; // TODO: check -1 behaviour, should result in 0
+                casacore::Matrix<double> cal_avg_data = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
+                cal_avg_data(cal_avg_data.size() - 1, 0) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
+                // if(direction == casacore::MVDirection(-0.4606549305661674,-0.29719233792392513))
+                // {
+                //     std::cout << "cal_avg_data:" << cal_avg_data << std::endl;
+                // }
+
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
+                std::cout << "cal1(0):" << cal1(0,0) << std::endl;
+                std::cout << "cal1("<<cal1.shape()[0]-1<<"):" << cal1(cal1.shape()[0]-1,0) << std::endl;
 
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
@@ -175,10 +185,16 @@ namespace casalib
                 Eigen::VectorXi e_i = ToVector(metadata.I);
                 Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+                std::cout << "avg_data_slice(0):" << avg_data_slice(0,0) << std::endl;
+                std::cout << "avg_data_slice("<<avg_data_slice.shape()[0]-1<<"):" << avg_data_slice(avg_data_slice.shape()[0]-1,0) << std::endl;
+
+
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
                 }
+                std::cout << "dInt(0,0):" << dInt(0,0) << std::endl;
+                std::cout << "dInt("<<dInt.shape()[0]-1<<",0):" << dInt(dInt.shape()[0]-1,0) << std::endl;
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
@@ -189,9 +205,10 @@ namespace casalib
                 // therefore
                 // G == Ad*V
                 // V-A*G ~= 0
-                auto G = cal.back();
-                double PRECISION = 0.000001;
-                assert(isApprox(V-(ToMatrix(metadata.A) * ToMatrix(G)), 0, PRECISION));
+                
+                //auto G = cal.back();
+                //double PRECISION = 0.000001;
+                //assert(isApprox(V-(ToMatrix(metadata.A) * ToMatrix(G)), 0, PRECISION));
 #endif
                 break;
             }

@@ -200,7 +200,7 @@ namespace cpu
         auto size = m_oldUVW.size();
         m_UVW.clear();
         m_UVW.reserve(m_oldUVW.size());
-        for(int n = 0; n < size; n++)
+        for(size_t n = 0; n < size; n++)
         {
             m_UVW.push_back(m_oldUVW[n] * dd);
         }

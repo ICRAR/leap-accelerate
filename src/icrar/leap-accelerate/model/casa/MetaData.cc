@@ -147,7 +147,8 @@ namespace casalib
         this->Ad = icrar::casalib::PseudoInverse(A);
 
 #ifndef NDEBUG
-        assert(isApprox(A*Ad, Eigen::MatrixXd::Identity(A.rows(), A.rows()), PRECISION));
+        constexpr double PRECISION = 0.00001;
+        assert((ToMatrix(A)*ToMatrix(Ad)).isApprox(Eigen::MatrixXd::Identity(ms.GetNumBaselines(), ms.GetNumBaselines()), PRECISION));
 #endif
     }
 

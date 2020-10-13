@@ -72,6 +72,7 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+find_package(CUDA)
 enable_language(CUDA)
 
 # Global Libraries
