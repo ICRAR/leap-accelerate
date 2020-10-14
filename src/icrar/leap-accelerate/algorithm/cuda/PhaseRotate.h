@@ -91,6 +91,6 @@ namespace cuda
          const Eigen::VectorXi& a1,
          const Eigen::VectorXi& a2,
          int refAnt,
-         bool map);
+         std::bool& fg);
 }
 }

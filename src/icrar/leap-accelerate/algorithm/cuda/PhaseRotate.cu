@@ -339,7 +339,7 @@ namespace cuda
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt,
-        const Eigen::Bool& fg)
+        std::bool& fg)
     {
         if(a1.size() != a2.size())
         {
@@ -368,15 +368,17 @@ namespace cuda
         {
             if(a1(n) != a2(n))
             {
-                if fg.size
-                {   Fg=fg(n) } // else { Fg = False}
+                if (fg.size)
+                {   Fg=fg[n]; } // else { Fg = False}
+
+                if (Fg==False)
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;
                     I(k) = n;
                     k++;
-                }
+                }  // Otherwise the baseline entry (and therefore weight) is zero
             }
         }
         if(refAnt < 0)

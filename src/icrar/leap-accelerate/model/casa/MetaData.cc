@@ -119,7 +119,7 @@ namespace casalib
         {
             if(time[i] == time[0]) nEpochs++;
         }
-        auto epochIndices = Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);

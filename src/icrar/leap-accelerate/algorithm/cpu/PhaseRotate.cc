@@ -191,7 +191,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt,
-        const Eigen::Bool& fg)  // Guess syntax!!
+        std::bool& fg)  // Guess syntax!!
     {
         if(a1.size() != a2.size())
         {
@@ -220,8 +220,10 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         {
             if(a1(n) != a2(n))
             {
-                if fg.size
-                {   Fg=fg(n) } // else { Fg = False}
+                if (fg.size)
+                {   Fg=fg[n]; } // else { Fg = False}
+
+                if (Fg==False) // skip entry if data not flagged
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
                     A(k, a1(n)) = 1;

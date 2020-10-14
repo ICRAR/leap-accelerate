@@ -286,16 +286,17 @@ namespace casalib
         {
             if(a1(n) != a2(n))
             {
-                if fg.size
-                {   Fg=fg(n) } // else { Fg = False}
+                if (fg.size)
+                {   Fg=fg(n); } // else { Fg = False}
+
+                if (Fg==False) // skip entry if data not flagged
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    if ((refAnt>=0) || Fg==False)) //If There is a ref ant or if the Flag is False (=not flagged)
-                    {    A(k, a1(n)) = 1;
-                         A(k, a2(n)) = -1; } // Otherwise the baseline entry (and therefore weight) is zero
-                    I(k) = n;
-                    k++;
-                }
+                     A(k, a1(n)) = 1;
+                     A(k, a2(n)) = -1;
+                     I(k) = n;
+                     k++;
+                }  // Otherwise the baseline entry (and therefore weight) is zero
             }
         }
         if(refAnt < 0)

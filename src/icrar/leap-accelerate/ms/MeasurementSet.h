@@ -83,6 +83,9 @@ namespace icrar
 
         unsigned int GetNumStations() const;
 
+        /**
+         * Number of baselines with autocorrelations
+         */
         unsigned int GetNumBaselines() const;
 
         unsigned int GetNumPols() const;

@@ -129,13 +129,15 @@ namespace cpu
         {
             if(time[i] == time[0]) nEpochs++;
         }
-        auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+        casacore::Vector<std::bool> fg = msmc->flags().getColumn()(epochIndices);
+        casacore::Vector<std::double> uv = msmc->uvw().getColumn()(epochIndices);
 
 
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0, fg);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1, fg);
         
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
         m_Ad = icrar::cpu::PseudoInverse(m_A);

@@ -117,6 +117,6 @@ namespace cpu
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt=-1,
-        bool map=false);
+        std::bool& fg);
 }
 }
