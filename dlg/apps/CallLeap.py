@@ -3,32 +3,48 @@ import random
 import subprocess
 import time
 
-# should be read from DALiuGE
-CONFIG_FILENAME = "config.json"
+from dlg import droputils
+from dlg.drop import BarrierAppDROP
+from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
+    dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
 
-DEBUG = True
-DEBUG_OUTPUT = "DEBUG OUTPUT"
+class CallLeap(BarrierAppDROP):
+    """A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application"""
+    compontent_meta = dlg_component('Call Leap', 'Call Leap.',
+                                    [dlg_batch_input('binary/*', [])],
+                                    [dlg_batch_output('binary/*', [])],
+                                    [dlg_streaming_input('binary/*')])
 
-def readConfig(filename):
-    with open(CONFIG_FILENAME) as json_file:
-        config = json.load(json_file)
-    return config
+    configFilename = dlg_string_param('config', '')
+
+    # should be read from DALiuGE
+    #CONFIG_FILENAME = "config.json"
+
+    DEBUG = True
+    DEBUG_OUTPUT = "DEBUG OUTPUT"
 
 
-def main():
-    config = readConfig(CONFIG_FILENAME)
-    #print(config)
+    def initialize(self, **kwargs):
+        super(ProduceConfig, self).initialize(**kwargs)
 
-    # build command line
-    commandLine = ['LeapAccelerateCLI', '-f', config['filePath'], '-s', str(config['numStations']), '-d', str(config['directions'])]
-    #print(str(commandLine))
 
-    if DEBUG:
-        time.sleep(random.uniform(5,10))
-        print(DEBUG_OUTPUT)
-    else:
-        # call leap
-        process = subprocess.call(commandLine)
+    def run(self):
+        config = _readConfig(configFilename)
+        #print(config)
 
-if __name__ == "__main__":
-    main()
+        # build command line
+        commandLine = ['LeapAccelerateCLI', '-f', config['filePath'], '-s', str(config['numStations']), '-d', str(config['directions'])]
+        #print(str(commandLine))
+
+        if DEBUG:
+            time.sleep(random.uniform(5,10))
+            print(DEBUG_OUTPUT)
+        else:
+            # call leap
+            process = subprocess.call(commandLine)
+
+
+    def _readConfig(filename):
+        with open(configFilename) as json_file:
+            config = json.load(json_file)
+        return config
