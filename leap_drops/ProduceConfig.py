@@ -1,7 +1,7 @@
 import csv
 import json
 
-from dlg import droputils
+from dlg.droputils import DROPFile
 from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
     dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
@@ -15,7 +15,6 @@ class ProduceConfig(BarrierAppDROP):
                                     [dlg_batch_output('binary/*', [])],
                                     [dlg_streaming_input('binary/*')])
 
-    numCopies = dlg_int_param('number of copies', 1)
     numStations = dlg_int_param('number of stations', 1)
     implementation = dlg_string_param('eigen', '')
 
@@ -33,29 +32,27 @@ class ProduceConfig(BarrierAppDROP):
 
     def run(self):
         # check number of inputs and outputs
-        if len(self.outputs) != 1:
-            raise Exception("One output is expected by this application")
         if len(self.inputs) != 1:
             raise Exception("One input is expected by this application")
 
         # read directions from input 0
-        directions = _readDirections(self.inputs[0])
+        directions = self._readDirections(self.inputs[0])
 
         # split directions
-        for i in range(numCopies):
+        for i in range(len(self.outputs)):
             # TODO: actually split directions according to num copies, currently
             #       we send all directions to all configs
             partDirections = directions
 
             # build config
-            configJSON = _createConfig(numStations, partDirections, implementation)
+            configJSON = self._createConfig(numStations, partDirections, implementation)
             config = json.dumps(configJSON)
 
             # write config to output
-            self.outputs[0].write(config)
+            self.outputs[i].write(config)
 
 
-    def _readDirections(inDrop):
+    def _readDirections(self, inDrop):
         directions = []
 
         with DROPFile(inDrop) as f:
@@ -68,7 +65,7 @@ class ProduceConfig(BarrierAppDROP):
         return directions
 
 
-    def _createConfig(numStations, directions, implementation):
+    def _createConfig(self, numStations, directions, implementation):
         return {
             'numStations': numStations,
             'directions': directions,

@@ -4,7 +4,7 @@ import random
 import subprocess
 import time
 
-from dlg import droputils
+from dlg.droputils import DROPFile
 from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
     dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
@@ -38,7 +38,7 @@ class CallLeap(BarrierAppDROP):
             raise Exception("Could not find measurement set file:" + measurementSetFilename)
 
         # read config from input
-        config = _readConfig(self.inputs[0])
+        config = self._readConfig(self.inputs[0])
         #print(config)
 
         # build command line
@@ -53,7 +53,7 @@ class CallLeap(BarrierAppDROP):
             result = subprocess.run(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.outputs[0].write(result.stdout)
 
-    def _readConfig(inDrop):
+    def _readConfig(self, inDrop):
         with DROPFile(inDrop) as f:
             config = json.load(f)
         return config
