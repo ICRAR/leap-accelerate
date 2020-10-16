@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import subprocess
 import time
@@ -15,10 +16,7 @@ class CallLeap(BarrierAppDROP):
                                     [dlg_batch_output('binary/*', [])],
                                     [dlg_streaming_input('binary/*')])
 
-    configFilename = dlg_string_param('config', '')
-
-    # should be read from DALiuGE
-    #CONFIG_FILENAME = "config.json"
+    measurementSetFilename = dlg_string_param('measurementSetFilename', '')
 
     DEBUG = True
     DEBUG_OUTPUT = "DEBUG OUTPUT"
@@ -29,22 +27,33 @@ class CallLeap(BarrierAppDROP):
 
 
     def run(self):
-        config = _readConfig(configFilename)
+        # check number of inputs and outputs
+        if len(self.outputs) != 1:
+            raise Exception("One output is expected by this application")
+        if len(self.inputs) != 1:
+            raise Exception("One input is expected by this application")
+
+        # check that measurement set file exists
+        if not os.path.isfile(measurementSetFilename):
+            raise Exception("Could not find measurement set file:" + measurementSetFilename)
+
+        # read config from input
+        config = _readConfig(self.inputs[0])
         #print(config)
 
         # build command line
-        commandLine = ['LeapAccelerateCLI', '-f', config['filePath'], '-s', str(config['numStations']), '-d', str(config['directions'])]
+        commandLine = ['LeapAccelerateCLI', '-f', measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions'])]
         #print(str(commandLine))
 
         if DEBUG:
             time.sleep(random.uniform(5,10))
-            print(DEBUG_OUTPUT)
+            self.outputs[0].write(DEBUG_OUTPUT)
         else:
             # call leap
-            process = subprocess.call(commandLine)
+            result = subprocess.run(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.outputs[0].write(result.stdout)
 
-
-    def _readConfig(filename):
-        with open(configFilename) as json_file:
-            config = json.load(json_file)
+    def _readConfig(inDrop):
+        with DROPFile(inDrop) as f:
+            config = json.load(f)
         return config

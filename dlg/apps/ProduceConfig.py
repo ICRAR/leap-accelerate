@@ -5,6 +5,7 @@ from dlg import droputils
 from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
     dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
+from dlg.droputils import DROPFile
 
 
 class ProduceConfig(BarrierAppDROP):
@@ -16,8 +17,6 @@ class ProduceConfig(BarrierAppDROP):
 
     numCopies = dlg_int_param('number of copies', 1)
     numStations = dlg_int_param('number of stations', 1)
-    directionsFilename = dlg_string_param('directions', '')
-    measurementSetFilename = dlg_string_param('measurementSet', '')
     implementation = dlg_string_param('eigen', '')
 
     # should be read from DALiuGE
@@ -33,18 +32,34 @@ class ProduceConfig(BarrierAppDROP):
 
 
     def run(self):
-        directions = _readDirections()
+        # check number of inputs and outputs
+        if len(self.outputs) != 1:
+            raise Exception("One output is expected by this application")
+        if len(self.inputs) != 1:
+            raise Exception("One input is expected by this application")
 
+        # read directions from input 0
+        directions = _readDirections(self.inputs[0])
+
+        # split directions
         for i in range(numCopies):
-            config = _createConfig(numStations, directions, implementation)
-            print(json.dumps(config))
+            # TODO: actually split directions according to num copies, currently
+            #       we send all directions to all configs
+            partDirections = directions
+
+            # build config
+            configJSON = _createConfig(numStations, partDirections, implementation)
+            config = json.dumps(configJSON)
+
+            # write config to output
+            self.outputs[0].write(config)
 
 
-    def _readDirections():
+    def _readDirections(inDrop):
         directions = []
 
-        with open(directionsFilename) as csvfile:
-            csvreader = csv.reader(csvfile, delimiter=',')
+        with DROPFile(inDrop) as f:
+            csvreader = csv.reader(f, delimiter=',')
             for row in csvreader:
                 x = float(row[0])
                 y = float(row[1])
@@ -56,7 +71,6 @@ class ProduceConfig(BarrierAppDROP):
     def _createConfig(numStations, directions, implementation):
         return {
             'numStations': numStations,
-            'filePath': measurementSetFilename,
             'directions': directions,
             'implementation': implementation
         }
