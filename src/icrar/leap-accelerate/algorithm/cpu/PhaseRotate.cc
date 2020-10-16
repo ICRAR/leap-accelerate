@@ -106,7 +106,8 @@ namespace cpu
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
-            icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+
+            std::tie(output_integrations[i], output_calibrations[i]) = icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i]);
         }
 #ifdef PROFILING
         endTime = std::chrono::high_resolution_clock::now();
@@ -116,13 +117,13 @@ namespace cpu
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    void PhaseRotate(
+    std::pair<std::vector<cpu::IntegrationResult>, cpu::CalibrationResult> PhaseRotate(
         cpu::MetaData& metadata,
         const icrar::MVDirection& direction,
-        std::vector<cpu::Integration>& input,
-        std::vector<cpu::IntegrationResult>& output_integrations,
-        std::vector<cpu::CalibrationResult>& output_calibrations)
+        std::vector<cpu::Integration>& input)
     {
+        auto output_integrations = std::vector<cpu::IntegrationResult>();
+        
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
@@ -151,7 +152,7 @@ namespace cpu
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
 
-        output_calibrations.emplace_back(direction, cal);
+        return std::make_pair(output_integrations, cpu::CalibrationResult(direction, cal));
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)

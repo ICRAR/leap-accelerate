@@ -16,3 +16,12 @@
 [submodule "rapidjson-1.1.0"]
 	path = external/rapidjson-1.1.0
 	url = https://github.com/Tencent/rapidjson.git
+[submodule "RxCpp-4.1.0"]
+	path = external/RxCpp-4.1.0
+	url = https://github.com/ReactiveX/RxCpp.git
+[submodule "coruja-0.1.0"]
+	path = external/coruja-0.1.0
+	url = https://github.com/ricardocosme/coruja.git
+[submodule "range-v3-0.11.0"]
+	path = external/range-v3-0.11.0
+	url = https://github.com/ericniebler/range-v3.git

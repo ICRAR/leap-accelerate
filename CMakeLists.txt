@@ -88,6 +88,15 @@ find_package(Eigen3 REQUIRED)
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
 
+include_directories(${PROJECT_SOURCE_DIR}/external/RxCpp-4.1.0/Rx/v2/src)
+include_directories(${PROJECT_SOURCE_DIR}/external/coruja-0.1.0/include)
+include_directories(${PROJECT_SOURCE_DIR}/external/range-v3-0.11.0/include)
+#add_subdirectory(${PROJECT_SOURCE_DIR}/external/RxCpp-4.1.0/projects/CMake)
+
+#set(RxCpp_Lib_PATH ${PROJECT_SOURCE_DIR}/external/2.3.0/)
+#find_library(RxCpp_Lib NAMES libRxCpp.so PATHS ${RxCpp_Lib_PATH})
+#target_link_libraries(RxCpp_Example ${RxCpp_Lib})
+
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)

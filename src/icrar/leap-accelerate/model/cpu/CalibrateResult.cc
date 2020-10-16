@@ -82,12 +82,12 @@ namespace cpu
             }
         }
 
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+        return CalibrateResult(std::move(output_integrations), std::move(output_calibrations));
     }
 
     void PrintResult(const CalibrateResult& result)
     {
-        for(auto& calibrations : result.second)
+        for(auto& calibrations : result.GetCalibrationResult())
         {
             for(auto& calibration : calibrations)
             {

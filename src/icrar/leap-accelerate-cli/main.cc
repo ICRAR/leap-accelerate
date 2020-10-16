@@ -171,8 +171,13 @@ namespace icrar
 
 using namespace icrar;
 
+//#include <coruja/container/vector.hpp>
+//#include <rxcpp/rx-observable.hpp>
+
 int main(int argc, char** argv)
 {
+    //coruja::vector<int> ints;
+
     icrar::log::Initialize();
     CLI::App app { "LEAP-Accelerate" };
 
@@ -212,6 +217,7 @@ int main(int argc, char** argv)
         case ComputeImplementation::eigen:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+
             cpu::PrintResult(result);
             break;
         }

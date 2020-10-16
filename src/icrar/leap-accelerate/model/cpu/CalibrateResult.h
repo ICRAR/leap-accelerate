@@ -128,10 +128,23 @@ namespace cpu
         }
     };
 
-    using CalibrateResult = std::pair<
-        std::vector<std::vector<cpu::IntegrationResult>>,
-        std::vector<std::vector<cpu::CalibrationResult>>
-    >;
+    class CalibrateResult
+    {
+    private:
+        std::vector<std::vector<cpu::IntegrationResult>> m_integrationResults;
+        std::vector<std::vector<cpu::CalibrationResult>> m_calibrationResults;
+    public:
+
+        CalibrateResult(
+            std::vector<std::vector<cpu::IntegrationResult>>&& integrationResults,
+            std::vector<std::vector<cpu::CalibrationResult>>&& calibrationResults)
+        {
+            m_integrationResults = std::move(integrationResults);
+            m_calibrationResults = std::move(calibrationResults);
+        }
+
+        std::vector<std::vector<cpu::CalibrationResult>> GetCalibrationResult() { return m_calibrationResult; }
+    }
 
     icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
 
