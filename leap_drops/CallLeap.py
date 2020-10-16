@@ -16,14 +16,16 @@ class CallLeap(BarrierAppDROP):
                                     [dlg_batch_output('binary/*', [])],
                                     [dlg_streaming_input('binary/*')])
 
-    measurementSetFilename = dlg_string_param('measurementSetFilename', '')
+    # TODO: this measurementSetFilename is not being read by dlg_string_param
+    #       hard-coding it for the moment
+    #measurementSetFilename = dlg_string_param('measurementSetFilename', '')
+    measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-32.ms"
 
     DEBUG = True
-    DEBUG_OUTPUT = "DEBUG OUTPUT"
 
 
     def initialize(self, **kwargs):
-        super(ProduceConfig, self).initialize(**kwargs)
+        super(CallLeap, self).initialize(**kwargs)
 
 
     def run(self):
@@ -33,21 +35,21 @@ class CallLeap(BarrierAppDROP):
         if len(self.inputs) != 1:
             raise Exception("One input is expected by this application")
 
-        # check that measurement set file exists
-        if not os.path.isfile(measurementSetFilename):
-            raise Exception("Could not find measurement set file:" + measurementSetFilename)
+        # check that measurement set DIRECTORY exists
+        if not os.path.isdir(self.measurementSetFilename):
+            raise Exception("Could not find measurement set directory:" + self.measurementSetFilename)
 
         # read config from input
         config = self._readConfig(self.inputs[0])
         #print(config)
 
         # build command line
-        commandLine = ['LeapAccelerateCLI', '-f', measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions'])]
-        #print(str(commandLine))
+        commandLine = ['LeapAccelerateCLI', '-f', self.measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions'])]
+        #print("commandLine:" + str(commandLine))
 
-        if DEBUG:
+        if self.DEBUG:
             time.sleep(random.uniform(5,10))
-            self.outputs[0].write(DEBUG_OUTPUT)
+            self.outputs[0].write(str(commandLine))
         else:
             # call leap
             result = subprocess.run(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

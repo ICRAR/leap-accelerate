@@ -45,7 +45,7 @@ class ProduceConfig(BarrierAppDROP):
             partDirections = directions
 
             # build config
-            configJSON = self._createConfig(numStations, partDirections, implementation)
+            configJSON = self._createConfig(self.numStations, partDirections, self.implementation)
             config = json.dumps(configJSON)
 
             # write config to output
@@ -55,9 +55,17 @@ class ProduceConfig(BarrierAppDROP):
     def _readDirections(self, inDrop):
         directions = []
 
+        # NOTE: it appears csv.reader() can't use the DROPFile(inDrop) directly,
+        #       since DROPFile is not a iterator. Instead, we read the whole
+        #       inDrop to a string and pass that to csv.reader()
         with DROPFile(inDrop) as f:
-            csvreader = csv.reader(f, delimiter=',')
+            file_data = f.read()
+            csvreader = csv.reader(file_data.split('\n'))
             for row in csvreader:
+                # skip rows with incorrect number of values
+                if len(row) is not 2:
+                    continue
+
                 x = float(row[0])
                 y = float(row[1])
                 directions.append([x,y])
