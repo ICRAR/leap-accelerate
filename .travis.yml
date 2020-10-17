@@ -56,8 +56,8 @@ jobs:
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
-      packages: [g++-8, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.65-all-dev]
-    env: CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 CUDA=10 PYTHON=python3
+      packages: [g++-7, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.65-all-dev]
+    env: CC=/usr/bin/gcc-7 CXX=/usr/bin/g++-7 CUDA=10 PYTHON=python3
   - os: linux
     dist:
       - focal
