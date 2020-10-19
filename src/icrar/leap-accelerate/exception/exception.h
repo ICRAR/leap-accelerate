@@ -46,6 +46,14 @@ namespace icrar
         { }
     };
 
+    class file_exception : public icrar::exception
+    {
+    public:
+        file_exception(std::string msg, std::string filename, std::string file, int line)
+        : exception(filename + " file exception: " + msg, file, line)
+        { }
+    };
+
     class json_exception : public icrar::exception
     {
     public:

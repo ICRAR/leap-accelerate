@@ -130,9 +130,9 @@ namespace cpu
         casacore::Vector<double> time = msmc->time().getColumn();
         double epoch = time[0];
         int nEpochs = 0;
-        for(int i = 0; i < time.size(); i++)
+        for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == time[0]) nEpochs++;
+            if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
@@ -200,7 +200,7 @@ namespace cpu
         auto size = m_oldUVW.size();
         m_UVW.clear();
         m_UVW.reserve(m_oldUVW.size());
-        for(int n = 0; n < size; n++)
+        for(size_t n = 0; n < size; n++)
         {
             m_UVW.push_back(m_oldUVW[n] * dd);
         }

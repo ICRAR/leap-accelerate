@@ -81,8 +81,6 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl, std::string msname, int stations_override)
         {
-            const double THRESHOLD = 0.01;
-
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
             ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override);
 
@@ -99,25 +97,18 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::cout << "baselines: " << ms->GetNumBaselines() << std::endl;
-            std::cout << "directions: " << directions.size() << std::endl;
-            std::cout << "channels: " <<  ms->GetNumChannels() << std::endl;
-            std::cout << "polarizations: " <<  ms->GetNumPols() << std::endl;
             if(impl == ComputeImplementation::casa)
             {
-                std::cout << "calibrating using casacore" << std::endl;
                 auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, directions, 3600);
+                auto res = casalib::Calibrate(*ms, directions);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                std::cout << "calibrating using cpu" << std::endl;
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions));
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::cout << "calibrating using cuda" << std::endl;
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions));
             }
             else
             {

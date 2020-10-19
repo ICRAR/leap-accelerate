@@ -108,9 +108,10 @@ namespace cpu
         std::vector<icrar::MVuvw> m_UVW; // late initialized
     
     public:
-        icrar::MVDirection direction; // late initialized
-        Eigen::Matrix3d dd; // late initialized
-        Eigen::MatrixXcd avg_data; // late initialized
+        icrar::MVDirection direction; // calibration direction, late initialized
+        Eigen::Matrix3d dd; // direction matrix, late initialized
+
+        Eigen::MatrixXcd avg_data; // matrix of size (baselines, polarizations), late initialized
 
 
         //MetaData(icrar::MeasurementSet& ms);

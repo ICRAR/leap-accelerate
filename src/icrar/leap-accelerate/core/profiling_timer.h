@@ -69,7 +69,7 @@ namespace icrar
 #ifdef PROFILING
         inline void log(std::string entryName) const
         {
-            BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << entryName << ": " << ToMSString(m_stop - m_start) << std::endl;
+            BOOST_LOG_TRIVIAL(trace) << entryName << ": " << ToMSString(m_stop - m_start) << std::endl;
         }
 #else
         inline void log(std::string) const {}

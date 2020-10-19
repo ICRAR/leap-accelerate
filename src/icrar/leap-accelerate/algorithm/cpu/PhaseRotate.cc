@@ -66,6 +66,12 @@ namespace cpu
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
@@ -130,16 +136,23 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        auto& indexes = metadata.GetI1();
-        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
-        auto cal1 = metadata.GetAd1() * avg_data_t;
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        
+        Eigen::VectorXi indexes1 = metadata.GetI1();
+        indexes1(indexes1.size() - 1) = 0; // TODO: check -1 behaviour, should result in 0
+        Eigen::VectorXd cal_avg_data = avg_data_angles(indexes1, 0); // 1st pol only
+        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+
+        auto cal1 = metadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-        Eigen::VectorXi i = metadata.GetI();
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
+        Eigen::VectorXi indexes = metadata.GetI();
+        indexes(indexes.size() - 1) = 0;
         
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(indexes, Eigen::all);
+        avg_data_slice(avg_data_slice.rows() - 1, Eigen::all).setConstant(0.0);
+
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -231,12 +244,11 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
-
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
         int STATIONS = A.cols(); //TODO verify correctness
 
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(1);
+        I.setConstant(-1);
 
         int k = 0;
 

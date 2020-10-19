@@ -43,7 +43,6 @@
 
 #include <boost/math/constants/constants.hpp>
 
-#include <device_functions.h>
 #include <cuComplex.h>
 #include <math_constants.h>
 
@@ -65,6 +64,68 @@ namespace icrar
 {
 namespace cuda
 {
+    double BytesToGigaBytes(size_t bytes)
+    {
+        return bytes / (1024.0 * 1024.0 * 1024.0);
+    }
+
+    cpu::CalibrateResult BatchCalibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval)
+    {
+        if(GetCudaDeviceCount() == 0)
+        {
+            throw std::runtime_error("Could not find CUDA device");
+        }
+
+        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
+        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
+        auto input_queue = std::vector<cuda::DeviceIntegration>();
+
+        // Flooring to remove incomplete measurements
+        int totalbaselines = (ms.GetNumRows() / ms.GetNumBaselines()) * ms.GetNumBaselines();
+
+        size_t memFree, memTotal;
+        cudaMemGetInfo(&memFree, &memTotal);
+        std::cout << BytesToGigaBytes(memFree) << "/" << BytesToGigaBytes(memTotal) << std::endl;
+
+        size_t visSize = ms.GetNumChannels() * totalbaselines * ms.GetNumPols() * sizeof(std::complex<double>);
+        int integrations = std::ceil((double)visSize / (double)memFree);
+        std::cout << "integrations:" << integrations << std::endl;      
+        int baselines = totalbaselines / integrations;
+
+        auto integration = cpu::Integration(
+            0,
+            ms,
+            0,
+            ms.GetNumChannels(),
+            baselines,
+            ms.GetNumPols());
+
+        
+        for(int i = 0; i < directions.size(); ++i)
+        {                
+            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
+            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
+        }
+
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        input_queue.emplace_back(integration.GetData().dimensions());
+
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
+            metadata.SetDD(directions[i]);
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            input_queue[0].SetData(integration);
+
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
+        }
+        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+    }
+
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
@@ -78,6 +139,7 @@ namespace cuda
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
+
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
@@ -103,7 +165,7 @@ namespace cuda
         {
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW();
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
             input_queue[0].SetData(integration);
 
             auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
@@ -132,15 +194,19 @@ namespace cuda
         deviceMetadata.ToHost(hostMetadata);
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        auto& indexes = hostMetadata.GetI1();
-        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
-        auto cal1 = hostMetadata.GetAd1() * avg_data_t;
+        Eigen::VectorXi indexes1 = hostMetadata.GetI1();
+        indexes1(indexes1.size() - 1) = 0; // TODO: check -1 behaviour, should result in 0
+        Eigen::VectorXd cal_avg_data = avg_data_angles(indexes1, 0); // 1st pol only
+        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+
+        auto cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
-        Eigen::VectorXi i = hostMetadata.GetI();
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
-        
+        Eigen::VectorXi indexes = hostMetadata.GetI();
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(indexes, Eigen::all);
+        avg_data_slice(avg_data_slice.rows() - 1, Eigen::all).setConstant(0.0);
+
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = hostMetadata.GetA()(n, Eigen::all) * cal1;
@@ -152,7 +218,6 @@ namespace cuda
         assert(dIntColumn.cols() == 1);
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
-
         output_calibrations.emplace_back(direction, cal);
     }
 
@@ -318,14 +383,6 @@ namespace cuda
         assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetData().GetDimensionSize(2));
         assert(constants.nbaselines == metadata.avg_data.GetRows() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
         assert(constants.num_pols == integration.GetData().GetDimensionSize(0));
-        
-        // TODO: calculate grid size using constants.channels, integration_baselines, integration_data(channel, baseline).cols()
-        // each block cannot have more than 1024 threads, only threads in a block may share memory
-        // each cuda core can run 32 simutaneous threads 
-
-        //dim3 grid = dim3(1,1,1);
-        //dim3 threads = dim3(constants.channels, constants.nbaselines, constants.num_pols);
-
 
         // block size can any value where the product is 1024
         dim3 blockSize = dim3(128, 8, 1);
@@ -371,12 +428,12 @@ namespace cuda
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
 
         int STATIONS = A.cols(); //TODO verify correctness
 
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(1);
+        I.setConstant(-1);
 
         int k = 0;
 

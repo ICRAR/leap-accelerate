@@ -54,12 +54,15 @@ namespace icrar
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
         int m_stations;
+        boost::optional<std::string> m_filepath;
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations);
         MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations);
         MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
+        boost::optional<std::string> GetFilepath() const { return m_filepath; }
+        
         /**
          * @brief Gets a non-null pointer to a casacore::MeasurementSet
          * 
@@ -81,10 +84,25 @@ namespace icrar
          */
         const casacore::MSColumns* GetMSColumns() const { return m_msc.get(); }
 
+        /**
+         * @brief Gets the number of stations excluding flagged stations. Overridable at construction.
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumStations() const;
 
+        /**
+         * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumBaselines() const;
 
+        /**
+         * @brief Get the number of polarizations in the measurement set
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumPols() const;
 
         unsigned int GetNumChannels() const;
