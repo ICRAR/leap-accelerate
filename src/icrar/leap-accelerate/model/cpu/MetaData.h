@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "cuda_runtime.h"
+
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 

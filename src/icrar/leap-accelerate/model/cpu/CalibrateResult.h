@@ -89,16 +89,7 @@ namespace cpu
         const MVDirection GetDirection() const { return m_direction; }
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
-        //bool operator==(const CalibrationResult& rhs) const;
-
         void Serialize(std::ostream& os) const;
-
-        // friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
-        // {
-        //     os << "direction: " << value.GetDirection() << '\n';
-        //     os << "data: " << value.GetData();
-        //     return os;
-        // }
 
     private:
         template<typename Writer>
