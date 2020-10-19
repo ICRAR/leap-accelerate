@@ -31,6 +31,7 @@
 #include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/core/logging.h>
 
 #include <CLI/CLI.hpp>
 #include <boost/optional.hpp>
@@ -172,6 +173,7 @@ using namespace icrar;
 
 int main(int argc, char** argv)
 {
+    icrar::log::Initialize();
     CLI::App app { "LEAP-Accelerate" };
 
     //Parse Arguments

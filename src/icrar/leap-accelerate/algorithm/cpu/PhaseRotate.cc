@@ -31,6 +31,9 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
+#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
+
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
@@ -41,6 +44,7 @@
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
 
+
 #include <istream>
 #include <iostream>
 #include <iterator>
@@ -48,6 +52,8 @@
 #include <queue>
 #include <exception>
 #include <memory>
+
+
 
 using Radians = double;
 
@@ -64,32 +70,49 @@ namespace cpu
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
         
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            auto queue = std::vector<cpu::Integration>();
-            unsigned int startRow = 0;
-            unsigned int integrationNumber = 0;
-            while((startRow + ms.GetNumBaselines()) < ms.GetNumRows())
-            {
-                queue.emplace_back(
-                    integrationNumber++,
-                    ms,
-                    startRow,
-                    ms.GetNumChannels(),
-                    ms.GetNumBaselines(),
-                    ms.GetNumPols());
-                startRow += ms.GetNumBaselines();
-            }
-            input_queues.push_back(queue);
-            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
-        }
+        auto timer = profiling_timer();
+        timer.start();
+
+        unsigned int integrationNumber = 0;
+
+        // Flooring to remove incomplete measurements
+        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        auto integration = Integration(
+                integrationNumber,
+                ms,
+                0,
+                ms.GetNumChannels(),
+                integrations * ms.GetNumBaselines(),
+                ms.GetNumPols());
 
         for(int i = 0; i < directions.size(); ++i)
         {
-            auto metadata = icrar::cpu::MetaData(ms, directions[i], std::vector<MVuvw>()); //TODO: UVW per integration
+            auto queue = std::vector<cpu::Integration>();
+            queue.push_back(integration);
+
+            input_queues.push_back(queue);
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
+        }
+        
+        timer.stop();
+        timer.log("integration read time");
+        timer.restart();
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+
+        timer.stop();
+        timer.log("metadata read time");
+        timer.restart();
+        for(int i = 0; i < directions.size(); ++i)
+        {
+            metadata.SetDD(directions[i]);
+            metadata.CalcUVW();
+            metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+
+        timer.stop();
+        timer.log("PhaseRotate time");
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -137,28 +160,30 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
-        auto parameters = integration.parameters;
-
-        metadata.CalcUVW(integration.GetUVW());
+        metadata.CalcUVW();
         const auto polar_direction = icrar::to_polar(metadata.direction);
-
-        // loop over baselines
+        
+        // loop over smeared baselines
+        int baselines = metadata.GetConstants().nbaselines;
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
-            constexpr double pi = boost::math::constants::pi<double>();
+            int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
-            double shiftFactor = -2 * pi * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
-            shiftFactor += 2 * pi *
+            double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+
+            shiftFactor +=
             (
                 metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
                 - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
             );
-            shiftFactor -= 2 * pi *
+            shiftFactor -=
             (
                 polar_direction(0) * metadata.GetUVW()[baseline](0)
                 - polar_direction(1) * metadata.GetUVW()[baseline](1)
             );
+            shiftFactor *= two_pi;
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
@@ -180,7 +205,7 @@ namespace cpu
                 {
                     for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
-                        metadata.avg_data(baseline, polarization) += integration_data(polarization, baseline, channel);
+                        metadata.avg_data(md_baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
                 }
             }

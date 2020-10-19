@@ -46,9 +46,26 @@ sudo apt-key add /var/cuda-repo-10-0-local-10.0.130-410.48/7fa2af80.pub
 #sudo dpkg -i cuda-repo-ubuntu1804-11-0-local_11.0.2-450.51.05-1_amd64.deb
 #sudo apt-key add /var/cuda-repo-ubuntu1804-11-0-local/7fa2af80.pub
 
+# Set Compiler Config
 sudo apt-get update
 sudo apt-get -y install cuda
 
 export CUDA_HOME=/usr/local/cuda
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
 export PATH=$PATH:$CUDA_HOME/bin
+
+# Set Compiler Config
+sudo update-alternatives --remove-all gcc
+sudo update-alternatives --remove-all g++
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 20
+
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 20
+
+sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
+sudo update-alternatives --set cc /usr/bin/gcc
+
+sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+sudo update-alternatives --set c++ /usr/bin/g++

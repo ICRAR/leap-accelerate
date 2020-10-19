@@ -89,7 +89,7 @@ public:
         -0.2, 0.3, 1,
         0.2, -0.3, 0;
         
-        ASSERT_MEQ(m1d, expected_m1d, TOLERANCE);
+        ASSERT_MEQD(m1d, expected_m1d, TOLERANCE);
     }
 
     void test_pseudo_inverse_33()
@@ -108,7 +108,7 @@ public:
         -0.2, 0.3, 1,
         0.2, -0.3, 0;
         
-        ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
     }
 
     void test_pseudo_inverse_32()
@@ -126,8 +126,8 @@ public:
         0.166667, -0.333333, -0.166667,
         0.166667, -0.333333, -0.166667;
 
-        ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
-        ASSERT_MEQ(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
     }
 
     void test_svd42()
@@ -165,8 +165,8 @@ public:
         0.166667, -0.333333, -0.166667,
         0.166667, -0.333333, -0.166667;
 
-        ASSERT_MEQ(expected_m1d, m1d, TOLERANCE);
-        ASSERT_MEQ(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
     }
 
     [[deprecated]]

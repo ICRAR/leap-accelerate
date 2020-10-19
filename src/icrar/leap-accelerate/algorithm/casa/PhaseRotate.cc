@@ -33,8 +33,8 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
-
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -58,6 +58,7 @@
 #include <exception>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 using Radians = double;
 
@@ -73,11 +74,17 @@ namespace casalib
         const std::vector<casacore::MVDirection>& directions,
         int solutionInterval)
     {
+        auto timer = profiling_timer();
+        timer.start();
         auto metadata = casalib::MetaData(ms);
+        timer.stop();
+        timer.log("metadata read time");
+        timer.restart();
+
+
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
-        
         for(int i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
@@ -98,14 +105,22 @@ namespace casalib
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.num_pols == queue.front().data.dimension(0)); //metadata.polarizations
             input_queues.push_back(queue);
-            output_integrations.push_back(std::queue<IntegrationResult>());
-            output_calibrations.push_back(std::queue<CalibrationResult>());
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
         }
+
+        timer.stop();
+        timer.log("integration read time");
+        timer.restart();
 
         for(int i = 0; i < directions.size(); ++i)
         {
+            metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+
+        timer.stop();
+        timer.log("PhaseRotate time");
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -132,7 +147,7 @@ namespace casalib
             if(integration.is_initialized())
             {
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
-                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+                output_integrations.emplace(direction, integration.get().integration_number, boost::none);
             }
             else
             {
@@ -140,12 +155,12 @@ namespace casalib
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
-
+                
                 std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
                 };
-                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
+                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
                 auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
@@ -171,7 +186,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(icrar::casalib::CalibrationResult(direction, cal));
+        output_calibrations.emplace(direction, cal);
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
@@ -205,21 +220,23 @@ namespace casalib
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            const double pi = boost::math::constants::pi<double>();
+            const double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+            double shiftFactor = -(uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
 
-            shiftFactor = shiftFactor + 2 * pi *
+            shiftFactor +=
             (
                 metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
                 - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
             );
-            shiftFactor = shiftFactor - 2 * pi *
+            shiftFactor -=
             (
                 //NOTE: polar direction
                 direction.get()[0] * uvw[baseline](0)
                 - direction.get()[1] * uvw[baseline](1)
             );
+            shiftFactor *= two_pi;
+
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)

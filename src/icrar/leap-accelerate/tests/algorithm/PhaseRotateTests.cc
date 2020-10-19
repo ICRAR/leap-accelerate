@@ -20,7 +20,6 @@
  * MA 02111 - 1307  USA
  */
 
-
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -29,23 +28,21 @@
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-
 #include <icrar/leap-accelerate/core/compute_implementation.h>
-
 #include <casacore/casa/Quanta/MVDirection.h>
 
 #include <gtest/gtest.h>
+
+#include <boost/log/trivial.hpp>
 
 #include <vector>
 #include <set>
@@ -74,6 +71,7 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+            std::cout << std::setprecision(15);
         }
 
         void TearDown() override
@@ -90,11 +88,11 @@ namespace icrar
             std::vector<casacore::MVDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
-                //{ -0.753231018062671,-0.44387635324622354 },
-                //{ -0.6207547100721282,-0.2539086572881469 },
-                //{ -0.41958660604621867,-0.03677626900108552 },
-                //{ -0.41108685258900596,-0.08638012622791202 },
-                //{ -0.7782459495668798,-0.4887860989684432 },
+                { -0.753231018062671,-0.44387635324622354 },
+                { -0.6207547100721282,-0.2539086572881469 },
+                { -0.41958660604621867,-0.03677626900108552 },
+                { -0.41108685258900596,-0.08638012622791202 },
+                { -0.7782459495668798,-0.4887860989684432 },
                 //{ -0.17001324965728973,-0.28595644149463484 },
                 //{ -0.7129444556035118,-0.365286407171852 },
                 //{ -0.1512764129166089,-0.21161026349648748 }
@@ -123,23 +121,34 @@ namespace icrar
 
             auto expected = GetExpectedCalibration();
 
+
             ASSERT_EQ(directions.size(), calibrations.size());
-            for(int i = 0; i < calibrations.size(); i++)
+            for(size_t i = 0; i < expected.size(); i++)
             {
-                casacore::MVDirection direction;
-                std::vector<double> calibration;
-                std::tie(direction, calibration) = expected[0];
+                casacore::MVDirection expectedDirection;
+                std::vector<double> expectedCalibration;
+                std::tie(expectedDirection, expectedCalibration) = expected[i];
 
                 ASSERT_EQ(1, calibrations[i].size());
                 const auto& result = calibrations[i].front();
                 
                 ASSERT_EQ(1, result.GetData().size());
 #ifndef NDEBUG
-                std::cout << std::setprecision(15) << "calibration result: " << result.GetData()[0] << std::endl;
+                std::cout << "calibration result: " << result.GetData()[0] << std::endl;
 #endif
 
+                //std::cout << "actual:" << ToMatrix(result.GetData()[0]) << std::endl;
+
                 //TODO: assert with LEAP-Cal
-                ASSERT_MEQ(ToVector(calibration), ToMatrix(result.GetData()[0]), THRESHOLD);
+                ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
+                ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
+                //ASSERT_EQ(expectedDirection, result.GetDirection());
+
+                if(!ToVector(expectedCalibration).isApprox(ToMatrix(result.GetData()[0]), THRESHOLD))
+                {
+                    std::cout << i+1 << "/" << expected.size() << " got:\n" << ToMatrix(result.GetData()[0]) << std::endl;
+                }
+                ASSERT_MEQD(ToVector(expectedCalibration), ToMatrix(result.GetData()[0]), THRESHOLD);
             }
         }
 
@@ -149,12 +158,6 @@ namespace icrar
             const double THRESHOLD = 0.01;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
-
-            //auto eigenuvw = ToUVWVector(ms->GetCoords(index, baselines));
-            //auto casauvw = ToCasaUVWVector(ms->GetCoords(index, baselines));
-            //std::cout << "eigenuvw[1]" << eigenuvw[1] << std::endl;
-            //std::cout << "casauvw[1]" << casauvw[1] << std::endl;
-            //assert(uvw[1](0) == -75.219106714973222);
 
             boost::optional<icrar::cpu::Integration> integrationOptionalOutput;
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
@@ -168,19 +171,10 @@ namespace icrar
                     ms->GetNumChannels(),
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
-#ifdef PROFILING
-                auto startTime = std::chrono::high_resolution_clock::now();
-#endif
+
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-#ifdef PROFILING
-                auto endTime = std::chrono::high_resolution_clock::now();
-#endif
                 integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
-
-#ifdef PROFILING
-                std::cout << "casa time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
-#endif
             }
             if(impl == ComputeImplementation::eigen)
             {
@@ -194,18 +188,10 @@ namespace icrar
                     ms->GetNumPols());
 
                 auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-#ifdef PROFILING
-                auto startTime = std::chrono::high_resolution_clock::now();
-#endif
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
-#ifdef PROFILING
-                auto endTime = std::chrono::high_resolution_clock::now(); //remove the polar conversion?
-#endif
+
                 integrationOptionalOutput = integration;
                 metadataOptionalOutput = metadatahost;
-#ifdef PROFILING
-                std::cout << "eigen time" << std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count() << std::endl;
-#endif          
             }
             if(impl == ComputeImplementation::cuda)
             {
@@ -287,14 +273,6 @@ namespace icrar
 
             auto cthreshold = std::complex<double>(0.001, 0.001);
 
-            // ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
-            // ASSERT_EQCD(-24.9622-30.7819i, integrationOutput.GetData()(0,1,0), THRESHOLD);
-            // ASSERT_EQCD(-16.0242+31.1452i, integrationOutput.GetData()(0,2,0), THRESHOLD);
-
-            //ASSERT_EQCD(0.0+0.0i, integrationOutput.GetData()(0,0,0), THRESHOLD);
-            //ASSERT_EQCD(35.6735722091204 + 17.2635476789549i, integrationOutput.GetData()(0,1,0), THRESHOLD);
-            //ASSERT_EQCD(25.3136137725085 + -24.2077854859281i, integrationOutput.GetData()(0,2,0), THRESHOLD);
-
             ASSERT_EQ(8001, metadataOutput.avg_data.rows());
             ASSERT_EQ(4, metadataOutput.avg_data.cols());
             ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.avg_data(1,0), THRESHOLD);
@@ -342,6 +320,7 @@ namespace icrar
         std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetExpectedCalibration()
         {
             std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
+
             output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>{
                 -0.728771850537932,
                 -0.272984982217124,
@@ -471,6 +450,399 @@ namespace icrar
                 -0.589907136674013,
                 -0.435703316716115,
                 0.0205611886165418,
+            }));
+
+            output.push_back(std::make_pair(casacore::MVDirection(-0.753231018062671,-0.44387635324622354), std::vector<double>{
+                0.94487026489943,
+                0.572489329418899,
+                                0,
+                                0,
+                0.648326829847429,
+                0.907153918639446,
+                0.998854728818409,
+                0.7542596710192,
+                0.838128501662428,
+                                0,
+                                0,
+                                0,
+                0.625273968830704,
+                0.88358386256125,
+                0.987017862419034,
+                                0,
+                0.807860118052644,
+                0.871860658251653,
+                                0,
+                                0,
+                0.963618267344265,
+                0.698269623087271,
+                0.659281484730649,
+                0.454434922003747,
+                0.866891911758336,
+                0.72722141759037,
+                                0,
+                0.612045518817117,
+                0.900482596867087,
+                0.783918431703415,
+                                0,
+                0.733465404912891,
+                0.392369090336928,
+                0.818926556156453,
+                                0,
+                1.05142695963796,
+                0.871788211598442,
+                0.864880323837729,
+                                0,
+                                0,
+                0.755006601889765,
+                1.06455150509761,
+                0.864015469398547,
+                0.622947197939287,
+                1.12460182872347,
+                0.402993900255064,
+                0.33398716889989,
+                0.543575124803748,
+                0.949157359151242,
+                                0,
+                1.026211603035,
+                                0,
+                0.86030920088047,
+                0.542426286558229,
+                0.67262137295221,
+                1.02520234449774,
+                0.786556430692327,
+                0.858606182301091,
+                0.730095354515762,
+                0.568574765617851,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                1.00996371318086,
+                0.61394619367567,
+                0.765927501860839,
+                0.769167489748647,
+                0.727226896021727,
+                                0,
+                                0,
+                0.60884717320072,
+                0.924782336864082,
+                0.686917956905006,
+                0.834872704253456,
+                0.722751481885857,
+                0.931887179261136,
+                0.799989832256698,
+                0.681072777576226,
+                                0,
+                0.393298945111836,
+                0.768116896459235,
+                0.61248819632303,
+                0.497775008680731,
+                0.866302522553219,
+                0.833006230778508,
+                                0,
+                0.714386207014767,
+                0.883174481342617,
+                0.483385821041657,
+                                0,
+                0.838758111380788,
+                                0,
+                                0,
+                                0,
+                0.897675399716403,
+                0.841996992850644,
+                0.938427954079285,
+                0.843232018034677,
+                0.836090617604217,
+                1.10526043145239,
+                0.707942971794446,
+                0.803389453732708,
+                0.587361008100859,
+                0.960176681815287,
+                0.796903406975354,
+                1.09187952430755,
+                0.93669838255212,
+                0.650042427238668,
+                1.10979452984422,
+                                0,
+                0.885120471761499,
+                0.818169962870826,
+                1.14540179202922,
+                                0,
+                0.983703404273149,
+                0.708255573535111,
+                0.674374774178765,
+                0.657586238424334,
+                0.66837755058684,
+                0.526453176739132,
+                0.915359088827295,
+                0.707103457052404,
+                0.898682475667556,
+                0.784735639362311,
+                0.689086118435067,
+                1.03986671544874,
+            }));
+
+            output.push_back(std::make_pair(casacore::MVDirection(-0.6207547100721282,-0.2539086572881469), std::vector<double>{
+                -0.268925664617086,
+                -0.187642074315175,
+                                0,
+                                0,
+                -0.483294626316503,
+                -0.409195653638167,
+                -0.0889954960826849,
+                -0.470858291883337,
+                -0.269661791980634,
+                                0,
+                                0,
+                                0,
+                -0.148527859458426,
+                    0.1210664543399,
+                -0.482684413291957,
+                                0,
+                -0.341525667849546,
+                -0.33593098239416,
+                                0,
+                                0,
+                -0.38709414293264,
+                -0.139928022192342,
+                -0.33383998234184,
+                -0.149605247402681,
+                -0.35280388985851,
+                0.061718983356877,
+                                0,
+                -0.302407936143617,
+                0.0308804850271192,
+                -0.157225439624104,
+                                0,
+                -0.239751909172339,
+                -0.145663832850309,
+                -0.401293217861258,
+                                0,
+                -0.382153546963614,
+                -0.513648984637431,
+                -0.194433156549175,
+                                0,
+                                0,
+                -0.267232440211692,
+                -0.216340810968376,
+                -0.367829485352359,
+                -0.314944338682293,
+                -0.123682446249049,
+                -0.321396013049064,
+                -0.640203069376505,
+                -0.293083338739565,
+                -0.662790611067836,
+                                0,
+                -0.381583347843961,
+                                0,
+                -0.356118413532188,
+                -0.426687861469762,
+                -0.332134888611117,
+                -0.148220406324159,
+                -0.13542337265309,
+                -0.279690837201861,
+                -0.383115704525121,
+                -0.472394898560059,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                -0.178057249604916,
+                -0.269001295405652,
+                -0.0979465488470215,
+                -0.22034183277154,
+                -0.571854633869107,
+                                0,
+                                0,
+                -0.232644014003768,
+                -0.398823163231037,
+                -0.135015127861525,
+                -0.427761570995065,
+                -0.323831779171128,
+                -0.108403378246234,
+                -0.257093591662292,
+                -0.365171522497848,
+                                0,
+                -0.507635900854236,
+                -0.259250143218515,
+                -0.00157643772086535,
+                -0.376697492445082,
+                -0.55277420319808,
+                -0.143521432098204,
+                                0,
+                -0.190172635357413,
+                -0.365404200263596,
+                -0.339592876450441,
+                                0,
+                -0.286582934181782,
+                                0,
+                                0,
+                                0,
+                -0.493214399239094,
+                -0.438077317299886,
+                -0.193139663663324,
+                -0.279086305305193,
+                -0.234377876359571,
+                -0.453831231375758,
+                -0.615915206810612,
+                -0.213360616471015,
+                -0.601849743141046,
+                -0.627697305776301,
+                -0.329897088971537,
+                -0.25449674893357,
+                -0.340857005701488,
+                -0.185043088692129,
+                -0.0273502762719355,
+                                0,
+                -0.0502310249649769,
+                -0.590794778022027,
+                -0.173359127167256,
+                                0,
+                -0.301129810746059,
+                -0.516412358997066,
+                -0.354588588216421,
+                -0.251368752106561,
+                -0.378183555899058,
+                -0.648755794370822,
+                -0.409879230620901,
+                -0.0511852913273168,
+                -0.364707817299343,
+                -0.368668339179513,
+                -0.270466149145402,
+                -0.214998860658192,
+            }));
+
+            output.push_back(std::make_pair(casacore::MVDirection(-0.41958660604621867,-0.03677626900108552), std::vector<double>{
+                -0.728880777337342,
+                -0.573204824020722,
+                                0,
+                                0,
+                -0.624792570303644,
+                -0.837160028590676,
+                -1.0233903041481,
+                -0.447366532527825,
+                -0.861010791862196,
+                                0,
+                                0,
+                                0,
+                -0.519561894387086,
+                -0.74475728223299,
+                -0.578455558491251,
+                                0,
+                -0.496301431384916,
+                -0.643628524796025,
+                                0,
+                                0,
+                -0.55982603151933,
+                -0.439726723192023,
+                -0.451529031635735,
+                -0.724975346880593,
+                -0.589848033775713,
+                -1.14931908310616,
+                                0,
+                -0.342553083003207,
+                -0.888397668805765,
+                -0.655886438350693,
+                                0,
+                -0.615514855749701,
+                -0.449405306395476,
+                -0.444343471191857,
+                                0,
+                -0.383473739158219,
+                -0.790073669814679,
+                -0.538882107365059,
+                                0,
+                                0,
+                -0.875208238148725,
+                -0.38611552639881,
+                -0.795865817197535,
+                -0.673236998968814,
+                -0.59833242936164,
+                -0.775903404444888,
+                -0.789448486878599,
+                -0.637663806744499,
+                -0.840652681263391,
+                                0,
+                -0.491383345182238,
+                                0,
+                -0.539904289660659,
+                -0.855533784896403,
+                -0.460509158522685,
+                -0.757234333102258,
+                -0.797187474604895,
+                -0.619728190095386,
+                -0.535846553947238,
+                -0.420275543088792,
+                                0,
+                                0,
+                                0,
+                                0,
+                                0,
+                -0.67356832975448,
+                -0.89850779515399,
+                -1.04957354823845,
+                -0.659198681203868,
+                -0.489314935726804,
+                                0,
+                                0,
+                -0.764982756803997,
+                -0.670551713158708,
+                -0.70937852999773,
+                -0.787343858158358,
+                -0.425028282881015,
+                -0.764884961178107,
+                -0.768731914338893,
+                -0.7988616746519,
+                                0,
+                -0.647157563609855,
+                -0.829210811481478,
+                -0.946105820910326,
+                -0.623211204217773,
+                -0.458529280814186,
+                -0.794359080723543,
+                                0,
+                -0.566258370486683,
+                -0.939923101622818,
+                -0.823608955717003,
+                                0,
+                -0.898640689713784,
+                                0,
+                                0,
+                                0,
+                -0.858012736045069,
+                -0.732518554645434,
+                -0.988818856761544,
+                -0.491240924259345,
+                -0.828520577880066,
+                -0.773019193474883,
+                -0.75225514845906,
+                -0.759563112603612,
+                -0.533517691064255,
+                -0.600783975355519,
+                -0.496193743516784,
+                -0.933923163408498,
+                -0.403292299296837,
+                -0.88449786788654,
+                -0.430959274217242,
+                                0,
+                -0.626707652279771,
+                -0.699402009136224,
+                -0.527957948173637,
+                                0,
+                -0.649046694343177,
+                -0.440035790137326,
+                -0.446518178444137,
+                -0.542897427687042,
+                -0.731889695524104,
+                -0.560667003880483,
+                -1.06332677726258,
+                -0.703799130646114,
+                -0.693059740453355,
+                -0.659562697305275,
+                -0.377724193229313,
+                -0.565991511423093,
             }));
 
             return output;
@@ -753,7 +1125,7 @@ namespace icrar
             casacore::Vector<double> time = msmc->time().getColumn();
             double epoch = time[0];
             int nEpochs = 0;
-            for(int i = 0; i < time.size(); i++)
+            for(size_t i = 0; i < time.size(); i++)
             {
                 if(time[i] == time[0]) nEpochs++;
             }
@@ -814,9 +1186,9 @@ namespace icrar
             ASSERT_EQ(98, I1.size());
 
             //TODO: print out to comma seperated row major form
-            //ASSERT_MEQ(GetExpectedA(), A, 0.001);
+            //ASSERT_MEQD(GetExpectedA(), A, 0.001);
             //ASSERT_VEQI(GetExpectedI(), I, 0.001);
-            //ASSERT_MEQ(GetExpectedA1(), A1, 0.001);
+            //ASSERT_MEQD(GetExpectedA1(), A1, 0.001);
             //ASSERT_VEQI(GetExpectedI1(), I1, 0.001);clearclea
         }
     };
@@ -831,9 +1203,9 @@ namespace icrar
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
     TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
-    TEST_F(PhaseRotateTests, DISABLED_PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

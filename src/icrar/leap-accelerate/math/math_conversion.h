@@ -34,6 +34,7 @@
 #include <Eigen/Core>
 
 #include <vector>
+#include <chrono>
 
 namespace icrar
 {
@@ -148,4 +149,9 @@ namespace icrar
      * @return Eigen::Vector2d 
      */
     Eigen::Vector2d to_polar(const MVDirection& xyz);
+
+    /**
+     * @brief Convert duration to millisecond string
+     */
+    std::string ToMSString(std::chrono::nanoseconds duration);
 }

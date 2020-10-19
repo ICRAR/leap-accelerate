@@ -79,7 +79,12 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    // MetaData::MetaData(icrar::MeasurementSet& ms)
+    // {
+
+    // }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -140,8 +145,14 @@ namespace cpu
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
         m_Ad = icrar::cpu::PseudoInverse(m_A);
 
+        SetOldUVW(uvws);
+    }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    : MetaData(ms, uvws)
+    {
         SetDD(direction);
-        CalcUVW(uvws);
+        CalcUVW();
     }
 
     const Constants& MetaData::GetConstants() const
@@ -156,31 +167,6 @@ namespace cpu
     const Eigen::MatrixXd& MetaData::GetA1() const { return m_A1; }
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
-
-    void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
-    {
-        m_oldUVW = uvws;
-        auto size = uvws.size();
-        m_UVW.clear();
-        m_UVW.reserve(uvws.size());
-        for(int n = 0; n < size; n++)
-        {
-            m_UVW.push_back(uvws[n] * dd);
-        }
-    }
-
-    // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)
-    // {
-    //     this->oldUVW = uvws;
-    //     auto size = uvws.size();
-    //     this->UVW.setZero(uvws.size());
-    //     for(int n = 0; n < size; n++)
-    //     {
-    //         UVW(n, Eigen::all) = (uvws[n] * dd);
-    //     }
-
-    //     avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
-    // }
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
@@ -202,6 +188,22 @@ namespace cpu
         dd(2,0) = -std::sin(m_constants.dlm_dec);
         dd(2,1) = 0;
         dd(2,2) = std::cos(m_constants.dlm_dec);
+    }
+
+    void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
+    {
+        m_oldUVW = uvw;
+    }
+
+    void MetaData::CalcUVW()
+    {
+        auto size = m_oldUVW.size();
+        m_UVW.clear();
+        m_UVW.reserve(m_oldUVW.size());
+        for(int n = 0; n < size; n++)
+        {
+            m_UVW.push_back(m_oldUVW[n] * dd);
+        }
     }
 
     bool MetaData::operator==(const MetaData& rhs) const

@@ -75,25 +75,10 @@ namespace cpu
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        union
-        {
-            std::array<double, 2> phase_centre;
-            struct
-            {
-                double phase_centre_ra_rad;
-                double phase_centre_dec_rad;
-            };
-        };
-
-        union
-        {
-            std::array<double, 2> dlm;
-            struct
-            {
-                double dlm_ra;
-                double dlm_dec;
-            };
-        };
+        double phase_centre_ra_rad;
+        double phase_centre_dec_rad;
+        double dlm_ra;
+        double dlm_dec;
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
@@ -126,7 +111,8 @@ namespace cpu
         Eigen::MatrixXcd avg_data; // late initialized
 
 
-        MetaData(icrar::MeasurementSet& ms);
+        //MetaData(icrar::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const casalib::MetaData& metadata);
 
@@ -143,8 +129,15 @@ namespace cpu
         const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
-        void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
+        
         void SetDD(const icrar::MVDirection& direction);
+        void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
+        
+        /**
+         * @brief Updates the rotated UVW vector member
+         * preconditions - DD is set, oldUVW is set
+         */
+        void CalcUVW();
 
         bool operator==(const MetaData& rhs) const;
 

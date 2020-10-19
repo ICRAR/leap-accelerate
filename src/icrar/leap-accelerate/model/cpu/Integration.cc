@@ -44,7 +44,7 @@ namespace cpu
     Integration::Integration(
         unsigned int integrationNumber,
         const icrar::MeasurementSet& ms,
-        unsigned int index,
+        unsigned int startBaseline,
         unsigned int channels,
         unsigned int baselines,
         unsigned int polarizations)
@@ -54,8 +54,9 @@ namespace cpu
     , channels(channels)
     , baselines(baselines)
     {
-        m_data = ms.GetVis(index, 0, channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
+        constexpr int startChannel = 0;
+        m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
+        m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const

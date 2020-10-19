@@ -82,7 +82,7 @@ namespace icrar
     template<typename T>
     void ms_read_vis(
         casacore::MeasurementSet& ms,
-        unsigned int start_row,
+        unsigned int start_baseline,
         unsigned int start_channel,
         unsigned int num_channels,
         unsigned int num_baselines,
@@ -103,21 +103,21 @@ namespace icrar
         }
 
         unsigned int total_rows = ms.nrow();
-        if (start_row >= total_rows)
+        if (start_baseline >= total_rows)
         {
             throw icrar::exception("ms out of range", __FILE__, __LINE__);
         }
 
         // clamp num_baselines
-        if (start_row + num_baselines > total_rows)
+        if (start_baseline + num_baselines > total_rows)
         {
             std::stringstream ss;
-            ss << "row selection [" << start_row << "," << start_row + num_baselines << "] exceeds total range [" << 0 << "," << total_rows << "]";
+            ss << "row selection [" << start_baseline << "," << start_baseline + num_baselines << "] exceeds total range [" << 0 << "," << total_rows << "]";
             throw icrar::exception(ss.str(), __FILE__, __LINE__);
         }
 
         // Create the slicers for the column.
-        casacore::IPosition start1(1, start_row);
+        casacore::IPosition start1(1, start_baseline);
         casacore::IPosition length1(1, num_baselines);
         casacore::Slicer row_range(start1, length1);
         casacore::IPosition start2(2, 0, start_channel);
