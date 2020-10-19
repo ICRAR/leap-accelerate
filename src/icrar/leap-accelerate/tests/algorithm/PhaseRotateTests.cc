@@ -81,7 +81,7 @@ namespace icrar
 
         void PhaseRotateTest(ComputeImplementation impl)
         {
-            const double THRESHOLD = 0.01;
+            const double THRESHOLD = 0.00000001;
             
             auto metadata = icrar::casalib::MetaData(*ms);
 
@@ -121,7 +121,6 @@ namespace icrar
 
             auto expected = GetExpectedCalibration();
 
-
             ASSERT_EQ(directions.size(), calibrations.size());
             for(size_t i = 0; i < expected.size(); i++)
             {
@@ -131,18 +130,11 @@ namespace icrar
 
                 ASSERT_EQ(1, calibrations[i].size());
                 const auto& result = calibrations[i].front();
-                
                 ASSERT_EQ(1, result.GetData().size());
-#ifndef NDEBUG
-                std::cout << "calibration result: " << result.GetData()[0] << std::endl;
-#endif
-
-                //std::cout << "actual:" << ToMatrix(result.GetData()[0]) << std::endl;
 
                 //TODO: assert with LEAP-Cal
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
-                //ASSERT_EQ(expectedDirection, result.GetDirection());
 
                 if(!ToVector(expectedCalibration).isApprox(ToMatrix(result.GetData()[0]), THRESHOLD))
                 {

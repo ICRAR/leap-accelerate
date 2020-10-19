@@ -137,36 +137,28 @@ namespace cpu
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
 
-
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
         
         Eigen::VectorXi indexes1 = metadata.GetI1();
-        indexes1(indexes1.size() + 1) = 0; // TODO: check -1 behaviour, should result in 0
+        indexes1(indexes1.size() - 1) = 0; // TODO: check -1 behaviour, should result in 0
         Eigen::VectorXd cal_avg_data = avg_data_angles(indexes1, 0); // 1st pol only
-        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
-
+        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
 
         auto cal1 = metadata.GetAd1() * cal_avg_data;
-        std::cout << "cal1(0):" << cal1(1,0) << std::endl;
-        std::cout << "cal1("<<cal1.rows()-1<<"):" << cal1(cal1.rows()-1,0) << std::endl;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
         Eigen::VectorXi indexes = metadata.GetI();
-        indexes(indexes.size() + 1) = 0; // HACK
+        indexes(indexes.size() - 1) = 0;
         
         Eigen::MatrixXd avg_data_slice = avg_data_angles(indexes, Eigen::all);
         avg_data_slice(avg_data_slice.rows() - 1, Eigen::all).setConstant(0.0);
-        std::cout << "avg_data_slice(0):" << avg_data_slice(0,0) << std::endl;
-        std::cout << "avg_data_slice("<<avg_data_slice.rows()-1<<"):" << avg_data_slice(avg_data_slice.rows()-1,0) << std::endl;
-        
+
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
             double sum = cumsum.sum();
             dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
-        std::cout << "dInt(0,0):" << dInt(0,0) << std::endl;
-        std::cout << "dInt("<<dInt.rows()-1<<",0):" << dInt(dInt.rows()-1,0) << std::endl;
 
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
