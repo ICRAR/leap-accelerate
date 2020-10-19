@@ -24,7 +24,7 @@
 
 #include <exception>
 #include <string>
-#include <strstream>
+#include <sstream>
 
 namespace icrar
 {

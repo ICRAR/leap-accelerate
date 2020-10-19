@@ -66,11 +66,13 @@ namespace icrar
 #endif
         }
 
+#ifdef PROFILING
         inline void log(std::string entryName) const
         {
-#ifdef PROFILING
             BOOST_LOG_TRIVIAL(boost::log::trivial::trace) << entryName << ": " << ToMSString(m_stop - m_start) << std::endl;
-#endif
         }
+#else
+        inline void log(std::string) const {}
+#endif
     };
 }
