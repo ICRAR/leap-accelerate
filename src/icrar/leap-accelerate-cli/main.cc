@@ -63,7 +63,7 @@ namespace icrar
         boost::optional<std::string> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
         boost::optional<std::string> implementation = std::string("casa");
-        boost::optional<bool> mwaSupport = false;
+        bool mwaSupport = false;
 
         Arguments() {}
     };
