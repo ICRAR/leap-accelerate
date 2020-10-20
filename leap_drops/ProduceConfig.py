@@ -1,5 +1,6 @@
 import csv
 import json
+import math
 
 from dlg.droputils import DROPFile
 from dlg.drop import BarrierAppDROP
@@ -38,18 +39,30 @@ class ProduceConfig(BarrierAppDROP):
         # read directions from input 0
         directions = self._readDirections(self.inputs[0])
 
+        # determine number of directions per instance
+        numDirectionsPerInstance = float(len(directions)) / float(len(self.outputs))
+
+        startDirectionIndex = 0
+        endDirectionIndex = 0
+
         # split directions
         for i in range(len(self.outputs)):
-            # TODO: actually split directions according to num copies, currently
-            #       we send all directions to all configs
-            partDirections = directions
+            endDirectionIndex = int(math.floor((i+1)*numDirectionsPerInstance))
+
+            # split directions
+            partDirections = directions[startDirectionIndex:endDirectionIndex]
 
             # build config
             configJSON = self._createConfig(self.numStations, partDirections, self.implementation)
+
+            # stringify config
             config = json.dumps(configJSON)
 
             # write config to output
             self.outputs[i].write(config)
+
+            # continue from here in the next iteration
+            startDirectionIndex = endDirectionIndex
 
 
     def _readDirections(self, inDrop):
