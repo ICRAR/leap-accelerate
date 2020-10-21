@@ -53,6 +53,7 @@
 #include <exception>
 #include <memory>
 
+#include <sstream>
 
 
 using Radians = double;
@@ -137,22 +138,35 @@ namespace cpu
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
 
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        
-        Eigen::VectorXi indexes1 = metadata.GetI1();
-        indexes1(indexes1.size() - 1) = 0; // TODO: check -1 behaviour, should result in 0
-        Eigen::VectorXd cal_avg_data = avg_data_angles(indexes1, 0); // 1st pol only
-        cal_avg_data(cal_avg_data.size() - 1) = 0.0; // Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
+        Eigen::VectorXi indices1 = metadata.GetI1();
+        for(int& v : indices1)
+        {
+            if(v < 0)
+            {
+                v += avg_data_angles.rows(); /// -behaviour in python is to wrap around
+                //TODO: reference antenna should be included, set to 0?
+            }
+        }
 
+        Eigen::VectorXd cal_avg_data = avg_data_angles(indices1, 0); // 1st pol only
         auto cal1 = metadata.GetAd1() * cal_avg_data;
+        // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+        // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+
+
+        Eigen::VectorXi indices = metadata.GetI();
+        for(int& v : indices)
+        {
+            if(v < 0)
+            {
+                v += avg_data_angles.rows(); // -behaviour in python is to wrap around
+                //TODO: reference antenna should be included, set to 0?
+            }
+        }
+        Eigen::MatrixXd avg_data_slice = avg_data_angles(indices, Eigen::all);
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-        Eigen::VectorXi indexes = metadata.GetI();
-        indexes(indexes.size() - 1) = 0;
-        
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(indexes, Eigen::all);
-        avg_data_slice(avg_data_slice.rows() - 1, Eigen::all).setConstant(0.0);
-
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -174,6 +188,7 @@ namespace cpu
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
         metadata.CalcUVW();
+
         const auto polar_direction = icrar::to_polar(metadata.direction);
         
         // loop over smeared baselines
@@ -280,6 +295,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         auto Itemp = Eigen::VectorXi(k);
         Itemp = I(Eigen::seqN(0, k));
+        
         I.resize(0);
         I = Itemp;
     

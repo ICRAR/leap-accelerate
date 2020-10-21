@@ -156,27 +156,43 @@ namespace casalib
                 }
 
 
-                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
+                casacore::Matrix<Radians> avg_data_angles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
                 });
 
-                auto indexes = ToVector(metadata.I1);
+                auto indices1 = ToVector(metadata.I1);
+                for(int& v : indices1)
+                {
+                    if(v < 0)
+                    {
+                        v += avg_data_angles.shape()[0]; // -behaviour in python is to wrap around
+                        //TODO: reference antenna should be included, set to 0?
+                    }
+                }
 
-                indexes(indexes.size() - 1) = 0;
-                casacore::Matrix<double> cal_avg_data = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only
-                cal_avg_data(cal_avg_data.size() - 1, 0) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
+                casacore::Matrix<double> cal_avg_data = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data_angles)(indices1, 0))); // 1st pol only
+                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+                //cal_avg_data(cal_avg_data.size() - 1, 0) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
 
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
 
-                // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
-                dInt = 0;
+                Eigen::VectorXi indices = ToVector(metadata.I);
+                for(int& v : indices)
+                {
+                    if(v < 0)
+                    {
+                        v += avg_data_angles.shape()[0]; // -behaviour in python is to wrap around
+                        //TODO: reference antenna should be included, set to 0?
+                    }
+                }
 
-                Eigen::VectorXi e_i = ToVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
+                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data_angles)(indices, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
+                // Calculate DInt
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
+                dInt = 0;
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt.row(n) = avg_data_slice.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));

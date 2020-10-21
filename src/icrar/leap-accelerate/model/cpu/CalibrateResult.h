@@ -29,6 +29,7 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -101,7 +102,7 @@ namespace cpu
             writer.StartObject();
             writer.String("direction");
             writer.StartArray();
-            for(auto& v : m_direction)
+            for(auto& v : icrar::to_polar(m_direction))
             {
                 writer.Double(v);
             }
