@@ -49,7 +49,7 @@ class CallLeap(BarrierAppDROP):
 
         if self.DEBUG:
             time.sleep(random.uniform(5,10))
-            self.outputs[0].write(str(commandLine))
+            self.outputs[0].write(json.dumps(commandLine))
         else:
             # call leap
             result = subprocess.run(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
