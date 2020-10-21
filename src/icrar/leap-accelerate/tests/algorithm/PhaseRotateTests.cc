@@ -222,7 +222,6 @@ namespace icrar
             expectedConstants.num_pols = 4;
             expectedConstants.stations = 126;
             expectedConstants.rows = 63089;
-            expectedConstants.solution_interval = 3601;
             expectedConstants.freq_start_hz = 1.39195e+08;
             expectedConstants.freq_inc_hz = 640000;
             expectedConstants.phase_centre_ra_rad = 0.57595865315812877;
@@ -244,7 +243,6 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedConstants.num_pols, metadataOutput.GetConstants().num_pols);
             EXPECT_DOUBLE_EQ(expectedConstants.stations, metadataOutput.GetConstants().stations);
             EXPECT_DOUBLE_EQ(expectedConstants.rows, metadataOutput.GetConstants().rows);
-            EXPECT_DOUBLE_EQ(expectedConstants.solution_interval, metadataOutput.GetConstants().solution_interval);
             EXPECT_DOUBLE_EQ(expectedConstants.freq_start_hz, metadataOutput.GetConstants().freq_start_hz);
             EXPECT_DOUBLE_EQ(expectedConstants.freq_inc_hz, metadataOutput.GetConstants().freq_inc_hz);
             EXPECT_DOUBLE_EQ(expectedConstants.phase_centre_ra_rad, metadataOutput.GetConstants().phase_centre_ra_rad);
@@ -274,7 +272,6 @@ namespace icrar
         void PhaseMatrixFunction0Test(ComputeImplementation impl)
         {
             int refAnt = 0;
-            bool map = true;
 
             try
             {
@@ -282,19 +279,19 @@ namespace icrar
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt, map);
+                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt);
                 }
                 if(impl == ComputeImplementation::eigen)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt, map);
+                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt);
                 }
                 if(impl == ComputeImplementation::cuda)
                 {
                     const Eigen::VectorXi a1;
                     const Eigen::VectorXi a2;
-                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt, map);
+                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt);
                 }
             }
             catch(std::invalid_argument& e)
@@ -861,7 +858,6 @@ namespace icrar
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
             //Start calculations
-            bool map = true;
 
             //output
             Eigen::MatrixXd A;
@@ -875,12 +871,12 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Array<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1, map);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
                 casacore::Array<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0, map);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 
                 A = ToMatrix(casaA);

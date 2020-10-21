@@ -63,8 +63,6 @@ namespace casalib
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        int solution_interval; // TODO can remove?
-
         std::vector<double> channel_wavelength;
         std::vector<casacore::MVuvw> oldUVW;
 

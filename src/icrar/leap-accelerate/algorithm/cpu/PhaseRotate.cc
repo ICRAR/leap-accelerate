@@ -92,7 +92,7 @@ namespace cpu
                 integrations * ms.GetNumBaselines(),
                 ms.GetNumPols());
 
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
             queue.push_back(integration);
@@ -110,7 +110,7 @@ namespace cpu
         timer.stop();
         timer.log("metadata read time");
         timer.restart();
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
@@ -243,8 +243,7 @@ namespace cpu
 std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        int refAnt,
-        bool map)
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {

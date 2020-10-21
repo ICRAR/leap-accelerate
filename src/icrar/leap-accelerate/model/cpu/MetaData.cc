@@ -41,7 +41,6 @@ namespace cpu
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;
         m_constants.rows = metadata.rows;
-        m_constants.solution_interval = metadata.solution_interval;
         m_constants.freq_start_hz = metadata.freq_start_hz;
         m_constants.freq_inc_hz = metadata.freq_inc_hz;
         m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
@@ -106,8 +105,6 @@ namespace cpu
         m_constants.rows = ms.GetNumRows();
         m_constants.num_pols = ms.GetNumPols();
         m_constants.stations = ms.GetNumStations();
-
-        m_constants.solution_interval = 3601;
 
         m_constants.phase_centre_ra_rad = 0;
         m_constants.phase_centre_dec_rad = 0;
@@ -229,7 +226,6 @@ namespace cpu
         && num_pols == rhs.num_pols
         && stations == rhs.stations
         && rows == rhs.rows
-        && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad

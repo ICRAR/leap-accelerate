@@ -98,13 +98,11 @@ namespace casalib
      * @param a1 
      * @param a2 
      * @param refAnt the reference antenna (0, 1), -1 
-     * @param map 
      * @return std::pair<Matrixd, Matrixi> 
      */
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
-        int refAnt=-1,
-        bool map=false);
+        int refAnt=-1);
 }
 }

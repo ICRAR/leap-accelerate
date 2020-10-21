@@ -89,7 +89,6 @@ namespace icrar
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
-            ASSERT_EQ(3601, meta.solution_interval);
 
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
@@ -123,7 +122,6 @@ namespace icrar
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
-            ASSERT_EQ(3601, meta.solution_interval);
 
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);

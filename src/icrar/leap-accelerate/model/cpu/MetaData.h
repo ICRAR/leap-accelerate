@@ -72,8 +72,6 @@ namespace cpu
         int stations; // The number of stations used by the current observation
         int rows;
 
-        int solution_interval; //TODO can remove?
-
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 

@@ -90,7 +90,6 @@ namespace cuda
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
          const Eigen::VectorXi& a1,
          const Eigen::VectorXi& a2,
-         int refAnt,
-         bool map);
+         int refAnt);
 }
 }
