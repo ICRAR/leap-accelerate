@@ -172,24 +172,7 @@ namespace cpu
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
             double sum = cumsum.sum();
             dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
-
-            if(n >= metadata.GetI().size() - 3)
-            {
-                std::cout << "i: " << indices(n) << std::endl;
-                std::cout << "avg_data: " << avg_data_slice(n, Eigen::all) << std::endl;
-                std::cout << "sum: " << sum << std::endl;
-                std::cout << "dInt: " << dInt(n, Eigen::all) << std::endl;
-            }
         }
-
-        // std::cout << "indices1: " << indices1.size() << ":" << indices1 << std::endl;
-        // std::cout << "indices: " << indices.size() << indices << std::endl;
-
-
-        //std::cout << "avg_data: " << metadata.avg_data << std::endl;
-        //std::cout << "avg_data_angles: " << avg_data_angles << std::endl;
-        std::cout << "avg_data_slice: " << avg_data_slice << std::endl;
-        std::cout << "dInt: " << dInt << std::endl;
 
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
