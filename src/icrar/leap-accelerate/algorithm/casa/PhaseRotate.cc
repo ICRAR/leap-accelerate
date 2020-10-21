@@ -299,8 +299,7 @@ namespace casalib
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
-        int refAnt,
-        bool map)
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {

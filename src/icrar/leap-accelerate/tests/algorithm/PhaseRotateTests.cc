@@ -888,20 +888,20 @@ namespace icrar
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1, map);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0, map);
+                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
             if(impl == ComputeImplementation::cuda)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cuda::PhaseMatrixFunction(ea1, ea2, -1, map);
+                std::tie(A, I) = cuda::PhaseMatrixFunction(ea1, ea2, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cuda::PhaseMatrixFunction(ea1, ea2, 0, map);
+                std::tie(A1, I1) = cuda::PhaseMatrixFunction(ea1, ea2, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
 

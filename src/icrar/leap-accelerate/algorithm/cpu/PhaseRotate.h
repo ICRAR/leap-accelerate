@@ -116,7 +116,6 @@ namespace cpu
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        int refAnt=-1,
-        bool map=false);
+        int refAnt=-1);
 }
 }
