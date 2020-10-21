@@ -32,6 +32,8 @@ namespace log
      */
     void Initialize()
     {
+        boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
+
         boost::log::add_file_log
         (
             boost::log::keywords::file_name = "sample_%N.log",/*< file name pattern >*/

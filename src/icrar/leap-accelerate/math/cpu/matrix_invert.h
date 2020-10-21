@@ -72,11 +72,12 @@ namespace cpu
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
     {
-        #if EIGEN_VERSION_AT_LEAST(3,3,0)
-        return a.completeOrthogonalDecomposition().pseudoInverse();
-        #else
-        return SVDPseudoInverse(a);
-        #endif
+        //#if EIGEN_VERSION_AT_LEAST(3,3,0)
+        //return a.completeOrthogonalDecomposition().pseudoInverse();
+        //#else
+        auto res = SVDPseudoInverse(a);
+        //#endif
+        return res;
     }
 }
 }

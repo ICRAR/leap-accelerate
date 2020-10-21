@@ -114,7 +114,7 @@ namespace casalib
         //select the first epoch only
         int nEpochs = 0;
         double epoch = time[0];
-        for(int i = 0; i < time.size(); i++)
+        for(size_t i = 0; i < time.size(); i++)
         {
             if(time[i] == epoch) nEpochs++;
         }

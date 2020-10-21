@@ -73,8 +73,7 @@ namespace cpu
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<MVDirection>& directions,
-        int solutionInterval = 3600);
+        const std::vector<MVDirection>& directions);
 
     /**
      * @brief 

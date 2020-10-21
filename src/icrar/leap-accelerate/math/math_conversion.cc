@@ -91,21 +91,6 @@ namespace icrar
         return vector_map(value, ToCasaDirection);
     }
 
-    Eigen::Vector2d to_polar(const MVDirection& xyz)
-    {
-        auto tmp = Eigen::Vector2d();
-        if (xyz(0) != 0 || xyz(1) != 0)
-        {
-            tmp(0) = std::atan2(xyz(1),xyz(0));
-        }
-        else
-        {
-            tmp(0) = 0.0;
-        }
-        tmp(1) = std::asin(xyz(2));
-        return tmp;
-    }
-
     std::string ToMSString(std::chrono::system_clock::duration duration)
     {
         std::stringstream ss;

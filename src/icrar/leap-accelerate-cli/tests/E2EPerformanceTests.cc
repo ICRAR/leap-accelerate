@@ -82,7 +82,7 @@ namespace icrar
         void MultiDirectionTest(ComputeImplementation impl, std::string msname, int stations_override)
         {
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
-            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override);
+            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, true);
 
             std::vector<casacore::MVDirection> directions =
             {

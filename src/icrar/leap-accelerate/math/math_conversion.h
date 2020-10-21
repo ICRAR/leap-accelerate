@@ -143,14 +143,6 @@ namespace icrar
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
 
     /**
-     * @brief Converts a unit catersian direction to polar coordinates
-     * 
-     * @param cartesian 
-     * @return Eigen::Vector2d 
-     */
-    Eigen::Vector2d to_polar(const MVDirection& xyz);
-
-    /**
      * @brief Convert duration to millisecond string
      */
     std::string ToMSString(std::chrono::nanoseconds duration);

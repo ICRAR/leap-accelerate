@@ -56,7 +56,7 @@ namespace icrar
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126, true);
         }
 
         void TearDown() override
@@ -77,7 +77,7 @@ namespace icrar
         void TestRawReadFromFile()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
+            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
             auto meta = icrar::casalib::MetaData(*rawms);
 
             ASSERT_EQ(false, meta.m_initialized);

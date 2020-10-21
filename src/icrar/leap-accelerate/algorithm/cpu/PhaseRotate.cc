@@ -64,10 +64,11 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        BOOST_LOG_TRIVIAL(info)
+        << "stations: " << ms.GetNumStations() << ", "
+        << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -84,6 +85,13 @@ namespace cpu
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        if(integrations == 0)
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines();
+            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
         auto integration = Integration(
                 integrationNumber,
                 ms,
@@ -105,6 +113,7 @@ namespace cpu
         timer.stop();
         timer.log("integration read time");
         timer.restart();
+        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
 
         timer.stop();
@@ -112,6 +121,7 @@ namespace cpu
         timer.restart();
         for(size_t i = 0; i < directions.size(); ++i)
         {
+            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
@@ -121,6 +131,7 @@ namespace cpu
         timer.stop();
         timer.log("PhaseRotate time");
 
+        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -134,10 +145,12 @@ namespace cpu
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
+            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.integration_number;
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-
+        
+        BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
         Eigen::VectorXi indices1 = metadata.GetI1();
         for(int& v : indices1)
@@ -189,10 +202,9 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::to_polar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.direction);
         
         // loop over smeared baselines
-        int baselines = metadata.GetConstants().nbaselines;
         for(int baseline = 0; baseline < integration.baselines; ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline

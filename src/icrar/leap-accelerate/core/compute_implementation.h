@@ -28,9 +28,10 @@ namespace icrar
 {
     enum class ComputeImplementation
     {
-        casa, // Compute implementation using casa math libraries
-        eigen, // Compute implementation using eigen
-        cuda // Compute implementation use nvidia cuda
+        casa = 0, // Compute implementation using casa math libraries
+        eigen [[deprecated]] = 1,
+        cpu = 1, // Compute implementation on cpu using eigen
+        cuda = 2, // Compute implementation on gpu use nvidia cuda
     };
 
     /**

@@ -71,8 +71,7 @@ namespace cuda
 
     cpu::CalibrateResult BatchCalibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<icrar::MVDirection>& directions)
     {
         if(GetCudaDeviceCount() == 0)
         {
@@ -128,8 +127,7 @@ namespace cuda
 
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<icrar::MVDirection>& directions)
     {
         if(GetCudaDeviceCount() == 0)
         {
@@ -407,7 +405,7 @@ namespace cuda
         );
 
         //TODO: store polar form in advance
-        const auto polar_direction = icrar::to_polar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.direction);
         g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
             constants,

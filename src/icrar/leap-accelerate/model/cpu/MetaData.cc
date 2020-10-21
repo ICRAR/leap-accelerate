@@ -28,6 +28,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/core/logging.h>
+
 
 namespace icrar
 {
@@ -135,12 +137,24 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
         
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
+
+        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate" << std::endl;
+        }
+        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate" << std::endl;
+        }
 
         SetOldUVW(uvws);
     }
@@ -169,7 +183,7 @@ namespace cpu
     {
         this->direction = direction;
 
-        Eigen::Vector2d polar_direction = icrar::to_polar(direction); 
+        Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
