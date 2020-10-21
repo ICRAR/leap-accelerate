@@ -12,7 +12,7 @@
 #  
 
 #SBATCH --job-name=leap
-#SBATCH -gres=gpu
+#SBATCH --gres=gpu
 #SBATCH --nodes=1
 #SBATCH --time=05:00
 
