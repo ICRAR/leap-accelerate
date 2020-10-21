@@ -705,7 +705,7 @@ namespace icrar
             }));
 
             output.push_back(std::make_pair(casacore::MVDirection(-0.41958660604621867,-0.03677626900108552), std::vector<double>{
-            -1.08634998754267e-13,
+                -1.08634998754267e-13,
                 0.155675953316536,
                                 0,
                                 0,
@@ -946,8 +946,6 @@ namespace icrar
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
 
-            //auto expectedI = GetExpectedI();
-            //auto expectedA = GetExpectedA();
             const int nBaselines = 4753;
             ASSERT_DOUBLE_EQ(4754, A.rows()); //-32=4754, -split=5152
             ASSERT_DOUBLE_EQ(128, A.cols());
@@ -965,13 +963,14 @@ namespace icrar
             EXPECT_NEAR(0.00, A(4753,126), TOLERANCE);
             EXPECT_NEAR(0.00, A(4753,127), TOLERANCE);
 
+            ASSERT_EQ(4754, I.size());
             EXPECT_EQ(1.00, I(0));
             EXPECT_EQ(2.00, I(1));
             EXPECT_EQ(3.00, I(2));
             //...
-            EXPECT_EQ(4849.00, I(4751));
-            EXPECT_EQ(4851.00, I(4752));
-            EXPECT_EQ(-1.00, I(4753));
+            EXPECT_EQ(4849, I(4751));
+            EXPECT_EQ(4851, I(4752));
+            EXPECT_EQ(-1, I(4753));
 
             //TODO: Ad not identical
             EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent

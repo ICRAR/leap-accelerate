@@ -144,6 +144,25 @@ namespace icrar
             ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
         }
 
+        void TestDD()
+        {
+            auto meta = icrar::casalib::MetaData(*ms);
+            auto direction = casacore::MVDirection(-0.4606549305661674,-0.29719233792392513);
+            meta.SetDD(direction);
+            
+            EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
+            EXPECT_DOUBLE_EQ(0.86068501306022194, meta.dd.get()(0,1));
+            EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.dd.get()(0,2));
+
+            EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.dd.get()(1,0));
+            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(1,1));
+            EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(1,2));
+
+            EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(2,0));
+            EXPECT_DOUBLE_EQ(0.00000000, meta.dd.get()(2,1));
+            EXPECT_DOUBLE_EQ(0.39117878367889541, meta.dd.get()(2,2));
+        }
+
         void TestSetWv()
         {
             auto meta = icrar::casalib::MetaData(*ms);
@@ -188,4 +207,5 @@ namespace icrar
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
+    TEST_F(MetaDataTests, TestDD) { TestDD(); }
 }
