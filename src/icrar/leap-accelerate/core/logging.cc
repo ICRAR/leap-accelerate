@@ -36,7 +36,7 @@ namespace log
 
         boost::log::add_file_log
         (
-            boost::log::keywords::file_name = "sample_%N.log",/*< file name pattern >*/
+            boost::log::keywords::file_name = "leap_%Y%m%d_%H%M%S_%5N.log",/*< file name pattern >*/
             boost::log::keywords::rotation_size = 10 * 1024 * 1024, /*< rotate files every 10 MiB... >*/
             boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
             boost::log::keywords::format = "[%TimeStamp%]: %Message%" /*< log record format >*/

@@ -137,6 +137,15 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
+        if(a1.size() != m_constants.nbaselines)
+        {
+            throw std::runtime_error("incorrect antenna size");
+        }
+        if(a2.size() != m_constants.nbaselines)
+        {
+            throw std::runtime_error("incorrect antenna size");
+        }
+
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";

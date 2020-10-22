@@ -106,8 +106,8 @@ namespace cpu
      * If True Map is provided it returns the index map for the matrix (only useful if RefAnt set).
      *
      * This function generates and returns the linear matrix for the phase calibration (only)
-     * @param a1 
-     * @param a2 
+     * @param a1 indexes of 1st antenna of each baselines
+     * @param a2 indexes of 2nd antenna of each baselines
      * @param refAnt the reference antenna (0, 1), -1 
      * @param map 
      * @return std::pair<Matrixd, Matrixi> 

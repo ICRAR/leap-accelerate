@@ -84,8 +84,7 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumBaselines() const
     {
-        const size_t num_stations = (size_t)GetNumStations();
-        return num_stations * (num_stations + 1) / 2;
+        return GetNumBaselines(m_readAutocorrelations);
     }
 
     unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
