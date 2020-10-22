@@ -74,6 +74,13 @@ namespace casalib
         const std::vector<casacore::MVDirection>& directions,
         int solutionInterval)
     {
+        BOOST_LOG_TRIVIAL(info) << "Calibrating using casa library";
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
         auto timer = profiling_timer();
         timer.start();
         auto metadata = casalib::MetaData(ms);
@@ -200,18 +207,6 @@ namespace casalib
                 }
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
-
-#ifndef NDEBUG
-                // V == A*G
-                // therefore
-                // G == Ad*V
-                // V-A*G ~= 0
-                
-                //auto G = cal.back();
-                //double PRECISION = 0.000001;
-                //assert(isApprox(V-(ToMatrix(metadata.A) * ToMatrix(G)), 0, PRECISION));
-#endif
-                break;
             }
         }
 

@@ -34,6 +34,7 @@
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
+#include <icrar/leap-accelerate/core/logging.h>
 
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -64,73 +65,18 @@ namespace icrar
 {
 namespace cuda
 {
-    double BytesToGigaBytes(size_t bytes)
-    {
-        return bytes / (1024.0 * 1024.0 * 1024.0);
-    }
-
-    cpu::CalibrateResult BatchCalibrate(
-        const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
-    {
-        if(GetCudaDeviceCount() == 0)
-        {
-            throw std::runtime_error("Could not find CUDA device");
-        }
-
-        auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
-        auto input_queue = std::vector<cuda::DeviceIntegration>();
-
-        // Flooring to remove incomplete measurements
-        int totalbaselines = (ms.GetNumRows() / ms.GetNumBaselines()) * ms.GetNumBaselines();
-
-        size_t memFree, memTotal;
-        cudaMemGetInfo(&memFree, &memTotal);
-        std::cout << BytesToGigaBytes(memFree) << "/" << BytesToGigaBytes(memTotal) << std::endl;
-
-        size_t visSize = ms.GetNumChannels() * totalbaselines * ms.GetNumPols() * sizeof(std::complex<double>);
-        int integrations = std::ceil((double)visSize / (double)memFree);
-        std::cout << "integrations:" << integrations << std::endl;      
-        int baselines = totalbaselines / integrations;
-
-        auto integration = cpu::Integration(
-            0,
-            ms,
-            0,
-            ms.GetNumChannels(),
-            baselines,
-            ms.GetNumPols());
-
-        
-        for(int i = 0; i < directions.size(); ++i)
-        {                
-            output_integrations.push_back(std::vector<cpu::IntegrationResult>());
-            output_calibrations.push_back(std::vector<cpu::CalibrationResult>());
-        }
-
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(integration.GetData().dimensions());
-
-        for(int i = 0; i < directions.size(); ++i)
-        {
-            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
-            metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
-            input_queue[0].SetData(integration);
-
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
-            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
-        }
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
-    }
-
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
         int solutionInterval)
     {
+        BOOST_LOG_TRIVIAL(info) << "Calibrating using gpu";
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
         if(GetCudaDeviceCount() == 0)
         {
             throw std::runtime_error("Could not find CUDA device");
@@ -139,7 +85,6 @@ namespace cuda
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
-
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
@@ -151,7 +96,6 @@ namespace cuda
             integrations * ms.GetNumBaselines(),
             ms.GetNumPols());
 
-        
         for(int i = 0; i < directions.size(); ++i)
         {                
             output_integrations.emplace_back();
@@ -252,73 +196,10 @@ namespace cuda
     }
 
     /**
-     * @brief Naive single threaded implementation for rotating visibilities 
-     * 
-     */
-    __global__ void g_RotateVisibilities(
-        cuDoubleComplex* pintegration_data, int integration_data_rows, int integration_data_cols, int integration_data_depth,
-        int integration_channels,
-        int integration_baselines,
-        int polarizations,
-        icrar::cpu::Constants constants,
-        Eigen::Matrix3d dd,
-        double2 direction,
-        double3* uvw, int uvwLength,
-        double3* oldUVW, int oldUVWLegth,
-        cuDoubleComplex* pavg_data, int avg_dataRows, int avg_dataCols)
-    {
-        using Tensor2Xcucd = Eigen::Tensor<cuDoubleComplex, 2>;
-        using Tensor3Xcucd = Eigen::Tensor<cuDoubleComplex, 3>;
-
-        auto integration_data = Eigen::TensorMap<Tensor3Xcucd>(pintegration_data, integration_data_rows, integration_data_cols, integration_data_depth);
-        auto avg_data = Eigen::TensorMap<Tensor2Xcucd>(pavg_data, avg_dataRows, avg_dataCols);
-
-        // loop over baselines
-        for(int baseline = 0; baseline < integration_baselines; ++baseline)
-        {
-            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
-            shiftFactor +=
-            ( 
-                constants.phase_centre_ra_rad * oldUVW[baseline].x
-                - constants.phase_centre_dec_rad * oldUVW[baseline].y
-            );
-            shiftFactor -= direction.x * uvw[baseline].x - direction.y * uvw[baseline].y;
-            shiftFactor *= 2 * CUDART_PI;
-
-            // loop over channels
-            for(int channel = 0; channel < constants.channels; channel++)
-            {
-                double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);
-                cuDoubleComplex exp = cuCexp(make_cuDoubleComplex(0.0, shiftRad));
-
-                for(int polarization = 0; polarization < polarizations; polarization++)
-                {
-                    integration_data(polarization, baseline, channel) = cuCmul(integration_data(polarization, baseline, channel), exp);
-                }
-
-                bool hasNaN = false;
-                for(int polarization = 0; polarization < polarizations; polarization++)
-                {
-                    auto n = integration_data(polarization, baseline, channel);
-                    hasNaN |= isnan(n.x) || isnan(n.y);
-                }
-
-                if(!hasNaN)
-                {
-                    for(int polarization = 0; polarization < polarizations; ++polarization)
-                    {
-                        avg_data(baseline, polarization) = cuCadd(avg_data(baseline, polarization), integration_data(polarization, baseline, channel));
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * @brief Rotates visibilities in parallel for baselines and channels
      * @note Atomic operator required for writing to @param pavg_data
      */
-    __global__ void g_RotateVisibilitiesBC(
+    __global__ void g_RotateVisibilities(
         cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         icrar::cpu::Constants constants,
         Eigen::Matrix3d dd,
@@ -389,7 +270,7 @@ namespace cuda
         }
     }
 
-    __host__ void RotateVisibilitiesBC(
+    __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata)
     {
@@ -408,7 +289,7 @@ namespace cuda
 
         //TODO: store polar form in advance
         const auto polar_direction = icrar::to_polar(metadata.direction);
-        g_RotateVisibilitiesBC<<<gridSize, blockSize>>>(
+        g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
             constants,
             metadata.dd,
@@ -416,11 +297,6 @@ namespace cuda
             (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
             (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(),
             (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
-    }
-
-    __host__ void RotateVisibilities(DeviceIntegration& integration, DeviceMetaData& metadata)
-    {
-        RotateVisibilitiesBC(integration, metadata);
     }
 
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
