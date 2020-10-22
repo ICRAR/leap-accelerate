@@ -191,7 +191,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, eigen, cuda)");
+    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, cpu, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
     app.add_option("-a,--read-autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
