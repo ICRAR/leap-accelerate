@@ -905,15 +905,11 @@ namespace icrar
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
 
-            const int nBaselines = 4753;
-            ASSERT_DOUBLE_EQ(4754, A.rows()); //-32=4754, -split=5152
-            ASSERT_DOUBLE_EQ(128, A.cols());
-            ASSERT_DOUBLE_EQ(nBaselines+1, I.size());
-            ASSERT_DOUBLE_EQ(128, Ad.rows());
-            ASSERT_DOUBLE_EQ(4754, Ad.cols());
-
             double TOLERANCE = 0.00001;
 
+            // A
+            ASSERT_DOUBLE_EQ(4754, A.rows()); //-32=4754, -split=5152
+            ASSERT_DOUBLE_EQ(128, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
@@ -922,6 +918,9 @@ namespace icrar
             EXPECT_NEAR(0.00, A(4753,126), TOLERANCE);
             EXPECT_NEAR(0.00, A(4753,127), TOLERANCE);
 
+            // I
+            const int nBaselines = 4753;
+            ASSERT_DOUBLE_EQ(nBaselines+1, I.size());
             ASSERT_EQ(4754, I.size());
             EXPECT_EQ(1.00, I(0));
             EXPECT_EQ(2.00, I(1));
@@ -931,21 +930,21 @@ namespace icrar
             EXPECT_EQ(4851, I(4752));
             EXPECT_EQ(-1, I(4753));
 
-            //TODO: Ad not identical
-            EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
-            EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
-            EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
-            //...
-            EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
-            EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
-            EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+            // Ad
+            ASSERT_DOUBLE_EQ(128, Ad.rows());
+            ASSERT_DOUBLE_EQ(4754, Ad.cols());
+            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
+            // //...
+            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+            ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
+            //A1
             ASSERT_DOUBLE_EQ(98, A1.rows()); //-32=98, -split=102
             ASSERT_DOUBLE_EQ(128, A1.cols());
-            ASSERT_DOUBLE_EQ(98, I1.size());
-            ASSERT_DOUBLE_EQ(128, Ad1.rows());
-            ASSERT_DOUBLE_EQ(98, Ad1.cols());
-
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
@@ -954,6 +953,8 @@ namespace icrar
             EXPECT_NEAR(0.00, A1(97,126), TOLERANCE);
             EXPECT_NEAR(0.00, A1(97,127), TOLERANCE);
 
+            //I1
+            ASSERT_DOUBLE_EQ(98, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
             EXPECT_DOUBLE_EQ(2.00, I1(1));
             EXPECT_DOUBLE_EQ(3.00, I1(2));
@@ -962,14 +963,18 @@ namespace icrar
             EXPECT_DOUBLE_EQ(97.00, I1(96));
             EXPECT_DOUBLE_EQ(-1.00, I1(97));
 
-            //TODO: Ad not identical
-            EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
-            EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
-            EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
-            //...
-            EXPECT_DOUBLE_EQ(5.4194040934156436e-17, Ad1(127,95)); // TODO: emergent
-            EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
-            EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
+            //Ad1
+            ASSERT_DOUBLE_EQ(98, Ad1.cols());
+            ASSERT_DOUBLE_EQ(128, Ad1.rows());
+            //TODO: Ad1 not identical
+            // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
+            // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
+            // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
+            // //...
+            // EXPECT_DOUBLE_EQ(5.4194040934156436e-17, Ad1(127,95)); // TODO: emergent
+            // EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
+            // EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
+            ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
         }
     };
 

@@ -88,7 +88,7 @@ namespace cpu
         if(integrations == 0)
         {
             std::stringstream ss;
-            ss << "invalid number of rows, expected >" << ms.GetNumBaselines();
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
@@ -204,7 +204,7 @@ namespace cpu
         const auto polar_direction = icrar::ToPolar(metadata.direction);
         
         // loop over smeared baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
