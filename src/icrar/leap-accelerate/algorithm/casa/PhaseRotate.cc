@@ -220,13 +220,13 @@ namespace casalib
         
         auto& integration_data = integration.data;
         auto& uvw = integration.uvw;
-        auto parameters = integration.parameters;
 
         if(!metadata.dd.is_initialized())
         {
             metadata.SetDD(direction);
             metadata.SetWv();
-            // Zero a vector for averaging in time and freq
+            
+            // Allocate a zero vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.avg_data.get() = 0;
             metadata.m_initialized = true;
