@@ -67,8 +67,7 @@ namespace cuda
 {
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<icrar::MVDirection>& directions)
     {
         BOOST_LOG_TRIVIAL(info) << "Calibrating using gpu";
         BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "

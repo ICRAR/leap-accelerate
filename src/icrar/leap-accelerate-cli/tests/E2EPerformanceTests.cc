@@ -102,15 +102,15 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, directions, 3600);
+                auto res = casalib::Calibrate(*ms, directions);
             }
             else if(impl == ComputeImplementation::eigen)
             {
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions));
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions));
             }
             else
             {

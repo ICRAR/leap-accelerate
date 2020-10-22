@@ -207,19 +207,19 @@ int main(int argc, char** argv)
         {
         case ComputeImplementation::casa:
         {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()));
             cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
         case ComputeImplementation::eigen:
         {
-            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);
             break;
         }
         case ComputeImplementation::cuda:
         {
-            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);
             break;
         }
