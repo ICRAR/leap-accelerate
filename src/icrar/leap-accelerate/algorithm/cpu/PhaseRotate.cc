@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -64,11 +63,13 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        int solutionInterval)
     {
+        BOOST_LOG_TRIVIAL(info) << "Calibrating using cpu";
         BOOST_LOG_TRIVIAL(info)
-        << "stations: " << ms.GetNumStations() << ", "
-        << "rows: " << ms.GetNumRows() << ", "
+		<< "stations: " << ms.GetNumStations() << ", "
+		<< "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -166,7 +167,6 @@ namespace cpu
         auto cal1 = metadata.GetAd1() * cal_avg_data;
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-
 
         Eigen::VectorXi indices = metadata.GetI();
         for(int& v : indices)

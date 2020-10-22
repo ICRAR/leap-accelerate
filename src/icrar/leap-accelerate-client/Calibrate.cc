@@ -61,9 +61,8 @@ namespace icrar
 
     void LeapHandleRemoteMS(std::string ms_filename)
     {
-        //MeasurementSet ms = MeasurementSet(ms_filename);
         throw std::runtime_error("not implemented");
-
+        //MeasurementSet ms = MeasurementSet(ms_filename);
         //::MetaData metadata = casalib::MetaData(ms);
     }
 
