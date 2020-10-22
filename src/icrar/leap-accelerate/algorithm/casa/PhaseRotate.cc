@@ -73,7 +73,7 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using casa library";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
         BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "

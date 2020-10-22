@@ -40,13 +40,14 @@ namespace log
             boost::log::keywords::file_name = "log/leap_%5N.log",/*< file name pattern >*/
             boost::log::keywords::rotation_size = 10 * 1024 * 1024, /*< rotate files every 10 MiB... >*/
             boost::log::keywords::max_files = 10,
+            boost::log::keywords::open_mode = std::ios_base::app|std::ios_base::out,
             boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
             boost::log::keywords::format = (
                 boost::log::expressions::stream
                 << "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S") << "]"
                 << " <" << boost::log::trivial::severity
                 << "> " << boost::log::expressions::smessage
-            ) 
+            )
         );
 
         //set log filter

@@ -69,7 +69,7 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using gpu";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using gpu";
         BOOST_LOG_TRIVIAL(info)
 	<< "stations: " << ms.GetNumStations() << ", "
 	<< "rows: " << ms.GetNumRows() << ", "

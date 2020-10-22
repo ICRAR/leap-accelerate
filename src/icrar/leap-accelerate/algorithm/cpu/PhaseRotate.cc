@@ -65,7 +65,7 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using cpu";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cpu";
         BOOST_LOG_TRIVIAL(info)
 		<< "stations: " << ms.GetNumStations() << ", "
 		<< "rows: " << ms.GetNumRows() << ", "
