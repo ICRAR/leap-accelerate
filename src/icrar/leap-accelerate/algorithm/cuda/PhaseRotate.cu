@@ -145,7 +145,7 @@ namespace cuda
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         auto cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
-        auto avg_data_slice = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
+        auto avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)

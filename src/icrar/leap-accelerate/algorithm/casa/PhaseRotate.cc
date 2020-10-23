@@ -180,7 +180,7 @@ namespace casalib
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
 
                 auto e_I = ToVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I, Eigen::all);
+                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                 // Calculate DInt
