@@ -35,7 +35,7 @@ cd ../../
 export EIGEN3_DIR=/usr/local/include/
 
 # Test Data
-wget "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" -O ./testdata/1197638568-32.tar.gz
+wget "https://cloudstor.aarnet.edu.au/plus/s/NJRXKpU30ax77uO/download" -O ./testdata/1197638568-split.tar.gz
 tar -C ./testdata/ -xvf ./testdata/1197638568-32.tar.gz
 
 wget "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" -O ./testdata/1197638568-split.tar.gz
