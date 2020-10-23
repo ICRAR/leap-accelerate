@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Travis CI install script
+# Travis CI test script
 #
 # ICRAR - International Centre for Radio Astronomy Research
 # (c) UWA - The University of Western Australia, 2018
@@ -25,19 +25,8 @@
 # MA 02111-1307  USA
 #
 
-# Eigen 3.3.90
-git clone https://gitlab.com/libeigen/eigen.git
-cd eigen
-git checkout fb0c6868ad8d43e052c9e027b41b3dfe660bb57d
-mkdir build && cd build
-cmake ../ && sudo make install
-cd ../../
-export EIGEN3_DIR=/usr/local/include/
+wget "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" -O ./1197638568-32.tar.gz
+tar -C ./ -xvf ./1197638568-32.tar.gz
 
-# Test Data
-wget "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" -O ./testdata/1197638568-split.tar.gz
-tar -C ./testdata/ -xvf ./testdata/1197638568-32.tar.gz
-
-wget "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" -O ./testdata/1197638568-split.tar.gz
-tar -C ./testdata/ -xvf ./testdata/1197638568-split.tar.gz
-
+wget "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" -O ./1197638568-split.tar.gz
+tar -C ./ -xvf ./1197638568-split.tar.gz
