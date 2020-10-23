@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
@@ -137,31 +138,14 @@ namespace cuda
         deviceMetadata.ToHost(hostMetadata);
         
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        Eigen::VectorXi indices1 = hostMetadata.GetI1();
-        for(int& v : indices1)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); /// -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
 
-        Eigen::VectorXd cal_avg_data = avg_data_angles(indices1, 0); // 1st pol only
-        auto cal1 = hostMetadata.GetAd1() * cal_avg_data;
+        // TODO: reference antenna should be included and set to 0?
+        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
+        auto cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
-        Eigen::VectorXi indices = hostMetadata.GetI();
-        for(int& v : indices)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); // -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(indices, Eigen::all);
+        auto avg_data_slice = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)

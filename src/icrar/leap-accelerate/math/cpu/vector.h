@@ -73,5 +73,61 @@ namespace cpu
 
         add(a.size(), a.data(), b.data(), c.data());
     }
+
+    /**
+     * @brief Provides selecting a range of elements via the index in the vector. Negative indexes
+     * select from the back of the vector with -1 as the last element.
+     * 
+     * @tparam T 
+     * @param vector the referenced matrix to select from
+     * @param rowIndices a range of row indices to select
+     * @param column a valid column index 
+     */
+    template<typename Matrix>
+    Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::SingleRange>
+    VectorRangeSelect(
+        Matrix& vector,
+        const Eigen::VectorXi& rowIndices,
+        unsigned int column)
+    {
+        Eigen::VectorXi correctedIndices = rowIndices;
+        for(int& v : correctedIndices)
+        {
+            if(v < 0)
+            {
+                v += vector.rows();
+            }
+        }
+
+        return vector(correctedIndices, column);
+    }
+
+    /**
+     * @brief Provides selecting a range of elements via the index in the vector. Negative indexes
+     * select from the back of the vector with -1 as the last element.
+     * 
+     * @tparam T 
+     * @param vector the referenced matrix to select from
+     * @param rowIndices a range of row indices to select
+     * @param column a valid column index 
+     */
+    template<typename Matrix>
+    Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
+    VectorRangeSelect(
+        Matrix& vector,
+        const Eigen::VectorXi& rowIndices,
+        Eigen::internal::all_t range)
+    {
+        Eigen::VectorXi correctedIndices = rowIndices;
+        for(int& v : correctedIndices)
+        {
+            if(v < 0)
+            {
+                v += vector.rows();
+            }
+        }
+
+        return vector(correctedIndices, range);
+    }
 }
 }

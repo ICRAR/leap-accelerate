@@ -58,12 +58,12 @@ namespace casalib
         c = ConvertVector(ec);
     }
 
-    // template<typename T>
-    // casacore::Array<T> multiply(const casacore::Matrix<T>& a, const casacore::Array<T>& b)
-    // {
-    //     auto c = casacore::Array<T>();
-    //     multiply(a, b, c);
-    //     return c;
-    // }
+    template<typename T>
+    casacore::Vector<T> multiply(const casacore::Matrix<T>& a, const casacore::Vector<T>& b)
+    {
+        casacore::Vector<T> c;
+        multiply(a, b, c);
+        return c;
+    }
 }
 }

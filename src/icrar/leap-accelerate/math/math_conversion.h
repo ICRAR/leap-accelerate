@@ -105,16 +105,6 @@ namespace icrar
         return casacore::Vector<T>(casacore::IPosition(1, value.rows()), value.data());
     }
 
-    template<typename T, typename B>
-    std::vector<T> Map(const std::vector<T>& value, std::function<T(const B&)> lambda)
-    {
-        std::vector<T> res(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
-        return res;
-    }
-
-    //icrar::MVuvw ToUVW(const casacore::MVPosition& value);
-    
     /**
      * @brief Converts a casacore UVW value to an icrar UVW value
      * 
