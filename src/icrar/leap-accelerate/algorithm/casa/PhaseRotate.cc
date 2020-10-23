@@ -207,6 +207,7 @@ namespace casalib
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
+                break;
             }
         }
 
