@@ -69,10 +69,10 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using gpu";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cuda";
         BOOST_LOG_TRIVIAL(info)
-	<< "stations: " << ms.GetNumStations() << ", "
-	<< "rows: " << ms.GetNumRows() << ", "
+        << "stations: " << ms.GetNumStations() << ", "
+        << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -103,11 +103,13 @@ namespace cuda
             output_calibrations.emplace_back();
         }
 
+        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
         input_queue.emplace_back(integration.GetData().dimensions());
 
         for(int i = 0; i < directions.size(); ++i)
         {
+            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
             metadata.CalcUVW(); //TODO: Can be performed in CUDA 
@@ -116,6 +118,8 @@ namespace cuda
             auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
+        
+        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
