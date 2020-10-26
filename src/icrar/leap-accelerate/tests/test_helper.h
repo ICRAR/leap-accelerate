@@ -32,25 +32,25 @@
 #include <gtest/gtest.h>
 
 //complex double
-void assert_eqcd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //matrix equal int
-void assert_meqi(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_matrix_near_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //matrix equal double
-void assert_meqd(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_matrix_near_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 void assert_meq3d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //matrix equal complex double
-void assert_meqcd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_matrix_near_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //vector equal int
-void assert_veqi(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_vector_near_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 //vector equal double
-void assert_veqd(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_vector_near_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
-void assert_veqd(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_vector_near_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
 template<typename T>
 void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
@@ -87,18 +87,18 @@ void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& 
 //void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 //void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
 
-void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
+void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
 
-#define ASSERT_EQCD(expected, actual, tolerance) assert_eqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_EQCD(expected, actual, tolerance) assert_near_cd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQD(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQ3D(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQCD(expected, actual, tolerance) assert_meqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MEQI(expected, actual, tolerance) assert_matrix_near_i(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MEQD(expected, actual, tolerance) assert_matrix_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MEQ3D(expected, actual, tolerance) assert_matrix_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MEQCD(expected, actual, tolerance) assert_matrix_near_cd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_VEQI(expected, actual, tolerance) assert_veqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_VEQD(expected, actual, tolerance) assert_veqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_VEQI(expected, actual, tolerance) assert_vector_near_i(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_VEQD(expected, actual, tolerance) assert_vector_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
 #define ASSERT_TEQ(expected, actual, tolerance) assert_teq(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
-#define ASSERT_MDEQ(expected, actual, tolerance) assert_metadataeq(expected, actual, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MDEQ(expected, actual, tolerance) assert_metadata_eq(expected, actual, #expected, #actual, __FILE__, __LINE__)
