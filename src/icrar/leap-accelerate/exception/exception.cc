@@ -21,7 +21,7 @@
 */
 
 #include "exception.h"
-#include <strstream>
+#include <sstream>
 
 namespace icrar
 {
