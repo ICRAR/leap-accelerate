@@ -31,7 +31,9 @@
 #include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/version.h>
 
 #include <CLI/CLI.hpp>
 #include <boost/optional.hpp>
@@ -180,10 +182,22 @@ namespace icrar
 
 using namespace icrar;
 
+std::string version_information(const char *name)
+{
+    std::ostringstream os;
+    os << name << " version " << version() << '\n'
+       << "git revision " << git_sha1() << '\n';
+    os << "Has local git changes: " << std::boolalpha << git_has_local_changes()
+       << std::noboolalpha << '\n';
+    os << name << " built on " << __DATE__ << ' ' << __TIME__;
+    return os.str();
+}
+
 int main(int argc, char** argv)
 {
     icrar::log::Initialize();
     CLI::App app { "LEAP-Accelerate" };
+    app.set_version_flag("-v,--version", [&]() { return version_information(argv[0]); });
 
     //Parse Arguments
     Arguments rawArgs;
