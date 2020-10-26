@@ -40,7 +40,8 @@ namespace cuda
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
-    : data(integration.GetData())
+    : integration_number(integration.integration_number)
+    , data(integration.GetData())
     , index(integration.index)
     , x(integration.x)
     , channels(integration.channels)
@@ -51,6 +52,8 @@ namespace cuda
 
     void DeviceIntegration::SetData(icrar::cpu::Integration& integration)
     {
+        integration_number = integration.integration_number;
+        
         if(data.GetSize() != integration.GetData().size())
         {
             std::ostringstream os;

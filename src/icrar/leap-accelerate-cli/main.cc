@@ -220,7 +220,7 @@ int main(int argc, char** argv)
             cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
-        case ComputeImplementation::eigen:
+        case ComputeImplementation::cpu:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);

@@ -106,7 +106,7 @@ namespace icrar
                 auto pair = icrar::casalib::Calibrate(*ms, directions);
                 std::tie(integrations, calibrations) = cpu::ToCalibrateResult(pair);
             }
-            else if(impl == ComputeImplementation::eigen)
+            else if(impl == ComputeImplementation::cpu)
             {
                 std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions));
             }
@@ -168,7 +168,7 @@ namespace icrar
                 integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
-            if(impl == ComputeImplementation::eigen)
+            if(impl == ComputeImplementation::cpu)
             {
                 
                 auto integration = cpu::Integration(
@@ -281,7 +281,7 @@ namespace icrar
                     const casacore::Vector<int32_t> a2;
                     icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt);
                 }
-                if(impl == ComputeImplementation::eigen)
+                if(impl == ComputeImplementation::cpu)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
@@ -884,7 +884,7 @@ namespace icrar
                 A1 = ToMatrix(casaA1);
                 I1 = ToVector(casaI1);
             }
-            if(impl == ComputeImplementation::eigen)
+            if(impl == ComputeImplementation::cpu)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
@@ -979,18 +979,18 @@ namespace icrar
     };
 
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCuda) { PhaseMatrixFunction0Test(ComputeImplementation::cuda); }
 
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCuda) { PhaseMatrixFunctionDataTest(ComputeImplementation::cuda); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
     TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::eigen); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }
