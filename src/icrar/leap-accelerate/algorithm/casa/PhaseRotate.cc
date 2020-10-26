@@ -74,7 +74,7 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using casa library";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
         BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
@@ -92,7 +92,7 @@ namespace casalib
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
             int startRow = 0;
@@ -120,7 +120,7 @@ namespace casalib
         timer.log("integration read time");
         timer.restart();
 
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
@@ -188,8 +188,9 @@ namespace casalib
                 dInt = 0;
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
+                    dInt.row(n) = avg_data_slice.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
                 }
+
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
@@ -205,13 +206,13 @@ namespace casalib
         
         auto& integration_data = integration.data;
         auto& uvw = integration.uvw;
-        auto parameters = integration.parameters;
 
         if(!metadata.dd.is_initialized())
         {
             metadata.SetDD(direction);
             metadata.SetWv();
-            // Zero a vector for averaging in time and freq
+            
+            // Allocate a zero vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.avg_data.get() = 0;
             metadata.m_initialized = true;
@@ -227,7 +228,7 @@ namespace casalib
         assert(metadata.channel_wavelength.size() == metadata.channels);
 
         // loop over baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
             const double two_pi = 2 * boost::math::constants::pi<double>();
@@ -280,8 +281,7 @@ namespace casalib
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
-        int refAnt,
-        bool map)
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {

@@ -28,6 +28,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/core/logging.h>
+
 
 namespace icrar
 {
@@ -41,7 +43,6 @@ namespace cpu
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;
         m_constants.rows = metadata.rows;
-        m_constants.solution_interval = metadata.solution_interval;
         m_constants.freq_start_hz = metadata.freq_start_hz;
         m_constants.freq_inc_hz = metadata.freq_inc_hz;
         m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
@@ -107,8 +108,6 @@ namespace cpu
         m_constants.num_pols = ms.GetNumPols();
         m_constants.stations = ms.GetNumStations();
 
-        m_constants.solution_interval = 3601;
-
         m_constants.phase_centre_ra_rad = 0;
         m_constants.phase_centre_dec_rad = 0;
         if(pms->field().nrow() > 0)
@@ -123,8 +122,9 @@ namespace cpu
                 m_constants.phase_centre_dec_rad = v(1);
             }
         }
-        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
 
+        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
@@ -132,18 +132,39 @@ namespace cpu
         int nEpochs = 0;
         for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == time[0]) nEpochs++;
+            if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
+        // if(a1.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
+        // if(a2.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
 
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
         
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
+
+        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate" << std::endl;
+        }
+        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate" << std::endl;
+        }
 
         SetOldUVW(uvws);
     }
@@ -172,7 +193,7 @@ namespace cpu
     {
         this->direction = direction;
 
-        Eigen::Vector2d polar_direction = icrar::to_polar(direction); 
+        Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
@@ -229,7 +250,6 @@ namespace cpu
         && num_pols == rhs.num_pols
         && stations == rhs.stations
         && rows == rhs.rows
-        && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad

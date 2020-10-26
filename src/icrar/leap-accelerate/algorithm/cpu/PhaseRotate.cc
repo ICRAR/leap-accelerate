@@ -66,8 +66,10 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using cpu";
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cpu";
+        BOOST_LOG_TRIVIAL(info)
+		<< "stations: " << ms.GetNumStations() << ", "
+		<< "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -99,7 +101,7 @@ namespace cpu
                 integrations * ms.GetNumBaselines(),
                 ms.GetNumPols());
 
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             auto queue = std::vector<cpu::Integration>();
             queue.push_back(integration);
@@ -112,13 +114,15 @@ namespace cpu
         timer.stop();
         timer.log("integration read time");
         timer.restart();
+        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
 
         timer.stop();
         timer.log("metadata read time");
         timer.restart();
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
+            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
@@ -128,6 +132,7 @@ namespace cpu
         timer.stop();
         timer.log("PhaseRotate time");
 
+        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -141,20 +146,22 @@ namespace cpu
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
+            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.integration_number;
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-
+        
+        BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-        auto cal1 = metadata.GetAd1() * cal_avg_data;
+        Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
-        auto avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
+        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -177,11 +184,10 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::to_polar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.direction);
         
         // loop over smeared baselines
-        int baselines = metadata.GetConstants().nbaselines;
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
@@ -231,8 +237,7 @@ namespace cpu
 std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        int refAnt,
-        bool map)
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {

@@ -22,3 +22,21 @@
  */
 
 #include "math.h"
+
+namespace icrar
+{
+    Eigen::Vector2d ToPolar(const MVDirection& xyz)
+    {
+        auto tmp = Eigen::Vector2d();
+        if (xyz(0) != 0 || xyz(1) != 0)
+        {
+            tmp(0) = std::atan2(xyz(1),xyz(0));
+        }
+        else
+        {
+            tmp(0) = 0.0;
+        }
+        tmp(1) = std::asin(xyz(2));
+        return tmp;
+    }
+}

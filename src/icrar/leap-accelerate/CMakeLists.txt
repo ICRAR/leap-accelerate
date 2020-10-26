@@ -32,6 +32,7 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
+    math/math.cc
     math/math_conversion.cc
     math/casa/vector.cc
     math/casa/matrix.cc

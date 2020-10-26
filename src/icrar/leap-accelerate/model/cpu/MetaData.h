@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "cuda_runtime.h"
+
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -37,7 +39,6 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -69,8 +70,6 @@ namespace cpu
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
         int rows;
-
-        int solution_interval; //TODO can remove?
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz

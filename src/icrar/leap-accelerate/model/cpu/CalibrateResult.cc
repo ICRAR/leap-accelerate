@@ -20,8 +20,6 @@
 *    MA 02111-1307  USA
 */
 
-#pragma once
-
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>

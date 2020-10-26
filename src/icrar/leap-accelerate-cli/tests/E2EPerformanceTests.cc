@@ -81,10 +81,8 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl, std::string msname, int stations_override)
         {
-            const double THRESHOLD = 0.01;
-
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
-            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override);
+            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, true);
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -104,7 +102,7 @@ namespace icrar
                 auto metadata = casalib::MetaData(*ms);
                 auto res = casalib::Calibrate(*ms, directions);
             }
-            else if(impl == ComputeImplementation::eigen)
+            else if(impl == ComputeImplementation::cpu)
             {
                 auto output = cpu::Calibrate(*ms, ToDirectionVector(directions));
             }
@@ -120,10 +118,10 @@ namespace icrar
     };
 
     TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197638568-32.ms", 126); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197638568-32.ms", 126); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-32.ms", 126); }
     TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126); }
 
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197637968.ms", 126); }
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
 }

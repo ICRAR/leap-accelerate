@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/math/cpu/vector.h>
+#include <casacore/casa/Arrays.h>
 
 #include <casacore/casa/Arrays/Array.h>
 

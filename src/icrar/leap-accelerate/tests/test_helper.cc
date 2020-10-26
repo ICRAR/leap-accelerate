@@ -180,7 +180,6 @@ void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::M
     ASSERT_EQ(expected.GetConstants().rows, actual.GetConstants().rows);
     ASSERT_EQ(expected.GetConstants().freq_start_hz, actual.GetConstants().freq_start_hz);
     ASSERT_EQ(expected.GetConstants().freq_inc_hz, actual.GetConstants().freq_inc_hz);
-    ASSERT_EQ(expected.GetConstants().solution_interval, actual.GetConstants().solution_interval);
     ASSERT_EQ(expected.GetConstants().phase_centre_ra_rad, actual.GetConstants().phase_centre_ra_rad);
     ASSERT_EQ(expected.GetConstants().phase_centre_dec_rad, actual.GetConstants().phase_centre_dec_rad);
     ASSERT_EQ(expected.GetConstants().dlm_ra, actual.GetConstants().dlm_ra);

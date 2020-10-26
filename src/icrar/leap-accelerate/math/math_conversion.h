@@ -30,7 +30,6 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 #include <vector>
@@ -131,14 +130,6 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value);
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
-
-    /**
-     * @brief Converts a unit catersian direction to polar coordinates
-     * 
-     * @param cartesian 
-     * @return Eigen::Vector2d 
-     */
-    Eigen::Vector2d to_polar(const MVDirection& xyz);
 
     /**
      * @brief Convert duration to millisecond string

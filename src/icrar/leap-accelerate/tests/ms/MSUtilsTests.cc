@@ -23,8 +23,6 @@
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 
-
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>

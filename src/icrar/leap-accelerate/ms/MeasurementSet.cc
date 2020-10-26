@@ -25,8 +25,9 @@
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations)
+    MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
     : m_filepath(filepath)
+    , m_readAutocorrelations(readAutocorrelations)
     {
         m_measurementSet = std::make_unique<casacore::MeasurementSet>(filepath);
         m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
@@ -35,7 +36,8 @@ namespace icrar
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
     }
 
-    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations)
+    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations)
+    : m_readAutocorrelations(readAutocorrelations)
     {
         m_measurementSet = std::make_unique<casacore::MeasurementSet>(ms);
         m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
@@ -82,8 +84,22 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumBaselines() const
     {
-        const size_t num_stations = (size_t)GetNumStations();
-        return num_stations * (num_stations + 1) / 2;
+        return GetNumBaselines(m_readAutocorrelations);
+    }
+
+    unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
+    {
+        //TODO: cache value
+        if(useAutocorrelations)
+        {
+            const size_t num_stations = (size_t)GetNumStations();
+            return num_stations * (num_stations + 1) / 2;
+        }
+        else
+        {
+            const size_t num_stations = (size_t)GetNumStations();
+            return num_stations * (num_stations - 1) / 2;
+        }
     }
 
     unsigned int MeasurementSet::GetNumChannels() const

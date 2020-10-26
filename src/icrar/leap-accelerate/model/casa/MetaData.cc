@@ -70,9 +70,8 @@ namespace casalib
         auto msmc = ms.GetMSMainColumns();
 
         this->m_initialized = false;
-        this->solution_interval = 3601;
 
-        this->rows = msmc->uvw().nrow(); // pms->polarization().nrow();
+        this->rows = msmc->uvw().nrow();
         this->num_pols = 0;
         if(pms->polarization().nrow() > 0)
         {
@@ -87,10 +86,10 @@ namespace casalib
         }
 
         this->stations = ms.GetNumStations();
-        if(pms->nrow() > 0)
-        {
-            auto time_inc_sec = msc->interval().get(0);
-        }
+        // if(pms->nrow() > 0)
+        // {
+        //     auto time_inc_sec = msc->interval().get(0);
+        // }
 
         if(pms->field().nrow() > 0)
         {
@@ -113,9 +112,9 @@ namespace casalib
         casacore::Vector<double> time = msmc->time().getColumn();
 
         //select the first epoch only
-        double epoch = time[0];
         int nEpochs = 0;
-        for(int i = 0; i < time.size(); i++)
+        double epoch = time[0];
+        for(size_t i = 0; i < time.size(); i++)
         {
             if(time[i] == epoch) nEpochs++;
         }
@@ -152,7 +151,7 @@ namespace casalib
 #endif
     }
 
-    MetaData::MetaData(std::istream& input)
+    MetaData::MetaData(std::istream& /*input*/)
     {
         throw std::runtime_error("not implemented");
     }
@@ -166,7 +165,7 @@ namespace casalib
         oldUVW = uvws;
         auto size = uvws.size();
         uvws.clear();
-        for(int n = 0; n < size; n++)
+        for(size_t n = 0; n < size; n++)
         {
             auto uvw = icrar::Dot(oldUVW[n], dd.value());
             uvws.push_back(uvw);
@@ -235,7 +234,6 @@ namespace casalib
         && rows == rhs.rows
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
-        && solution_interval == rhs.solution_interval
         && channel_wavelength == rhs.channel_wavelength
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad
         && phase_centre_dec_rad == rhs.phase_centre_dec_rad

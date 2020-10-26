@@ -25,7 +25,6 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 namespace icrar

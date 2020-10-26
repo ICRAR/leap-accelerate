@@ -50,3 +50,9 @@ add_test(
   NAME ${TEST_TARGET}
   COMMAND ${TEST_TARGET}
 )
+
+#gtest_add_tests(
+#  TARGET ${TEST_TARGET}
+#  TEST_PREFIX "*"
+#  EXTRA_ARGS --gtest_stack_trace_depth=10
+#)

@@ -32,7 +32,6 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
 
@@ -54,11 +53,13 @@ namespace icrar
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
 
         int m_stations;
+        bool m_readAutocorrelations;
+
         boost::optional<std::string> m_filepath;
 
     public:
-        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations);
-        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations);
+        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
         MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
@@ -121,5 +122,13 @@ namespace icrar
             std::uint32_t nBaselines,
             std::uint32_t nPolarizations) const;
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
+
+    private:
+        /**
+         * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
+         * 
+         * @return unsigned int 
+         */
+        unsigned int GetNumBaselines(bool useAutocorrelations) const;
     };
 }

@@ -24,7 +24,6 @@
 
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>

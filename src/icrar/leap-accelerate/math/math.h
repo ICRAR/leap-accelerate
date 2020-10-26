@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/common/MVDirection.h>
 #include <vector>
 
 namespace icrar
@@ -80,4 +81,12 @@ namespace icrar
     {
         return range(IntType(0), stop, IntType(1));
     }
+
+    /**
+     * @brief Converts a unit catersian direction to polar coordinates
+     * 
+     * @param cartesian 
+     * @return Eigen::Vector2d 
+     */
+    Eigen::Vector2d ToPolar(const MVDirection& xyz);
 }

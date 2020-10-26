@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/core/logging.h>
 
 namespace icrar
 {
@@ -36,7 +37,13 @@ namespace icrar
         }
         else if(value == "eigen")
         {
+            BOOST_LOG_TRIVIAL(info) << "argument 'eigen' deprecated, use 'cpu' instead";
             out = ComputeImplementation::eigen;
+            return true;
+        }
+        else if(value == "cpu")
+        {
+            out = ComputeImplementation::cpu;
             return true;
         }
         else if(value == "cuda")

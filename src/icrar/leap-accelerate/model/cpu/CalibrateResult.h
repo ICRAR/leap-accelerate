@@ -29,12 +29,12 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -90,16 +90,7 @@ namespace cpu
         const MVDirection GetDirection() const { return m_direction; }
         const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
-        //bool operator==(const CalibrationResult& rhs) const;
-
         void Serialize(std::ostream& os) const;
-
-        // friend std::ostream& operator<<(std::ostream& os, const CalibrationResult& value)
-        // {
-        //     os << "direction: " << value.GetDirection() << '\n';
-        //     os << "data: " << value.GetData();
-        //     return os;
-        // }
 
     private:
         template<typename Writer>
@@ -111,7 +102,7 @@ namespace cpu
             writer.StartObject();
             writer.String("direction");
             writer.StartArray();
-            for(auto& v : icrar::to_polar(m_direction))
+            for(auto& v : icrar::ToPolar(m_direction))
             {
                 writer.Double(v);
             }
