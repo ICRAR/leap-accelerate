@@ -297,8 +297,8 @@ namespace cuda
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        int refAnt,
-        const std::vector<bool>& fg)
+        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {
@@ -308,7 +308,7 @@ namespace cuda
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
-        bool Fg = False
+        bool Fg = false;
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
@@ -327,8 +327,14 @@ namespace cuda
         {
             if(a1(n) != a2(n))
             {
-                if (fg.size)
-                {   Fg=fg[n]; } // else { Fg = False}
+                if (n < fg.size())
+                {
+                    Fg=fg(n);
+                }
+                else
+                {
+                    Fg = false;
+                }
 
                 if (Fg==False)
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))

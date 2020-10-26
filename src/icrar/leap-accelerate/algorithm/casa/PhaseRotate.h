@@ -97,13 +97,14 @@ namespace casalib
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 antenna vector of size nStations
      * @param a2 antenna vector of size nStations
+     * @param fg flagged antennas
      * @param refAnt the reference antenna e.g. (0, 1). -1 if no reference.
      * @return std::pair<Matrixd, Matrixi> 
      */
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
-        int refAnt=-1,
-        const casacore::Vector<std::bool>& fg);
+        const casacore::Vector<bool>& fg,
+        int refAnt=-1);
 }
 }

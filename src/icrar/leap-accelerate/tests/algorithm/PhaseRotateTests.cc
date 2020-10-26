@@ -279,19 +279,22 @@ namespace icrar
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt);
+                    const casacore::Vector<bool> fg;
+                    icrar::casalib::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
                 if(impl == ComputeImplementation::cpu)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt);
+                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
                 if(impl == ComputeImplementation::cuda)
                 {
                     const Eigen::VectorXi a1;
                     const Eigen::VectorXi a2;
-                    icrar::cuda::PhaseMatrixFunction(a1, a2, refAnt);
+                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    icrar::cuda::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
             }
             catch(std::invalid_argument& e)
@@ -856,6 +859,7 @@ namespace icrar
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+            casacore::Vector<bool> fg = msmc->flag().getColumn()(epochIndices);
 
             //Start calculations
 
@@ -871,12 +875,12 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Array<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, fg, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
                 casacore::Array<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, fg, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 
                 A = ToMatrix(casaA);
@@ -888,20 +892,22 @@ namespace icrar
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1);
+                auto efg = ToVector(fg);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0);
+                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
             if(impl == ComputeImplementation::cuda)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cuda::PhaseMatrixFunction(ea1, ea2, -1);
+                auto efg = ToVector(fg);
+                std::tie(A, I) = cuda::PhaseMatrixFunction(ea1, ea2, efg, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cuda::PhaseMatrixFunction(ea1, ea2, 0);
+                std::tie(A1, I1) = cuda::PhaseMatrixFunction(ea1, ea2, efg, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
 

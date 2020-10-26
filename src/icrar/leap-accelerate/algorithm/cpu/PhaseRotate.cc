@@ -234,11 +234,11 @@ namespace cpu
         }
     }
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
-        int refAnt,
-        const std::vector<bool>& fg)  // Guess syntax!!
+        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {
@@ -248,7 +248,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
         unique.insert(a2.begin(), a2.end());
         int nAnt = unique.size();
-        bool Fg = False
+        bool Fg = false;
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
@@ -266,11 +266,17 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         {
             if(a1(n) != a2(n))
             {
-                if (fg.size)
-                {   Fg=fg[n]; } // else { Fg = False}
+                if (n < fg.size())
+                {
+                    Fg=fg(n);
+                }
+                else
+                {
+                    Fg = false;
+                }
 
-                if (Fg==False) // skip entry if data not flagged
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
+                // skip entry if data not flagged
+                if(Fg && (refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
                     A(k, a1(n)) = 1;
                     A(k, a2(n)) = -1;

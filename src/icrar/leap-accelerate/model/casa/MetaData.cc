@@ -118,12 +118,12 @@ namespace casalib
         {
             if(time[i] == epoch) nEpochs++;
         }
-        auto epochIndices = Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = Slice(0, GetBaselines(), 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-        casacore::Vector<std::bool> fg = msmc->flags().getColumn()(epochIndices);
-        casacore::Vector<std::double> uv = msmc->uvw().getColumn()(epochIndices);
+        casacore::Vector<bool> fg = msmc->flag().getColumn()(epochIndices);
+        casacore::Vector<double> uv = msmc->uvw().getColumn()(epochIndices);
         
 		if(a1.size() != a2.size())
 		{
@@ -142,12 +142,12 @@ namespace casalib
         }
 
         //Start calculations
-        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, fg);
+        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, fg, 0);
         this->Ad1 = icrar::casalib::PseudoInverse(A1);
 
         // Here we will check for baselines < minimum and add them to flags
         // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
-        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1, fg);
+        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, fg, -1);
         casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
 
 #ifndef NDEBUG

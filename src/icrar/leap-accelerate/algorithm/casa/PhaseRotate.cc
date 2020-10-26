@@ -173,19 +173,19 @@ namespace casalib
                 auto e_I1 = ToVector(metadata.I1);
 
                 // TODO: reference antenna should be included and set to 0?
-                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // 1st pol only
-                auto cal_avg_data = ConvertVector(e_cal_avg_data);
-                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-                casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
-
-                auto indexes = ToVector(metadata.I1);
-                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all); // FIX TODO 1st pol only, Only last value incorrect
+                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // FIX TODO 1st pol only, Only last value incorrect
                 // Target Pol will be first of 1, or first and last of 2 or 4. These could be indepdent or summed
                 // In initial code let us go for summed.
                 // Can I use "-1" for last?
 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
+                auto cal_avg_data = ConvertVector(e_cal_avg_data);
+                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
+
+                auto e_I = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);
+                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
@@ -285,8 +285,8 @@ namespace casalib
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
-        int refAnt,
-        const std::vector<bool>& fg)
+        const casacore::Vector<bool>& fg,
+        int refAnt)
     {
         if(a1.size() != a2.size())
         {
@@ -296,7 +296,7 @@ namespace casalib
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
-        bool Fg = False
+        bool Fg = false;
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
@@ -307,7 +307,8 @@ namespace casalib
         A = 0.0;
 
         Vector<int> I = Vector<int>(a1.size()); // I will be 1 less row than A.
-        I = 1;
+        I = -1;
+
 
         int STATIONS = A.shape()[1];
         int k = 0;
@@ -316,15 +317,21 @@ namespace casalib
         {
             if(a1(n) != a2(n))
             {
-                if (fg.size)
-                {   Fg=fg(n); } // else { Fg = False}
+                if (n < fg.size())
+                {
+                    Fg = fg(n);
+                }
+                else
+                {
+                    Fg = false;
+                }
 
-                if (Fg==False) // skip entry if data not flagged
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
+                // skip entry if data not flagged
+                if(Fg && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
                 {
                     A(k, a1(n)) = 1.0; // set scalear
                     A(k, a2(n)) = -1.0; // set scalear
-                    I(k) = n; // set scalear
+                    I(k) = n; //set scalear
                     k++;
                 }  // Otherwise the baseline entry (and therefore weight) is zero
             }
