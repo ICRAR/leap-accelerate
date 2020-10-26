@@ -20,11 +20,25 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+/**
+ * @file
+ *
+ * Stores the git revision information
+ */
 
-#include <Eigen/Core>
+#include <string>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+
+std::string git_sha1()
+{
+	return "@GIT_SHA1@";
 }
+
+bool git_has_local_changes()
+{
+	return std::string("@GIT_HAS_LOCAL_CHANGES@") == "DIRTY";
+}
+
+} // namespace icrar

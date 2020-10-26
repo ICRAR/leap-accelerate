@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "cuda_runtime.h"
+
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -37,7 +39,6 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 #include <boost/optional.hpp>
@@ -70,30 +71,13 @@ namespace cpu
         int stations; // The number of stations used by the current observation
         int rows;
 
-        int solution_interval; //TODO can remove?
-
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        union
-        {
-            std::array<double, 2> phase_centre;
-            struct
-            {
-                double phase_centre_ra_rad;
-                double phase_centre_dec_rad;
-            };
-        };
-
-        union
-        {
-            std::array<double, 2> dlm;
-            struct
-            {
-                double dlm_ra;
-                double dlm_dec;
-            };
-        };
+        double phase_centre_ra_rad;
+        double phase_centre_dec_rad;
+        double dlm_ra;
+        double dlm_dec;
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
@@ -121,12 +105,14 @@ namespace cpu
         std::vector<icrar::MVuvw> m_UVW; // late initialized
     
     public:
-        icrar::MVDirection direction; // late initialized
-        Eigen::Matrix3d dd; // late initialized
-        Eigen::MatrixXcd avg_data; // late initialized
+        icrar::MVDirection direction; // calibration direction, late initialized
+        Eigen::Matrix3d dd; // direction matrix, late initialized
+
+        Eigen::MatrixXcd avg_data; // matrix of size (baselines, polarizations), late initialized
 
 
-        MetaData(icrar::MeasurementSet& ms);
+        //MetaData(icrar::MeasurementSet& ms);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
         MetaData(const casalib::MetaData& metadata);
 
@@ -143,8 +129,15 @@ namespace cpu
         const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
-        void CalcUVW(const std::vector<icrar::MVuvw>& uvws);
+        
         void SetDD(const icrar::MVDirection& direction);
+        void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
+        
+        /**
+         * @brief Updates the rotated UVW vector member
+         * preconditions - DD is set, oldUVW is set
+         */
+        void CalcUVW();
 
         bool operator==(const MetaData& rhs) const;
 

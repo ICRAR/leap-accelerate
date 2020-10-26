@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
+#include <icrar/leap-accelerate/core/logging.h>
+
 namespace icrar
 {
 namespace cpu
@@ -44,7 +46,7 @@ namespace cpu
     Integration::Integration(
         unsigned int integrationNumber,
         const icrar::MeasurementSet& ms,
-        unsigned int index,
+        unsigned int startBaseline,
         unsigned int channels,
         unsigned int baselines,
         unsigned int polarizations)
@@ -54,8 +56,13 @@ namespace cpu
     , channels(channels)
     , baselines(baselines)
     {
-        m_data = ms.GetVis(index, 0, channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords(index, baselines));
+        constexpr int startChannel = 0;
+        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GB";
+        size_t uvw_size = (baselines - startBaseline) * 3;
+        BOOST_LOG_TRIVIAL(info) << "uvw:" << uvw_size / (1024.0 * 1024.0 * 1024.0) << " GB";
+        m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
+        m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }
 
     bool Integration::operator==(const Integration& rhs) const

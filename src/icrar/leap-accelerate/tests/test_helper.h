@@ -24,7 +24,6 @@
 
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/CXX11/Tensor>
@@ -93,7 +92,7 @@ void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::M
 #define ASSERT_EQCD(expected, actual, tolerance) assert_eqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 
 #define ASSERT_MEQI(expected, actual, tolerance) assert_meqi(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQ(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
+#define ASSERT_MEQD(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQ3D(expected, actual, tolerance) assert_meqd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 #define ASSERT_MEQCD(expected, actual, tolerance) assert_meqcd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
 

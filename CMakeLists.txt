@@ -72,12 +72,17 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+find_package(CUDA)
 enable_language(CUDA)
 
 # Global Libraries
-find_package(Boost REQUIRED)
+add_definitions(-DBOOST_ALL_DYN_LINK)
+find_package(Boost REQUIRED COMPONENTS log log_setup)
+
 find_package(Casacore REQUIRED)
+
 find_package(LAPACK)
+
 find_package(GSL)
 
 # Local Libraries
@@ -88,6 +93,7 @@ find_package(Eigen3 REQUIRED)
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
 
+# Local Targets
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)

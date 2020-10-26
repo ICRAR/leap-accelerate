@@ -63,8 +63,6 @@ namespace casalib
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
-        int solution_interval; // TODO can remove?
-
         std::vector<double> channel_wavelength;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -92,13 +90,13 @@ namespace casalib
             };
         };
 
-        casacore::Matrix<double> A; // Antennas all PhaseMatrix
+        casacore::Matrix<double> A; // [baselines+1,stations] Antennas (all, including flagged) PhaseMatrix
         casacore::Matrix<double> Ad; // A inverse
         
-        casacore::Matrix<double> A1; // Antennas with baseline PhaseMatrix
+        casacore::Matrix<double> A1; // [baselines,stations] Antennas ((all, including flagged) with baseline PhaseMatrix
         casacore::Matrix<double> Ad1; //A1 inverse
 
-        casacore::Vector<int> I1;
+        casacore::Vector<int> I1; // 
         casacore::Vector<int> I;
 
     public:

@@ -30,10 +30,10 @@
 #include <casacore/casa/Quanta/MVuvw.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 #include <vector>
+#include <chrono>
 
 namespace icrar
 {
@@ -104,16 +104,6 @@ namespace icrar
         return casacore::Vector<T>(casacore::IPosition(1, value.rows()), value.data());
     }
 
-    template<typename T, typename B>
-    std::vector<T> Map(const std::vector<T>& value, std::function<T(const B&)> lambda)
-    {
-        std::vector<T> res(value.size());
-        std::transform(value.cbegin(), value.cend(), res.begin(), lambda);
-        return res;
-    }
-
-    //icrar::MVuvw ToUVW(const casacore::MVPosition& value);
-    
     /**
      * @brief Converts a casacore UVW value to an icrar UVW value
      * 
@@ -142,10 +132,7 @@ namespace icrar
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
 
     /**
-     * @brief Converts a unit catersian direction to polar coordinates
-     * 
-     * @param cartesian 
-     * @return Eigen::Vector2d 
+     * @brief Convert duration to millisecond string
      */
-    Eigen::Vector2d to_polar(const MVDirection& xyz);
+    std::string ToMSString(std::chrono::nanoseconds duration);
 }

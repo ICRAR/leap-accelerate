@@ -31,7 +31,6 @@
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
 //#define EIGEN_CUDACC 1
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 
 #include <casacore/ms/MeasurementSets.h>
@@ -69,8 +68,7 @@ namespace cuda
      */
     cpu::CalibrateResult Calibrate(
         const MeasurementSet& ms,
-        const std::vector<MVDirection>& directions,
-        int solutionInterval = 3600);
+        const std::vector<MVDirection>& directions);
 
     /**
      * Performs only visibilities rotation on the GPU
@@ -83,7 +81,7 @@ namespace cuda
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations);
 
-    void RotateVisibilities(
+    __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
 
@@ -91,6 +89,6 @@ namespace cuda
          const Eigen::VectorXi& a1,
          const Eigen::VectorXi& a2,
          int refAnt,
-         std::bool& fg);
+         const std::vector<bool>& fg);
 }
 }

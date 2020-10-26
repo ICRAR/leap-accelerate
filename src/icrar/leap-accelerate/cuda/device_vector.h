@@ -28,7 +28,6 @@
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 #include <icrar/leap-accelerate/cuda/cuda_utils.cuh>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
@@ -89,8 +88,8 @@ namespace cuda
          * @param other 
          */
         device_vector(device_vector&& other)
-            : m_buffer(other.m_buffer)
-            , m_count(other.m_count)
+            : m_count(other.m_count)
+            , m_buffer(other.m_buffer)
         {
             other.m_buffer = nullptr;
             other.m_count = 0;

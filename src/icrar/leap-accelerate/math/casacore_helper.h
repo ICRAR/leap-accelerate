@@ -82,50 +82,43 @@ namespace icrar
         return equal;
     }
 
-    template<typename T, typename R>
-    casacore::Matrix<R> MapCollection(const casacore::Matrix<T>& value, std::function<R(T)> lambda)
+    /**
+     * @brief Performs a std::transform on a newly allocated casacore::Matrix
+     * 
+     * @tparam T The input vector template type
+     * @tparam function of signature R(const T&)
+     * @param vector 
+     * @return std::vector<R> 
+     */
+    template<typename T, typename Op>
+    casacore::Matrix<std::result_of_t<Op(const T&)>> casa_matrix_map(const casacore::Matrix<T>& matrix, Op lambda)
     {
-        casacore::Matrix<R> result = casacore::Matrix<R>(value.shape());
+        using R = std::result_of_t<Op(const T&)>;
+        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
 
-        auto result_it = result.begin();
-        for(T t : value)
-        {
-            *result_it = lambda(t);
-            result_it++;
-        }
+        auto result = casacore::Matrix<R>(matrix.shape());
+        std::transform(matrix.cbegin(), matrix.cend(), result.begin(), lambda);
         return result;
     }
 
-    template<typename T, typename R>
-    casacore::Array<R> MapCollection(const casacore::Array<T>& value, std::function<R(T)> lambda)
+    /**
+     * @brief Performs a std::transform on a newly allocated casacore::Vector
+     * 
+     * @tparam T The input vector template type
+     * @tparam function of signature R(const T&)
+     * @param vector 
+     * @return std::vector<R> 
+     */
+    template<typename T, typename Op>
+    casacore::Vector<std::result_of_t<Op(const T&)>> casa_vector_map(const casacore::Vector<T>& vector, Op lambda)
     {
-        casacore::Array<R> result = casacore::Array<R>(value.shape());
+        using R = std::result_of_t<Op(const T&)>;
+        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
 
-        auto result_it = result.begin(); 
-        for(T t : value)
-        {
-            *result_it = lambda(t);
-            result_it++;
-        }
+        auto result = casacore::Vector<R>(vector.shape());
+        std::transform(vector.cbegin(), vector.cend(), result.begin(), lambda);
         return result;
     }
-
-    template<typename T, typename R>
-    std::vector<std::vector<R>> MapCollection(const std::vector<std::vector<T>>& value, std::function<R(T)> lambda)
-    {
-        std::vector<std::vector<R>> result;
-        for(const T& v1 : value)
-        {
-            std::vector<R> r1;
-            for(const T& v2 : v1)
-            {
-                r1.push_back(lambda(v2));
-            }
-            result.push_back(r1);
-        }
-        return result;
-    }
-
     
     template<typename T>
     void ArrayFill(casacore::Array<T>& value, T v)

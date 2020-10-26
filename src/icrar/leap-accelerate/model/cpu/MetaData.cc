@@ -28,6 +28,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/core/logging.h>
+
 
 namespace icrar
 {
@@ -41,7 +43,6 @@ namespace cpu
         m_constants.num_pols = metadata.num_pols;
         m_constants.stations = metadata.stations;
         m_constants.rows = metadata.rows;
-        m_constants.solution_interval = metadata.solution_interval;
         m_constants.freq_start_hz = metadata.freq_start_hz;
         m_constants.freq_inc_hz = metadata.freq_inc_hz;
         m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
@@ -79,7 +80,12 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    // MetaData::MetaData(icrar::MeasurementSet& ms)
+    // {
+
+    // }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -102,8 +108,6 @@ namespace cpu
         m_constants.num_pols = ms.GetNumPols();
         m_constants.stations = ms.GetNumStations();
 
-        m_constants.solution_interval = 3601;
-
         m_constants.phase_centre_ra_rad = 0;
         m_constants.phase_centre_dec_rad = 0;
         if(pms->field().nrow() > 0)
@@ -118,16 +122,17 @@ namespace cpu
                 m_constants.phase_centre_dec_rad = v(1);
             }
         }
-        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
 
+        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
         double epoch = time[0];
         int nEpochs = 0;
-        for(int i = 0; i < time.size(); i++)
+        for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == time[0]) nEpochs++;
+            if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = casacore::Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
@@ -135,15 +140,42 @@ namespace cpu
         casacore::Vector<std::bool> fg = msmc->flags().getColumn()(epochIndices);
         casacore::Vector<std::double> uv = msmc->uvw().getColumn()(epochIndices);
 
+        // if(a1.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
+        // if(a2.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
 
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0, fg);
+        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1, fg);
         
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
 
+        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate" << std::endl;
+        }
+        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
+        {
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate" << std::endl;
+        }
+
+        SetOldUVW(uvws);
+    }
+
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
+    : MetaData(ms, uvws)
+    {
         SetDD(direction);
-        CalcUVW(uvws);
+        CalcUVW();
     }
 
     const Constants& MetaData::GetConstants() const
@@ -159,36 +191,11 @@ namespace cpu
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
-    void MetaData::CalcUVW(const std::vector<icrar::MVuvw>& uvws)
-    {
-        m_oldUVW = uvws;
-        auto size = uvws.size();
-        m_UVW.clear();
-        m_UVW.reserve(uvws.size());
-        for(int n = 0; n < size; n++)
-        {
-            m_UVW.push_back(uvws[n] * dd);
-        }
-    }
-
-    // void MetaData::CalcUVW(const Eigen::MatrixX3d& uvws)
-    // {
-    //     this->oldUVW = uvws;
-    //     auto size = uvws.size();
-    //     this->UVW.setZero(uvws.size());
-    //     for(int n = 0; n < size; n++)
-    //     {
-    //         UVW(n, Eigen::all) = (uvws[n] * dd);
-    //     }
-
-    //     avg_data = Eigen::MatrixXcd::Zero(UVW.size(), m_constants.num_pols);
-    // }
-
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
         this->direction = direction;
 
-        Eigen::Vector2d polar_direction = icrar::to_polar(direction); 
+        Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
@@ -204,6 +211,22 @@ namespace cpu
         dd(2,0) = -std::sin(m_constants.dlm_dec);
         dd(2,1) = 0;
         dd(2,2) = std::cos(m_constants.dlm_dec);
+    }
+
+    void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
+    {
+        m_oldUVW = uvw;
+    }
+
+    void MetaData::CalcUVW()
+    {
+        auto size = m_oldUVW.size();
+        m_UVW.clear();
+        m_UVW.reserve(m_oldUVW.size());
+        for(size_t n = 0; n < size; n++)
+        {
+            m_UVW.push_back(m_oldUVW[n] * dd);
+        }
     }
 
     bool MetaData::operator==(const MetaData& rhs) const
@@ -229,7 +252,6 @@ namespace cpu
         && num_pols == rhs.num_pols
         && stations == rhs.stations
         && rows == rhs.rows
-        && solution_interval == rhs.solution_interval
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad

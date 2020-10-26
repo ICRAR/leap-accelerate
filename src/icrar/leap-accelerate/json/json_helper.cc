@@ -40,10 +40,6 @@ namespace icrar
         {
             throw icrar::exception("expected an array", __FILE__, __LINE__);
         }
-        //if(doc.Parse(schemaJson))
-        // SchemaDocument
-        // SchemaValidator
-
         
         //Parse
         auto result = std::vector<icrar::MVDirection>();

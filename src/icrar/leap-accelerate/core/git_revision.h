@@ -20,11 +20,27 @@
  * MA 02111 - 1307  USA
  */
 
+/**
+ * @file
+ *
+ * Stores the version information of leap-accelerate
+ */
+
 #pragma once
 
-#include <Eigen/Core>
+#include <string>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
-}
+
+/**
+ * @return The git SHA1 value for the current source code commit.
+ */
+std::string git_sha1();
+
+/**
+ * @return Whether the local clone of the repository has uncommitted changes.
+ */
+bool git_has_local_changes();
+
+} // namespace icrar

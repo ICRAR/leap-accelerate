@@ -55,7 +55,8 @@ namespace icrar
 
         void SetUp() override
         {
-
+            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, 126, true);
         }
 
         void TearDown() override
@@ -65,9 +66,6 @@ namespace icrar
 
         void TestMeasurementSet()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
-
             auto msmc = ms->GetMSMainColumns();
             casacore::Vector<double> time = msmc->time().getColumn();
 
@@ -76,22 +74,21 @@ namespace icrar
 
         }
 
-        void TestReadFromFile()
+        void TestRawReadFromFile()
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none);
-            auto meta = icrar::casalib::MetaData(*ms);
+            auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
+            auto meta = icrar::casalib::MetaData(*rawms);
 
             ASSERT_EQ(false, meta.m_initialized);
             //ASSERT_EQ(4853, meta.nantennas);
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(128, meta.stations);
-            ASSERT_EQ(8256, meta.GetBaselines());
+            ASSERT_EQ(8256, meta.GetBaselines()); //This is with autocorrelations and 128 antennas
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
-            ASSERT_EQ(3601, meta.solution_interval);
 
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
@@ -107,29 +104,29 @@ namespace icrar
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
             ASSERT_EQ(98, meta.Ad1.shape()[1]);
             ASSERT_EQ(98, meta.I1.shape()[0]);
+
+            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
+            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
         }
 
         void TestReadFromFileOverrideStations()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
-            //ASSERT_EQ(4853, meta.nantennas);
+            //ASSERT_EQ(4853, meta.nantennas); // TODO assert
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(126, meta.stations);
+            ASSERT_EQ(126, meta.stations); // TODO 98?
             ASSERT_EQ(8001, meta.GetBaselines());
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
-            ASSERT_EQ(3601, meta.solution_interval);
 
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            ASSERT_EQ(4754, meta.A.shape()[0]);
+            ASSERT_EQ(4754, meta.A.shape()[0]); // (98-1)*98/2 + 1
             ASSERT_EQ(128, meta.A.shape()[1]);
             ASSERT_EQ(128, meta.Ad.shape()[0]);
             ASSERT_EQ(4754, meta.Ad.shape()[1]);
@@ -140,12 +137,45 @@ namespace icrar
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
             ASSERT_EQ(98, meta.Ad1.shape()[1]);
             ASSERT_EQ(98, meta.I1.shape()[0]);
+
+            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
+            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
+        }
+
+        void TestDD()
+        {
+            auto meta = icrar::casalib::MetaData(*ms);
+            auto direction = casacore::MVDirection(-0.4606549305661674,-0.29719233792392513);
+            meta.SetDD(direction);
+            
+            EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
+            EXPECT_DOUBLE_EQ(0.86068501306022194, meta.dd.get()(0,1));
+            EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.dd.get()(0,2));
+
+            EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.dd.get()(1,0));
+            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(1,1));
+            EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(1,2));
+
+            EXPECT_DOUBLE_EQ(0.39117878367889541, meta.dd.get()(2,0));
+            EXPECT_DOUBLE_EQ(0.00000000000000000, meta.dd.get()(2,1));
+            EXPECT_DOUBLE_EQ(0.92031470660828840, meta.dd.get()(2,2));
+
+            //TODO: add astropy changes
+            // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
+            // EXPECT_DOUBLE_EQ(0.86068501306022194, meta.dd.get()(0,1));
+            // EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.dd.get()(0,2));
+
+            // EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.dd.get()(1,0));
+            // EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(1,1));
+            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(1,2));
+
+            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(2,0));
+            // EXPECT_DOUBLE_EQ(0.00000000, meta.dd.get()(2,1));
+            // EXPECT_DOUBLE_EQ(0.39117878367889541, meta.dd.get()(2,2));
         }
 
         void TestSetWv()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             meta.SetWv();
             ASSERT_EQ(48, meta.channel_wavelength.size());
@@ -153,8 +183,6 @@ namespace icrar
 
         void TestChannelWavelengths()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto casaMetadata = icrar::casalib::MetaData(*ms);
             casaMetadata.SetWv();
 
@@ -167,8 +195,6 @@ namespace icrar
 
         void TestCudaBufferCopy()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126);
             auto meta = icrar::casalib::MetaData(*ms);
             auto direction = casacore::MVDirection(0.0, 0.0);
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
@@ -187,9 +213,10 @@ namespace icrar
     };
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
-    TEST_F(MetaDataTests, TestReadFromFile) { TestReadFromFile(); }
+    TEST_F(MetaDataTests, TestRawReadFromFile) { TestRawReadFromFile(); }
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
+    TEST_F(MetaDataTests, TestDD) { TestDD(); }
 }

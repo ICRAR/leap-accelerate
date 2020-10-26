@@ -33,8 +33,6 @@
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
-#include <Eigen/Core>
-
 #include <boost/optional.hpp>
 
 #include <iostream>
@@ -57,9 +55,12 @@ namespace icrar
 {
 namespace cuda
 {
+    /**
+     * @brief A Cuda memory buffer instance of visibility data for integration
+     * 
+     */
     class DeviceIntegration
     {
-    public:
         int integration_number;
         device_tensor3<std::complex<double>> data; //data is an array data[polarizations][baselines][channels]
 
@@ -74,8 +75,37 @@ namespace cuda
                 size_t baselines;
             };
         };
+    public:
+        /**
+         * @brief Construct a new Device Integration object where visibilities is a zero tensor of @shape 
+         * 
+         * @param shape 
+         */
+        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape);
 
+        /**
+         * @brief Construct a new Device Integration object with a data syncronous copy
+         * 
+         * @param integration 
+         */
         DeviceIntegration(const icrar::cpu::Integration& integration);
+
+        int GetIntegrationNumber() const { return integration_number; }
+        size_t GetIndex() const { return index; }
+        //size_t GetX() const { return x; }
+        size_t GetChannels() const { return channels; }
+        size_t GetBaselines() const { return baselines; }
+        
+        const device_tensor3<std::complex<double>>& GetData() const { return data; }
+        device_tensor3<std::complex<double>>& GetData() { return data; }
+
+        /**
+         * @brief Set the Data object
+         * 
+         * @param integration 
+         */
+        void SetData(icrar::cpu::Integration& integration);
+
     };
 }
 }

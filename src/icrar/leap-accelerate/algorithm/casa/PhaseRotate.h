@@ -63,8 +63,7 @@ namespace casalib
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions,
-        int solutionInterval = 3600);
+        const std::vector<casacore::MVDirection>& directions);
 
     /**
      * @brief 
@@ -96,10 +95,9 @@ namespace casalib
      * If True Map is provided it returns the index map for the matrix (only useful if RefAnt set).
      *
      * This function generates and returns the linear matrix for the phase calibration (only)
-     * @param a1 
-     * @param a2 
-     * @param refAnt the reference antenna (0, 1), -1 
-     * @param map 
+     * @param a1 antenna vector of size nStations
+     * @param a2 antenna vector of size nStations
+     * @param refAnt the reference antenna e.g. (0, 1). -1 if no reference.
      * @return std::pair<Matrixd, Matrixi> 
      */
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(

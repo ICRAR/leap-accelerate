@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -20,11 +21,22 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
-
-#include <Eigen/Core>
+#include "math.h"
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+    Eigen::Vector2d ToPolar(const MVDirection& xyz)
+    {
+        auto tmp = Eigen::Vector2d();
+        if (xyz(0) != 0 || xyz(1) != 0)
+        {
+            tmp(0) = std::atan2(xyz(1),xyz(0));
+        }
+        else
+        {
+            tmp(0) = 0.0;
+        }
+        tmp(1) = std::asin(xyz(2));
+        return tmp;
+    }
 }

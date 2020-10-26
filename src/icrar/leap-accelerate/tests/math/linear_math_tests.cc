@@ -30,10 +30,10 @@
 
 namespace icrar
 {
-    class linear_math_tests : public testing::Test
+    class math_conversion_tests : public testing::Test
     {
     public:
-        linear_math_tests()
+        math_conversion_tests()
         {
 
         }
@@ -135,14 +135,14 @@ namespace icrar
         }
     };
 
-    TEST_F(linear_math_tests, TestMVDirection) { TestMVDirection(); }
+    TEST_F(math_conversion_tests, TestMVDirection) { TestMVDirection(); }
 
-    TEST_F(linear_math_tests, TestConvertVector) { TestConvertVector(); }
-    TEST_F(linear_math_tests, TestConvertMatrix) { TestConvertMatrix(); }
+    TEST_F(math_conversion_tests, TestConvertVector) { TestConvertVector(); }
+    TEST_F(math_conversion_tests, TestConvertMatrix) { TestConvertMatrix(); }
 
-    TEST_F(linear_math_tests, TestConvertUVW) { TestConvertUVW(); }
-    TEST_F(linear_math_tests, TestConvertUVWVector) { TestConvertUVWVector(); }
+    TEST_F(math_conversion_tests, TestConvertUVW) { TestConvertUVW(); }
+    TEST_F(math_conversion_tests, TestConvertUVWVector) { TestConvertUVWVector(); }
 
-    TEST_F(linear_math_tests, TestConvertMVDirection) { TestConvertMVDirection(); }
-    TEST_F(linear_math_tests, TestConvertMVDirectionVector) { TestConvertMVDirectionVector(); }
+    TEST_F(math_conversion_tests, TestConvertMVDirection) { TestConvertMVDirection(); }
+    TEST_F(math_conversion_tests, TestConvertMVDirectionVector) { TestConvertMVDirectionVector(); }
 }

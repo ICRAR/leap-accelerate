@@ -180,19 +180,18 @@ void assert_metadataeq(const icrar::cpu::MetaData& expected, const icrar::cpu::M
     ASSERT_EQ(expected.GetConstants().rows, actual.GetConstants().rows);
     ASSERT_EQ(expected.GetConstants().freq_start_hz, actual.GetConstants().freq_start_hz);
     ASSERT_EQ(expected.GetConstants().freq_inc_hz, actual.GetConstants().freq_inc_hz);
-    ASSERT_EQ(expected.GetConstants().solution_interval, actual.GetConstants().solution_interval);
     ASSERT_EQ(expected.GetConstants().phase_centre_ra_rad, actual.GetConstants().phase_centre_ra_rad);
     ASSERT_EQ(expected.GetConstants().phase_centre_dec_rad, actual.GetConstants().phase_centre_dec_rad);
     ASSERT_EQ(expected.GetConstants().dlm_ra, actual.GetConstants().dlm_ra);
     ASSERT_EQ(expected.GetConstants().dlm_dec, actual.GetConstants().dlm_dec);
 
 
-    ASSERT_MEQ(expected.GetA(), actual.GetA(), THRESHOLD);
+    ASSERT_MEQD(expected.GetA(), actual.GetA(), THRESHOLD);
     ASSERT_MEQI(expected.GetI(), actual.GetI(), THRESHOLD);
-    ASSERT_MEQ(expected.GetAd(), actual.GetAd(), THRESHOLD);
-    ASSERT_MEQ(expected.GetA1(), actual.GetA1(), THRESHOLD);
+    ASSERT_MEQD(expected.GetAd(), actual.GetAd(), THRESHOLD);
+    ASSERT_MEQD(expected.GetA1(), actual.GetA1(), THRESHOLD);
     ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
-    ASSERT_MEQ(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
+    ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
     ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
     ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);

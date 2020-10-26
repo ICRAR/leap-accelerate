@@ -81,10 +81,8 @@ namespace icrar
 
         void MultiDirectionTest(ComputeImplementation impl, std::string msname, int stations_override)
         {
-            const double THRESHOLD = 0.01;
-
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
-            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override);
+            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, true);
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -99,25 +97,18 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            std::cout << "baselines: " << ms->GetNumBaselines() << std::endl;
-            std::cout << "directions: " << directions.size() << std::endl;
-            std::cout << "channels: " <<  ms->GetNumChannels() << std::endl;
-            std::cout << "polarizations: " <<  ms->GetNumPols() << std::endl;
             if(impl == ComputeImplementation::casa)
             {
-                std::cout << "calibrating using casacore" << std::endl;
                 auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, directions, 3600);
+                auto res = casalib::Calibrate(*ms, directions);
             }
-            else if(impl == ComputeImplementation::eigen)
+            else if(impl == ComputeImplementation::cpu)
             {
-                std::cout << "calibrating using cpu" << std::endl;
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions));
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::cout << "calibrating using cuda" << std::endl;
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 3600);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions));
             }
             else
             {
@@ -127,10 +118,10 @@ namespace icrar
     };
 
     TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197638568-32.ms", 126); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197638568-32.ms", 126); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-32.ms", 126); }
     TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126); }
 
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::eigen, "/1197637968.ms", 126); }
+    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197637968.ms", 126); }
     TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
 }

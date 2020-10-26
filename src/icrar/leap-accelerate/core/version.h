@@ -20,11 +20,23 @@
  * MA 02111 - 1307  USA
  */
 
+/**
+ * @file
+ *
+ * Stores the version information of leap-accelerate
+ */
+
 #pragma once
 
-#include <Eigen/Core>
+#include <string>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
-}
+
+/**
+ * Returns the version of this library as a single string
+ * @return The version of this library
+ */
+std::string version();
+
+} // namespace icrar

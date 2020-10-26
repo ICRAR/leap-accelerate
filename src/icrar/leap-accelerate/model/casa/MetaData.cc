@@ -47,10 +47,10 @@ namespace casalib
     MetaData::MetaData()
     : A()
     , Ad()
-    , I()
     , A1()
     , Ad1()
     , I1()
+    , I()
     {
         
     }
@@ -70,9 +70,8 @@ namespace casalib
         auto msmc = ms.GetMSMainColumns();
 
         this->m_initialized = false;
-        this->solution_interval = 3601;
 
-        this->rows = msmc->uvw().nrow(); // pms->polarization().nrow();
+        this->rows = msmc->uvw().nrow();
         this->num_pols = 0;
         if(pms->polarization().nrow() > 0)
         {
@@ -87,10 +86,10 @@ namespace casalib
         }
 
         this->stations = ms.GetNumStations();
-        if(pms->nrow() > 0)
-        {
-            auto time_inc_sec = msc->interval().get(0);
-        }
+        // if(pms->nrow() > 0)
+        // {
+        //     auto time_inc_sec = msc->interval().get(0);
+        // }
 
         if(pms->field().nrow() > 0)
         {
@@ -113,41 +112,51 @@ namespace casalib
         casacore::Vector<double> time = msmc->time().getColumn();
 
         //select the first epoch only
-        double epoch = time[0];
         int nEpochs = 0;
-        for(int i = 0; i < time.size(); i++)
+        double epoch = time[0];
+        for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == time[0]) nEpochs++;
+            if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
         casacore::Vector<std::bool> fg = msmc->flags().getColumn()(epochIndices);
         casacore::Vector<std::double> uv = msmc->uvw().getColumn()(epochIndices);
+        
+		if(a1.size() != a2.size())
+		{
+            throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+        }
+        for(size_t i = a2.size(); i < a2.size(); ++i)
+        {
+            if(a1(i) < 0)
+            {
+                throw icrar::file_exception("a1 less than 0", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+            }
+            if(a2(i) < 0)
+            {
+                throw icrar::file_exception("a2 less than 0", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
+            }
+        }
 
         //Start calculations
-        casacore::Matrix<double> A1;
-        casacore::Array<std::int32_t> I1;
-        std::tie(A1, I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, fg); // RefAnt=0
-        casacore::Matrix<double> Ad1 = icrar::casalib::PseudoInverse(A1);
+        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0, fg);
+        this->Ad1 = icrar::casalib::PseudoInverse(A1);
 
         // Here we will check for baselines < minimum and add them to flags
         // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
-        casacore::Matrix<double> A;
-        casacore::Array<std::int32_t> I;
-        std::tie(A, I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1, fg);
+        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1, fg);
         casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
 
-        this->A = A;
-        this->Ad = Ad;
-        this->I = I;
-        this->A1 = A1;
-        this->Ad1 = Ad1;
-        this->I1 = I1;
+#ifndef NDEBUG
+        constexpr double PRECISION = 0.00001;
+        assert((ToMatrix(A)*ToMatrix(Ad)).isApprox(Eigen::MatrixXd::Identity(ms.GetNumBaselines(), ms.GetNumBaselines()), PRECISION));
+#endif
     }
 
-    MetaData::MetaData(std::istream& input)
+    MetaData::MetaData(std::istream& /*input*/)
     {
         throw std::runtime_error("not implemented");
     }
@@ -161,7 +170,7 @@ namespace casalib
         oldUVW = uvws;
         auto size = uvws.size();
         uvws.clear();
-        for(int n = 0; n < size; n++)
+        for(size_t n = 0; n < size; n++)
         {
             auto uvw = icrar::Dot(oldUVW[n], dd.value());
             uvws.push_back(uvw);
@@ -248,7 +257,6 @@ namespace casalib
         && rows == rhs.rows
         && freq_start_hz == rhs.freq_start_hz
         && freq_inc_hz == rhs.freq_inc_hz
-        && solution_interval == rhs.solution_interval
         && channel_wavelength == rhs.channel_wavelength
         && phase_centre_ra_rad == rhs.phase_centre_ra_rad
         && phase_centre_dec_rad == rhs.phase_centre_dec_rad

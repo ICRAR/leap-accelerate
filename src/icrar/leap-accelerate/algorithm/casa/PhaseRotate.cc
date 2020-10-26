@@ -24,6 +24,7 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
@@ -33,8 +34,8 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
-
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -58,6 +59,7 @@
 #include <exception>
 #include <memory>
 #include <vector>
+#include <chrono>
 
 using Radians = double;
 
@@ -70,15 +72,27 @@ namespace casalib
     // leap_remote_calibration
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<casacore::MVDirection>& directions)
     {
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
+        auto timer = profiling_timer();
+        timer.start();
         auto metadata = casalib::MetaData(ms);
+        timer.stop();
+        timer.log("metadata read time");
+        timer.restart();
+
+
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
-        
-        for(int i = 0; i < directions.size(); ++i)
+        for(size_t i = 0; i < directions.size(); ++i)
         {
             auto queue = std::queue<Integration>(); 
             int startRow = 0;
@@ -98,14 +112,22 @@ namespace casalib
             assert(metadata.GetBaselines() == queue.front().data.dimension(1)); //metadata.baselines
             assert(metadata.num_pols == queue.front().data.dimension(0)); //metadata.polarizations
             input_queues.push_back(queue);
-            output_integrations.push_back(std::queue<IntegrationResult>());
-            output_calibrations.push_back(std::queue<CalibrationResult>());
+            output_integrations.emplace_back();
+            output_calibrations.emplace_back();
         }
 
-        for(int i = 0; i < directions.size(); ++i)
+        timer.stop();
+        timer.log("integration read time");
+        timer.restart();
+
+        for(size_t i = 0; i < directions.size(); ++i)
         {
+            metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+
+        timer.stop();
+        timer.log("PhaseRotate time");
 
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
@@ -132,7 +154,7 @@ namespace casalib
             if(integration.is_initialized())
             {
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
-                output_integrations.push(IntegrationResult(direction, integration.get().integration_number, boost::none));
+                output_integrations.emplace(direction, integration.get().integration_number, boost::none);
             }
             else
             {
@@ -141,14 +163,24 @@ namespace casalib
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+
+                casacore::Matrix<Radians> avg_data_angles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
-                };
+                });
+
+                auto e_avg_data_angles = ToMatrix(avg_data_angles);
+                auto e_I1 = ToVector(metadata.I1);
+
+                // TODO: reference antenna should be included and set to 0?
+                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // 1st pol only
+                auto cal_avg_data = ConvertVector(e_cal_avg_data);
+                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
                 casacore::Matrix<Radians> avg_data = MapCollection(metadata.avg_data.get(), getAngle);
 
                 auto indexes = ToVector(metadata.I1);
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // FIX TODO 1st pol only, Only last value incorrect
+                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all); // FIX TODO 1st pol only, Only last value incorrect
                 // Target Pol will be first of 1, or first and last of 2 or 4. These could be indepdent or summed
                 // In initial code let us go for summed.
                 // Can I use "-1" for last?
@@ -156,15 +188,11 @@ namespace casalib
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
 
                 // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
                 dInt = 0;
-
-                Eigen::VectorXi e_i = ToVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
-                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                for(int n = 0; n < metadata.I.size(); ++n)
+                for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
+                    dInt.row(n) = avg_data_slice.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
                 }
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
@@ -173,7 +201,7 @@ namespace casalib
             }
         }
 
-        output_calibrations.push(icrar::casalib::CalibrationResult(direction, cal));
+        output_calibrations.emplace(direction, cal);
     }
 
     void RotateVisibilities(Integration& integration, MetaData& metadata, const casacore::MVDirection& direction)
@@ -182,13 +210,13 @@ namespace casalib
         
         auto& integration_data = integration.data;
         auto& uvw = integration.uvw;
-        auto parameters = integration.parameters;
 
         if(!metadata.dd.is_initialized())
         {
             metadata.SetDD(direction);
             metadata.SetWv();
-            // Zero a vector for averaging in time and freq
+            
+            // Allocate a zero vector for averaging in time and freq
             metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.avg_data.get() = 0;
             metadata.m_initialized = true;
@@ -204,24 +232,26 @@ namespace casalib
         assert(metadata.channel_wavelength.size() == metadata.channels);
 
         // loop over baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            const double pi = boost::math::constants::pi<double>();
+            const double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -2 * pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+            double shiftFactor = -(uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
 
-            shiftFactor = shiftFactor + 2 * pi *
+            shiftFactor +=
             (
                 metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
                 - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
             );
-            shiftFactor = shiftFactor - 2 * pi *
+            shiftFactor -=
             (
                 //NOTE: polar direction
                 direction.get()[0] * uvw[baseline](0)
                 - direction.get()[1] * uvw[baseline](1)
             );
+            shiftFactor *= two_pi;
+
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
@@ -256,7 +286,7 @@ namespace casalib
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
         int refAnt,
-        const casacore::Vector<std::bool>& fg)
+        const std::vector<bool>& fg)
     {
         if(a1.size() != a2.size())
         {
@@ -272,17 +302,17 @@ namespace casalib
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1); // Thus A will be maximum antenna _number_ rather than maximum number of antennas. If, for example Ante `1' is missing the column 1 will be all zeros
+        Matrix<double> A = Matrix<double>(a1.size() + 1, std::max(icrar::ArrayMax(a1), icrar::ArrayMax(a2)) + 1); // Thus A will be maximum antenna _number_ rather than maximum number of antennas. If, for example Ante `1' is missing the column 1 will be all zeros
         // Cross pairs and reference antenna entries
         A = 0.0;
 
         Vector<int> I = Vector<int>(a1.size()); // I will be 1 less row than A.
         I = 1;
 
-        int STATIONS = A.shape()[1]; //TODO verify correctness -- correct
+        int STATIONS = A.shape()[1];
         int k = 0;
 
-        for(int n = 0; n < a1.size(); n++)
+        for(size_t n = 0; n < a1.size(); n++)
         {
             if(a1(n) != a2(n))
             {
@@ -292,10 +322,10 @@ namespace casalib
                 if (Fg==False) // skip entry if data not flagged
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                     A(k, a1(n)) = 1;
-                     A(k, a2(n)) = -1;
-                     I(k) = n;
-                     k++;
+                    A(k, a1(n)) = 1.0; // set scalear
+                    A(k, a2(n)) = -1.0; // set scalear
+                    I(k) = n; // set scalear
+                    k++;
                 }  // Otherwise the baseline entry (and therefore weight) is zero
             }
         }
