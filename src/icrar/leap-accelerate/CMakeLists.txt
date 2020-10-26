@@ -41,6 +41,7 @@ set(sources
 
     core/compute_implementation.cc
     core/logging.cc
+    core/version.cc
 
     json/json_helper.cc
     
