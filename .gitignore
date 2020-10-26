@@ -4,3 +4,8 @@ build/
 Testing/
 
 *.orig
+
+# Eclipse IDE files
+.project
+.cproject
+/bin/
