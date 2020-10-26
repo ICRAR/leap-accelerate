@@ -2,6 +2,12 @@
 # to the source code
 configure_file(config.h.in config.h)
 
+include("${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+git_local_changes(GIT_HAS_LOCAL_CHANGES)
+set(git_revision_cc "${CMAKE_CURRENT_BINARY_DIR}/core/git_revision.cc")
+configure_file("core/git_revision.cc.in" "${git_revision_cc}" @ONLY)
+
 set(TARGET_NAME LeapAccelerate)
 
 set(public_headers
@@ -20,6 +26,8 @@ set(private_headers
     math/math.h
 )
 set(sources
+    ${git_revision_cc}
+
     exception/exception.cc
 
     ms/utils.cc
