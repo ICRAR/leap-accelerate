@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -24,6 +23,7 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -53,6 +53,7 @@
 #include <exception>
 #include <memory>
 
+#include <sstream>
 
 
 using Radians = double;
@@ -63,9 +64,15 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<icrar::MVDirection>& directions)
     {
+        BOOST_LOG_TRIVIAL(info) << "Calibrating using cpu";
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
@@ -77,6 +84,13 @@ namespace cpu
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        if(integrations == 0)
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
         auto integration = Integration(
                 integrationNumber,
                 ms,
@@ -130,16 +144,17 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.integration_number, boost::none);
         }
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        auto& indexes = metadata.GetI1();
-        auto avg_data_t = avg_data_angles(indexes, 0); // 1st pol only
 
-        auto cal1 = metadata.GetAd1() * avg_data_t;
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
 
+        // TODO: reference antenna should be included and set to 0?
+        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
+        // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+        // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+        auto cal1 = metadata.GetAd1() * cal_avg_data;
+
+        auto avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
-        Eigen::VectorXi i = metadata.GetI();
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(i, Eigen::all);
-        
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -161,6 +176,7 @@ namespace cpu
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
 
         metadata.CalcUVW();
+
         const auto polar_direction = icrar::to_polar(metadata.direction);
         
         // loop over smeared baselines
@@ -231,12 +247,11 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, a1.maxCoeff() + 1);
-
+        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
         int STATIONS = A.cols(); //TODO verify correctness
 
         Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(1);
+        I.setConstant(-1);
 
         int k = 0;
 
@@ -268,6 +283,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         auto Itemp = Eigen::VectorXi(k);
         Itemp = I(Eigen::seqN(0, k));
+        
         I.resize(0);
         I = Itemp;
     

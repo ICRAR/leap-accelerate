@@ -83,7 +83,7 @@ namespace icrar
     }
 
     /**
-     * @brief Performs a std::transform on a newly allocated std::vector 
+     * @brief Performs a std::transform on a newly allocated casacore::Matrix
      * 
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)
@@ -102,7 +102,7 @@ namespace icrar
     }
 
     /**
-     * @brief Performs a std::transform on a newly allocated std::vector 
+     * @brief Performs a std::transform on a newly allocated casacore::Vector
      * 
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)

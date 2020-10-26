@@ -89,8 +89,8 @@ namespace cuda
          * @param other 
          */
         device_vector(device_vector&& other)
-            : m_buffer(other.m_buffer)
-            , m_count(other.m_count)
+            : m_count(other.m_count)
+            , m_buffer(other.m_buffer)
         {
             other.m_buffer = nullptr;
             other.m_count = 0;

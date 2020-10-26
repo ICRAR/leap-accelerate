@@ -52,25 +52,7 @@ LEAP-Accelerate includes:
 
 `mkdir -p build && cd build`
 
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} -DCUDA_HOST_COMPILER=${CXX} -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
-
-#### Xenial Compatibilty
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`export CC=/usr/bin/gcc-6`
-
-`export CXX=/usr/bin/g++-6`
-
-`export CUDA=9`
-
-`export PYTHON=python3`
-
-`cmake ../../ -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX} -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} -DCUDA_HOST_COMPILER=${CXX} -DCASACORE_ROOT_DIR=${BLDR_CASACORE_BASE_PATH} -DCMAKE_BUILD_TYPE=Release`
+`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
 
 #### Ubuntu/Debian Dependencies
 

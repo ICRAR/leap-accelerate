@@ -48,7 +48,7 @@ namespace cuda
     {
         size_t m_rows;
         size_t m_cols;
-        T* m_buffer = nullptr;
+        T* m_buffer;
 
     public:
 
@@ -62,6 +62,7 @@ namespace cuda
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)
         , m_cols(cols)
+        , m_buffer(nullptr)
         {
             size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));

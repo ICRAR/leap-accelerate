@@ -24,6 +24,7 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
@@ -71,9 +72,15 @@ namespace casalib
     // leap_remote_calibration
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions,
-        int solutionInterval)
+        const std::vector<casacore::MVDirection>& directions)
     {
+        BOOST_LOG_TRIVIAL(info) << "Calibrating using casa library";
+        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        << "baselines: " << ms.GetNumBaselines() << ", "
+        << "channels: " << ms.GetNumChannels() << ", "
+        << "polarizations: " << ms.GetNumPols() << ", "
+        << "directions: " << directions.size();
+
         auto timer = profiling_timer();
         timer.start();
         auto metadata = casalib::MetaData(ms);
@@ -155,31 +162,34 @@ namespace casalib
                 {
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
-                
-                std::function<Radians(std::complex<double>)> getAngle = [](std::complex<double> c) -> Radians
+
+
+                casacore::Matrix<Radians> avg_data_angles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
-                };
-                casacore::Matrix<Radians> avg_data = casa_matrix_map(metadata.avg_data.get(), getAngle);
+                });
 
-                auto indexes = ToVector(metadata.I1);
-                auto avg_data_t = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data)(indexes, 0))); // 1st pol only, Only last value incorrect
+                auto e_avg_data_angles = ToMatrix(avg_data_angles);
+                auto e_I1 = ToVector(metadata.I1);
 
+                // TODO: reference antenna should be included and set to 0?
+                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // 1st pol only
+                auto cal_avg_data = ConvertVector(e_cal_avg_data);
+                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
+                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, avg_data_t); //TODO: Ad1 is different
+                auto e_I = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);
+                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                 // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data.shape()[1]);
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
                 dInt = 0;
-
-                Eigen::VectorXi e_i = ToVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data)(e_i, Eigen::all);
-                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
-                for(int n = 0; n < metadata.I.size(); ++n)
+                for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt.row(n) = avg_data_slice.row(n) - casacore::sum(metadata.A.row(n) * cal1.column(0)); 
                 }
-
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
@@ -286,24 +296,24 @@ namespace casalib
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
-        Matrix<double> A = Matrix<double>(a1.size() + 1, icrar::ArrayMax(a1) + 1);
+        Matrix<double> A = Matrix<double>(a1.size() + 1, std::max(icrar::ArrayMax(a1), icrar::ArrayMax(a2)) + 1);
         A = 0.0;
 
         Vector<int> I = Vector<int>(a1.size() + 1);
-        I = 1;
+        I = -1;
 
         int STATIONS = A.shape()[1]; //TODO verify correctness
         int k = 0;
 
-        for(int n = 0; n < a1.size(); n++)
+        for(size_t n = 0; n < a1.size(); n++)
         {
             if(a1(n) != a2(n))
             {
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
-                    I(k) = n;
+                    A(k, a1(n)) = 1.0; // set scalear
+                    A(k, a2(n)) = -1.0; // set scalear
+                    I(k) = n; //set scalear
                     k++;
                 }
             }

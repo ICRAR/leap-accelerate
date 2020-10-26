@@ -63,6 +63,7 @@ namespace icrar
         boost::optional<std::string> stations = boost::none;
         boost::optional<std::string> directions = boost::none;
         boost::optional<std::string> implementation = std::string("casa");
+        bool mwaSupport = false;
 
         Arguments() {}
     };
@@ -182,8 +183,9 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type");
+    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, eigen, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
+    app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
 
     try
     {
@@ -205,19 +207,19 @@ int main(int argc, char** argv)
         {
         case ComputeImplementation::casa:
         {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), 16001);
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()));
             cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
         case ComputeImplementation::eigen:
         {
-            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);
             break;
         }
         case ComputeImplementation::cuda:
         {
-            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), 16001);
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);
             break;
         }
