@@ -22,7 +22,9 @@
 
 #pragma once
 
-#include <casacore/casa/Arrays/Array.h>
+#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
+#include <Eigen/Core>
+#include <Eigen/Dense>
 
 #include <array>
 #include <vector>
@@ -72,6 +74,62 @@ namespace cpu
         }
 
         add(a.size(), a.data(), b.data(), c.data());
+    }
+
+    /**
+     * @brief Provides selecting a range of elements via the index in the matrix. Negative indexes
+     * select from the back of the vector with -1 as the last element.
+     * 
+     * @tparam T 
+     * @param matrix the referenced matrix to select from
+     * @param rowIndices a range of row indices to select
+     * @param column a valid column index 
+     */
+    template<typename Matrix>
+    Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::SingleRange>
+    VectorRangeSelect(
+        Matrix& matrix,
+        const Eigen::VectorXi& rowIndices,
+        unsigned int column)
+    {
+        Eigen::VectorXi correctedIndices = rowIndices;
+        for(int& v : correctedIndices)
+        {
+            if(v < 0)
+            {
+                v += matrix.rows();
+            }
+        }
+
+        return matrix(correctedIndices, column);
+    }
+
+    /**
+     * @brief Provides selecting a range of elements via the index in the matrix. Negative indexes
+     * select from the back of the vector with -1 as the last element.
+     * 
+     * @tparam T 
+     * @param matrix the referenced matrix to select from
+     * @param rowIndices a range of row indices to select
+     * @param column a valid column index 
+     */
+    template<typename Matrix>
+    Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>
+    MatrixRangeSelect(
+        Matrix& matrix,
+        const Eigen::VectorXi& rowIndices,
+        Eigen::internal::all_t range)
+    {
+        Eigen::VectorXi correctedIndices = rowIndices;
+        for(int& v : correctedIndices)
+        {
+            if(v < 0)
+            {
+                v += matrix.rows();
+            }
+        }
+
+        return matrix(correctedIndices, range);
     }
 }
 }

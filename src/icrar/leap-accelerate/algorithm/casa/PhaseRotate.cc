@@ -24,6 +24,7 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
@@ -168,33 +169,18 @@ namespace casalib
                     return std::arg(c);
                 });
 
-                auto indices1 = ToVector(metadata.I1);
-                for(int& v : indices1)
-                {
-                    if(v < 0)
-                    {
-                        v += avg_data_angles.shape()[0]; // -behaviour in python is to wrap around
-                        //TODO: reference antenna should be included, set to 0?
-                    }
-                }
+                auto e_avg_data_angles = ToMatrix(avg_data_angles);
+                auto e_I1 = ToVector(metadata.I1);
 
-                casacore::Matrix<double> cal_avg_data = ConvertMatrix(static_cast<Eigen::MatrixXd>(ToMatrix(avg_data_angles)(indices1, 0))); // 1st pol only
+                // TODO: reference antenna should be included and set to 0?
+                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // 1st pol only
+                auto cal_avg_data = ConvertVector(e_cal_avg_data);
                 // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-                //cal_avg_data(cal_avg_data.size() - 1, 0) = 0.0; // Value at last index of avg_data_t must be 0 (which is the reference antenna phase value)
-
+                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
 
-                Eigen::VectorXi indices = ToVector(metadata.I);
-                for(int& v : indices)
-                {
-                    if(v < 0)
-                    {
-                        v += avg_data_angles.shape()[0]; // -behaviour in python is to wrap around
-                        //TODO: reference antenna should be included, set to 0?
-                    }
-                }
-
-                Eigen::MatrixXd e_avg_data_slice = ToMatrix(avg_data_angles)(indices, Eigen::all);
+                auto e_I = ToVector(metadata.I);
+                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                 // Calculate DInt
