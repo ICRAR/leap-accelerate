@@ -33,7 +33,7 @@ namespace icrar
 namespace cpu
 {
     Integration::Integration(const icrar::casalib::Integration& integration)
-    : integration_number(integration.integration_number)
+    : m_integrationNumber(integration.integration_number)
     , index(integration.index)
     , x(integration.x)
     , channels(integration.channels)
@@ -50,7 +50,7 @@ namespace cpu
         unsigned int channels,
         unsigned int baselines,
         unsigned int polarizations)
-    : integration_number(integrationNumber)
+    : m_integrationNumber(integrationNumber)
     , index(index)
     , x(0)
     , channels(channels)
@@ -58,9 +58,9 @@ namespace cpu
     {
         constexpr int startChannel = 0;
         size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
-        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GB";
+        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
         size_t uvw_size = (baselines - startBaseline) * 3;
-        BOOST_LOG_TRIVIAL(info) << "uvw:" << uvw_size / (1024.0 * 1024.0 * 1024.0) << " GB";
+        BOOST_LOG_TRIVIAL(info) << "uvw:" << uvw_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
         m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }
@@ -72,7 +72,7 @@ namespace cpu
         
         return datav.isApprox(rhsdatav)
         && m_uvw == rhs.m_uvw
-        && integration_number == rhs.integration_number;
+        && m_integrationNumber == rhs.m_integrationNumber;
     }
 
     const std::vector<icrar::MVuvw>& Integration::GetUVW() const

@@ -30,7 +30,8 @@ namespace icrar
 namespace cuda
 {
     DeviceIntegration::DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape)
-    : data(shape[0], shape[1], shape[2])
+    : m_integrationNumber(-1)
+    , m_data(shape[0], shape[1], shape[2])
     , index(0)
     , x(0)
     , channels(0)
@@ -40,7 +41,8 @@ namespace cuda
     }
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
-    : data(integration.GetData())
+    : m_integrationNumber(integration.GetIntegrationNumber())
+    , m_data(integration.GetVis())
     , index(integration.index)
     , x(integration.x)
     , channels(integration.channels)
@@ -49,17 +51,17 @@ namespace cuda
 
     }
 
-    void DeviceIntegration::SetData(icrar::cpu::Integration& integration)
+    void DeviceIntegration::SetData(const icrar::cpu::Integration& integration)
     {
-        if(data.GetSize() != integration.GetData().size())
+        if(m_data.GetSize() != integration.GetVis().size())
         {
             std::ostringstream os;
-            os << "tensor size mismatch: device " << data.GetDimensions() << "(" << data.GetSize() << ")" << "\n";
-            os << "cpu " << integration.GetData().dimensions() << "(" << integration.GetData().size() << ")";
+            os << "tensor size mismatch: device " << m_data.GetDimensions() << "(" << m_data.GetSize() << ")" << "\n";
+            os << "cpu " << integration.GetVis().dimensions() << "(" << integration.GetVis().size() << ")";
             throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
         }
 
-        data.SetDataAsync(integration.GetData().data());
+        m_data.SetDataAsync(integration.GetVis().data());
         index = integration.index;
         x = integration.x;
         channels = integration.channels;

@@ -24,7 +24,6 @@
 
 #include <casacore/casa/Arrays/Matrix.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include <Eigen/LU>
@@ -72,12 +71,7 @@ namespace cpu
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
     {
-        //#if EIGEN_VERSION_AT_LEAST(3,3,0)
-        //return a.completeOrthogonalDecomposition().pseudoInverse();
-        //#else
-        auto res = SVDPseudoInverse(a);
-        //#endif
-        return res;
+        return SVDPseudoInverse(a);
     }
 }
 }

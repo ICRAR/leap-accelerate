@@ -31,7 +31,9 @@
 #include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/version.h>
 
 #include <CLI/CLI.hpp>
 #include <boost/optional.hpp>
@@ -180,10 +182,22 @@ namespace icrar
 
 using namespace icrar;
 
+std::string version_information(const char *name)
+{
+    std::ostringstream os;
+    os << name << " version " << version() << '\n'
+       << "git revision " << git_sha1() << '\n';
+    os << "Has local git changes: " << std::boolalpha << git_has_local_changes()
+       << std::noboolalpha << '\n';
+    os << name << " built on " << __DATE__ << ' ' << __TIME__;
+    return os.str();
+}
+
 int main(int argc, char** argv)
 {
     icrar::log::Initialize();
     CLI::App app { "LEAP-Accelerate" };
+    app.set_version_flag("-v,--version", [&]() { return version_information(argv[0]); });
 
     //Parse Arguments
     Arguments rawArgs;
@@ -191,9 +205,9 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, eigen, cuda)");
+    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, cpu, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
-    app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
+    //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
     app.add_option("-a,--read-autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
 
     try
@@ -220,7 +234,7 @@ int main(int argc, char** argv)
             cpu::PrintResult(cpu::ToCalibrateResult(result));
             break;
         }
-        case ComputeImplementation::eigen:
+        case ComputeImplementation::cpu:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result);

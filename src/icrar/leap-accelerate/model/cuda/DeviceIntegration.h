@@ -61,12 +61,12 @@ namespace cuda
      */
     class DeviceIntegration
     {
-        int integration_number;
-        device_tensor3<std::complex<double>> data; //data is an array data[polarizations][baselines][channels]
+        int m_integrationNumber;
+        device_tensor3<std::complex<double>> m_data; //data is an array data[polarizations][baselines][channels]
 
         union
         {
-            std::array<size_t, 4> parameters;
+            std::array<size_t, 4> m_parameters;
             struct
             {
                 size_t index;
@@ -90,21 +90,21 @@ namespace cuda
          */
         DeviceIntegration(const icrar::cpu::Integration& integration);
 
-        int GetIntegrationNumber() const { return integration_number; }
+        int GetIntegrationNumber() const { return m_integrationNumber; }
         size_t GetIndex() const { return index; }
         //size_t GetX() const { return x; }
         size_t GetChannels() const { return channels; }
         size_t GetBaselines() const { return baselines; }
         
-        const device_tensor3<std::complex<double>>& GetData() const { return data; }
-        device_tensor3<std::complex<double>>& GetData() { return data; }
+        const device_tensor3<std::complex<double>>& GetData() const { return m_data; }
+        device_tensor3<std::complex<double>>& GetData() { return m_data; }
 
         /**
          * @brief Set the Data object
          * 
          * @param integration 
          */
-        void SetData(icrar::cpu::Integration& integration);
+        void SetData(const icrar::cpu::Integration& integration);
 
     };
 }

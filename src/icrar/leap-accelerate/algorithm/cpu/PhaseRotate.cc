@@ -23,6 +23,7 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
@@ -65,7 +66,7 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using cpu";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cpu";
         BOOST_LOG_TRIVIAL(info)
 		<< "stations: " << ms.GetNumStations() << ", "
 		<< "rows: " << ms.GetNumRows() << ", "
@@ -88,7 +89,7 @@ namespace cpu
         if(integrations == 0)
         {
             std::stringstream ss;
-            ss << "invalid number of rows, expected >" << ms.GetNumBaselines();
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
             throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
@@ -145,40 +146,22 @@ namespace cpu
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
-            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.integration_number;
+            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.emplace_back(direction, integration.integration_number, boost::none);
+            output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
         
         BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
         auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
-        Eigen::VectorXi indices1 = metadata.GetI1();
-        for(int& v : indices1)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); /// -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
 
-        Eigen::VectorXd cal_avg_data = avg_data_angles(indices1, 0); // 1st pol only
-        auto cal1 = metadata.GetAd1() * cal_avg_data;
+        // TODO: reference antenna should be included and set to 0?
+        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-
-        Eigen::VectorXi indices = metadata.GetI();
-        for(int& v : indices)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); // -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(indices, Eigen::all);
+        Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
+        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -197,14 +180,14 @@ namespace cpu
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
+        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
         metadata.CalcUVW();
 
         const auto polar_direction = icrar::ToPolar(metadata.direction);
         
         // loop over smeared baselines
-        for(int baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 

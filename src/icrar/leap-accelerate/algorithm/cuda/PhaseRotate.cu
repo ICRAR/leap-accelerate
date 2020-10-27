@@ -33,6 +33,7 @@
 
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
@@ -69,10 +70,10 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Calibrating using gpu";
+        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cuda";
         BOOST_LOG_TRIVIAL(info)
-	<< "stations: " << ms.GetNumStations() << ", "
-	<< "rows: " << ms.GetNumRows() << ", "
+        << "stations: " << ms.GetNumStations() << ", "
+        << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -103,19 +104,26 @@ namespace cuda
             output_calibrations.emplace_back();
         }
 
+        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(integration.GetData().dimensions());
+        input_queue.emplace_back(integration.GetVis().dimensions());
 
         for(int i = 0; i < directions.size(); ++i)
         {
+            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
+            BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
             metadata.CalcUVW(); //TODO: Can be performed in CUDA 
             input_queue[0].SetData(integration);
 
+            BOOST_LOG_TRIVIAL(info) << "Copying Metadata to Device";
             auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            BOOST_LOG_TRIVIAL(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
+        
+        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -130,42 +138,27 @@ namespace cuda
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
+            BOOST_LOG_TRIVIAL(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.emplace_back(
                 direction,
                 integration.GetIntegrationNumber(),
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
+        BOOST_LOG_TRIVIAL(info) << "Copying Metadata from Device";
         deviceMetadata.ToHost(hostMetadata);
         
+        BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
-        Eigen::VectorXi indices1 = hostMetadata.GetI1();
-        for(int& v : indices1)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); /// -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
 
-        Eigen::VectorXd cal_avg_data = avg_data_angles(indices1, 0); // 1st pol only
-        auto cal1 = hostMetadata.GetAd1() * cal_avg_data;
+        // TODO: reference antenna should be included and set to 0?
+        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
-
-        Eigen::VectorXi indices = hostMetadata.GetI();
-        for(int& v : indices)
-        {
-            if(v < 0)
-            {
-                v += avg_data_angles.rows(); // -behaviour in python is to wrap around
-                //TODO: reference antenna should be included, set to 0?
-            }
-        }
-        Eigen::MatrixXd avg_data_slice = avg_data_angles(indices, Eigen::all);
+        Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
+        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = hostMetadata.GetA()(n, Eigen::all) * cal1;

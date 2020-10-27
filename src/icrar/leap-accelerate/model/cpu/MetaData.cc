@@ -116,14 +116,14 @@ namespace cpu
             msc->field().phaseDirMeasCol().get(0, dir, true);
             if(dir.size() > 0)
             {
-                //auto& v = dir(0).getAngle().getValue();
                 casacore::Vector<double> v = dir(0).getAngle().getValue();
                 m_constants.phase_centre_ra_rad = v(0);
                 m_constants.phase_centre_dec_rad = v(1);
             }
         }
-        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
 
+        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
@@ -136,6 +136,15 @@ namespace cpu
         auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+
+        // if(a1.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
+        // if(a2.size() != m_constants.nbaselines)
+        // {
+        //     throw std::runtime_error("incorrect antenna size");
+        // }
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);

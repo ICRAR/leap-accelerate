@@ -32,7 +32,6 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays.h>
 
-#include <icrar/leap-accelerate/common/eigen_3_3_beta_1_2_support.h>
 #include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
 
@@ -50,18 +49,18 @@ namespace icrar
     class MeasurementSet
     {
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
-        std::unique_ptr<casacore::MSColumns> m_msc;
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
+        std::unique_ptr<casacore::MSColumns> m_msc;
 
+        boost::optional<std::string> m_filepath;
         int m_stations;
         bool m_readAutocorrelations;
 
-        boost::optional<std::string> m_filepath;
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
         MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
+        //MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         
@@ -94,8 +93,9 @@ namespace icrar
         unsigned int GetNumStations() const;
 
         /**
-         * @brief Get the number of baselines in the measurement set using autocorrelations setting (e.g. (0,0), (1,1), (2,2))
-         * 
+         * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
+         * and including stations not recording rows.
+         * @note TODO: baselines is always n*(n-1) / 2 and without autocorrelations
          * @return unsigned int 
          */
         unsigned int GetNumBaselines() const;
