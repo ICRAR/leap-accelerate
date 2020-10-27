@@ -146,9 +146,9 @@ namespace cpu
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
-            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.integration_number;
+            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.emplace_back(direction, integration.integration_number, boost::none);
+            output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
         
         BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
@@ -180,7 +180,7 @@ namespace cpu
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)
     {
         using namespace std::literals::complex_literals;
-        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetData();
+        Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
         metadata.CalcUVW();
 

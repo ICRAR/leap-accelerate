@@ -26,38 +26,36 @@
 namespace icrar
 {
     MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
-    : m_filepath(filepath)
+    : m_measurementSet(std::make_unique<casacore::MeasurementSet>(filepath))
+    , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
+    , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
+    , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
-        m_measurementSet = std::make_unique<casacore::MeasurementSet>(filepath);
-        m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
-        m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
-        
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
     }
 
     MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations)
-    : m_readAutocorrelations(readAutocorrelations)
+    : m_measurementSet(std::make_unique<casacore::MeasurementSet>(ms))
+    , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
+    , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
+    , m_readAutocorrelations(readAutocorrelations)
     {
-        m_measurementSet = std::make_unique<casacore::MeasurementSet>(ms);
-        m_msmc = std::make_unique<casacore::MSMainColumns>(*m_measurementSet);
-        m_msc = std::make_unique<casacore::MSColumns>(*m_measurementSet);
-        
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
     }
 
-    MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations)
-    {
-        // don't skip the whitespace while reading
-        std::cin >> std::noskipws;
+    // MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations)
+    // {
+    //     // don't skip the whitespace while reading
+    //     std::cin >> std::noskipws;
 
-        // use stream iterators to copy the stream to a string
-        std::istream_iterator<char> it(std::cin);
-        std::istream_iterator<char> end;
-        std::string results = std::string(it, end);
+    //     // use stream iterators to copy the stream to a string
+    //     std::istream_iterator<char> it(std::cin);
+    //     std::istream_iterator<char> end;
+    //     std::string results = std::string(it, end);
         
-        m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    }
+    //     m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
+    // }
 
     unsigned int MeasurementSet::GetNumRows() const
     {

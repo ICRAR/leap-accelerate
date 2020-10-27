@@ -49,18 +49,18 @@ namespace icrar
     class MeasurementSet
     {
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
-        std::unique_ptr<casacore::MSColumns> m_msc;
         std::unique_ptr<casacore::MSMainColumns> m_msmc;
+        std::unique_ptr<casacore::MSColumns> m_msc;
 
+        boost::optional<std::string> m_filepath;
         int m_stations;
         bool m_readAutocorrelations;
 
-        boost::optional<std::string> m_filepath;
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
         MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
+        //MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         

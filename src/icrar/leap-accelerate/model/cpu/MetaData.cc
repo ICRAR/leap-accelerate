@@ -116,7 +116,6 @@ namespace cpu
             msc->field().phaseDirMeasCol().get(0, dir, true);
             if(dir.size() > 0)
             {
-                //auto& v = dir(0).getAngle().getValue();
                 casacore::Vector<double> v = dir(0).getAngle().getValue();
                 m_constants.phase_centre_ra_rad = v(0);
                 m_constants.phase_centre_dec_rad = v(1);

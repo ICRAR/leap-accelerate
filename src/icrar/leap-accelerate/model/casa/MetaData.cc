@@ -23,14 +23,12 @@
 #include "MetaData.h"
 
 #include <icrar/leap-accelerate/common/constants.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
-
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -57,11 +55,11 @@ namespace casalib
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
     : nantennas(0)
-    , num_pols(0)
     , channels(0)
+    , num_pols(0)
+    , stations(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
-    , stations(0)
     , phase_centre_ra_rad(0)
     , phase_centre_dec_rad(0)
     {

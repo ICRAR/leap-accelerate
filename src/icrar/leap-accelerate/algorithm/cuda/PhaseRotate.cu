@@ -106,12 +106,11 @@ namespace cuda
 
         BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(integration.GetData().dimensions());
+        input_queue.emplace_back(integration.GetVis().dimensions());
 
         for(int i = 0; i < directions.size(); ++i)
         {
             BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
-
             BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
             metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
