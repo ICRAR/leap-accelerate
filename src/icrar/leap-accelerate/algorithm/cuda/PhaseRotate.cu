@@ -106,7 +106,7 @@ namespace cuda
 
         BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(integration.GetVis().dimensions());
+        input_queue.emplace_back(0, integration.GetVis().dimensions());
 
         for(int i = 0; i < directions.size(); ++i)
         {

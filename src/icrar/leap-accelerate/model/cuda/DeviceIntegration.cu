@@ -29,8 +29,8 @@ namespace icrar
 {
 namespace cuda
 {
-    DeviceIntegration::DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape)
-    : m_integrationNumber(-1)
+    DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape)
+    : m_integrationNumber(integrationNumber)
     , m_data(shape[0], shape[1], shape[2])
     , index(0)
     , x(0)

@@ -81,7 +81,7 @@ namespace cuda
          * 
          * @param shape 
          */
-        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy
