@@ -1,13 +1,9 @@
 #!/bin/bash
 #
-# Travis CI test script
-#
 # ICRAR - International Centre for Radio Astronomy Research
 # (c) UWA - The University of Western Australia, 2018
 # Copyright by UWA (in the framework of the ICRAR)
 # All rights reserved
-#
-# Contributed by Rodrigo Tobar
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
