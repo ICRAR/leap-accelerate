@@ -7,9 +7,6 @@
 [submodule "CLI11"]
 	path = external/CLI11
 	url = https://github.com/CLIUtils/CLI11.git
-[submodule "testdata"]
-	path = testdata
-	url = https://github.com/ICRAR/leap-accelerate-testdata.git
 [submodule "eigen-3.3.90"]
 	path = external/eigen-3.3.90
 	url = https://gitlab.com/libeigen/eigen.git

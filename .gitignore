@@ -2,6 +2,9 @@ build/
 .vs/
 .vscode/
 Testing/
+testdata/*
+!testdata/README.md
+!testdata/install.sh
 
 *.orig
 
