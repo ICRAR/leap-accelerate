@@ -327,7 +327,7 @@ namespace casalib
                 }
 
                 // skip entry if data not flagged
-                if(Fg && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
+                if(!fg(n) && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
                 {
                     A(k, a1(n)) = 1.0; // set scalear
                     A(k, a2(n)) = -1.0; // set scalear

@@ -112,19 +112,29 @@ namespace casalib
         casacore::Vector<double> time = msmc->time().getColumn();
 
         //select the first epoch only
-        int nEpochs = 0;
-        double epoch = time[0];
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) nEpochs++;
-        }
-        auto epochIndices = Slice(0, GetBaselines(), 1); //TODO assuming epoch indices are sorted
+        // const double epoch = time[0];
+        // int nEpochs = 0;
+        // for(size_t i = 0; i < time.size(); i++)
+        // {
+        //     if(time[i] == epoch) nEpochs++;
+        // }
+
+        const int baselines = GetBaselines();
+        auto epochIndices = Slice(0, baselines, 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
+
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-        casacore::Vector<bool> fg = msmc->flag().getColumn()(epochIndices);
-        casacore::Vector<double> uv = msmc->uvw().getColumn()(epochIndices);
-        
+
+        // Check for flagged data on the first channel and polarization. TODO: may want to consider using logical OR over
+        // for each channel and polarization.
+        auto flagSlice = Slicer(IPosition(3,0,0,0), IPosition(3,1,1,baselines), IPosition(3,1,1,1));
+        casacore::Vector<bool> baselineFlags = msmc->flag().getColumn()(flagSlice).reform(IPosition(1, baselines))(epochIndices);
+
+        auto uvwShape = msmc->uvw().getColumn().shape();
+        auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
+        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
+
 		if(a1.size() != a2.size())
 		{
             throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
@@ -142,13 +152,13 @@ namespace casalib
         }
 
         //Start calculations
-        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, fg, 0);
+        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, 0);
         this->Ad1 = icrar::casalib::PseudoInverse(A1);
 
         // Here we will check for baselines < minimum and add them to flags
         // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
-        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, fg, -1);
-        casacore::Matrix<double> Ad = icrar::casalib::PseudoInverse(A);
+        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, -1);
+        this->Ad = icrar::casalib::PseudoInverse(A);
 
 #ifndef NDEBUG
         constexpr double PRECISION = 0.00001;

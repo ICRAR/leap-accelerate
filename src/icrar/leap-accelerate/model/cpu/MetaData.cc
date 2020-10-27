@@ -127,18 +127,26 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GB";
 
         //select the first epoch only
-        casacore::Vector<double> time = msmc->time().getColumn();
-        double epoch = time[0];
-        int nEpochs = 0;
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) nEpochs++;
-        }
+        // casacore::Vector<double> time = msmc->time().getColumn();
+        // double epoch = time[0];
+        // int nEpochs = 0;
+        // for(size_t i = 0; i < time.size(); i++)
+        // {
+        //     if(time[i] == epoch) nEpochs++;
+        // }
+
         auto epochIndices = casacore::Slice(0, m_constants.nbaselines, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-        casacore::Vector<bool> fg = msmc->flag().getColumn()(epochIndices);
-        casacore::Vector<double> uv = msmc->uvw().getColumn()(epochIndices);
+
+        casacore::IPosition start(3,0,0,0), length(3,1,1,m_constants.nbaselines), stride(3,1,1,1);
+        casacore::Vector<bool> fg = msmc->flag().getColumn()
+        (casacore::Slicer(start, length, stride)).reform(casacore::IPosition(1, m_constants.nbaselines))
+        (epochIndices);
+
+        auto uvwShape = msmc->uvw().getColumn().shape();
+        auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
+        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
 
         // if(a1.size() != m_constants.nbaselines)
         // {

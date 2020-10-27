@@ -95,15 +95,15 @@ namespace icrar
 
             ASSERT_EQ(4754, meta.A.shape()[0]);
             ASSERT_EQ(128, meta.A.shape()[1]);
+            ASSERT_EQ(4754, meta.I.shape()[0]);
             ASSERT_EQ(128, meta.Ad.shape()[0]);
             ASSERT_EQ(4754, meta.Ad.shape()[1]);
-            ASSERT_EQ(4754, meta.I.shape()[0]);
 
             ASSERT_EQ(98, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
+            ASSERT_EQ(98, meta.I1.shape()[0]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
             ASSERT_EQ(98, meta.Ad1.shape()[1]);
-            ASSERT_EQ(98, meta.I1.shape()[0]);
 
             ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
             ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
@@ -189,7 +189,10 @@ namespace icrar
             ASSERT_EQ(48, casaMetadata.channel_wavelength.size());
             EXPECT_DOUBLE_EQ(2.1537588131757608, casaMetadata.channel_wavelength[0]);
             
+            std::cout << "cpu metadata start" << std::endl;
             auto cpuMetadata = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
+            std::cout << "cpu metadata done" << std::endl;
+
             EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
         }
 
