@@ -145,7 +145,10 @@ namespace cpu
         (epochIndices);
 
         auto uvwShape = msmc->uvw().getColumn().shape();
-        auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
+        auto uvSlice = casacore::Slicer(
+            casacore::IPosition(2,0,0),
+            casacore::IPosition(2,1,uvwShape[1]),
+            casacore::IPosition(2,1,1));
         casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
 
         // if(a1.size() != m_constants.nbaselines)
