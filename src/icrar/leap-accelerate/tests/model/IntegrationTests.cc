@@ -117,21 +117,21 @@ namespace icrar
             {
                 //CPU
                 auto integration = cpu::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
-                ASSERT_EQ(4, integration.GetData().dimension(0));
-                ASSERT_EQ(8001, integration.GetData().dimension(1));
-                ASSERT_EQ(48, integration.GetData().dimension(2));
-                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetData()(0,1,0), THRESHOLD);
-                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetData()(1,1,0), THRESHOLD);
+                ASSERT_EQ(4, integration.GetVis().dimension(0));
+                ASSERT_EQ(8001, integration.GetVis().dimension(1));
+                ASSERT_EQ(48, integration.GetVis().dimension(2));
+                ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
                 ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
                 ASSERT_DOUBLE_EQ(-213.2345748340571, integration.GetUVW()[1](0));
 
 
                 integration = cpu::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
-                ASSERT_EQ(4, integration.GetData().dimension(0));
-                ASSERT_EQ(8001, integration.GetData().dimension(1));
-                ASSERT_EQ(48, integration.GetData().dimension(2));
-                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, integration.GetData()(0,1,0), THRESHOLD);
-                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, integration.GetData()(1,1,0), THRESHOLD);
+                ASSERT_EQ(4, integration.GetVis().dimension(0));
+                ASSERT_EQ(8001, integration.GetVis().dimension(1));
+                ASSERT_EQ(48, integration.GetVis().dimension(2));
+                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, integration.GetVis()(1,1,0), THRESHOLD);
                 //TODO
                 //ASSERT_DOUBLE_EQ(1236.5613097865571, integration.GetUVW()[0](0));
                 //ASSERT_DOUBLE_EQ(1159.9036887675572, integration.GetUVW()[1](0));

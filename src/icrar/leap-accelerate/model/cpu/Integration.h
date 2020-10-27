@@ -50,8 +50,13 @@ namespace cpu
 {
     class MeasurementSet;
 
+    /**
+     * @brief 
+     * 
+     */
     class Integration
     {
+        int m_integrationNumber;
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //data is an array data[nch][nbl][npol]
 
@@ -70,36 +75,38 @@ namespace cpu
             unsigned int polarizations);
 
 
-        int integration_number;
 
         union
         {
             std::array<size_t, 4> parameters; // index, 0, channels, baselines
             struct
             {
-                size_t index;
-                size_t x;
-                size_t channels;
-                size_t baselines;
+                size_t index; // row index
+                size_t x; // number of rows
+                size_t channels; // channels
+                size_t baselines; // baselines
             };
         };
 
         bool operator==(const Integration& rhs) const;
 
+        int GetIntegrationNumber() const { return m_integrationNumber; }
+
         const std::vector<icrar::MVuvw>& GetUVW() const;
 
-        [[deprecated("Use GetVis()")]]
-        const Eigen::Tensor<std::complex<double>, 3>& GetData() const { return m_data; }
-
-        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
-
-
         /**
-         * @brief Get the Data object of size (polarizations, baselines, channels)
+         * @brief Get the Visibilities object of size (polarizations, baselines, channels)
          * 
          * @return Eigen::Tensor<std::complex<double>, 3>& 
          */
-        Eigen::Tensor<std::complex<double>, 3>& GetData() { return m_data; }
+        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
+
+        /**
+         * @brief Get the Visibilities object of size (polarizations, baselines, channels)
+         * 
+         * @return Eigen::Tensor<std::complex<double>, 3>& 
+         */
+        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_data; }
     };
 }
 }
