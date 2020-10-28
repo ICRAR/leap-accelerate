@@ -51,8 +51,8 @@ namespace cpu
         unsigned int baselines,
         unsigned int polarizations)
     : m_integrationNumber(integrationNumber)
-    , index(index)
-    , x(0)
+    , index(startBaseline)
+    , x(baselines)
     , channels(channels)
     , baselines(baselines)
     {
