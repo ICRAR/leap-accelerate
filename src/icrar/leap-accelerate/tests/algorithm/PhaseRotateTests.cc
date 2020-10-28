@@ -24,8 +24,11 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+//#include <icrar/leap-accelerate/algorithm/cuda/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
@@ -848,20 +851,26 @@ namespace icrar
             auto msmc = ms->GetMSMainColumns();
 
             //select the first epoch only
-            // casacore::Vector<double> time = msmc->time().getColumn();
-            // double epoch = time[0];
-            // int nEpochs = 0;
-            // for(size_t i = 0; i < time.size(); i++)
-            // {
-            //     if(time[i] == epoch) nEpochs++;
-            // }
+            casacore::Vector<double> time = msmc->time().getColumn();
+            double epoch = time[0];
+            int nEpochs = 0;
+            for(size_t i = 0; i < time.size(); i++)
+            {
+                if(time[i] == epoch) nEpochs++;
+            }
 
-            auto epochIndices = casacore::Slice(0, ms->GetNumBaselines(), 1);
+            const int aSize = nEpochs;
+            auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
+
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-            casacore::IPosition start(3,0,0,0), length(3,1,1,ms->GetNumBaselines()), stride(3,1,1,1);
+            
+            auto flagSlice = casacore::Slicer(
+                casacore::IPosition(3,0,0,0),
+                casacore::IPosition(3,1,1,aSize),
+                casacore::IPosition(3,1,1,1));
             casacore::Vector<bool> fg = msmc->flag().getColumn()
-            (casacore::Slicer(start, length, stride)).reform(casacore::IPosition(1, ms->GetNumBaselines()))
+            (flagSlice).reform(casacore::IPosition(1, aSize))
             (epochIndices);
 
             //Start calculations
@@ -917,31 +926,32 @@ namespace icrar
             double TOLERANCE = 0.00001;
 
             // A
-            ASSERT_DOUBLE_EQ(4754, A.rows()); //-32=4754, -split=5152
+            ASSERT_DOUBLE_EQ(4753, A.rows()); //-32=4754, -split=5152
             ASSERT_DOUBLE_EQ(128, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
             //...
-            EXPECT_NEAR(0.00, A(4753,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A(4753,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A(4753,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A(4752,125), TOLERANCE);
+            EXPECT_NEAR(1.00, A(4752,126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A(4752,127), TOLERANCE);
+
 
             // I
             const int nBaselines = 4753;
-            ASSERT_DOUBLE_EQ(nBaselines+1, I.size());
-            ASSERT_EQ(4754, I.size());
+            ASSERT_DOUBLE_EQ(nBaselines, I.size());
+            ASSERT_EQ(4753, I.size());
             EXPECT_EQ(1.00, I(0));
             EXPECT_EQ(2.00, I(1));
             EXPECT_EQ(3.00, I(2));
             //...
+            EXPECT_EQ(4848, I(4750));
             EXPECT_EQ(4849, I(4751));
             EXPECT_EQ(4851, I(4752));
-            EXPECT_EQ(-1, I(4753));
 
             // Ad
             ASSERT_DOUBLE_EQ(128, Ad.rows());
-            ASSERT_DOUBLE_EQ(4754, Ad.cols());
+            ASSERT_DOUBLE_EQ(4753, Ad.cols());
             // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
@@ -952,28 +962,28 @@ namespace icrar
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
             //A1
-            ASSERT_DOUBLE_EQ(98, A1.rows()); //-32=98, -split=102
+            ASSERT_DOUBLE_EQ(97, A1.rows()); //-32=98, -split=102
             ASSERT_DOUBLE_EQ(128, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
             //...
-            EXPECT_NEAR(0.00, A1(97,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(96,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(96,126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A1(96,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(98, I1.size());
+            ASSERT_DOUBLE_EQ(97, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
             EXPECT_DOUBLE_EQ(2.00, I1(1));
             EXPECT_DOUBLE_EQ(3.00, I1(2));
             //...
+            EXPECT_DOUBLE_EQ(95.00, I1(94));
             EXPECT_DOUBLE_EQ(96.00, I1(95));
             EXPECT_DOUBLE_EQ(97.00, I1(96));
-            EXPECT_DOUBLE_EQ(-1.00, I1(97));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(98, Ad1.cols());
+            ASSERT_DOUBLE_EQ(97, Ad1.cols());
             ASSERT_DOUBLE_EQ(128, Ad1.rows());
             //TODO: Ad1 not identical
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent

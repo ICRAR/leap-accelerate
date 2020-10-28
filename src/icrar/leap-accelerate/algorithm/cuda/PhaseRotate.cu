@@ -353,8 +353,8 @@ namespace cuda
         A(k, refAnt) = 1;
         k++;
         
-        auto Atemp = Eigen::MatrixXd(k, STATIONS);
-        Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
+        auto Atemp = Eigen::MatrixXd(k-1, STATIONS);
+        Atemp = A(Eigen::seqN(0, k-1), Eigen::seqN(0, STATIONS));
         A.resize(0,0);
         A = Atemp;
 

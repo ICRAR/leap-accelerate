@@ -29,7 +29,7 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
@@ -57,6 +57,7 @@ namespace casalib
     : nantennas(0)
     , channels(0)
     , num_pols(0)
+    , nbaselines(ms.GetNumBaselines())
     , stations(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
@@ -110,15 +111,21 @@ namespace casalib
         casacore::Vector<double> time = msmc->time().getColumn();
 
         //select the first epoch only
-        // const double epoch = time[0];
-        // int nEpochs = 0;
-        // for(size_t i = 0; i < time.size(); i++)
-        // {
-        //     if(time[i] == epoch) nEpochs++;
-        // }
+        const double epoch = time[0];
+        int nEpochs = 0;
+        for(size_t i = 0; i < time.size(); i++)
+        {
+            if(time[i] == epoch) nEpochs++;
+        }
 
-        const int baselines = GetBaselines();
-        auto epochIndices = Slice(0, baselines, 1); //TODO assuming epoch indices are sorted
+        //TODO: these are not equal
+        //const int baselines = GetBaselines();
+        //assert(nEpochs == GeBaselines());
+
+        //const int aSize = baselines;
+        const int aSize = nEpochs;
+
+        auto epochIndices = Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
 
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
@@ -126,8 +133,8 @@ namespace casalib
 
         // Check for flagged data on the first channel and polarization. TODO: may want to consider using logical OR over
         // for each channel and polarization.
-        auto flagSlice = Slicer(IPosition(3,0,0,0), IPosition(3,1,1,baselines), IPosition(3,1,1,1));
-        casacore::Vector<bool> baselineFlags = msmc->flag().getColumn()(flagSlice).reform(IPosition(1, baselines))(epochIndices);
+        auto flagSlice = Slicer(IPosition(3,0,0,0), IPosition(3,1,1,aSize), IPosition(3,1,1,1));
+        casacore::Vector<bool> baselineFlags = msmc->flag().getColumn()(flagSlice).reform(IPosition(1, aSize))(epochIndices);
 
         auto uvwShape = msmc->uvw().getColumn().shape();
         auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
@@ -192,19 +199,19 @@ namespace casalib
 
         //NOTE: using polar direction
         //This is the way using astropy -- we need to repeat
-      /*
-      from astropy.coordinates import SkyCoord
-      import astropy.units as u
+        /*
+        from astropy.coordinates import SkyCoord
+        import astropy.units as u
 
-      # First move to epoch of Obs
-      coords=[(metadata['phase_centre_ra_rad'],metadata['phase_centre_dec_rad'])]
-      c_obs_phase_centre=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
-                  #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
-      coords=[(direction[0],direction[1])]
-      c_obs_direction=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
-                                  #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
-      offset=c_obs_phase_centre.spherical_offsets_to(c_obs_direction)
-      */
+        # First move to epoch of Obs
+        coords=[(metadata['phase_centre_ra_rad'],metadata['phase_centre_dec_rad'])]
+        c_obs_phase_centre=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                    #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+        coords=[(direction[0],direction[1])]
+        c_obs_direction=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                                    #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+        offset=c_obs_phase_centre.spherical_offsets_to(c_obs_direction)
+        */
 
         // Also see:
         // https://stackoverflow.com/questions/25404613/converting-spherical-coordinates-to-cartesian
@@ -253,7 +260,7 @@ namespace casalib
     {
         return m_initialized == rhs.m_initialized
         && nantennas == rhs.nantennas
-        //&& nbaseline == rhs.nbaseline
+        && nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations
