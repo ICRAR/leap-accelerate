@@ -1,5 +1,5 @@
 
-set(TEST_TARGET LeapAccelerate.Tests)
+set(TARGET_NAME LeapAccelerate.Tests)
 
 set(sources
   main.cc
@@ -31,28 +31,39 @@ if(CUDA_VERSION_MAJOR GREATER 9)
   list(APPEND sources ${cuda_sources})
 endif()
 
-#configure_file("testdata")
-
-add_executable(${TEST_TARGET}
+add_executable(${TARGET_NAME}
   ${sources}
 )
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TEST_TARGET}
+  target_precompile_headers(${TARGET_NAME}
     PRIVATE
       [[pch.h]]
   )
 endif()
 
-target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
+# CUDA Options
+target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+
+if(CUDA_VERSION_STRING VERSION_GREATER 10)
+  # 2829 annotation on a defaulted function is ignored
+  # 3057 annotation is ignored on a function that is explicitly defaulted
+  # 2929 annotation is ignored on a function that is explicitly defaulted
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
+else()
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2829">)
+endif()
+
+target_link_libraries(${TARGET_NAME} LeapAccelerate gtest)
 
 add_test(
-  NAME ${TEST_TARGET}
-  COMMAND ${TEST_TARGET}
+  NAME ${TARGET_NAME}
+  COMMAND ${TARGET_NAME}
 )
 
 #gtest_add_tests(
-#  TARGET ${TEST_TARGET}
+#  TARGET ${TARGET_NAME}
 #  TEST_PREFIX "*"
 #  EXTRA_ARGS --gtest_stack_trace_depth=10
 #)

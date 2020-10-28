@@ -3,14 +3,15 @@ cmake_minimum_required(VERSION 3.8)
 set(SOLUTION_NAME LEAP-Accelerate)
 set(SOLUTION_NAME_LOWER leap-accelerate)
 
-file(STRINGS version.txt SOLUTION_NAME_VERSION)
-message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_NAME_VERSION}")
+file(STRINGS version.txt SOLUTION_VERSION)
+message(STATUS "Building ${SOLUTION_NAME} version ${SOLUTION_VERSION}")
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
-project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_NAME_VERSION})
+project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR
