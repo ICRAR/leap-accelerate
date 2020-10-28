@@ -5,6 +5,23 @@ from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
     dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
 
+## Leap Gather
+# @brief Leap Gather
+# @details A BarrierAppDrop that gathers output from multiple instances of the LeapAccelerateCLI application, sorts it, and outputs it
+# @par EAGLE_START
+# @param gitrepo $(GIT_REPO)
+# @param version $(PROJECT_VERSION)
+# @param category PythonApp
+# @param[in] port/Result
+#     \~English The JSON output from an instance of LeapAccelerateCLI
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[out] port/Result
+#     \~English The combined output from many instances the LeapAccelerateCLI application (JSON)
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @par EAGLE_END
+
 class LeapGather(BarrierAppDROP):
     """A BarrierAppDrop that gathers output from multiple instances of the LeapAccelerateCLI application, sorts it, and outputs it"""
     compontent_meta = dlg_component('Leap Gather', 'Leap Gather.',

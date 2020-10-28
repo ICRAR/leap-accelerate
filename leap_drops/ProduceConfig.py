@@ -9,6 +9,27 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 from dlg.droputils import DROPFile
 
 
+## Produce Config
+# @brief Produce Config
+# @details A BarrierAppDrop that produces multiple config files suitable for the CallLeap BarrierAppDrop
+# @par EAGLE_START
+# @param gitrepo $(GIT_REPO)
+# @param version $(PROJECT_VERSION)
+# @param category PythonApp
+# @param[in] param/number_of_stations/1/Integer
+#     \~English The number of stations from the measurement set that should be processed\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[in] param/implementation/eigen/String
+#     \~English The implementation of the LEAP algorithm to use (eigen, casa, cuda)\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[in] port/Directions
+#     \~English A CSV file containing directions for calibration
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @par EAGLE_END
+
 class ProduceConfig(BarrierAppDROP):
     """A BarrierAppDrop that produces multiple config files suitable for the CallLeap BarrierAppDrop"""
     compontent_meta = dlg_component('ProduceConfig', 'Produce Config.',

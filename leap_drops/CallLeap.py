@@ -9,6 +9,27 @@ from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
     dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
 
+## Call Leap
+# @brief Call Leap
+# @details A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application
+# @par EAGLE_START
+# @param gitrepo $(GIT_REPO)
+# @param version $(PROJECT_VERSION)
+# @param category PythonApp
+# @param[in] param/measurementSetFilename/-/String
+#     \~English The file from which the input measurement set should be loaded\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[in] port/Config
+#     \~English The Config file containing JSON specifying how this instance of LeapAccelerateCLI should be run
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[out] port/Result
+#     \~English The output of the LeapAccelerateCLI application (JSON)
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @par EAGLE_END
+
 class CallLeap(BarrierAppDROP):
     """A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application"""
     compontent_meta = dlg_component('Call Leap', 'Call Leap.',
