@@ -224,12 +224,12 @@ namespace casalib
         metadata.CalcUVW(uvw);
 
         assert(uvw.size() == integration.baselines);
-        assert(integration_data.dimension(0) == metadata.num_pols);
-        assert(integration_data.dimension(1) == integration.baselines);
-        assert(integration_data.dimension(2) == metadata.channels);
+        assert(integration_data.dimension(0) == static_cast<std::int64_t>(metadata.num_pols));
+        assert(integration_data.dimension(1) == static_cast<std::int64_t>(integration.baselines));
+        assert(integration_data.dimension(2) == static_cast<std::int64_t>(metadata.channels));
 
         assert(metadata.oldUVW.size() == integration.baselines);
-        assert(metadata.channel_wavelength.size() == metadata.channels);
+        assert(metadata.channel_wavelength.size() == static_cast<size_t>(metadata.channels));
 
         // loop over baselines
         for(size_t baseline = 0; baseline < integration.baselines; ++baseline)

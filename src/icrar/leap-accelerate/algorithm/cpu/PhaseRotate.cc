@@ -187,7 +187,7 @@ namespace cpu
         const auto polar_direction = icrar::ToPolar(metadata.direction);
         
         // loop over smeared baselines
-        for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
+        for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 

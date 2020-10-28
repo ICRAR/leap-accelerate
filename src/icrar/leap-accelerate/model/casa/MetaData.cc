@@ -157,11 +157,6 @@ namespace casalib
         // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
         std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, -1);
         this->Ad = icrar::casalib::PseudoInverse(A);
-
-#ifndef NDEBUG
-        constexpr double PRECISION = 0.00001;
-        assert((ToMatrix(A)*ToMatrix(Ad)).isApprox(Eigen::MatrixXd::Identity(ms.GetNumBaselines(), ms.GetNumBaselines()), PRECISION));
-#endif
     }
 
     MetaData::MetaData(std::istream& /*input*/)
