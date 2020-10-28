@@ -20,6 +20,10 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 #     \~English The file from which the input measurement set should be loaded\n
 #     \~Chinese 要读取的起始频率\n
 #     \~
+# @param[in] param/appclass/leap_nodes.CallLeap.CallLeap/String
+#     \~English The path to the class that implements this app\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
 # @param[in] port/Config
 #     \~English The Config file containing JSON specifying how this instance of LeapAccelerateCLI should be run
 #     \~Chinese 要读取的起始频率\n

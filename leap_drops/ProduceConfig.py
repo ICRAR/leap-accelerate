@@ -24,6 +24,10 @@ from dlg.droputils import DROPFile
 #     \~English The implementation of the LEAP algorithm to use (eigen, casa, cuda)\n
 #     \~Chinese 要读取的起始频率\n
 #     \~
+# @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String
+#     \~English The path to the class that implements this app\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
 # @param[in] port/Directions
 #     \~English A CSV file containing directions for calibration
 #     \~Chinese 要读取的起始频率\n
