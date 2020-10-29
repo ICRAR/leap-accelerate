@@ -20,7 +20,7 @@ add_executable(${TEST_TARGET}
 #   )
 # endif()
 
-configure_cuda_warnings(${TARGET_NAME})
+configure_cuda_warnings(${TEST_TARGET})
 
 target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
 
