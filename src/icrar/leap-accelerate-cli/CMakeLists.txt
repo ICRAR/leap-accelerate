@@ -1,6 +1,5 @@
 set(TARGET_NAME LeapAccelerateCLI)
 set(TARGET_EXPORT leapaccelerate-targest)
-set(TARGET_TEST LeapAccelerateCLIExec)
 
 set(sources
   main.cc
