@@ -74,8 +74,8 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        LOG(info) << "Starting Calibration using casa library";
+        LOG(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -84,7 +84,7 @@ namespace casalib
 
         profiling_timer metadata_read_timer;
         auto metadata = casalib::MetaData(ms);
-        BOOST_LOG_TRIVIAL(info) << "Read metadata in " << metadata_read_timer;
+        LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling_timer integration_read_timer;
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
@@ -113,7 +113,7 @@ namespace casalib
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
-        BOOST_LOG_TRIVIAL(info) << "Read integration data in " << integration_read_timer;
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
         profiling_timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
@@ -121,9 +121,9 @@ namespace casalib
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
-        BOOST_LOG_TRIVIAL(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        BOOST_LOG_TRIVIAL(info) << "Finished calibration in " << calibration_timer;
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
