@@ -123,7 +123,7 @@ namespace cpu
         }
 
         avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        LOG(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
@@ -146,9 +146,9 @@ namespace cpu
         //     throw std::runtime_error("incorrect antenna size");
         // }
 
-        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
+        LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
+        LOG(trace) << pretty_matrix(m_A1);
 #ifdef TRACE
         {
             std::ofstream file;
@@ -158,9 +158,9 @@ namespace cpu
         }
 #endif
 
-        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
+        LOG(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
+        LOG(trace) << pretty_matrix(m_A);
 #ifdef TRACE
         {
             std::ofstream file;
@@ -170,9 +170,9 @@ namespace cpu
         }
 #endif
 
-        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
+        LOG(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
+        LOG(trace) << pretty_matrix(m_Ad1);
 #ifdef TRACE
         {
             std::ofstream file;
@@ -182,7 +182,7 @@ namespace cpu
         }
 #endif
 
-        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
+        LOG(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
         BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
 #ifdef TRACE
@@ -196,11 +196,11 @@ namespace cpu
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate";
+            LOG(warning) << "m_Ad is degenerate";
         }
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate";
+            LOG(warning) << "m_Ad1 is degenerate";
         }
 
         SetOldUVW(uvws);

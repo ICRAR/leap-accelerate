@@ -49,8 +49,4 @@ namespace log
 }
 }
 
-#ifdef PROFILING
-#define PROFILER_LOG(svr, stream) BOOST_LOG_TRIVIAL(svr) << stream
-#else
-#define PROFILER_LOG(svr, stream) ()
-#endif
+#define LOG(X) BOOST_LOG_TRIVIAL(X)

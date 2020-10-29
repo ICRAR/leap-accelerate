@@ -237,8 +237,8 @@ int main(int argc, char** argv)
         //=========================
         // Calibration to std::cout
         //=========================
-        BOOST_LOG_TRIVIAL(info) << version_information(argv[0]);
-        BOOST_LOG_TRIVIAL(info) << arg_string(argc, argv);
+        LOG(info) << version_information(argv[0]);
+        LOG(info) << arg_string(argc, argv);
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:

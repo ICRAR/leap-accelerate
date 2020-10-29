@@ -37,7 +37,7 @@ namespace icrar
         }
         else if(value == "eigen")
         {
-            BOOST_LOG_TRIVIAL(info) << "argument 'eigen' deprecated, use 'cpu' instead";
+            LOG(info) << "argument 'eigen' deprecated, use 'cpu' instead";
             out = ComputeImplementation::cpu;
             return true;
         }
