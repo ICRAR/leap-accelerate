@@ -31,13 +31,14 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
+
 #include <icrar/leap-accelerate/core/logging.h>
 #include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
-
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -150,14 +151,22 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
-        
-        BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
+        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(metadata.avg_data);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("avg_data.txt");
+            file << metadata.avg_data << std::endl;
+            file.close();
+        }
+#endif
+
+        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-        // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+        // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());

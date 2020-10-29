@@ -37,6 +37,8 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
+
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -149,6 +151,16 @@ namespace cuda
         deviceMetadata.ToHost(hostMetadata);
         
         BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
+        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(hostMetadata.avg_data);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("avg_data.txt");
+            file << hostMetadata.avg_data << std::endl;
+            file.close();
+        }
+#endif
+
         auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
