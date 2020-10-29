@@ -80,15 +80,13 @@ namespace casalib
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
+        profiling_timer calibration_timer;
 
-        auto timer = profiling_timer();
-        timer.start();
+        profiling_timer metadata_read_timer;
         auto metadata = casalib::MetaData(ms);
-        timer.stop();
-        timer.log("metadata read time");
-        timer.restart();
+        BOOST_LOG_TRIVIAL(info) << "Read metadata in " << metadata_read_timer;
 
-
+        profiling_timer integration_read_timer;
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -115,20 +113,17 @@ namespace casalib
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        BOOST_LOG_TRIVIAL(info) << "Read integration data in " << integration_read_timer;
 
-        timer.stop();
-        timer.log("integration read time");
-        timer.restart();
-
+        profiling_timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        BOOST_LOG_TRIVIAL(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        timer.stop();
-        timer.log("PhaseRotate time");
-
+        BOOST_LOG_TRIVIAL(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 

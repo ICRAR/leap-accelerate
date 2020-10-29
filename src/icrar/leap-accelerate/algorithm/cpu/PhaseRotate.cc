@@ -76,12 +76,13 @@ namespace cpu
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
 
+        profiling_timer calibration_timer;
+
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
-        
-        auto timer = profiling_timer();
-        timer.start();
+
+        profiling_timer integration_read_timer;
 
         unsigned int integrationNumber = 0;
 
@@ -111,16 +112,14 @@ namespace cpu
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
-        
-        timer.stop();
-        timer.log("integration read time");
-        timer.restart();
+        BOOST_LOG_TRIVIAL(info) << "Read integration data in " << integration_read_timer;
+
+        profiling_timer metadata_read_timer;
         BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        BOOST_LOG_TRIVIAL(info) << "Read metadata in " << metadata_read_timer;
 
-        timer.stop();
-        timer.log("metadata read time");
-        timer.restart();
+        profiling_timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
@@ -129,11 +128,9 @@ namespace cpu
             metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        BOOST_LOG_TRIVIAL(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        timer.stop();
-        timer.log("PhaseRotate time");
-
-        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
+        BOOST_LOG_TRIVIAL(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
