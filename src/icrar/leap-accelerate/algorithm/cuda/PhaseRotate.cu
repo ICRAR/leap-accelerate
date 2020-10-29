@@ -36,6 +36,7 @@
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 
@@ -80,12 +81,14 @@ namespace cuda
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
+        profiling_timer calibration_timer;
 
         if(GetCudaDeviceCount() == 0)
         {
             throw std::runtime_error("Could not find CUDA device");
         }
 
+        profiling_timer integration_read_timer;
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
@@ -105,11 +108,15 @@ namespace cuda
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
+        profiling_timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
         input_queue.emplace_back(0, integration.GetVis().dimensions());
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
+        profiling_timer phase_rotate_timer;
         for(int i = 0; i < directions.size(); ++i)
         {
             LOG(info) << "Processing direction " << i;
@@ -124,8 +131,9 @@ namespace cuda
             LOG(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
-        
-        LOG(info) << "Calibration Complete";
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
