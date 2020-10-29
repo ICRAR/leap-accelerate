@@ -31,6 +31,7 @@
 #include <boost/log/support/date_time.hpp>
 #include <boost/log/utility/manipulators/add_value.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
 #include "logging.h"
@@ -47,6 +48,10 @@ namespace log
     {
         boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
 
+        auto format = boost::log::expressions::stream
+                << "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "]"
+                << " <" << boost::log::trivial::severity
+                << "> " << boost::log::expressions::smessage;
         boost::log::add_file_log
         (
             boost::log::keywords::file_name = "log/leap_%Y-%m-%d_%5N.log",/*< file name pattern >*/
@@ -54,12 +59,11 @@ namespace log
             //boost::log::keywords::max_files = 10, TODO: boost 1.65+ feature
             boost::log::keywords::open_mode = std::ios_base::app|std::ios_base::out,
             boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(0, 0, 0), /*< ...or at midnight >*/
-            boost::log::keywords::format = (
-                boost::log::expressions::stream
-                << "[" << boost::log::expressions::format_date_time<boost::posix_time::ptime>("TimeStamp", "%Y-%m-%d %H:%M:%S.%f") << "]"
-                << " <" << boost::log::trivial::severity
-                << "> " << boost::log::expressions::smessage
-            )
+            boost::log::keywords::format = format
+        );
+        boost::log::add_console_log(
+            std::cout,
+            boost::log::keywords::format = format
         );
 
         //set log filter
