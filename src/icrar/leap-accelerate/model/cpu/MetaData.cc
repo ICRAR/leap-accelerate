@@ -28,8 +28,8 @@
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/logging.h>
-
 
 namespace icrar
 {
@@ -148,13 +148,51 @@ namespace cpu
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("A1.txt");
+            file << m_A1 << std::endl;
+            file.close();
+        }
+#endif
+
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
-        
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("A.txt");
+            file << m_A << std::endl;
+            file.close();
+        }
+#endif
+
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("Ad1.txt");
+            file << m_Ad1 << std::endl;
+            file.close();
+        }
+#endif
+
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
+#ifdef TRACE
+        {
+            std::ofstream file;
+            file.open("Ad.txt");
+            file << m_Ad1 << std::endl;
+            file.close();
+        }
+#endif
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {

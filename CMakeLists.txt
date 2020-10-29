@@ -10,6 +10,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(WERROR "Warnings as Errors" ON)
+option(TRACE "Trace Data Values" OFF)
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
@@ -21,7 +22,10 @@ if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "G
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
+endif()
 
+if(TRACE)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
 add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
