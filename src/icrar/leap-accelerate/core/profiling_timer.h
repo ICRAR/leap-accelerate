@@ -26,53 +26,35 @@
 #include <icrar/leap-accelerate/core/logging.h>
 
 #include <chrono>
+#include <ostream>
 #include <string>
 
 namespace icrar
 {
     class profiling_timer
     {
-        std::chrono::high_resolution_clock::time_point m_start;
-        std::chrono::high_resolution_clock::time_point m_stop;
 
     public:
-        profiling_timer()
-        {
-#ifdef PROFILING
-            m_start = std::chrono::high_resolution_clock::now();
-            m_stop = std::chrono::high_resolution_clock::now();
-#endif
-        }
-        
-        inline void start()
-        {
-#ifdef PROFILING
-            m_start = std::chrono::high_resolution_clock::now();
-#endif
-        }
-        
-        inline void stop()
-        {
-#ifdef PROFILING
-            m_stop = std::chrono::high_resolution_clock::now();
-#endif
-        }
-        
-        inline void restart()
-        {
-#ifdef PROFILING
-            m_start = std::chrono::high_resolution_clock::now();
-            m_stop = std::chrono::high_resolution_clock::now();
-#endif
-        }
+        using clock = std::chrono::high_resolution_clock;
+        using duration = typename clock::duration;
 
-#ifdef PROFILING
-        inline void log(std::string entryName) const
+    private:
+        clock::time_point m_start {clock::now()};
+
+    public:
+        duration get() const
         {
-            BOOST_LOG_TRIVIAL(trace) << entryName << ": " << ToMSString(m_stop - m_start) << std::endl;
+            return clock::now() - m_start;
         }
-#else
-        inline void log(std::string) const {}
-#endif
     };
+
+
+template <typename CharT, typename Traits>
+std::basic_ostream<CharT, Traits> &operator<<(
+    std::basic_ostream<CharT, Traits> &os, const profiling_timer &timer)
+{
+    os << ToMSString(timer.get());
+    return os;
+}
+
 }
