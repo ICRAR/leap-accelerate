@@ -96,14 +96,19 @@ namespace casalib
         casacore::Matrix<double> A1; // [baselines,stations] Antennas ((all, including flagged) with baseline PhaseMatrix
         casacore::Matrix<double> Ad1; //A1 inverse
 
-        casacore::Vector<int> I1; // 
-        casacore::Vector<int> I;
+        casacore::Vector<int> I1; // The indexes of the antennas used by A
+        casacore::Vector<int> I; // The indexes of the antennas used by A1
 
     public:
         MetaData();
         MetaData(std::istream& input);
         MetaData(const icrar::MeasurementSet& ms);
         
+        /**
+         * @brief Gets the number of baselines
+         * 
+         * @return int
+         */
         int GetBaselines() const { return stations * (stations + 1) / 2; }
 
         /**
@@ -132,11 +137,6 @@ namespace casalib
         void SetDD(const icrar::MVDirection& direction);
 
         bool operator==(const MetaData& rhs) const;
-
-        // void SetDlmRa(double value) { dlm_ra; }
-        // double GetDlmRa();
-        // void SetDlmdDec(double value);
-        // double GetDlmdDec();
     };
 }
 }

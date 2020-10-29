@@ -123,7 +123,7 @@ namespace cpu
         }
 
         avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GB";
+        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
@@ -158,11 +158,11 @@ namespace cpu
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate" << std::endl;
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate";
         }
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate" << std::endl;
+            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate";
         }
 
         SetOldUVW(uvws);

@@ -1,5 +1,5 @@
 
-set(TEST_TARGET LeapAccelerate.Tests)
+set(TEST_TARGET_NAME LeapAccelerate.Tests)
 
 set(sources
   main.cc
@@ -31,28 +31,30 @@ if(CUDA_VERSION_MAJOR GREATER 9)
   list(APPEND sources ${cuda_sources})
 endif()
 
-#configure_file("testdata")
-
-add_executable(${TEST_TARGET}
+add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TEST_TARGET}
+  target_precompile_headers(${TEST_TARGET_NAME}
     PRIVATE
       [[pch.h]]
   )
 endif()
 
-target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
+# CUDA Options
+target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+configure_cuda_warnings(${TEST_TARGET_NAME})
+
+target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
 add_test(
-  NAME ${TEST_TARGET}
-  COMMAND ${TEST_TARGET}
+  NAME ${TEST_TARGET_NAME}
+  COMMAND ${TEST_TARGET_NAME}
 )
 
 #gtest_add_tests(
-#  TARGET ${TEST_TARGET}
+#  TARGET ${TEST_TARGET_NAME}
 #  TEST_PREFIX "*"
 #  EXTRA_ARGS --gtest_stack_trace_depth=10
 #)
