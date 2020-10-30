@@ -134,8 +134,8 @@ namespace cpu
             if(time[i] == epoch) nEpochs++;
         }
         auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
-        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
         // if(a1.size() != m_constants.nbaselines)
         // {
