@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
 #include <chrono>
@@ -53,7 +54,9 @@ template <typename CharT, typename Traits>
 std::basic_ostream<CharT, Traits> &operator<<(
     std::basic_ostream<CharT, Traits> &os, const profiling_timer &timer)
 {
-    os << ToMSString(timer.get());
+    auto t = std::chrono::duration_cast<std::chrono::microseconds>(
+                 timer.get()).count();
+    os << us_time(t);
     return os;
 }
 

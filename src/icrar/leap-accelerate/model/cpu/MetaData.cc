@@ -29,6 +29,7 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
 namespace icrar
@@ -123,7 +124,7 @@ namespace cpu
         }
 
         avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        LOG(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        LOG(info) << "avg_data: " << memory_amount(avg_data.size() * sizeof(std::complex<double>));
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
