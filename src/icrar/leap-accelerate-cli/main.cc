@@ -33,6 +33,7 @@
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/resource_usage.h>
 #include <icrar/leap-accelerate/core/version.h>
 
 #include <CLI/CLI.hpp>
@@ -230,6 +231,7 @@ int main(int argc, char** argv)
         return app.exit(e);
     }
 
+    icrar::UsageReporter _;
     try
     {
         ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
