@@ -54,9 +54,11 @@ namespace casalib
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
-    : channels(0)
+    : nbaselines(0)
+    , channels(0)
     , num_pols(0)
     , stations(0)
+    , rows(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
     , phase_centre_ra_rad(0)
@@ -68,12 +70,9 @@ namespace casalib
 
         this->m_initialized = false;
 
-        this->rows = msmc->uvw().nrow();
-        this->num_pols = 0;
-        if(pms->polarization().nrow() > 0)
-        {
-            this->num_pols = msc->polarization().numCorr().get(0);
-        }
+        this->nbaselines = ms.GetNumBaselines();
+        this->rows = ms.GetNumRows();
+        this->num_pols = ms.GetNumPols();
 
         if(pms->spectralWindow().nrow() > 0)
         {

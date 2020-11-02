@@ -74,9 +74,9 @@ namespace cpu
 
         A(k, refAnt) = 1;
         k++;
-
-        A.conservativeResize(k, Eigen::NoChange);
-        I.conservativeResize(k);
+        
+        A.conservativeResize(k-1, Eigen::NoChange);
+        I.conservativeResize(k-1);
 
         return std::make_pair(std::move(A), std::move(I));
     }
