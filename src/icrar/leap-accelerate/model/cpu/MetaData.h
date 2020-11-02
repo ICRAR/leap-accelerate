@@ -63,7 +63,6 @@ namespace cpu
 {
     struct Constants
     {
-        int nantennas;
         int nbaselines; //the total number station pairs (excluding self cycles) 
 
         int channels; // The number of channels of the current observation

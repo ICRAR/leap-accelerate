@@ -69,6 +69,11 @@ namespace cuda
         avg_data.ToHost(metadata.avg_data);
     }
 
+    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
+    {
+        avg_data.ToHost(host);
+    }
+
     cpu::MetaData DeviceMetaData::ToHost() const
     {
         //TODO: tidy up using a constructor for now

@@ -147,9 +147,10 @@ namespace cuda
                 integration.GetIntegrationNumber(),
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
+
         BOOST_LOG_TRIVIAL(info) << "Copying Metadata from Device";
-        deviceMetadata.ToHost(hostMetadata);
-        
+        deviceMetadata.AvgDataToHost(hostMetadata.avg_data);
+
         BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
         BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(hostMetadata.avg_data);
 #ifdef TRACE
@@ -296,7 +297,7 @@ namespace cuda
         //TODO: store polar form in advance
         const auto polar_direction = icrar::ToPolar(metadata.direction);
         g_RotateVisibilities<<<gridSize, blockSize>>>(
-            (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
+            (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
             metadata.dd,
             make_double2(polar_direction(0), polar_direction(1)),

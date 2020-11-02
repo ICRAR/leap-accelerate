@@ -37,7 +37,6 @@ namespace cpu
 {
     MetaData::MetaData(const casalib::MetaData& metadata)
     {
-        m_constants.nantennas = metadata.nantennas;
         m_constants.nbaselines = metadata.GetBaselines();
         m_constants.channels = metadata.channels;
         m_constants.num_pols = metadata.num_pols;
@@ -51,7 +50,6 @@ namespace cpu
         m_constants.dlm_dec = metadata.dlm_dec;
 
         m_oldUVW = ToUVWVector(metadata.oldUVW);
-        //m_UVW = ToUVW(metadata.uvw);
 
         m_A = ToMatrix(metadata.A);
         m_I = ToMatrix<int>(metadata.I);
@@ -80,18 +78,12 @@ namespace cpu
         }
     }
 
-    // MetaData::MetaData(icrar::MeasurementSet& ms)
-    // {
-
-    // }
-
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
 
-        m_constants.nantennas = 0;
         m_constants.nbaselines = ms.GetNumBaselines();
 
         m_constants.channels = 0;
@@ -128,12 +120,12 @@ namespace cpu
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
         double epoch = time[0];
-        int nEpochs = 0;
+        int epochRows = 0;
         for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == epoch) nEpochs++;
+            if(time[i] == epoch) epochRows++;
         }
-        auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
@@ -281,8 +273,7 @@ namespace cpu
 
     bool Constants::operator==(const Constants& rhs) const
     {
-        return nantennas == rhs.nantennas
-        && nbaselines == rhs.nbaselines
+        return nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations

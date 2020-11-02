@@ -172,10 +172,8 @@ void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::
     }
 
     const double THRESHOLD = 0.001;
-    //ASSERT_EQ(expectedIntegration.baselines, metadataOutput.avg_data.rows());
     
-    ASSERT_EQ(expected.GetConstants().nantennas, actual.GetConstants().nantennas);
-    //ASSERT_EQ(expected.nbaseline, metadata.nbaseline);
+    ASSERT_EQ(expected.GetConstants().nbaselines, actual.GetConstants().nbaselines);
     ASSERT_EQ(expected.GetConstants().channels, actual.GetConstants().channels);
     ASSERT_EQ(expected.GetConstants().num_pols, actual.GetConstants().num_pols);
     ASSERT_EQ(expected.GetConstants().stations, actual.GetConstants().stations);

@@ -53,8 +53,7 @@ namespace casalib
     {
         bool m_initialized;
 
-        int nantennas;
-        //int nbaseline;
+        int nbaseline;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation

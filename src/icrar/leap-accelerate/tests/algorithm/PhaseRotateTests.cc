@@ -216,7 +216,6 @@ namespace icrar
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
 
             auto expectedConstants = icrar::cpu::Constants();
-            expectedConstants.nantennas = 0;
             expectedConstants.nbaselines = 8001;
             expectedConstants.channels = 48;
             expectedConstants.num_pols = 4;
@@ -237,7 +236,6 @@ namespace icrar
             //========
             // ASSERT
             //========
-            EXPECT_DOUBLE_EQ(expectedConstants.nantennas, metadataOutput.GetConstants().nantennas);
             EXPECT_DOUBLE_EQ(expectedConstants.nbaselines, metadataOutput.GetConstants().nbaselines);
             EXPECT_DOUBLE_EQ(expectedConstants.channels, metadataOutput.GetConstants().channels);
             EXPECT_DOUBLE_EQ(expectedConstants.num_pols, metadataOutput.GetConstants().num_pols);
@@ -847,12 +845,12 @@ namespace icrar
             //select the first epoch only
             casacore::Vector<double> time = msmc->time().getColumn();
             double epoch = time[0];
-            int nEpochs = 0;
+            int epochRows = 0;
             for(size_t i = 0; i < time.size(); i++)
             {
-                if(time[i] == epoch) nEpochs++;
+                if(time[i] == epoch) epochRows++;
             }
-            auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+            auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
