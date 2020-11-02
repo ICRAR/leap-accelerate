@@ -99,6 +99,12 @@ namespace cuda
         device_matrix<std::complex<double>> avg_data;
 
     public:
+        /**
+         * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
+         * all device buffers
+         * 
+         * @param metadata 
+         */
         DeviceMetaData(const icrar::cpu::MetaData& metadata);
 
         const icrar::cpu::Constants& GetConstants();

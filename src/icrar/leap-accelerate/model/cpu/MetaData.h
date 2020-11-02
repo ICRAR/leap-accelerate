@@ -108,9 +108,28 @@ namespace cpu
         Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
     
     public:
-        //MetaData(icrar::MeasurementSet& ms);
+        /**
+         * @brief Construct a new MetaData object. SetDD() must be called after construction
+         * 
+         * @param ms 
+         * @param uvws 
+         */
         MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
+
+        /**
+         * @brief Construct a new MetaData object
+         * 
+         * @param ms 
+         * @param direction 
+         * @param uvws 
+         */
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
+        
+        /**
+         * @brief Constructs a MetaData object from an equivalent casa MetaData object
+         * 
+         * @param metadata 
+         */
         MetaData(const casalib::MetaData& metadata);
 
         const Constants& GetConstants() const;
