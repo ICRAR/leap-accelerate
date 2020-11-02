@@ -1,18 +1,18 @@
-# LEAP Accelerate
+# leap-accelerate
 
-![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
+[![License](https://img.shields.io/github/license/ICRAR/leap-accelerate)](https://img.shields.io/github/license/ICRAR/leap-accelerate)
 [![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
 
 Low-frequency Excision of the Atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
 
-LEAP-Accelerate includes:
+leap-accelerate includes:
 
-* leap-accelerate: a shared library for gpu accelerated direction centering and phase calibration
-* leap-accelerate-cli: a CLI interface for I/O datastream or plasma data access 
-* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server
-* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients
+* [leap-accelerate-lib](@ref leap-accelerate-lib): a shared library for gpu accelerated direction centering and phase calibration
+* [leap-accelerate-cli](@ref leap-accelerate-cli): a CLI interface for I/O datastream or plasma data access 
+* [leap-accelerate-client](@ref leap-accelerate-client): a socket client interface for processing data from a LEAP-Cal server
+* [leap-accelerate-server](@ref leap-accelerate-server): a socket server interface for dispatching data processing to LEAP-Cal clients
 
-## Build
+# Build
 
 ### Linux
 
