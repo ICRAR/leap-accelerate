@@ -54,6 +54,10 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Container of visibilities for integration
+     * 
+     */
     class IntegrationResult
     {
         MVDirection m_direction;
@@ -73,31 +77,51 @@ namespace cpu
         }
     };
 
+    /**
+     * @brief Container of station calibrations for a given direction.
+     * 
+     */
     class CalibrationResult
     {
-        MVDirection m_direction;
-        std::vector<casacore::Matrix<double>> m_data;
+        MVDirection m_direction; // direction the calibration is configured to.
+        std::vector<casacore::Matrix<double>> m_stationCalibrations; // Calibrations for each station.
 
     public:
+        /**
+         * @brief Construct a new Calibration Result data object
+         * 
+         * @param direction 
+         * @param stationCalibrations 
+         */
         CalibrationResult(
             const MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
+            const std::vector<casacore::Matrix<double>>& stationCalibrations)
             : m_direction(direction)
-            , m_data(data)
+            , m_stationCalibrations(stationCalibrations)
         {
         }
 
+        /**
+         * @brief Gets the direction of the calibration
+         * 
+         * @return const MVDirection 
+         */
         const MVDirection GetDirection() const { return m_direction; }
-        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+        const std::vector<casacore::Matrix<double>>& GetStationCalibrations() const { return m_stationCalibrations; }
 
+        /**
+         * @brief serializes the current object to the provided stream in JSON format.
+         * 
+         * @param os the output stream
+         */
         void Serialize(std::ostream& os) const;
 
     private:
         template<typename Writer>
         void CreateJsonStrFormat(Writer& writer) const
         {
-            assert(m_data.size() == 1);
-            assert(m_data[0].shape()[1] == 1);
+            assert(m_stationCalibrations.size() == 1);
+            assert(m_stationCalibrations[0].shape()[1] == 1);
 
             writer.StartObject();
             writer.String("direction");
@@ -110,7 +134,7 @@ namespace cpu
 
             writer.String("data");
             writer.StartArray();
-            for(auto& v : m_data[0])
+            for(auto& v : m_stationCalibrations[0])
             {
                 writer.Double(v);
             }
@@ -125,6 +149,12 @@ namespace cpu
         std::vector<std::vector<cpu::CalibrationResult>>
     >;
 
+    /**
+     * @brief Converts a calibration from casalib containers to eigen3 containers 
+     * 
+     * @param result 
+     * @return icrar::cpu::CalibrateResult 
+     */
     icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
 
     void PrintResult(const CalibrateResult& result);

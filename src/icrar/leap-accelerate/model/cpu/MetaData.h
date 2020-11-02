@@ -61,6 +61,10 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Constants used in phase rotation independant of direction
+     * 
+     */
     struct Constants
     {
         int nbaselines; //the total number station pairs (excluding self cycles) 
@@ -86,22 +90,26 @@ namespace cpu
         bool operator==(const Constants& rhs) const;
     };
 
+    /**
+     * @brief A container of all data required to perform phase rotation on a compute device.
+     * 
+     */
     class MetaData
     {
         MetaData() {}
 
         Constants m_constants;
         
-        Eigen::MatrixXd m_A;
-        Eigen::VectorXi m_I; // The flagged indexes of A
+        Eigen::MatrixXd m_A; // Weighting of stations to baselines 
+        Eigen::VectorXi m_I; // The non-flagged indexes of A
         Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
 
         Eigen::MatrixXd m_A1;
         Eigen::VectorXi m_I1;
         Eigen::MatrixXd m_Ad1;
 
-        std::vector<icrar::MVuvw> m_oldUVW;
-        std::vector<icrar::MVuvw> m_UVW; // late initialized
+        std::vector<icrar::MVuvw> m_oldUVW; // UVW values of zenith direction
+        std::vector<icrar::MVuvw> m_UVW; // UVW values rotated by @ref m_direction, late initialized
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction matrix, late initialized

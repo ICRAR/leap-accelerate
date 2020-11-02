@@ -122,21 +122,24 @@ namespace casalib
         void SetWv();
 
         /**
-         * @brief 
+         * @brief Calculates the rotated UVWs using the set direction
          * 
          * @param uvw 
-         * @param metadata 
          */
         void CalcUVW(std::vector<casacore::MVuvw>& uvw);
 
         /**
-         * @brief 
+         * @brief Sets the calibration direction
          * 
-         * @param metadata 
          * @param direction 
          */
         void SetDD(const casacore::MVDirection& direction);
 
+        /**
+         * @brief Sets the calibration direction
+         * 
+         * @param direction 
+         */
         void SetDD(const icrar::MVDirection& direction);
 
         bool operator==(const MetaData& rhs) const;

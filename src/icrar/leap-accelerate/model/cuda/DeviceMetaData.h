@@ -55,10 +55,10 @@ namespace icrar
 namespace cuda
 {
     /**
-     * Container of uniform gpu buffers available to all cuda
+     * @brief Container of uniform gpu buffers available to all cuda
      * threads and are immutable.
      */
-    class UniformMetaData
+    class DeviceUniformMetaData
     {
     public:
         icrar::cpu::Constants constants;
@@ -73,7 +73,7 @@ namespace cuda
     };
 
     /**
-     * Represents the complete collection of MetaData that
+     * @brief Represents the complete collection of MetaData that
      * resides on the GPU for leap-calibration
      */
     class DeviceMetaData

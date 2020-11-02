@@ -46,6 +46,11 @@
 
 namespace icrar
 {
+    /**
+     * @brief A measurement set indirection layer that processes a measurement set in
+     * addition to station overrides and use of autocorrelations.
+     * 
+     */
     class MeasurementSet
     {
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;

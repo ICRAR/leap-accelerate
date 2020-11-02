@@ -58,29 +58,36 @@ namespace casalib
     struct MetaData;
 
     /**
-     * @brief 
+     * @brief Performs LEAP calibration for stations in @c ms for
+     * each direction in @c directions
      * 
+     * @param ms the measurement set
+     * @param directions the directions to calibrate for
+     * @return CalibrateResult 
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions);
 
     /**
-     * @brief 
+     * @brief Calculates calibrations required to change the phase centre of an observation
+     * by rotating visibilities and performing phase detection.
      * 
      * @param metadata 
-     * @param directions 
+     * @param direction 
      * @param input 
+     * @param output_integrations 
+     * @param output_calibrations 
      */
     void PhaseRotate(
         MetaData& metadata,
-        const casacore::MVDirection& directions,
+        const casacore::MVDirection& direction,
         std::queue<Integration>& input,
         std::queue<IntegrationResult>& output_integrations,
         std::queue<CalibrationResult>& output_calibrations);
 
     /**
-     * @brief 
+     * @brief Performs averaging of integration and metadata to populate @c metadata.avg_data
      * 
      * @param integration 
      * @param metadata 

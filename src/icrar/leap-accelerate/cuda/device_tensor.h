@@ -36,7 +36,7 @@ namespace icrar
 namespace cuda
 {
 /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief An object that represents a 3d tensor memory buffer on a cuda device.
      * 
      * @tparam T 
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/

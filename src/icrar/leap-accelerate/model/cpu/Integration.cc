@@ -40,7 +40,7 @@ namespace cpu
     , baselines(integration.baselines)
     , m_uvw(ToUVWVector(integration.uvw))
     {
-        m_data = Eigen::Tensor<std::complex<double>, 3>(integration.data);
+        m_visibilities = Eigen::Tensor<std::complex<double>, 3>(integration.data);
     }
 
     Integration::Integration(
@@ -57,18 +57,18 @@ namespace cpu
     , baselines(baselines)
     {
         constexpr int startChannel = 0;
-        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
-        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
         size_t uvw_size = (baselines - startBaseline) * 3;
         BOOST_LOG_TRIVIAL(info) << "uvw:" << uvw_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
-        m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
+        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
         m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+        m_visibilities = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
+        Eigen::Map<const Eigen::VectorXcd> datav(m_visibilities.data(), m_visibilities.size());
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
         
         return datav.isApprox(rhsdatav)
         && m_uvw == rhs.m_uvw

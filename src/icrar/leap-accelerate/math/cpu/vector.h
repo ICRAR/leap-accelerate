@@ -37,6 +37,7 @@ namespace cpu
     * @brief Performs vector addition of equal length vectors
     *
     * @tparam T vector value type
+    * @param n size of vector <code>x1</code> and <code>x2</code>
     * @param x1 left vector
     * @param x2 right vector
     * @param y out vector
@@ -110,7 +111,7 @@ namespace cpu
      * @tparam T 
      * @param matrix the referenced matrix to select from
      * @param rowIndices a range of row indices to select
-     * @param column a valid column index 
+     * @param range a valid column range
      */
     template<typename Matrix>
     Eigen::IndexedView<Matrix, Eigen::VectorXi, Eigen::internal::AllRange<-1>>

@@ -43,7 +43,7 @@ namespace cpu
     /**
      * @brief Calculates the PseudoInverse matrix of size N * M for a given M * N matrix.
      * Satisfies the equation A = A * Ah * A
-     * @param A 
+     * @param a
      * @param epsilon 
      * @return Matrix_T
      */
@@ -66,7 +66,7 @@ namespace cpu
      * 
      * The output will be the inverse matrix to cross with the observation vector.
      * 
-     * @param A
+     * @param a
      */
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)

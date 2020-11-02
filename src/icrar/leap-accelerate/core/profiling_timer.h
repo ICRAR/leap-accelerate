@@ -30,6 +30,11 @@
 
 namespace icrar
 {
+    /**
+     * @brief Timer utility for minimal overhead profiling via
+     * the use of PROFILING macro.
+     * 
+     */
     class profiling_timer
     {
         std::chrono::high_resolution_clock::time_point m_start;
@@ -44,6 +49,10 @@ namespace icrar
 #endif
         }
         
+        /**
+         * @brief Starts the timer by recording the start time 
+         * 
+         */
         inline void start()
         {
 #ifdef PROFILING
@@ -51,6 +60,10 @@ namespace icrar
 #endif
         }
         
+        /**
+         * @brief Stops the timer by recording the stop time
+         * 
+         */
         inline void stop()
         {
 #ifdef PROFILING
@@ -58,6 +71,10 @@ namespace icrar
 #endif
         }
         
+        /**
+         * @brief Restarts the timer
+         * 
+         */
         inline void restart()
         {
 #ifdef PROFILING
@@ -66,6 +83,10 @@ namespace icrar
 #endif
         }
 
+        /**
+         * @brief Records the trace time
+         * 
+         */
 #ifdef PROFILING
         inline void log(std::string entryName) const
         {

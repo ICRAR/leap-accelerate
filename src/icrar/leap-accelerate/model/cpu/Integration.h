@@ -58,7 +58,7 @@ namespace cpu
     class MeasurementSet;
 
     /**
-     * @brief 
+     * @brief Contains visibilities and uvws between a specified baseline range for integration during phase rotation.
      * 
      */
     class Integration
@@ -77,8 +77,8 @@ namespace cpu
             };
         };
 
-        std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
-        Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
+        std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl], alternatively use Eigen::MatrixX3d
+        Eigen::Tensor<std::complex<double>, 3> m_visibilities; //[npol][nbl][nch]
 
     public:
         /**
@@ -117,14 +117,14 @@ namespace cpu
          * 
          * @return Eigen::Tensor<std::complex<double>, 3>& 
          */
-        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_data; }
+        const Eigen::Tensor<std::complex<double>, 3>& GetVis() const { return m_visibilities; }
 
         /**
          * @brief Get the Visibilities object of size (polarizations, baselines, channels)
          * 
          * @return Eigen::Tensor<std::complex<double>, 3>& 
          */
-        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_data; }
+        Eigen::Tensor<std::complex<double>, 3>& GetVis() { return m_visibilities; }
 
         friend class icrar::cuda::DeviceIntegration;
     };

@@ -71,7 +71,6 @@ namespace icrar
 {
 namespace casalib
 {
-    // leap_remote_calibration
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)

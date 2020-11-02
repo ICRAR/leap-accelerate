@@ -28,16 +28,32 @@
 
 namespace icrar
 {
+    /**
+     * @brief base class for icrar project exceptions 
+     * 
+     */
     class exception : public std::exception
     {
         std::string m_message;
 
     public:
+        /**
+         * @brief Construct a new exception object
+         * 
+         * @param msg exception message
+         * @param file file name (use macro __FILE__)
+         * @param line line number (use __LINE__)
+         */
         exception(std::string msg, std::string file, int line);
 
         virtual const char* what() const noexcept override;
     };
 
+    /**
+     * @brief Exception that indicates an argument passed into
+     * a function or methode is in an invalid state.
+     * 
+     */
     class invalid_argument_exception : public icrar::exception
     {
     public:
@@ -46,6 +62,11 @@ namespace icrar
         { }
     };
 
+    /**
+     * @brief Exception that indicates that a file read by a
+     * function or method is in an invalid state.
+     * 
+     */
     class file_exception : public icrar::exception
     {
     public:
@@ -54,6 +75,11 @@ namespace icrar
         { }
     };
 
+    /**
+     * @brief Exception that indicates that a json
+     * string has an invalid schema.
+     * 
+     */
     class json_exception : public icrar::exception
     {
     public:
@@ -62,6 +88,11 @@ namespace icrar
         { }
     };
 
+    /**
+     * @brief Exception that indicates that an unplanned
+     * edge case has been reached
+     * 
+     */
     class not_implemented_exception : public icrar::exception
     {
     public:

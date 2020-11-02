@@ -45,7 +45,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 namespace icrar
 {
     /**
-     * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 
+     * @brief Returns of true if all vector elements of @c lhs are within the threshold difference to @c rhs 
      * 
      * @tparam T 
      * @param lhs 
@@ -77,7 +77,8 @@ namespace icrar
      * 
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)
-     * @param vector 
+     * @param vector container to map values from and to
+     * @param lambda the mutator to apply to each element of @c vector
      * @return std::vector<R> 
      */
     template<typename T, typename Op>

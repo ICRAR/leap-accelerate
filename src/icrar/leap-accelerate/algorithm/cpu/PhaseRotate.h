@@ -61,36 +61,38 @@ namespace icrar
 namespace cpu
 {
     class MetaData;
-    
-    using CalibrateResult = std::pair<
-        std::vector<std::vector<IntegrationResult>>,
-        std::vector<std::vector<CalibrationResult>>
-    >;
 
     /**
-     * @brief 
+     * @brief Performs LEAP calibration for stations in @c ms for
+     * each direction in @c directions
      * 
+     * @param ms the measurement set
+     * @param directions the directions to calibrate for
+     * @return CalibrateResult 
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<MVDirection>& directions);
 
     /**
-     * @brief 
+     * @brief Calculates calibrations required to change the phase centre of an observation
+     * by rotating visibilities and performing phase detection.
      * 
      * @param metadata 
-     * @param directions 
+     * @param direction 
      * @param input 
+     * @param output_integrations 
+     * @param output_calibrations 
      */
     void PhaseRotate(
         MetaData& metadata,
-        const MVDirection& directions,
+        const MVDirection& direction,
         std::vector<Integration>& input,
         std::vector<IntegrationResult>& output_integrations,
         std::vector<CalibrationResult>& output_calibrations);
 
     /**
-     * @brief Performs averaging over each baseline, channel and polarization.
+     * @brief Performs averaging of integration and metadata to populate @c metadata.avg_data
      * 
      * @param integration 
      * @param metadata 

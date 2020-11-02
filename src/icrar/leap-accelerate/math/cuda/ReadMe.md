@@ -1,4 +1,4 @@
-# leap-accelerate cuda
+# leap-accelerate cuda {#leap-accelerate-cuda}
 
 This module within leap-accelerate provides cuda acceleration for common math and algorithmic operations.
 

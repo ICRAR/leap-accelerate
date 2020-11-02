@@ -37,8 +37,8 @@ namespace casalib
     , channels(channels)
     , baselines(baselines)
     {
-        data = ms.GetVis(index, 0, channels, baselines, polarizations);
         uvw = ToCasaUVWVector(ms.GetCoords(index, baselines));
+        data = ms.GetVis(index, 0, channels, baselines, polarizations);
     }
 
     bool Integration::operator==(const Integration& rhs) const

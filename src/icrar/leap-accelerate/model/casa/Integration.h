@@ -45,25 +45,16 @@ namespace casalib
 {
     class MeasurementSet;
 
+    /**
+     * @brief Contains visibilities and uvws between a specified baseline range for integration during phase rotation.
+     * 
+     */
     class Integration
     {
     public:
-        /**
-         * @brief Construct a new Integration object
-         * 
-         * @param integrationNumber the id of the integration
-         * @param ms 
-         * @param index the row index of the uvw
-         * @param channels the number of channels
-         * @param baselines the number of baselines
-         * @param polarizations the number of polarizations
-         */
-        Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
-
-        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[npol][nbl][nch]
-
-        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
         int integration_number;
+        std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[npol][nbl][nch]
 
         union
         {
@@ -76,6 +67,18 @@ namespace casalib
                 size_t baselines;
             };
         };
+
+        /**
+         * @brief Construct a new Integration object
+         * 
+         * @param integrationNumber the id of the integration
+         * @param ms 
+         * @param index the row index of the uvw
+         * @param channels the number of channels
+         * @param baselines the number of baselines
+         * @param polarizations the number of polarizations
+         */
+        Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
 
         bool operator==(const Integration& rhs) const;
     };

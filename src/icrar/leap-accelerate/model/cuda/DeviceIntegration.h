@@ -62,7 +62,7 @@ namespace cuda
     class DeviceIntegration
     {
         int m_integrationNumber;
-        device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
+        device_tensor3<std::complex<double>> m_visibilities; // [polarizations][baselines][channels]
 
         union
         {
@@ -75,13 +75,15 @@ namespace cuda
                 size_t baselines;
             };
         };
+
     public:
+
         /**
-         * @brief Construct a new Device Integration object where visibilities is a zero tensor of @shape 
+         * @brief Construct a new Device Integration object where visibilities is a zero tensor of shape <code>visibilitiesShape</code> 
          * 
-         * @param shape 
+         * @param visibilitiesShape shape of the empty visibility tensor to initialize.
          */
-        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> visibilitiesShape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy

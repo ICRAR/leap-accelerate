@@ -36,6 +36,13 @@
 
 namespace icrar
 {
+    /**
+     * @brief Computes the transpose of @c matrix
+     * 
+     * @tparam T 
+     * @param matrix 
+     * @return casacore::Matrix<T> 
+     */
     template<typename T>
     casacore::Matrix<T> Transpose(const casacore::Matrix<T> matrix)
     {
@@ -71,6 +78,14 @@ namespace icrar
         return equal;
     }
 
+    /**
+     * @brief Determines whether both arrays contain identical values.
+     * 
+     * @tparam T type
+     * @param l left argument
+     * @param r right argument
+     * @return true if identical, false otherwise
+     */
     template<typename T> 
     bool Equal(const casacore::Array<T>& l, const casacore::Array<T>& r)
     {
@@ -87,7 +102,8 @@ namespace icrar
      * 
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)
-     * @param vector 
+     * @param matrix container to map values from and to
+     * @param lambda the mutator to apply to each element of @c matrix
      * @return std::vector<R> 
      */
     template<typename T, typename Op>
@@ -106,7 +122,8 @@ namespace icrar
      * 
      * @tparam T The input vector template type
      * @tparam function of signature R(const T&)
-     * @param vector 
+     * @param vector container to map values from and to
+     * @param lambda the mutator to apply to each element of @c vector
      * @return std::vector<R> 
      */
     template<typename T, typename Op>
@@ -120,12 +137,19 @@ namespace icrar
         return result;
     }
     
+    /**
+     * @brief Fills an array with <code>value</code>
+     * 
+     * @tparam T 
+     * @param array array to fill
+     * @param value value to set
+     */
     template<typename T>
-    void ArrayFill(casacore::Array<T>& value, T v)
+    void ArrayFill(casacore::Array<T>& array, T value)
     {
-        for(auto it = value.begin(); it != value.end(); it++)
+        for(auto it = array.begin(); it != array.end(); it++)
         {
-            *it = v;
+            *it = value;
         }
     }
 

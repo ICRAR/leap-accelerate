@@ -37,7 +37,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief An object that represents a matrix memory buffer on a cuda device.
      * 
      * @tparam T 
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
@@ -53,11 +53,11 @@ namespace cuda
     public:
 
         /**
-         * @brief Construct a new device buffer object
+         * @brief Construct a new device buffer object of shape <code>[rows, cols]</code> (column major)
          * 
-         * @param rows 
-         * @param cols
-         * @param data 
+         * @param rows number of rows to allocate
+         * @param cols number of cols to allocate
+         * @param data raw pointer to buffer to initialize with, uninitialized buffer if null
          */
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)
@@ -76,9 +76,19 @@ namespace cuda
             }
         }
 
+        /**
+         * @brief Construct a new device matrix object identical to the provided matrix
+         * 
+         * @param data 
+         */
         device_matrix(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> data)
         : device_matrix(data.rows(), data.cols(), data.data()) {}
 
+        /**
+         * @brief Construct a new device matrix object identical to the provided matrix
+         * 
+         * @param data 
+         */
         template<int Rows, int Cols>
         device_matrix(Eigen::Matrix<T, Rows, Cols> data)
         : device_matrix(Rows, Cols, data.data()) {}
@@ -106,31 +116,59 @@ namespace cuda
             }
         }
 
+        /**
+         * @brief Gets the pointer the gpu memory address 
+         * 
+         * @return pointer to the buffer gpu memory address 
+         */
         __host__ __device__ T* Get()
         {
             return m_buffer;
         }
 
+        /**
+         * @see device_matrix::Get
+         */
         __host__ __device__ const T* Get() const
         {
             return m_buffer;
         }
 
+        /**
+         * @brief Get the number of rows in the buffer
+         * 
+         * @return number of rows in the buffer
+         */
         __host__ __device__ size_t GetRows() const
         {
             return m_rows;
         }
 
+        /**
+         * @brief Get the number of cols in the buffer
+         * 
+         * @return number of cols in the buffer
+         */
         __host__ __device__ size_t GetCols() const
         {
             return m_cols;
         }
 
+        /**
+         * @brief Gets the total number elements in the matrix buffer (e.g. rows * cols)
+         * 
+         * @return total number of elements
+         */
         __host__ __device__ size_t GetCount() const
         {
             return m_rows * m_cols;
         }
 
+        /**
+         * @brief Gets the total number of bytes used by the matrix buffer
+         * 
+         * @return total number of bytes 
+         */
         __host__ __device__ size_t GetSize() const
         {
             return GetCount() * sizeof(T);
@@ -162,6 +200,12 @@ namespace cuda
             DebugCudaErrors();
         }
 
+        /**
+         * @brief Copies data from the device buffer to host (cpu) memory
+         * 
+         * @param out preallocated memory of at least @ref device_matrix::GetSize
+         * @return __host__ 
+         */
         __host__ void ToHost(T* out) const
         {
             size_t bytes = GetSize();

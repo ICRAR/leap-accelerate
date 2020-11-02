@@ -39,6 +39,9 @@ namespace icrar
 {
 namespace casalib
 {
+    /**
+     * @see cpu::IntegrationResult
+     */
     class IntegrationResult
     {
         casacore::MVDirection m_direction;
@@ -62,6 +65,9 @@ namespace casalib
         int GetIntegrationNumber() const { return m_integration_number; }
     };
 
+    /**
+     * @see cpu::CalibrationResult
+     */
     class CalibrationResult
     {
         casacore::MVDirection m_direction;

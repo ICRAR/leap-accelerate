@@ -41,7 +41,7 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief An object that represents a vector memory buffer on a cuda device.
      * 
      * @tparam T 
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
@@ -58,8 +58,8 @@ namespace cuda
         /**
          * @brief Construct a new device buffer object
          * 
-         * @param size 
-         * @param data 
+         * @param count number of elements of type T in the buffer
+         * @param data pointer to an existing raw array to copy to device. Not copied if null.
          */
         device_vector(size_t count, const T* data = nullptr)
         : m_count(count)
@@ -76,10 +76,25 @@ namespace cuda
             }
         }
 
+        /**
+         * @brief Construct a new device vector object from a std::vector buffer
+         * 
+         * @param data 
+         */
         device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
 
+        /**
+         * @brief Construct a new device vector object from an eigen3 vector
+         * 
+         * @param data 
+         */
         device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
 
+        /**
+         * @brief Construct a new device vector object from an eigen3 vector
+         * 
+         * @param data 
+         */
         device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
 
         /**

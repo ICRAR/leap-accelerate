@@ -28,7 +28,7 @@
 namespace icrar
 {
     /**
-     * @brief returns a linear sequence of values from start at step
+     * @brief returns a linear sequence of values from @c start to @c stop at incrmements of @c step
      * 
      * @tparam IntType 
      * @param start 
@@ -85,8 +85,8 @@ namespace icrar
     /**
      * @brief Converts a unit catersian direction to polar coordinates
      * 
-     * @param cartesian 
+     * @param cartesian 3-d cartesion coordinate/vector
      * @return Eigen::Vector2d 
      */
-    Eigen::Vector2d ToPolar(const MVDirection& xyz);
+    Eigen::Vector2d ToPolar(const MVDirection& cartesian);
 }
