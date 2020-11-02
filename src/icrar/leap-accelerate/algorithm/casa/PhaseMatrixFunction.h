@@ -26,6 +26,8 @@
 #include <casacore/casa/Arrays/Matrix.h>
 #include <casacore/casa/Arrays/Vector.h>
 
+#include <utility>
+
 namespace icrar
 {
 namespace casalib
