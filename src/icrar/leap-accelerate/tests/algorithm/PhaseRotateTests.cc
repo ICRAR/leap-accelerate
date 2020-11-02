@@ -249,22 +249,22 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedConstants.dlm_dec, metadataOutput.GetConstants().dlm_dec);
             ASSERT_TRUE(expectedConstants == metadataOutput.GetConstants());        
             
-            EXPECT_DOUBLE_EQ(expectedDD(0,0), metadataOutput.dd(0,0));
-            EXPECT_DOUBLE_EQ(expectedDD(0,1), metadataOutput.dd(0,1));
-            EXPECT_DOUBLE_EQ(expectedDD(0,2), metadataOutput.dd(0,2));
-            EXPECT_DOUBLE_EQ(expectedDD(1,0), metadataOutput.dd(1,0));
-            EXPECT_DOUBLE_EQ(expectedDD(1,1), metadataOutput.dd(1,1));
-            EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.dd(1,2));
-            EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.dd(2,0));
-            EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.dd(2,1));
-            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));
+            EXPECT_DOUBLE_EQ(expectedDD(0,0), metadataOutput.GetDD()(0,0));
+            EXPECT_DOUBLE_EQ(expectedDD(0,1), metadataOutput.GetDD()(0,1));
+            EXPECT_DOUBLE_EQ(expectedDD(0,2), metadataOutput.GetDD()(0,2));
+            EXPECT_DOUBLE_EQ(expectedDD(1,0), metadataOutput.GetDD()(1,0));
+            EXPECT_DOUBLE_EQ(expectedDD(1,1), metadataOutput.GetDD()(1,1));
+            EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.GetDD()(1,2));
+            EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.GetDD()(2,0));
+            EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.GetDD()(2,1));
+            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.GetDD()(2,2));
 
-            ASSERT_EQ(8001, metadataOutput.avg_data.rows());
-            ASSERT_EQ(4, metadataOutput.avg_data.cols());
-            ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.avg_data(1,0), THRESHOLD);
-            ASSERT_EQCD(237.735520799299 + 123.628127794715i, metadataOutput.avg_data(1,1), THRESHOLD);
-            ASSERT_EQCD(3.57682429815259 + -75.3381937487565i, metadataOutput.avg_data(1,2), THRESHOLD);
-            ASSERT_EQCD(-168.342543770758 + -87.1917020804175i, metadataOutput.avg_data(1,3), THRESHOLD);
+            ASSERT_EQ(8001, metadataOutput.GetAvgData().rows());
+            ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
+            ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
+            ASSERT_EQCD(237.735520799299 + 123.628127794715i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
+            ASSERT_EQCD(3.57682429815259 + -75.3381937487565i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
+            ASSERT_EQCD(-168.342543770758 + -87.1917020804175i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)

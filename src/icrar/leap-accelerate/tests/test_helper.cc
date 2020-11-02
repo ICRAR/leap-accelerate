@@ -193,8 +193,8 @@ void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::
     ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
     ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
-    ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
-    ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);
+    ASSERT_MEQ3D(expected.GetDD(), actual.GetDD(), THRESHOLD);
+    ASSERT_MEQCD(expected.GetAvgData(), actual.GetAvgData(), THRESHOLD);
     
     // TODO: ensure these copy correctly
     //ASSERT_EQ(expected.direction, actual.direction);
