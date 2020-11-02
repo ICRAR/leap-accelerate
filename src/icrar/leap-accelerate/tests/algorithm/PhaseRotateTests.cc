@@ -224,7 +224,6 @@ namespace icrar
             expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
 
             auto expectedConstants = icrar::cpu::Constants();
-            expectedConstants.nantennas = 0;
             expectedConstants.nbaselines = 8001;
             expectedConstants.channels = 48;
             expectedConstants.num_pols = 4;
@@ -245,7 +244,6 @@ namespace icrar
             //========
             // ASSERT
             //========
-            EXPECT_DOUBLE_EQ(expectedConstants.nantennas, metadataOutput.GetConstants().nantennas);
             EXPECT_DOUBLE_EQ(expectedConstants.nbaselines, metadataOutput.GetConstants().nbaselines);
             EXPECT_DOUBLE_EQ(expectedConstants.channels, metadataOutput.GetConstants().channels);
             EXPECT_DOUBLE_EQ(expectedConstants.num_pols, metadataOutput.GetConstants().num_pols);
@@ -259,22 +257,22 @@ namespace icrar
             EXPECT_DOUBLE_EQ(expectedConstants.dlm_dec, metadataOutput.GetConstants().dlm_dec);
             ASSERT_TRUE(expectedConstants == metadataOutput.GetConstants());        
             
-            EXPECT_DOUBLE_EQ(expectedDD(0,0), metadataOutput.dd(0,0));
-            EXPECT_DOUBLE_EQ(expectedDD(0,1), metadataOutput.dd(0,1));
-            EXPECT_DOUBLE_EQ(expectedDD(0,2), metadataOutput.dd(0,2));
-            EXPECT_DOUBLE_EQ(expectedDD(1,0), metadataOutput.dd(1,0));
-            EXPECT_DOUBLE_EQ(expectedDD(1,1), metadataOutput.dd(1,1));
-            EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.dd(1,2));
-            EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.dd(2,0));
-            EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.dd(2,1));
-            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.dd(2,2));
+            EXPECT_DOUBLE_EQ(expectedDD(0,0), metadataOutput.GetDD()(0,0));
+            EXPECT_DOUBLE_EQ(expectedDD(0,1), metadataOutput.GetDD()(0,1));
+            EXPECT_DOUBLE_EQ(expectedDD(0,2), metadataOutput.GetDD()(0,2));
+            EXPECT_DOUBLE_EQ(expectedDD(1,0), metadataOutput.GetDD()(1,0));
+            EXPECT_DOUBLE_EQ(expectedDD(1,1), metadataOutput.GetDD()(1,1));
+            EXPECT_DOUBLE_EQ(expectedDD(1,2), metadataOutput.GetDD()(1,2));
+            EXPECT_DOUBLE_EQ(expectedDD(2,0), metadataOutput.GetDD()(2,0));
+            EXPECT_DOUBLE_EQ(expectedDD(2,1), metadataOutput.GetDD()(2,1));
+            EXPECT_DOUBLE_EQ(expectedDD(2,2), metadataOutput.GetDD()(2,2));
 
-            ASSERT_EQ(8001, metadataOutput.avg_data.rows());
-            ASSERT_EQ(4, metadataOutput.avg_data.cols());
-            ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.avg_data(1,0), THRESHOLD);
-            ASSERT_EQCD(237.735520799299 + 123.628127794715i, metadataOutput.avg_data(1,1), THRESHOLD);
-            ASSERT_EQCD(3.57682429815259 + -75.3381937487565i, metadataOutput.avg_data(1,2), THRESHOLD);
-            ASSERT_EQCD(-168.342543770758 + -87.1917020804175i, metadataOutput.avg_data(1,3), THRESHOLD);
+            ASSERT_EQ(8001, metadataOutput.GetAvgData().rows());
+            ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
+            ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
+            ASSERT_EQCD(237.735520799299 + 123.628127794715i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
+            ASSERT_EQCD(3.57682429815259 + -75.3381937487565i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
+            ASSERT_EQCD(-168.342543770758 + -87.1917020804175i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)
@@ -319,13 +317,13 @@ namespace icrar
             //select the first epoch only
             casacore::Vector<double> time = msmc->time().getColumn();
             double epoch = time[0];
-            int nEpochs = 0;
+            int epochRows = 0;
             for(size_t i = 0; i < time.size(); i++)
             {
-                if(time[i] == epoch) nEpochs++;
+                if(time[i] == epoch) epochRows++;
             }
 
-            const int aSize = nEpochs;
+            const int aSize = epochRows;
             auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 

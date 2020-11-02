@@ -63,13 +63,13 @@ namespace cuda
     public:
         icrar::cpu::Constants constants;
         
-        icrar::cuda::device_matrix<double> A;
-        icrar::cuda::device_vector<int> I;
-        icrar::cuda::device_matrix<double> Ad;
+        device_matrix<double> A;
+        device_vector<int> I;
+        device_matrix<double> Ad;
         
-        icrar::cuda::device_matrix<double> A1;
-        icrar::cuda::device_vector<int> I1;
-        icrar::cuda::device_matrix<double> Ad1;
+        device_matrix<double> A1;
+        device_vector<int> I1;
+        device_matrix<double> Ad1;
     };
 
     /**
@@ -81,33 +81,50 @@ namespace cuda
         DeviceMetaData();
 
         icrar::cpu::Constants constants;
-    public:
+ 
+        device_matrix<double> A;
+        device_vector<int> I;
+        device_matrix<double> Ad;
         
-        icrar::cuda::device_matrix<double> A;
-        icrar::cuda::device_vector<int> I;
-        icrar::cuda::device_matrix<double> Ad;
-        
-        icrar::cuda::device_matrix<double> A1;
-        icrar::cuda::device_vector<int> I1;
-        icrar::cuda::device_matrix<double> Ad1;
+        device_matrix<double> A1;
+        device_vector<int> I1;
+        device_matrix<double> Ad1;
 
 
         // Metadata that is zero'd before execution
-
-        icrar::cuda::device_vector<icrar::MVuvw> oldUVW;
-        icrar::cuda::device_vector<icrar::MVuvw> UVW;
+        device_vector<icrar::MVuvw> oldUVW;
+        device_vector<icrar::MVuvw> UVW;
         icrar::MVDirection direction;
         Eigen::Matrix3d dd;
-        icrar::cuda::device_matrix<std::complex<double>> avg_data;
+        device_matrix<std::complex<double>> avg_data;
 
     public:
+        /**
+         * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
+         * all device buffers
+         * 
+         * @param metadata 
+         */
         DeviceMetaData(const icrar::cpu::MetaData& metadata);
 
         const icrar::cpu::Constants& GetConstants();
 
+        const device_vector<icrar::MVuvw>& GetOldUVW() const { return oldUVW; }
+        const device_vector<icrar::MVuvw>& GetUVW() const { return UVW; }
+        const icrar::MVDirection& GetDirection() const { return direction; }
+        const Eigen::Matrix3d& GetDD() const { return dd; }
+        const device_matrix<std::complex<double>>& GetAvgData() { return avg_data; };
+
         void ToHost(icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;
         void ToHostAsync(icrar::cpu::MetaData& host) const;
+
+        /**
+         * @brief Copies average data to host memory
+         * 
+         * @param host 
+         */
+        void AvgDataToHost(Eigen::MatrixXcd& host) const;
     };
 }
 }

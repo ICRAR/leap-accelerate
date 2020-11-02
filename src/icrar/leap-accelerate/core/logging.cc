@@ -51,12 +51,12 @@ namespace log
         );
 
         //set log filter
-        #ifndef NDEBUG // Release
+        #ifndef NDEBUG // DEBUG
         boost::log::core::get()->set_filter
         (
-            boost::log::trivial::severity >= boost::log::trivial::warning
+            boost::log::trivial::severity >= boost::log::trivial::trace
         );
-        #else // Debug
+        #else // RELEASE
         boost::log::core::get()->set_filter
         (
             boost::log::trivial::severity >= boost::log::trivial::info

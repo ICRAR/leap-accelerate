@@ -54,10 +54,8 @@ namespace casalib
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
-    : nantennas(0)
-    , channels(0)
+    : channels(0)
     , num_pols(0)
-    , nbaselines(ms.GetNumBaselines())
     , stations(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
@@ -85,6 +83,7 @@ namespace casalib
         }
 
         this->stations = ms.GetNumStations();
+        
         // if(pms->nrow() > 0)
         // {
         //     auto time_inc_sec = msc->interval().get(0);
@@ -112,18 +111,18 @@ namespace casalib
 
         //select the first epoch only
         const double epoch = time[0];
-        int nEpochs = 0;
+        int epochRows = 0;
         for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == epoch) nEpochs++;
+            if(time[i] == epoch) epochRows++;
         }
 
         //TODO: these are not equal
         //const int baselines = GetBaselines();
-        //assert(nEpochs == GeBaselines());
+        //assert(epochRows == GeBaselines());
 
         //const int aSize = baselines;
-        const int aSize = nEpochs;
+        const int aSize = epochRows;
 
         auto epochIndices = Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
         // Does this return only the first of the epochs? Which is what is required
@@ -259,7 +258,6 @@ namespace casalib
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_initialized == rhs.m_initialized
-        && nantennas == rhs.nantennas
         && nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols

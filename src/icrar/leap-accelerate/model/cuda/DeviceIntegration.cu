@@ -31,7 +31,7 @@ namespace cuda
 {
     DeviceIntegration::DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape)
     : m_integrationNumber(-1)
-    , m_data(shape[0], shape[1], shape[2])
+    , m_visibilities(shape[0], shape[1], shape[2])
     , index(0)
     , x(0)
     , channels(0)
@@ -42,7 +42,7 @@ namespace cuda
 
     DeviceIntegration::DeviceIntegration(const icrar::cpu::Integration& integration)
     : m_integrationNumber(integration.GetIntegrationNumber())
-    , m_data(integration.GetVis())
+    , m_visibilities(integration.GetVis())
     , index(integration.index)
     , x(integration.x)
     , channels(integration.channels)
@@ -53,28 +53,28 @@ namespace cuda
 
     void DeviceIntegration::SetData(const icrar::cpu::Integration& integration)
     {
-        if(m_data.GetSize() != integration.GetVis().size())
+        if(m_visibilities.GetSize() != integration.GetVis().size())
         {
             std::ostringstream os;
-            os << "tensor size mismatch: device " << m_data.GetDimensions() << "(" << m_data.GetSize() << ")" << "\n";
+            os << "tensor size mismatch: device " << m_visibilities.GetDimensions() << "(" << m_visibilities.GetSize() << ")" << "\n";
             os << "cpu " << integration.GetVis().dimensions() << "(" << integration.GetVis().size() << ")";
             throw icrar::invalid_argument_exception(os.str(), "integration", __FILE__, __LINE__);
         }
 
-        m_data.SetDataAsync(integration.GetVis().data());
+        m_visibilities.SetDataAsync(integration.GetVis().data());
         index = integration.index;
         x = integration.x;
         channels = integration.channels;
         baselines = integration.baselines;
     }
 
-    // void DeviceIntegration::ToHost(cpu::Integration& host) const
-    // {
-    //     data.ToHost(host.GetData());
-    //     host.index = index;
-    //     host.x = x;
-    //     host.channels = channels;
-    //     host.baselines = baselines;
-    // }
+    void DeviceIntegration::ToHost(cpu::Integration& host) const
+    {
+        //m_visibilities.ToHost(host.m_data);
+        host.index = index;
+        host.x = x;
+        host.channels = channels;
+        host.baselines = baselines;
+    }
 }
 }

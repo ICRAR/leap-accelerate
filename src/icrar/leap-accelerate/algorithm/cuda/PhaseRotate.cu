@@ -37,6 +37,8 @@
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
 
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
+
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
@@ -112,7 +114,7 @@ namespace cuda
         {
             BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
             BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
-            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
+            metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
             metadata.CalcUVW(); //TODO: Can be performed in CUDA 
             input_queue[0].SetData(integration);
@@ -145,11 +147,22 @@ namespace cuda
                 integration.GetIntegrationNumber(),
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
+
         BOOST_LOG_TRIVIAL(info) << "Copying Metadata from Device";
-        deviceMetadata.ToHost(hostMetadata);
-        
+        deviceMetadata.AvgDataToHost(hostMetadata.GetAvgData());
+
         BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
-        auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+#ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(hostMetadata.GetAvgData());
+        {
+            std::ofstream file;
+            file.open("avg_data.txt");
+            file << hostMetadata.avg_data << std::endl;
+            file.close();
+        }
+#endif
+
+        auto avg_data_angles = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI1(), 0); // 1st pol only
@@ -157,7 +170,7 @@ namespace cuda
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.GetAvgData().cols());
         Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)
         {
@@ -282,15 +295,15 @@ namespace cuda
         );
 
         //TODO: store polar form in advance
-        const auto polar_direction = icrar::ToPolar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         g_RotateVisibilities<<<gridSize, blockSize>>>(
-            (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
+            (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
-            metadata.dd,
+            metadata.GetDD(),
             make_double2(polar_direction(0), polar_direction(1)),
-            (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
-            (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(),
-            (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
+            (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
+            (double3*)metadata.GetOldUVW().Get(), metadata.GetOldUVW().GetCount(),
+            (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
     }
 }
 }

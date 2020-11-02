@@ -32,11 +32,11 @@ namespace cuda
 {
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
     : constants(metadata.GetConstants())
-    , UVW(metadata.m_UVW)
-    , oldUVW(metadata.m_oldUVW)
-    , dd(metadata.dd)
-    , direction(metadata.direction)
-    , avg_data(metadata.avg_data)
+    , UVW(metadata.GetUVW())
+    , oldUVW(metadata.GetOldUVW())
+    , dd(metadata.GetDD())
+    , direction(metadata.GetDirection())
+    , avg_data(metadata.GetAvgData())
     , A(metadata.GetA())
     , I(metadata.GetI())
     , Ad(metadata.GetAd())
@@ -64,9 +64,14 @@ namespace cuda
 
         oldUVW.ToHost(metadata.m_oldUVW);
         UVW.ToHost(metadata.m_UVW);
-        metadata.direction = direction;
-        metadata.dd = dd;
-        avg_data.ToHost(metadata.avg_data);
+        metadata.m_direction = direction;
+        metadata.m_dd = dd;
+        avg_data.ToHost(metadata.m_avg_data);
+    }
+
+    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
+    {
+        avg_data.ToHost(host);
     }
 
     cpu::MetaData DeviceMetaData::ToHost() const

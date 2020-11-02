@@ -33,13 +33,14 @@
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
+
 #include <icrar/leap-accelerate/core/logging.h>
 #include <icrar/leap-accelerate/core/profiling_timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
-
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/casa/Quanta/MVuvw.h>
 
@@ -127,7 +128,7 @@ namespace cpu
             BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
-            metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
+            metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
 
@@ -152,17 +153,26 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
-        
-        BOOST_LOG_TRIVIAL(info) << "Calculating Calibration";
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });    
+
+#ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(metadata.GetAvgData());
+        {
+            std::ofstream file;
+            file.open("avg_data.txt");
+            file << metadata.avg_data << std::endl;
+            file.close();
+        }
+#endif
+
+        auto avg_data_angles = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-        // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
+        // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
@@ -186,7 +196,7 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::ToPolar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
@@ -229,7 +239,7 @@ namespace cpu
                 {
                     for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
-                        metadata.avg_data(md_baseline, polarization) += integration_data(polarization, baseline, channel);
+                        metadata.GetAvgData()(md_baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
                 }
             }

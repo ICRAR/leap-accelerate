@@ -48,8 +48,6 @@ namespace cpu
         }
 
         Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
-        int STATIONS = A.cols(); //TODO verify correctness
-
         Eigen::VectorXi I = Eigen::VectorXi(a1.size());
         I.setConstant(-1);
 
@@ -76,19 +74,11 @@ namespace cpu
 
         A(k, refAnt) = 1;
         k++;
-        
-        auto Atemp = Eigen::MatrixXd(k-1, STATIONS);
-        Atemp = A(Eigen::seqN(0, k-1), Eigen::seqN(0, STATIONS));
-        A.resize(0,0);
-        A = Atemp;
 
-        auto Itemp = Eigen::VectorXi(k-1);
-        Itemp = I(Eigen::seqN(0, k-1));
-        I.resize(0);
-        I = Itemp;
-    
+        A.conservativeResize(k, Eigen::NoChange);
+        I.conservativeResize(k);
 
-        return std::make_pair(A, I);
+        return std::make_pair(std::move(A), std::move(I));
     }
 }
 }

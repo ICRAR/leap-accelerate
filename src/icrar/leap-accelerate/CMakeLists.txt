@@ -2,6 +2,8 @@
 # to the source code
 configure_file(config.h.in config.h)
 
+include("${PROJECT_SOURCE_DIR}/cmake/CUDAConfig.cmake")
+
 include("${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 git_local_changes(GIT_HAS_LOCAL_CHANGES)
@@ -120,15 +122,9 @@ set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 11)
 #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
 target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+configure_cuda_warnings(${TARGET_NAME})
 
-if(CUDA_VERSION_STRING VERSION_GREATER 10)
-  # 2829 annotation on a defaulted function is ignored
-  # 3057 annotation is ignored on a function that is explicitly defaulted
-  # 2929 annotation is ignored on a function that is explicitly defaulted
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
-else()
-  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2829">)
-endif()
+
 #target_link_libraries(${TARGET_NAME} CUDA)
 
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")

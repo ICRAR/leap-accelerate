@@ -81,7 +81,6 @@ namespace icrar
             auto meta = icrar::casalib::MetaData(*rawms);
 
             ASSERT_EQ(false, meta.m_initialized);
-            //ASSERT_EQ(4853, meta.nantennas);
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(128, meta.stations);
@@ -114,10 +113,9 @@ namespace icrar
             auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
-            //ASSERT_EQ(4853, meta.nantennas); // TODO assert
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(126, meta.stations); // TODO 98?
+            ASSERT_EQ(126, meta.stations);
             ASSERT_EQ(8001, meta.GetBaselines());
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);

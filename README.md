@@ -30,6 +30,10 @@ LEAP-Accelerate includes:
 
 `cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_BUILD_TYPE=Debug`
 
+(with tracing):
+
+`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
+
 #### Release
 
 `cd Release`

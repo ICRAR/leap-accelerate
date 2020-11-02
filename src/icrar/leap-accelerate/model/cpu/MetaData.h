@@ -63,7 +63,6 @@ namespace cpu
 {
     struct Constants
     {
-        int nantennas;
         int nbaselines; //the total number station pairs (excluding self cycles) 
 
         int channels; // The number of channels of the current observation
@@ -101,19 +100,36 @@ namespace cpu
         Eigen::VectorXi m_I1;
         Eigen::MatrixXd m_Ad1;
 
-        std::vector<icrar::MVuvw> m_oldUVW; // late initialized
+        std::vector<icrar::MVuvw> m_oldUVW;
         std::vector<icrar::MVuvw> m_UVW; // late initialized
     
+        icrar::MVDirection m_direction; // calibration direction, late initialized
+        Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
+    
     public:
-        icrar::MVDirection direction; // calibration direction, late initialized
-        Eigen::Matrix3d dd; // direction matrix, late initialized
-
-        Eigen::MatrixXcd avg_data; // matrix of size (baselines, polarizations), late initialized
-
-
-        //MetaData(icrar::MeasurementSet& ms);
+        /**
+         * @brief Construct a new MetaData object. SetDD() must be called after construction
+         * 
+         * @param ms 
+         * @param uvws 
+         */
         MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
+
+        /**
+         * @brief Construct a new MetaData object
+         * 
+         * @param ms 
+         * @param direction 
+         * @param uvws 
+         */
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
+        
+        /**
+         * @brief Constructs a MetaData object from an equivalent casa MetaData object
+         * 
+         * @param metadata 
+         */
         MetaData(const casalib::MetaData& metadata);
 
         const Constants& GetConstants() const;
@@ -129,15 +145,20 @@ namespace cpu
         const std::vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
         const std::vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
 
-        
+        const icrar::MVDirection& GetDirection() const { return m_direction; }
+        const Eigen::Matrix3d& GetDD() const { return m_dd; }
         void SetDD(const icrar::MVDirection& direction);
+
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
-        
+
         /**
          * @brief Updates the rotated UVW vector member
          * preconditions - DD is set, oldUVW is set
          */
         void CalcUVW();
+
+        const Eigen::MatrixXcd& GetAvgData() const { return m_avg_data; }
+        Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
 
         bool operator==(const MetaData& rhs) const;
 

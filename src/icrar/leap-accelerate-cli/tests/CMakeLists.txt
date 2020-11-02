@@ -1,5 +1,5 @@
 
-set(TEST_TARGET LeapAccelerateCLI.Tests)
+set(TEST_TARGET_NAME LeapAccelerateCLI.Tests)
 
 set(sources
   main.cc
@@ -9,32 +9,22 @@ set(sources
   E2EPerformanceTests.cc
 )
 
-#configure_file("testdata")
-
-add_executable(${TEST_TARGET}
+add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
 # if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-#   target_precompile_headers(${TEST_TARGET}
+#   target_precompile_headers(${TEST_TARGET_NAME}
 #     PRIVATE
 #       [[pch.h]]
 #   )
 # endif()
 
-# CUDA Options
-if(CUDA_VERSION_STRING VERSION_GREATER 10)
-  # 2829 annotation on a defaulted function is ignored
-  # 3057 annotation is ignored on a function that is explicitly defaulted
-  # 2929 annotation is ignored on a function that is explicitly defaulted
-  target_compile_options(${TEST_TARGET} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=3057,2929">)
-else()
-  target_compile_options(${TEST_TARGET} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe="--diag_suppress=2829">)
-endif()
+configure_cuda_warnings(${TEST_TARGET_NAME})
 
-target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
+target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
 add_test(
-  NAME ${TEST_TARGET}
-  COMMAND ${TEST_TARGET}
+  NAME ${TEST_TARGET_NAME}
+  COMMAND ${TEST_TARGET_NAME}
 )
