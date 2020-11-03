@@ -71,7 +71,7 @@ jobs:
     env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3
 
   - name: doxygencommit
-    if: branch = doxygentest 
+    if: branch = master 
     before_install:
     install:
       - sudo apt-get update && sudo apt-get install -y doxygen && sudo apt-get install -y xsltproc
