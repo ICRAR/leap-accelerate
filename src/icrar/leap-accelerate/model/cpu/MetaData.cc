@@ -37,7 +37,6 @@ namespace cpu
 {
     MetaData::MetaData(const casalib::MetaData& metadata)
     {
-        m_constants.nantennas = metadata.nantennas;
         m_constants.nbaselines = metadata.GetBaselines();
         m_constants.channels = metadata.channels;
         m_constants.num_pols = metadata.num_pols;
@@ -51,7 +50,6 @@ namespace cpu
         m_constants.dlm_dec = metadata.dlm_dec;
 
         m_oldUVW = ToUVWVector(metadata.oldUVW);
-        //m_UVW = ToUVW(metadata.uvw);
 
         m_A = ToMatrix(metadata.A);
         m_I = ToMatrix<int>(metadata.I);
@@ -63,7 +61,7 @@ namespace cpu
 
         if(metadata.dd.is_initialized())
         {
-            dd = ToMatrix<double, 3, 3>(metadata.dd.value());
+            m_dd = ToMatrix<double, 3, 3>(metadata.dd.value());
         }
         else
         {
@@ -72,7 +70,7 @@ namespace cpu
 
         if(metadata.avg_data.is_initialized())
         {
-            avg_data = ToMatrix(metadata.avg_data.value());
+            m_avg_data = ToMatrix(metadata.avg_data.value());
         }
         else
         {
@@ -80,18 +78,12 @@ namespace cpu
         }
     }
 
-    // MetaData::MetaData(icrar::MeasurementSet& ms)
-    // {
-
-    // }
-
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
 
-        m_constants.nantennas = 0;
         m_constants.nbaselines = ms.GetNumBaselines();
 
         m_constants.channels = 0;
@@ -122,18 +114,18 @@ namespace cpu
             }
         }
 
-        avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        BOOST_LOG_TRIVIAL(info) << "avg_data:" << avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        BOOST_LOG_TRIVIAL(info) << "avg_data:" << m_avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
         double epoch = time[0];
-        int nEpochs = 0;
+        int epochRows = 0;
         for(size_t i = 0; i < time.size(); i++)
         {
-            if(time[i] == epoch) nEpochs++;
+            if(time[i] == epoch) epochRows++;
         }
-        auto epochIndices = casacore::Slice(0, nEpochs, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
@@ -148,8 +140,8 @@ namespace cpu
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
 #ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
         {
             std::ofstream file;
             file.open("A1.txt");
@@ -160,8 +152,8 @@ namespace cpu
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
 #ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
         {
             std::ofstream file;
             file.open("A.txt");
@@ -172,8 +164,8 @@ namespace cpu
 
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
 #ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
         {
             std::ofstream file;
             file.open("Ad1.txt");
@@ -184,8 +176,8 @@ namespace cpu
 
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
 #ifdef TRACE
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
         {
             std::ofstream file;
             file.open("Ad.txt");
@@ -228,24 +220,24 @@ namespace cpu
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
-        this->direction = direction;
+        this->m_direction = direction;
 
         Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
-        dd = Eigen::Matrix3d();
-        dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        dd(0,1) = -std::sin(m_constants.dlm_ra);
-        dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        m_dd = Eigen::Matrix3d();
+        m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        m_dd(0,1) = -std::sin(m_constants.dlm_ra);
+        m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
         
-        dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        dd(1,1) = std::cos(m_constants.dlm_ra);
-        dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        m_dd(1,1) = std::cos(m_constants.dlm_ra);
+        m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
 
-        dd(2,0) = -std::sin(m_constants.dlm_dec);
-        dd(2,1) = 0;
-        dd(2,2) = std::cos(m_constants.dlm_dec);
+        m_dd(2,0) = -std::sin(m_constants.dlm_dec);
+        m_dd(2,1) = 0;
+        m_dd(2,2) = std::cos(m_constants.dlm_dec);
     }
 
     void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
@@ -260,7 +252,7 @@ namespace cpu
         m_UVW.reserve(m_oldUVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.push_back(m_oldUVW[n] * dd);
+            m_UVW.push_back(m_oldUVW[n] * m_dd);
         }
     }
 
@@ -275,14 +267,13 @@ namespace cpu
         && m_A1 == rhs.m_A1
         && m_I1 == rhs.m_I1
         && m_Ad1 == rhs.m_Ad1
-        && dd == rhs.dd
-        && avg_data == rhs.avg_data;
+        && m_dd == rhs.m_dd
+        && m_avg_data == rhs.m_avg_data;
     }
 
     bool Constants::operator==(const Constants& rhs) const
     {
-        return nantennas == rhs.nantennas
-        && nbaselines == rhs.nbaselines
+        return nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations
