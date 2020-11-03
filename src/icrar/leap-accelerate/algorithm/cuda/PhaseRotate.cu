@@ -108,6 +108,16 @@ namespace cuda
 
         BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto constantMetadata = std::make_shared<ConstantMetaData>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
+
         input_queue.emplace_back(0, integration.GetVis().dimensions());
 
         for(int i = 0; i < directions.size(); ++i)
@@ -116,11 +126,11 @@ namespace cuda
             BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
             metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA
             input_queue[0].SetData(integration);
 
             BOOST_LOG_TRIVIAL(info) << "Copying Metadata to Device";
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
             BOOST_LOG_TRIVIAL(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
