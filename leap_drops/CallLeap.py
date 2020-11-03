@@ -72,6 +72,9 @@ class CallLeap(BarrierAppDROP):
         commandLine = ['LeapAccelerateCLI', '-f', self.measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions'])]
         #print("commandLine:" + str(commandLine))
 
+        if self.autoCorrelation is not "false":
+            commandLine.append("-a")
+
         if self.DEBUG:
             time.sleep(random.uniform(5,10))
             self.outputs[0].write(json.dumps(commandLine))

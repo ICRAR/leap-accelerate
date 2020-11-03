@@ -24,12 +24,20 @@ from dlg.droputils import DROPFile
 #     \~English The implementation of the LEAP algorithm to use (eigen, casa, cuda)\n
 #     \~Chinese 要读取的起始频率\n
 #     \~
+# @param[in] param/auto_correlation/false/string
+#     \~English Enable auto correlation in the LEAP algorithm\n
+#     \~Chinese 要读取的起始频率\n
+#     \~
 # @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String
 #     \~English The path to the class that implements this app\n
 #     \~Chinese 要读取的起始频率\n
 #     \~
 # @param[in] port/Directions
 #     \~English A CSV file containing directions for calibration
+#     \~Chinese 要读取的起始频率\n
+#     \~
+# @param[out] port/Config
+#     \~English A JSON config containing the specification for running an instance of LeapAccelerateCLI
 #     \~Chinese 要读取的起始频率\n
 #     \~
 # @par EAGLE_END
@@ -43,6 +51,7 @@ class ProduceConfig(BarrierAppDROP):
 
     numStations = dlg_int_param('number of stations', 1)
     implementation = dlg_string_param('eigen', '')
+    autoCorrelation = dlg_int_param('auto correlation', 1)
 
     # should be read from DALiuGE
     #NUMBER_OF_COPIES = 1
@@ -115,5 +124,6 @@ class ProduceConfig(BarrierAppDROP):
         return {
             'numStations': numStations,
             'directions': directions,
-            'implementation': implementation
+            'implementation': implementation,
+            'autoCorrelation': autoCorrelation
         }
