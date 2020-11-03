@@ -79,10 +79,10 @@ namespace icrar
             
         }
 
-        void MultiDirectionTest(ComputeImplementation impl, std::string msname, int stations_override)
+        void MultiDirectionTest(ComputeImplementation impl, std::string msname, boost::optional<int> stations_override, bool readAutocorrelations)
         {
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
-            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, true);
+            ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, readAutocorrelations);
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -117,11 +117,15 @@ namespace icrar
         }
     };
 
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197638568-32.ms", 126); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-32.ms", 126); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197638568-32.ms", 126, true); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-32.ms", 126, true); }
+    TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-32.ms", 126, true); }
 
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197637968.ms", 126); }
-    TEST_F(E2EPerformanceTests, DISABLED_MultiDirectionFullTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197637968.ms", 126); }
+    // These measurements have flagged data removed and complete data for each timestep
+    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-split.ms", 126, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-split.ms", 126, true); }
+    
+    // These measurements are clean and use a single timestep
+    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
 }
