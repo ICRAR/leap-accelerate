@@ -182,6 +182,16 @@ namespace icrar
 
 using namespace icrar;
 
+std::string arg_string(int argc, char** argv)
+{
+    std::stringstream ss;
+    for(int i = 0; i < argc; i++)
+    {
+        ss << argv[i] << " ";
+    }
+    return ss.str();
+}
+
 std::string version_information(const char *name)
 {
     std::ostringstream os;
@@ -196,8 +206,9 @@ std::string version_information(const char *name)
 int main(int argc, char** argv)
 {
     icrar::log::Initialize();
-    CLI::App app { "LEAP-Accelerate" };
-    app.set_version_flag("-v,--version", [&]() { return version_information(argv[0]); });
+    auto appName = "LeapAccelerateCLI";
+    CLI::App app { appName };
+    app.set_version_flag("-v,--version", [&]() { return version_information(appName); });
 
     //Parse Arguments
     Arguments rawArgs;
@@ -208,7 +219,7 @@ int main(int argc, char** argv)
     app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, cpu, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    app.add_option("-a,--read-autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
+    app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
 
     try
     {
@@ -226,6 +237,8 @@ int main(int argc, char** argv)
         //=========================
         // Calibration to std::cout
         //=========================
+        BOOST_LOG_TRIVIAL(info) << version_information(argv[0]);
+        BOOST_LOG_TRIVIAL(info) << arg_string(argc, argv);
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:

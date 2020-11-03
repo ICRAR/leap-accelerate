@@ -1,5 +1,5 @@
 
-set(TEST_TARGET LeapAccelerateCLI.Tests)
+set(TEST_TARGET_NAME LeapAccelerateCLI.Tests)
 
 set(sources
   main.cc
@@ -9,22 +9,22 @@ set(sources
   E2EPerformanceTests.cc
 )
 
-#configure_file("testdata")
-
-add_executable(${TEST_TARGET}
+add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
 # if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-#   target_precompile_headers(${TEST_TARGET}
+#   target_precompile_headers(${TEST_TARGET_NAME}
 #     PRIVATE
 #       [[pch.h]]
 #   )
 # endif()
 
-target_link_libraries(${TEST_TARGET} LeapAccelerate gtest)
+configure_cuda_warnings(${TEST_TARGET_NAME})
+
+target_link_libraries(${TEST_TARGET_NAME} LeapAccelerate gtest)
 
 add_test(
-  NAME ${TEST_TARGET}
-  COMMAND ${TEST_TARGET}
+  NAME ${TEST_TARGET_NAME}
+  COMMAND ${TEST_TARGET_NAME}
 )
