@@ -141,51 +141,19 @@ namespace cpu
 
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
-#ifdef TRACE
-        LOG(trace) << pretty_matrix(m_A1);
-        {
-            std::ofstream file;
-            file.open("A1.txt");
-            file << m_A1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_A1, "A1");
 
         LOG(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
-#ifdef TRACE
-        LOG(trace) << pretty_matrix(m_A);
-        {
-            std::ofstream file;
-            file.open("A.txt");
-            file << m_A << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_A, "A");
 
         LOG(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-#ifdef TRACE
-        LOG(trace) << pretty_matrix(m_Ad1);
-        {
-            std::ofstream file;
-            file.open("Ad1.txt");
-            file << m_Ad1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_Ad1, "Ad1");
 
         LOG(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
-#ifdef TRACE
-        LOG(trace) << pretty_matrix(m_Ad);
-        {
-            std::ofstream file;
-            file.open("Ad.txt");
-            file << m_Ad1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_Ad, "Ad");
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {

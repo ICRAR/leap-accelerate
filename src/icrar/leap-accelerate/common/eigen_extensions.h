@@ -25,11 +25,14 @@
 
 #include <Eigen/Core>
 
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 #include <functional>
 #include <type_traits>
+
+#include "icrar/leap-accelerate/core/logging.h"
 
 constexpr int pretty_width = 12;
 
@@ -102,5 +105,20 @@ namespace icrar
         }
 
         return ss.str();
+    }
+
+    template<typename Matrix>
+    void trace_matrix(const Matrix& value, const std::string &name)
+    {
+        if (LOG_ENABLED(trace))
+        {
+            LOG(trace) << name << ": " << pretty_matrix(value);
+        }
+#ifdef TRACE
+        {
+            std::ofstream file(name + ".txt");
+            file << value << std::endl;
+        }
+#endif
     }
 }

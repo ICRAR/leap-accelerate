@@ -160,15 +160,7 @@ namespace cuda
         deviceMetadata.AvgDataToHost(hostMetadata.GetAvgData());
 
         LOG(info) << "Calibrating on cpu";
-#ifdef TRACE
-        LOG(trace) << "avg_data: " << pretty_matrix(hostMetadata.GetAvgData());
-        {
-            std::ofstream file;
-            file.open("avg_data.txt");
-            file << hostMetadata.avg_data << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(hostMetadata.GetAvgData(), "avg_data");
 
         auto avg_data_angles = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 

@@ -148,16 +148,7 @@ namespace cpu
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
-
-#ifdef TRACE
-        LOG(trace) << "avg_data: " << pretty_matrix(metadata.GetAvgData());
-        {
-            std::ofstream file;
-            file.open("avg_data.txt");
-            file << metadata.GetAvgData() << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
         auto avg_data_angles = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
