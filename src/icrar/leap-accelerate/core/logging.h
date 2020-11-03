@@ -28,12 +28,21 @@ namespace icrar
 {
 namespace log
 {
+
+    /// The default verbosity level with which the logging system is initialized
+    constexpr int DEFAULT_VERBOSITY = 3;
+
     /**
      * @brief Initializes logging singletons
-     * 
+     * @param verbosity The verbosity to initialize the library with, higher
+     * values yield more verbose output.
      */
-    void Initialize();
+    void Initialize(int verbosity=DEFAULT_VERBOSITY);
+
+    /// The logging level set on the application
+    extern ::boost::log::trivial::severity_level logging_level;
 }
 }
 
 #define LOG(X) BOOST_LOG_TRIVIAL(X)
+#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

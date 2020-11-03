@@ -40,11 +40,14 @@ namespace icrar
 {
 namespace log
 {
+
+    ::boost::log::trivial::severity_level logging_level;
+
     /**
      * @brief Initializes logging
      * 
      */
-    void Initialize()
+    void Initialize(int verbosity)
     {
         boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
 
@@ -66,18 +69,14 @@ namespace log
             boost::log::keywords::format = format
         );
 
-        //set log filter
-        #ifndef NDEBUG // DEBUG
-        boost::log::core::get()->set_filter
-        (
-            boost::log::trivial::severity >= boost::log::trivial::trace
-        );
-        #else // RELEASE
-        boost::log::core::get()->set_filter
-        (
-            boost::log::trivial::severity >= boost::log::trivial::info
-        );
-        #endif
+        // low verbosity values mean higher severity levels
+        verbosity = std::min(std::max(verbosity, 0), 5);
+        verbosity = 5 - verbosity;
+        logging_level = boost::log::trivial::severity_level(verbosity);
+        boost::log::core::get()->set_filter([](const boost::log::attribute_value_set &s)
+        {
+            return s["Severity"].extract<boost::log::trivial::severity_level>() >= logging_level;
+        });
     }
 }
 }
