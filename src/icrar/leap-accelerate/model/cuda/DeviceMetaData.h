@@ -138,16 +138,16 @@ namespace cuda
         void SetDirection(const icrar::MVDirection& direction);
         void SetAvgData(int v);
 
-        void ToHost(icrar::cpu::MetaData& host) const;
+        void ToHost(const icrar::cpu::MetaData& host) const;
         icrar::cpu::MetaData ToHost() const;
-        void ToHostAsync(icrar::cpu::MetaData& host) const;
+        void ToHostAsync(const icrar::cpu::MetaData& host) const;
 
         /**
          * @brief Copies average data to host memory
          * 
          * @param host 
          */
-        void AvgDataToHost(Eigen::MatrixXcd& host) const;
+        void AvgDataToHost(const Eigen::MatrixXcd& host) const;
     };
 }
 }

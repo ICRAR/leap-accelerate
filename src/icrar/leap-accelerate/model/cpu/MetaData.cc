@@ -25,7 +25,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>

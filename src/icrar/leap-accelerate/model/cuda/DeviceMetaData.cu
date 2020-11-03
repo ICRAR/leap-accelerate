@@ -21,7 +21,7 @@
  */
 
 #include "DeviceMetaData.h"
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -101,7 +101,7 @@ namespace cuda
         cudaMemset(m_avg_data.Get(), v, m_avg_data.GetSize());
     }
 
-    void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
+    void DeviceMetaData::ToHost(const cpu::MetaData& metadata) const
     {
         m_constantMetadata->ToHost(metadata);
 
@@ -112,7 +112,7 @@ namespace cuda
         m_avg_data.ToHost(metadata.m_avg_data);
     }
 
-    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
+    void DeviceMetaData::AvgDataToHost(const Eigen::MatrixXcd& host) const
     {
         m_avg_data.ToHost(host);
     }
@@ -128,7 +128,7 @@ namespace cuda
         return result;
     }
 
-    void DeviceMetaData::ToHostAsync(cpu::MetaData& host) const
+    void DeviceMetaData::ToHostAsync(const cpu::MetaData& host) const
     {
         throw std::runtime_error("not implemented");
     }

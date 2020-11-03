@@ -24,7 +24,7 @@
 
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 

@@ -25,7 +25,7 @@ set(private_headers
 
     math/casacore_helper.h
     math/math_conversion.h
-    math/math.h
+    math/vector_extensions.h
 )
 set(sources
     ${git_revision_cc}
@@ -42,7 +42,7 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/math.cc
+    math/vector_extensions.cc
     math/math_conversion.cc
     math/casa/vector.cc
     math/casa/matrix.cc
@@ -98,12 +98,12 @@ add_library(
     ${cuda_headers}
 )
 
-if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TARGET_NAME}
-    PRIVATE
-      [[pch.h]]
-  )
-endif()
+#if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+#  target_precompile_headers(${TARGET_NAME}
+#    PRIVATE
+#      [[pch.h]]
+#  )
+#endif()
 
 
 # Request that the target be built with -std=c++11
