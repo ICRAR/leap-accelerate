@@ -12,7 +12,7 @@ leap-accelerate includes:
 * [leap-accelerate-client](@ref leap-accelerate-client) ([file](src/icrar/leap-accelerate-client/ReadMe.md)): a socket client interface for processing data from a LEAP-Cal server
 * [leap-accelerate-server](@ref leap-accelerate-server) ([file](src/icrar/leap-accelerate-server/ReadMe.md)): a socket server interface for dispatching data processing to LEAP-Cal clients
 
-# Build
+## Build
 
 ### Linux
 
