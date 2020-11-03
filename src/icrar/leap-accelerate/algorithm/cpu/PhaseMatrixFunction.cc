@@ -23,6 +23,8 @@
 
 #include "PhaseMatrixFunction.h"
 
+#include <set>
+
 namespace icrar
 {
 namespace cpu

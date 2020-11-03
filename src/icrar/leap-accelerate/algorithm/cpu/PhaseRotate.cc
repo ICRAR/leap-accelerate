@@ -159,7 +159,7 @@ namespace cpu
         {
             std::ofstream file;
             file.open("avg_data.txt");
-            file << metadata.avg_data << std::endl;
+            file << metadata.GetAvgData() << std::endl;
             file.close();
         }
 #endif
