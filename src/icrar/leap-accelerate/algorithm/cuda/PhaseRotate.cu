@@ -282,9 +282,9 @@ namespace cuda
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetData().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.avg_data.GetRows() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
-        assert(constants.num_pols == integration.GetData().GetDimensionSize(0));
+        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
+        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
+        assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
         // block size can any value where the product is 1024
         dim3 blockSize = dim3(128, 8, 1);
