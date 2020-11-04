@@ -43,6 +43,10 @@ namespace cpu
         m_data = Eigen::Tensor<std::complex<double>, 3>(integration.data);
     }
 
+    Integration::Integration(unsigned int integrationNumber, const icrar::MeasurementSet& ms)
+    : Integration(integrationNumber, ms, 0, ms.GetNumChannels(), ms.GetNumBaselines(), ms.GetNumPols())
+    { }
+
     Integration::Integration(
         unsigned int integrationNumber,
         const icrar::MeasurementSet& ms,

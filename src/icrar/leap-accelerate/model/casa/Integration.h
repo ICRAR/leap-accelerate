@@ -51,6 +51,14 @@ namespace casalib
         /**
          * @brief Construct a new Integration object
          * 
+         * @param integrationNumber 
+         * @param ms 
+         */
+        Integration(int integrationNumber, const icrar::MeasurementSet& ms);
+
+        /**
+         * @brief Construct a new Integration object
+         * 
          * @param integrationNumber the id of the integration
          * @param ms 
          * @param index the row index of the uvw

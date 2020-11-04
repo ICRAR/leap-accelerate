@@ -86,6 +86,24 @@ namespace cpu
          */
         Integration(const icrar::casalib::Integration& integration);
         
+        /**
+         * @brief Construct a new Integration object
+         * 
+         * @param integrationNumber 
+         * @param ms 
+         */
+        Integration(unsigned int integrationNumber, const icrar::MeasurementSet& ms);
+
+        /**
+         * @brief Construct a new Integration object
+         * 
+         * @param integrationNumber 
+         * @param ms 
+         * @param index 
+         * @param channels 
+         * @param baselines 
+         * @param polarizations 
+         */
         Integration(
             unsigned int integrationNumber,
             const icrar::MeasurementSet& ms,

@@ -30,6 +30,10 @@ namespace icrar
 {
 namespace casalib
 {
+    Integration::Integration(int integrationNumber, const icrar::MeasurementSet& ms)
+    : Integration(integrationNumber, ms, 0, ms.GetNumChannels(), ms.GetNumBaselines(), ms.GetNumPols())
+    { }
+
     Integration::Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations)
     : integration_number(integrationNumber)
     , index(index)
