@@ -37,17 +37,42 @@ include(lint)
 include(CTest)
 
 # External projects
-if (BUILD_TESTING)
-  #add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
-  # installed as git submodule - if this is your first clone you need to
-  # git submodule init
-  # git submodule update
-  # This is a cmake module and needs no further input from you
+find_package(Git)
+if(GIT_FOUND AND EXISTS "{PROJECT_SOURCE_DIR}/.git")
+  # Update submodules as needed
+  option(GIT_SUBMODULE "Check submodules during build" ON)
+  if(GIT_SUBMODULE)
+      message(STATUS "Submodule update")
+      execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                      RESULT_VARIABLE GIT_SUBMOD_RESULT)
+      if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+          message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+      endif()
+  endif()
+endif()
 
-  #${PROJECT_SOURCE_DIR}
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cmake-modules/dependencies.cmake")
+  message(FATAL_ERROR "Submodule cmake-modules was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/CLI11/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule CLI11 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule gtest-1.8.1 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule rapidjson-1.1.0 was not downloaded! Please update submodules and try again.")
+endif()
+
+
+if (BUILD_TESTING)
   #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
-  add_subdirectory(external/gtest-1.8.1)
+  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
   enable_testing()
   
   include(GoogleTest)
