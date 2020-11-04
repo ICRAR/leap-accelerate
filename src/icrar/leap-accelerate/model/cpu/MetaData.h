@@ -54,6 +54,7 @@ namespace icrar
 namespace cuda
 {
     class DeviceMetaData;
+    class ConstantMetaData;
 }
 }
 
@@ -163,6 +164,7 @@ namespace cpu
         bool operator==(const MetaData& rhs) const;
 
         friend class icrar::cuda::DeviceMetaData;
+        friend class icrar::cuda::ConstantMetaData;
     };
     }
 }

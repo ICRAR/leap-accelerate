@@ -113,6 +113,16 @@ namespace cuda
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto constantMetadata = std::make_shared<ConstantMetaData>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
+
         input_queue.emplace_back(0, integration.GetVis().dimensions());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
@@ -123,11 +133,11 @@ namespace cuda
             LOG(info) << "Setting Metadata";
             metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA
             input_queue[0].SetData(integration);
 
             LOG(info) << "Copying Metadata to Device";
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
             LOG(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
