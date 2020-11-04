@@ -141,7 +141,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "A1 Matrix " << pretty_matrix(m_A1);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
         {
             std::ofstream file;
             file.open("A1.txt");
@@ -153,7 +153,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "A Matrix " << pretty_matrix(m_A);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
         {
             std::ofstream file;
             file.open("A.txt");
@@ -165,7 +165,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "Ad1 Matrix " << pretty_matrix(m_Ad1);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
         {
             std::ofstream file;
             file.open("Ad1.txt");
@@ -177,7 +177,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "Ad Matrix " << pretty_matrix(m_Ad);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
         {
             std::ofstream file;
             file.open("Ad.txt");
