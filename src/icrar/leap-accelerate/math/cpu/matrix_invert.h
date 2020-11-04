@@ -71,7 +71,7 @@ namespace cpu
     template<typename T>
     Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a)
     {
-        return SVDPseudoInverse(a);
+        return a.transpose();
     }
 }
 }

@@ -22,6 +22,7 @@
 
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
+#include <icrar/leap-accelerate/core/logging.h>
 
 namespace icrar
 {
@@ -42,20 +43,31 @@ namespace icrar
     , m_readAutocorrelations(readAutocorrelations)
     {
         m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
+
+        //Validate number of baselines
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        double epoch = time[0];
+        int epochRows = 0;
+        for(size_t i = 0; i < time.size(); i++)
+        {
+            if(time[i] == epoch) epochRows++;
+        }
+
+        if(GetNumRows() < GetNumBaselines())
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >=" << GetNumBaselines() << ", got " << GetNumRows();
+            throw icrar::file_exception(GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
+        if(GetNumRows() % GetNumBaselines() != 0)
+        {
+            BOOST_LOG_TRIVIAL(warning) << "number of rows not an integer multiple of number of baselines";
+            BOOST_LOG_TRIVIAL(warning) << "baselines: " << GetNumBaselines()
+                                       << " rows: " << GetNumRows()
+                                       << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
+        }
     }
-
-    // MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations)
-    // {
-    //     // don't skip the whitespace while reading
-    //     std::cin >> std::noskipws;
-
-    //     // use stream iterators to copy the stream to a string
-    //     std::istream_iterator<char> it(std::cin);
-    //     std::istream_iterator<char> end;
-    //     std::string results = std::string(it, end);
-        
-    //     m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    // }
 
     unsigned int MeasurementSet::GetNumRows() const
     {

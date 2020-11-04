@@ -62,10 +62,9 @@ namespace icrar
      */
     class PhaseRotateTests : public ::testing::Test
     {
-        std::unique_ptr<icrar::MeasurementSet> ms;
+        std::unique_ptr<icrar::MeasurementSet> m_ms;
 
     protected:
-
         PhaseRotateTests() {
 
         }
@@ -77,8 +76,7 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126, true);
+            m_ms = std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/1197638568-32.ms", 126, true);
             std::cout << std::setprecision(15);
         }
 
@@ -87,11 +85,11 @@ namespace icrar
             
         }
 
-        void PhaseRotateTest(ComputeImplementation impl)
+        void PhaseRotateTest(ComputeImplementation impl, std::unique_ptr<icrar::MeasurementSet> ms)
         {
-            const double THRESHOLD = 1e-12;
+            m_ms = std::move(ms);
 
-            auto metadata = icrar::casalib::MetaData(*ms);
+            const double THRESHOLD = 1e-12;
 
             std::vector<casacore::MVDirection> directions =
             {
@@ -104,30 +102,30 @@ namespace icrar
                 //{ -0.17001324965728973,-0.28595644149463484 },
                 //{ -0.7129444556035118,-0.365286407171852 },
                 //{ -0.1512764129166089,-0.21161026349648748 }
-
             };
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
             if(impl == ComputeImplementation::casa)
             {
-                auto pair = icrar::casalib::Calibrate(*ms, directions);
+                auto pair = icrar::casalib::Calibrate(*m_ms, directions);
                 std::tie(integrations, calibrations) = cpu::ToCalibrateResult(pair);
             }
             else if(impl == ComputeImplementation::cpu)
             {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions));
+                std::tie(integrations, calibrations) = cpu::Calibrate(*m_ms, ToDirectionVector(directions));
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions));
+                std::tie(integrations, calibrations) = cuda::Calibrate(*m_ms, ToDirectionVector(directions));
             }
             else
             {
                 throw std::invalid_argument("impl");
             }
 
-            auto expected = GetExpectedCalibration();
+            auto expected = GetExpectedCalibration(m_ms->GetFilepath().get());
+
 
             ASSERT_EQ(directions.size(), calibrations.size());
             for(size_t i = 0; i < expected.size(); i++)
@@ -139,15 +137,15 @@ namespace icrar
                 ASSERT_EQ(1, calibrations[i].size());
                 const auto& result = calibrations[i].front();
                 ASSERT_EQ(1, result.GetData().size());
-
-                //TODO: assert with LEAP-Cal
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
 
+                //print out matrix
                 if(!ToVector(expectedCalibration).isApprox(ToMatrix(result.GetData()[0]), THRESHOLD))
                 {
                     std::cout << i+1 << "/" << expected.size() << " got:\n" << ToMatrix(result.GetData()[0]) << std::endl;
                 }
+
                 ASSERT_MEQD(ToVector(expectedCalibration), ToMatrix(result.GetData()[0]), THRESHOLD);
             }
         }
@@ -163,14 +161,14 @@ namespace icrar
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
             {
-                auto metadata = casalib::MetaData(*ms);
+                auto metadata = casalib::MetaData(*m_ms);
                 auto integration = casalib::Integration(
                     0,
-                    *ms,
+                    *m_ms,
                     0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
+                    m_ms->GetNumChannels(),
+                    m_ms->GetNumBaselines(),
+                    m_ms->GetNumPols());
 
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
                 integrationOptionalOutput = icrar::cpu::Integration(integration);
@@ -181,13 +179,13 @@ namespace icrar
                 
                 auto integration = cpu::Integration(
                     0,
-                    *ms,
+                    *m_ms,
                     0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
+                    m_ms->GetNumChannels(),
+                    m_ms->GetNumBaselines(),
+                    m_ms->GetNumPols());
 
-                auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto metadatahost = icrar::cpu::MetaData(*m_ms, ToDirection(direction), integration.GetUVW());
                 icrar::cpu::RotateVisibilities(integration, metadatahost);
 
                 integrationOptionalOutput = integration;
@@ -197,13 +195,13 @@ namespace icrar
             {
                 auto integration = icrar::cpu::Integration(
                     0,
-                    *ms,
+                    *m_ms,
                     0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
+                    m_ms->GetNumChannels(),
+                    m_ms->GetNumBaselines(),
+                    m_ms->GetNumPols());
 
-                auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto metadatahost = icrar::cpu::MetaData(*m_ms, ToDirection(direction), integration.GetUVW());
                 auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
                 icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
@@ -220,8 +218,8 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = icrar::casalib::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
-            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
+            auto expectedIntegration = icrar::casalib::Integration(0, *m_ms);
+            expectedIntegration.uvw = ToCasaUVWVector(m_ms->GetCoords());
 
             auto expectedConstants = icrar::cpu::Constants();
             expectedConstants.nbaselines = 8001;
@@ -312,20 +310,11 @@ namespace icrar
 
         void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
         {
-            auto msmc = ms->GetMSMainColumns();
+            const int aSize = m_ms->GetNumBaselines();
 
-            //select the first epoch only
-            casacore::Vector<double> time = msmc->time().getColumn();
-            double epoch = time[0];
-            int epochRows = 0;
-            for(size_t i = 0; i < time.size(); i++)
-            {
-                if(time[i] == epoch) epochRows++;
-            }
-
-            const int aSize = epochRows;
+            //selecting first epoch
             auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
-
+            auto msmc = m_ms->GetMSMainColumns();
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
             
@@ -456,7 +445,6 @@ namespace icrar
 
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::cpu); }
-
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
@@ -464,7 +452,16 @@ namespace icrar
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
-    TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::cpu); }
-    TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestMWACasa) { PhaseRotateTest(ComputeImplementation::casa, std::move(std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/1197638568-32.ms", 126, true))); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestMWACpu) { PhaseRotateTest(ComputeImplementation::cpu, std::move(std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/1197638568-32.ms", 126, true))); }
+    TEST_F(PhaseRotateTests, PhaseRotateTestMWACuda) { PhaseRotateTest(ComputeImplementation::cuda, std::move(std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/1197638568-32.ms", 126, true))); }
+
+    TEST_F(PhaseRotateTests, PhaseRotateTestSKA1Cpu)
+    {
+        PhaseRotateTest(ComputeImplementation::cpu, std::move(std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false)));
+    }
+    TEST_F(PhaseRotateTests, PhaseRotateTestSKACpu)
+    {
+        PhaseRotateTest(ComputeImplementation::cpu, std::move(std::make_unique<icrar::MeasurementSet>(std::string(TEST_DATA_DIR) + "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.ms", boost::none, false)));
+    }
 }

@@ -117,18 +117,9 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         BOOST_LOG_TRIVIAL(info) << "avg_data:" << m_avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
 
-        //select the first epoch only
-        casacore::Vector<double> time = msmc->time().getColumn();
-        double epoch = time[0];
-        int epochRows = 0;
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) epochRows++;
-        }
-
-        const int aSize = epochRows;
-
-        auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+        const int aSize = ms.GetNumBaselines();
+        //selecting first epoch
+        auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
