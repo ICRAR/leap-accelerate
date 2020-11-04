@@ -21,12 +21,10 @@
  */
 
 #include <chrono>
-#include <iostream>
 #include <sys/time.h>
 #include <sys/resource.h>
 
 #include "icrar/leap-accelerate/core/ioutils.h"
-#include "icrar/leap-accelerate/core/logging.h"
 #include "icrar/leap-accelerate/core/profiling_timer.h"
 #include "icrar/leap-accelerate/core/resource_usage.h"
 #include "icrar/leap-accelerate/exception/exception.h"
@@ -69,18 +67,5 @@ std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
 
 template std::basic_ostream<char> &operator<<<char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
 template std::basic_ostream<wchar_t> &operator<<<wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
-
-
-UsageReporter::~UsageReporter() noexcept
-{
-    try
-    {
-        LOG(info) << get_resource_usage();
-    }
-    catch (std::exception &e)
-    {
-        std::cerr << "Error while trying to report stats: " << e.what() << '\n';
-    }
-}
 
 } // namespace icrar

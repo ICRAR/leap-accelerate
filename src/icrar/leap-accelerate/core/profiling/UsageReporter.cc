@@ -20,35 +20,29 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <exception>
+#include <iostream>
 
-#include <cstdint>
-#include <iosfwd>
+#include "icrar/leap-accelerate/core/logging.h"
+#include "icrar/leap-accelerate/core/profiling/UsageReporter.h"
+#include "icrar/leap-accelerate/core/resource_usage.h"
 
 namespace icrar
 {
-
-using usec_t = std::uint64_t;
-
-/// A collection of resource-related statistics
-struct ResourceUsage
+namespace profiling
 {
-	/// Time spent in user mode, in microseconds
-	usec_t utime;
-	/// Time spent in kernel mode, in microseconds
-	usec_t stime;
-	/// Total walltime spent since program started
-	usec_t wtime;
-	/// Maximum amount of memory used, in bytes
-	std::size_t peak_rss;
-};
 
-/// Stream output operator for instances of ResourceUsage
-template <typename CharT>
-std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
-    const ResourceUsage &ru);
+UsageReporter::~UsageReporter() noexcept
+{
+    try
+    {
+        LOG(info) << get_resource_usage();
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << "Error while trying to report stats: " << e.what() << '\n';
+    }
+}
 
-/// Returns the maximum Resident Storage Size of this process
-ResourceUsage get_resource_usage();
-
-} // namespace icrar
+}  // namespace profiling
+}  // namespace icrar

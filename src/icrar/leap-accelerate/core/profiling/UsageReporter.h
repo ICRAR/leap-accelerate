@@ -22,33 +22,17 @@
 
 #pragma once
 
-#include <cstdint>
-#include <iosfwd>
-
 namespace icrar
 {
-
-using usec_t = std::uint64_t;
-
-/// A collection of resource-related statistics
-struct ResourceUsage
+namespace profiling
 {
-	/// Time spent in user mode, in microseconds
-	usec_t utime;
-	/// Time spent in kernel mode, in microseconds
-	usec_t stime;
-	/// Total walltime spent since program started
-	usec_t wtime;
-	/// Maximum amount of memory used, in bytes
-	std::size_t peak_rss;
+
+/// Reports high-level, process-wide resource usage values on destruction
+class UsageReporter
+{
+public:
+    ~UsageReporter() noexcept;
 };
 
-/// Stream output operator for instances of ResourceUsage
-template <typename CharT>
-std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
-    const ResourceUsage &ru);
-
-/// Returns the maximum Resident Storage Size of this process
-ResourceUsage get_resource_usage();
-
+} // namespace profiling
 } // namespace icrar
