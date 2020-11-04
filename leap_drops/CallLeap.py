@@ -18,19 +18,19 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param category PythonApp
 # @param[in] param/measurementSetFilename/-/String
 #     \~English The file from which the input measurement set should be loaded\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[in] param/appclass/leap_nodes.CallLeap.CallLeap/String
 #     \~English The path to the class that implements this app\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[in] port/Config
 #     \~English The Config file containing JSON specifying how this instance of LeapAccelerateCLI should be run
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[out] port/Result
 #     \~English The output of the LeapAccelerateCLI application (JSON)
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @par EAGLE_END
 
@@ -43,7 +43,6 @@ class CallLeap(BarrierAppDROP):
 
     # TODO: this measurementSetFilename is not being read by dlg_string_param
     #       hard-coding it for the moment
-    #measurementSetFilename = dlg_string_param('measurementSetFilename', '')
     measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-32.ms"
 
     DEBUG = True
@@ -66,14 +65,9 @@ class CallLeap(BarrierAppDROP):
 
         # read config from input
         config = self._readConfig(self.inputs[0])
-        #print(config)
 
         # build command line
-        commandLine = ['LeapAccelerateCLI', '-f', self.measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions'])]
-        #print("commandLine:" + str(commandLine))
-
-        if self.autoCorrelation is not "false":
-            commandLine.append("-a")
+        commandLine = ['LeapAccelerateCLI', '-f', self.measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions']), '-a', str(config['autoCorrelation'])]
 
         if self.DEBUG:
             time.sleep(random.uniform(5,10))
@@ -82,6 +76,7 @@ class CallLeap(BarrierAppDROP):
             # call leap
             result = subprocess.run(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.outputs[0].write(result.stdout)
+
 
     def _readConfig(self, inDrop):
         with DROPFile(inDrop) as f:

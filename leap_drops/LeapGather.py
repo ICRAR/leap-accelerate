@@ -14,15 +14,15 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param category PythonApp
 # @param[in] param/appclass/leap_nodes.LeapGather.LeapGather/String
 #     \~English The path to the class that implements this app\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[in] port/Result
 #     \~English The JSON output from an instance of LeapAccelerateCLI
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[out] port/Result
 #     \~English The combined output from many instances the LeapAccelerateCLI application (JSON)
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @par EAGLE_END
 

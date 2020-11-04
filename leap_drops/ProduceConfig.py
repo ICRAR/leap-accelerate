@@ -18,27 +18,27 @@ from dlg.droputils import DROPFile
 # @param category PythonApp
 # @param[in] param/number_of_stations/1/Integer
 #     \~English The number of stations from the measurement set that should be processed\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
-# @param[in] param/implementation/eigen/String
-#     \~English The implementation of the LEAP algorithm to use (eigen, casa, cuda)\n
-#     \~Chinese 要读取的起始频率\n
+# @param[in] param/implementation/cpu/String
+#     \~English The implementation of the LEAP algorithm to use (cpu, casa, cuda)\n
+#     \~Chinese \n
 #     \~
 # @param[in] param/auto_correlation/false/string
 #     \~English Enable auto correlation in the LEAP algorithm\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String
 #     \~English The path to the class that implements this app\n
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[in] port/Directions
 #     \~English A CSV file containing directions for calibration
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @param[out] port/Config
 #     \~English A JSON config containing the specification for running an instance of LeapAccelerateCLI
-#     \~Chinese 要读取的起始频率\n
+#     \~Chinese \n
 #     \~
 # @par EAGLE_END
 
@@ -49,16 +49,10 @@ class ProduceConfig(BarrierAppDROP):
                                     [dlg_batch_output('binary/*', [])],
                                     [dlg_streaming_input('binary/*')])
 
+    # read component parameters
     numStations = dlg_int_param('number of stations', 1)
-    implementation = dlg_string_param('eigen', '')
-    autoCorrelation = dlg_int_param('auto correlation', 1)
-
-    # should be read from DALiuGE
-    #NUMBER_OF_COPIES = 1
-    #NUM_STATIONS = 126
-    #DIRECTIONS_FILENAME = "directions.csv"
-    #MEASUREMENT_SET_FILENAME = "/Users/james/working/leap-accelerate/testdata/1197638568-32.ms"
-    #IMPLEMENTATION = 'eigen'
+    implementation = dlg_string_param('implementation', 'cpu')
+    autoCorrelation = dlg_string_param('auto correlation', 'false')
 
 
     def initialize(self, **kwargs):
@@ -87,7 +81,7 @@ class ProduceConfig(BarrierAppDROP):
             partDirections = directions[startDirectionIndex:endDirectionIndex]
 
             # build config
-            configJSON = self._createConfig(self.numStations, partDirections, self.implementation)
+            configJSON = self._createConfig(self.numStations, partDirections, self.implementation, self.autoCorrelation)
 
             # stringify config
             config = json.dumps(configJSON)
@@ -120,7 +114,7 @@ class ProduceConfig(BarrierAppDROP):
         return directions
 
 
-    def _createConfig(self, numStations, directions, implementation):
+    def _createConfig(self, numStations, directions, implementation, autoCorrelation):
         return {
             'numStations': numStations,
             'directions': directions,
