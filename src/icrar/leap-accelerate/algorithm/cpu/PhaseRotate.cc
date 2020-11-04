@@ -34,7 +34,7 @@
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 
 #include <icrar/leap-accelerate/core/logging.h>
-#include <icrar/leap-accelerate/core/profiling_timer.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -76,13 +76,13 @@ namespace cpu
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
 
-        profiling_timer calibration_timer;
+        profiling::timer calibration_timer;
 
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
 
-        profiling_timer integration_read_timer;
+        profiling::timer integration_read_timer;
 
         unsigned int integrationNumber = 0;
 
@@ -114,12 +114,12 @@ namespace cpu
         }
         LOG(info) << "Read integration data in " << integration_read_timer;
 
-        profiling_timer metadata_read_timer;
+        profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
-        profiling_timer phase_rotate_timer;
+        profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             LOG(info) << "Processing direction " << i;

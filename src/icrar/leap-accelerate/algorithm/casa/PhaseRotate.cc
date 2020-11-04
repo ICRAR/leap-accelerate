@@ -35,7 +35,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/core/profiling_timer.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -80,13 +80,13 @@ namespace casalib
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
-        profiling_timer calibration_timer;
+        profiling::timer calibration_timer;
 
-        profiling_timer metadata_read_timer;
+        profiling::timer metadata_read_timer;
         auto metadata = casalib::MetaData(ms);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
-        profiling_timer integration_read_timer;
+        profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -115,7 +115,7 @@ namespace casalib
         }
         LOG(info) << "Read integration data in " << integration_read_timer;
 
-        profiling_timer phase_rotate_timer;
+        profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);

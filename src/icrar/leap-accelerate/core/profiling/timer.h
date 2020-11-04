@@ -32,7 +32,9 @@
 
 namespace icrar
 {
-    class profiling_timer
+namespace profiling
+{
+    class timer
     {
 
     public:
@@ -52,7 +54,7 @@ namespace icrar
 
 template <typename CharT, typename Traits>
 std::basic_ostream<CharT, Traits> &operator<<(
-    std::basic_ostream<CharT, Traits> &os, const profiling_timer &timer)
+    std::basic_ostream<CharT, Traits> &os, const timer &timer)
 {
     auto t = std::chrono::duration_cast<std::chrono::microseconds>(
                  timer.get()).count();
@@ -60,4 +62,5 @@ std::basic_ostream<CharT, Traits> &operator<<(
     return os;
 }
 
-}
+} // namespace profiling
+} // namespace icrar
