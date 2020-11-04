@@ -34,7 +34,7 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
-#include "logging.h"
+#include "icrar/leap-accelerate/core/logging.h"
 
 namespace icrar
 {
