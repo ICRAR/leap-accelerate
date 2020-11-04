@@ -200,13 +200,23 @@ namespace icrar
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
-            auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
+            auto expectedhostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
+
+            auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
+                expectedhostMetadata.GetConstants(),
+                expectedhostMetadata.GetA(),
+                expectedhostMetadata.GetI(),
+                expectedhostMetadata.GetAd(),
+                expectedhostMetadata.GetA1(),
+                expectedhostMetadata.GetI1(),
+                expectedhostMetadata.GetAd1()
+            );
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, expectedhostMetadata);
 
             // copy from device back to host
-            icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
+            icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();
             
-            ASSERT_MDEQ(expectedMetadataHost, metaDataHost, THRESHOLD);
+            ASSERT_MDEQ(expectedhostMetadata, hostMetadata, THRESHOLD);
         }
     };
 
