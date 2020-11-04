@@ -23,7 +23,7 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -125,9 +125,27 @@ namespace cpu
         {
             if(time[i] == epoch) epochRows++;
         }
+
+        const int aSize = epochRows;
+
         auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
+
+        auto flagSlice = casacore::Slicer(
+            casacore::IPosition(3,0,0,0),
+            casacore::IPosition(3,1,1,aSize),
+            casacore::IPosition(3,1,1,1));
+        casacore::Vector<bool> fg = msmc->flag().getColumn()
+        (flagSlice).reform(casacore::IPosition(1, aSize))
+        (epochIndices);
+
+        auto uvwShape = msmc->uvw().getColumn().shape();
+        auto uvSlice = casacore::Slicer(
+            casacore::IPosition(2,0,0),
+            casacore::IPosition(2,1,uvwShape[1]),
+            casacore::IPosition(2,1,1));
+        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
 
         // if(a1.size() != m_constants.nbaselines)
         // {
@@ -139,9 +157,9 @@ namespace cpu
         // }
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ToVector(fg), 0);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A1);
+        BOOST_LOG_TRIVIAL(trace) << "A1 Matrix " << pretty_matrix(m_A1);
         {
             std::ofstream file;
             file.open("A1.txt");
@@ -151,9 +169,9 @@ namespace cpu
 #endif
 
         BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ToVector(fg), -1);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_A);
+        BOOST_LOG_TRIVIAL(trace) << "A Matrix " << pretty_matrix(m_A);
         {
             std::ofstream file;
             file.open("A.txt");
@@ -165,7 +183,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
+        BOOST_LOG_TRIVIAL(trace) << "A1d Matrix " << pretty_matrix(m_Ad1);
         {
             std::ofstream file;
             file.open("Ad1.txt");
@@ -177,7 +195,7 @@ namespace cpu
         BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
 #ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
+        BOOST_LOG_TRIVIAL(trace) << "Ad Matrix " << pretty_matrix(m_Ad);
         {
             std::ofstream file;
             file.open("Ad.txt");

@@ -92,17 +92,17 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            ASSERT_EQ(4754, meta.A.shape()[0]);
-            ASSERT_EQ(128, meta.A.shape()[1]);
-            ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(4754, meta.Ad.shape()[1]);
-            ASSERT_EQ(4754, meta.I.shape()[0]);
+            EXPECT_EQ(4753, meta.A.shape()[0]);
+            EXPECT_EQ(128, meta.A.shape()[1]);
+            EXPECT_EQ(4753, meta.I.shape()[0]);
+            EXPECT_EQ(128, meta.Ad.shape()[0]);
+            EXPECT_EQ(4753, meta.Ad.shape()[1]);
 
-            ASSERT_EQ(98, meta.A1.shape()[0]);
-            ASSERT_EQ(128, meta.A1.shape()[1]);
-            ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(98, meta.Ad1.shape()[1]);
-            ASSERT_EQ(98, meta.I1.shape()[0]);
+            EXPECT_EQ(97, meta.A1.shape()[0]);
+            EXPECT_EQ(128, meta.A1.shape()[1]);
+            EXPECT_EQ(97, meta.I1.shape()[0]);
+            EXPECT_EQ(128, meta.Ad1.shape()[0]);
+            EXPECT_EQ(97, meta.Ad1.shape()[1]);
 
             ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
             ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
@@ -124,17 +124,17 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            ASSERT_EQ(4754, meta.A.shape()[0]); // (98-1)*98/2 + 1
+            ASSERT_EQ(4753, meta.A.shape()[0]); // (98-1)*98/2 + 1
             ASSERT_EQ(128, meta.A.shape()[1]);
             ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(4754, meta.Ad.shape()[1]);
-            ASSERT_EQ(4754, meta.I.shape()[0]);
+            ASSERT_EQ(4753, meta.Ad.shape()[1]);
+            ASSERT_EQ(4753, meta.I.shape()[0]);
 
-            ASSERT_EQ(98, meta.A1.shape()[0]);
+            ASSERT_EQ(97, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(98, meta.Ad1.shape()[1]);
-            ASSERT_EQ(98, meta.I1.shape()[0]);
+            ASSERT_EQ(97, meta.Ad1.shape()[1]);
+            ASSERT_EQ(97, meta.I1.shape()[0]);
 
             ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
             ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
