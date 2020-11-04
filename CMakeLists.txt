@@ -38,8 +38,8 @@ include(CTest)
 
 # External projects
 find_package(Git)
-if(GIT_FOUND AND EXISTS "{PROJECT_SOURCE_DIR}/.git")
-  # Update submodules as needed
+if(GIT_FOUND)
+  # Update submodules as needed, see https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
   option(GIT_SUBMODULE "Check submodules during build" ON)
   if(GIT_SUBMODULE)
       message(STATUS "Submodule update")
@@ -50,6 +50,8 @@ if(GIT_FOUND AND EXISTS "{PROJECT_SOURCE_DIR}/.git")
           message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
       endif()
   endif()
+else()
+  message(WARNING "git not found!")
 endif()
 
 if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cmake-modules/dependencies.cmake")
