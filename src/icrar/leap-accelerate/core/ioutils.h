@@ -85,27 +85,27 @@ namespace detail {
 		}
 
 		float v = m._val / 1024.;
-		const char *suffix = " [KB]";
+		const char *suffix = " [KiB]";
 
 		if (v > 1024) {
 			v /= 1024;
-			suffix = " [MB]";
+			suffix = " [MiB]";
 		}
 		if (v > 1024) {
 			v /= 1024;
-			suffix = " [GB]";
+			suffix = " [GiB]";
 		}
 		if (v > 1024) {
 			v /= 1024;
-			suffix = " [TB]";
+			suffix = " [TiB]";
 		}
 		if (v > 1024) {
 			v /= 1024;
-			suffix = " [PB]";
+			suffix = " [PiB]";
 		}
 		if (v > 1024) {
 			v /= 1024;
-			suffix = " [EB]";
+			suffix = " [EiB]";
 		}
 		// that should be enough...
 
