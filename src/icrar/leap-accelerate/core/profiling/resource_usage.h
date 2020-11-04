@@ -27,6 +27,8 @@
 
 namespace icrar
 {
+namespace profiling
+{
 
 using usec_t = std::uint64_t;
 
@@ -51,4 +53,5 @@ std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
 /// Returns the maximum Resident Storage Size of this process
 ResourceUsage get_resource_usage();
 
+} // namespace profiling
 } // namespace icrar

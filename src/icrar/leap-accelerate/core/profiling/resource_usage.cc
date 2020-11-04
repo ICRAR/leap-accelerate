@@ -26,10 +26,13 @@
 
 #include "icrar/leap-accelerate/core/ioutils.h"
 #include "icrar/leap-accelerate/core/profiling_timer.h"
-#include "icrar/leap-accelerate/core/resource_usage.h"
+#include "icrar/leap-accelerate/core/profiling/resource_usage.h"
 #include "icrar/leap-accelerate/exception/exception.h"
 
-namespace icrar {
+namespace icrar
+{
+namespace profiling
+{
 
 static profiling_timer walltime_timer;
 
@@ -68,4 +71,5 @@ std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
 template std::basic_ostream<char> &operator<<<char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
 template std::basic_ostream<wchar_t> &operator<<<wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
 
+} // namespace profiling
 } // namespace icrar
