@@ -119,14 +119,9 @@ namespace cpu
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
         //select the first epoch only
-        casacore::Vector<double> time = msmc->time().getColumn();
-        double epoch = time[0];
-        int epochRows = 0;
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) epochRows++;
-        }
-        auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
+        
+        
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 

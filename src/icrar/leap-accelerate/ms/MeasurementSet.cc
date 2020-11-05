@@ -22,6 +22,8 @@
 
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
+#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 namespace icrar
 {
@@ -32,30 +34,114 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
-        m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    }
-
-    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations)
-    : m_measurementSet(std::make_unique<casacore::MeasurementSet>(ms))
-    , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
-    , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
-    , m_readAutocorrelations(readAutocorrelations)
-    {
-        m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    }
-
-    // MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations)
-    // {
-    //     // don't skip the whitespace while reading
-    //     std::cin >> std::noskipws;
-
-    //     // use stream iterators to copy the stream to a string
-    //     std::istream_iterator<char> it(std::cin);
-    //     std::istream_iterator<char> end;
-    //     std::string results = std::string(it, end);
+        // Check and use unique antennas 
+        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
+        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
+        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(m_antennas, m_antennas.begin()));
         
-    //     m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    // }
+        if(overrideNStations.is_initialized())
+        {
+            m_stations = overrideNStations.get();
+        }
+        else if(m_antennas.size() != m_measurementSet->antenna().nrow())
+        {
+            LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
+            LOG(warning) << "unique antennas = " << m_antennas.size();
+            LOG(warning) << "using unique antennas";
+            m_stations = m_antennas.size();
+        }
+        else
+        {
+            m_stations = m_measurementSet->antenna().nrow();
+        }
+
+        Validate();
+    }
+
+    void MeasurementSet::Validate() const
+    {
+        //Stations
+        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
+        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
+        std::set<std::int32_t> antennas;
+        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin())); 
+        
+        if(antennas.size() != GetNumStations())
+        {
+            LOG(error) << "unique antennas does not match number of stations";
+            LOG(error) << "unique antennas: " << antennas.size();
+            LOG(error) << "stations: " << GetNumStations();
+            //throw exception("number of stations incorrect", __FILE__, __LINE__);
+        }
+
+        //Baselines
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        auto epochStarts = std::vector<int>();
+        epochStarts.push_back(0);
+        double currentEpoch = time[0];
+        for(size_t i = 0; i < time.size(); i++)
+        {
+            if(time[i] != currentEpoch)
+            {
+                currentEpoch = time[i];
+                epochStarts.push_back(i);
+            }
+        }
+        std::cout << "epochStarts: " << epochStarts << std::endl;
+
+        //Validate number of baselines in first epoch
+        double epoch = time[0];
+        uint32_t epochRows = 0;
+        for(size_t i = 0; i < time.size(); i++)
+        {
+            if(time[i] == epoch) epochRows++;
+        }
+        LOG(info) << "epoch rows: " << epochRows;
+        LOG(info) << "num baselines: " << GetNumBaselines();
+
+        if(epochRows != GetNumBaselines())
+        {
+            LOG(warning) << "epoch rows does not match baselines";
+            LOG(warning) << "epoch rows: " << epochRows;
+            LOG(warning) << "baselines: " << GetNumBaselines();
+            throw exception("epoch size doesnt match number of baselines", __FILE__, __LINE__);
+        }
+
+        if(GetNumRows() < GetNumBaselines())
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >=" << GetNumBaselines() << ", got " << GetNumRows();
+            throw icrar::file_exception(GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
+        if(GetNumRows() % GetNumBaselines() != 0)
+        {
+            LOG(warning) << "number of rows not an integer multiple of number of baselines";
+            LOG(warning) << "baselines: " << GetNumBaselines()
+                         << " rows: " << GetNumRows()
+                         << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
+            throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
+        }
+
+                
+        //Flags
+        auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
+        auto flagSlice = casacore::Slicer(
+            casacore::IPosition(3,0,0,0),
+            casacore::IPosition(3,1,1,GetNumBaselines()),
+            casacore::IPosition(3,1,1,1));
+
+        casacore::Vector<bool> fg = m_msmc->flag().getColumn()
+        (flagSlice).reform(casacore::IPosition(1, GetNumBaselines()))
+        (epochIndices);
+
+        std::cout << "flags size: " << fg.size() << std::endl; 
+        std::cout << "flags total: " << std::accumulate(fg.begin(), fg.end(), 0) << std::endl;
+    }
 
     unsigned int MeasurementSet::GetNumRows() const
     {

@@ -91,7 +91,7 @@ or
 
 * g++ 6.3.0
 * cuda 9.0
-* boost 1.63.0 (1.55.0 available)
+* boost 1.63.0
 * cmake 3.15.1
 * casacore 3.1.2
 

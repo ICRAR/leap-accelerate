@@ -23,6 +23,8 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/core/logging.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Matrix.h>

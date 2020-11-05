@@ -53,13 +53,14 @@ namespace icrar
         std::unique_ptr<casacore::MSColumns> m_msc;
 
         boost::optional<std::string> m_filepath;
+        std::set<std::int32_t> m_antennas;
         int m_stations;
         bool m_readAutocorrelations;
 
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        //MeasurementSet(std::string filepath, const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
         //MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
@@ -124,6 +125,9 @@ namespace icrar
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
 
     private:
+
+        void Validate() const;
+
         /**
          * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
          * 
