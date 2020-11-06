@@ -74,7 +74,8 @@ namespace cpu
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
 
@@ -91,7 +92,7 @@ namespace cpu
                 ms,
                 0,
                 ms.GetNumChannels(),
-                ms.GetNumBaselines(),
+                ms.GetNumRows(),
                 ms.GetNumPols());
 
         for(size_t i = 0; i < directions.size(); ++i)
@@ -224,7 +225,7 @@ namespace cpu
         }
     }
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt)

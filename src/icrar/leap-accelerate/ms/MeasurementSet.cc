@@ -79,29 +79,14 @@ namespace icrar
         }
 
         //Baselines
-        casacore::Vector<double> time = m_msmc->time().getColumn();
-        auto epochStarts = std::vector<int>();
-        epochStarts.push_back(0);
-        double currentEpoch = time[0];
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] != currentEpoch)
-            {
-                currentEpoch = time[i];
-                epochStarts.push_back(i);
-            }
-        }
-        std::cout << "epochStarts: " << epochStarts << std::endl;
-
         //Validate number of baselines in first epoch
-        double epoch = time[0];
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        auto epoch = time[0];
         uint32_t epochRows = 0;
         for(size_t i = 0; i < time.size(); i++)
         {
             if(time[i] == epoch) epochRows++;
         }
-        LOG(info) << "epoch rows: " << epochRows;
-        LOG(info) << "num baselines: " << GetNumBaselines();
 
         if(epochRows != GetNumBaselines())
         {
@@ -127,7 +112,6 @@ namespace icrar
             throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
         }
 
-                
         //Flags
         auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
         auto flagSlice = casacore::Slicer(
@@ -139,8 +123,12 @@ namespace icrar
         (flagSlice).reform(casacore::IPosition(1, GetNumBaselines()))
         (epochIndices);
 
-        std::cout << "flags size: " << fg.size() << std::endl; 
-        std::cout << "flags total: " << std::accumulate(fg.begin(), fg.end(), 0) << std::endl;
+        if(fg.size() != GetNumBaselines())
+        {
+            throw exception("invalidv number of flags", __FILE__, __LINE__);
+        }
+        //std::cout << "flags size: " << fg.size() << std::endl;
+        //std::cout << "flags total: " << std::accumulate(fg.begin(), fg.end(), 0) << std::endl;
     }
 
     unsigned int MeasurementSet::GetNumRows() const
