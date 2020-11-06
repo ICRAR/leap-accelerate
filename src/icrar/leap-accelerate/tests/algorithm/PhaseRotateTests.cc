@@ -20,11 +20,15 @@
  * MA 02111 - 1307  USA
  */
 
+#include "PhaseRotateTestCaseData.h"
+
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -52,6 +56,10 @@ using namespace std::literals::complex_literals;
 
 namespace icrar
 {
+    /**
+     * @brief Test suite for PhaseRotate.cc functionality
+     * 
+     */
     class PhaseRotateTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
@@ -166,7 +174,7 @@ namespace icrar
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
-            if(impl == ComputeImplementation::cpu)
+            else if(impl == ComputeImplementation::cpu)
             {
                 
                 auto integration = cpu::Integration(
@@ -280,302 +288,30 @@ namespace icrar
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt);
+                    const casacore::Vector<bool> fg;
+                    icrar::casalib::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
-                if(impl == ComputeImplementation::cpu)
+                else if(impl == ComputeImplementation::cpu)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt);
+                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
-                if(impl == ComputeImplementation::cuda)
+                else
                 {
-                    throw not_implemented_exception(__FILE__, __LINE__);
+                    throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
                 }
             }
             catch(std::invalid_argument& e)
             {
-                
+                SUCCEED();
             }
             catch(...)
             {
                 FAIL() << "Expected std::invalid_argument";
             }
-        }
-
-        /**
-         * @brief Get the Expected Calibration object validated the output of LEAP-Cal:ported
-         * 
-         * @return a vector of direction and antenna calibration pairs
-         */
-        std::vector<std::pair<casacore::MVDirection, std::vector<double>>> GetExpectedCalibration()
-        {
-            std::vector<std::pair<casacore::MVDirection, std::vector<double>>> output;
-
-            output.push_back(std::make_pair(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513), std::vector<double>{
-                     -2.2464544573217,
-                    -2.25268450303484,
-                -7.99149120051432e-15,
-                    -2.28085413869221,
-                    -2.08744690746661,
-                    -2.22125774656327,
-                    -2.20382331186683,
-                    -2.40554001014245,
-                    -2.27096989448176,
-                -6.87072871626993e-14,
-                -6.15740790257879e-15,
-                 2.63137693418615e-15,
-                    -2.16439457625486,
-                     -2.3897695035554,
-                     -2.2716491166884,
-                  1.6498989383413e-14,
-                    -2.07073747055065,
-                    -2.28856306466009,
-                 5.71849839907065e-15,
-                -2.40839790898758e-15,
-                    -2.28016224771222,
-                    -2.07147552365793,
-                    -1.87838332969977,
-                    -2.39057324559791,
-                    -2.29600595665444,
-                    -2.40388249054584,
-                   4.060290369018e-16,
-                    -2.52918529989379,
-                    -2.34075384347618,
-                     -2.2892767092113,
-                -2.34423108829509e-14,
-                     -1.9558876056415,
-                    -2.44963898452163,
-                    -2.12263555830268,
-                 4.69373000910169e-15,
-                    -2.30536565919049,
-                    -2.47010639500095,
-                    -2.37249345637269,
-                -1.08555112935755e-15,
-                -5.23294516958133e-15,
-                    -2.17929354820691,
-                    -1.99625262506932,
-                    -2.40344173464626,
-                    -2.17372211262134,
-                    -2.41345020116907,
-                    -2.50496987109197,
-                    -2.05730783389154,
-                    -2.15390037834714,
-                    -2.18517923557774,
-                -2.64080014398127e-15,
-                    -2.01392493966765,
-                 2.58273985495831e-15,
-                    -2.41479445667966,
-                    -2.25785659610493,
-                    -2.35873888395757,
-                    -2.64751384819797,
-                    -2.15799241882255,
-                    -2.44401314174358,
-                    -2.30029663807052,
-                    -2.34932244296201,
-                 1.66629066815671e-15,
-                -7.47348082025638e-16,
-                 2.02442206520529e-15,
-                     -2.2808541386922,
-                  1.6562617894823e-15,
-                    -2.31760625824056,
-                    -2.07054151161223,
-                    -2.50480923642944,
-                    -2.30942979363268,
-                    -2.39583196069428,
-                 2.65938657193246e-15,
-                     -2.2808541386922,
-                    -2.21756550893483,
-                    -2.31222455300615,
-                    -2.47836649053767,
-                    -2.63890309657809,
-                    -2.25697164898982,
-                    -2.27733447618182,
-                    -1.94476276445518,
-                     -2.0380868490611,
-                     -2.2808541386922,
-                    -2.42947488209336,
-                    -2.64561285040629,
-                     -2.2889164888374,
-                     -2.0316694609478,
-                    -2.47850774670753,
-                    -2.30144031235213,
-                 2.03334843457002e-15,
-                    -2.08746585296568,
-                    -2.34181415903187,
-                    -2.18743821568213,
-                -9.29138108032271e-16,
-                    -2.50242962332828,
-                -1.81152753926548e-15,
-                 -8.9425012597919e-16,
-                -6.99522470962986e-16,
-                    -2.15328340167755,
-                    -2.12139513226519,
-                     -2.0935906345951,
-                     -2.4755455920179,
-                    -2.41671057827871,
-                    -2.09365369580635,
-                    -2.28616156639316,
-                    -2.53185104656145,
-                    -2.37138924898075,
-                    -2.08116998586843,
-                    -2.15610534980253,
-                    -2.17594355061059,
-                    -1.93041684359688,
-                    -2.15931587505569,
-                    -2.62108897324237,
-                -7.24120491176135e-16,
-                    -2.12378496417687,
-                    -2.00302740224217,
-                    -2.48215638053328,
-                 3.51767478388053e-16,
-                    -2.16233343508881,
-                    -2.40133712275933,
-                    -2.49573627672211,
-                    -2.46963935260233,
-                    -2.24094017631893,
-                    -2.52428226288756,
-                    -2.22375587981504,
-                    -2.14069083924131,
-                    -2.58472310170016,
-                    -2.24660970012184,
-                    -2.27003192406292,
-                    -2.38874378321015,
-            }));
-
-            output.push_back(std::make_pair(casacore::MVDirection(-0.753231018062671,-0.44387635324622354), std::vector<double>{
-                    -2.24645445732163,
-                    -2.39942919540456,
-                 6.69158596401081e-15,
-                    -2.28481441190287,
-                    -2.36071034170287,
-                    -2.45091296002682,
-                    -2.35331836551524,
-                    -2.18572950787915,
-                    -2.28979626929608,
-                -6.56472200462919e-15,
-                 2.40678651664832e-14,
-                -3.77746433807938e-15,
-                    -2.32983994004414,
-                    -2.16497303429026,
-                    -2.46729959286749,
-                 7.21105937992211e-15,
-                    -2.28040219943039,
-                    -2.13886267603946,
-                -2.10713364899708e-14,
-                -2.34301399657545e-14,
-                    -2.29541940031801,
-                    -2.32932986187068,
-                    -2.26929009847917,
-                    -2.10172255906846,
-                    -2.30848204182455,
-                    -2.55920646092714,
-                -1.08225059808072e-15,
-                    -2.40637806884057,
-                    -2.16406930894269,
-                    -2.26973545658513,
-                 7.36860719418808e-15,
-                    -2.43837456998623,
-                    -2.27246833797271,
-                    -2.28910589061989,
-                -1.19692407777619e-14,
-                    -2.24632379307519,
-                    -2.11335880636053,
-                    -2.58532102792776,
-                 1.08170265560879e-15,
-                -1.75017508378097e-15,
-                     -2.7389784302316,
-                    -2.38525708235067,
-                     -2.0984297804373,
-                    -2.24472552382048,
-                    -2.19077314351311,
-                     -2.6044176003912,
-                    -2.23786271365648,
-                    -2.41309387493137,
-                    -1.94624231053842,
-                -1.41590938945073e-15,
-                    -2.23358903270702,
-                -3.51738595556155e-15,
-                    -2.13554435532368,
-                    -2.26897275410573,
-                    -2.45997008040407,
-                    -2.14498368500592,
-                    -2.36424651289069,
-                    -2.24254472150386,
-                    -2.20535305088269,
-                    -2.36209304502385,
-                 6.86916093171363e-16,
-                -4.51404130285021e-15,
-                -1.51520199852542e-15,
-                    -2.28481441190288,
-                -2.68647608917573e-16,
-                    -2.17629611661759,
-                    -2.30382245490081,
-                    -2.15466078149971,
-                    -1.87716185167249,
-                    -2.19841490800391,
-                 1.24280206790167e-15,
-                    -2.28481441190288,
-                    -2.51226983090434,
-                    -2.23839161407637,
-                    -2.27642919100971,
-                    -2.19328234987411,
-                    -2.32994013462281,
-                    -2.01484135843394,
-                    -2.21311326173144,
-                    -1.99846411041896,
-                    -2.28481441190288,
-                    -2.34088572154223,
-                    -2.15328716047391,
-                    -2.33571455838866,
-                    -2.27408033587233,
-                    -2.40219280640502,
-                    -2.03680939957709,
-                -9.59254499997349e-16,
-                    -2.20643087205977,
-                    -2.56985294441806,
-                    -2.23047362317861,
-                -2.12270610282996e-15,
-                     -2.2312220733232,
-                -2.85483071900052e-15,
-                 2.11059824409351e-16,
-                -2.37377165464544e-15,
-                    -2.50214886790546,
-                    -2.51827092931728,
-                     -2.2520884296852,
-                    -2.18164274576045,
-                    -2.17612415906236,
-                    -2.15078390295606,
-                    -2.79586505558423,
-                    -2.16920838409695,
-                    -2.35029924315989,
-                    -2.36037545472698,
-                    -2.33517451836348,
-                    -2.53522302391866,
-                    -2.42034763781368,
-                    -2.51439293843604,
-                    -2.37277722674156,
-                -7.80397740261735e-16,
-                    -2.00629451133654,
-                    -2.26930431701593,
-                    -2.43710061951244,
-                 2.41205426871548e-16,
-                    -2.11404413210047,
-                    -2.00676879325475,
-                    -2.18887819873357,
-                    -2.17020930469314,
-                    -2.27522069306038,
-                    -2.42463805106543,
-                    -2.09636210076875,
-                    -2.31840998354117,
-                    -2.38689969468074,
-                    -2.34038745408167,
-                    -2.15862604658096,
-                    -2.22251656918798,
-            }));
-
-            return output;
-        }
+		}
 
         void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
         {
@@ -589,10 +325,20 @@ namespace icrar
             {
                 if(time[i] == epoch) epochRows++;
             }
-            auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+
+            const int aSize = epochRows;
+            auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+            
+            auto flagSlice = casacore::Slicer(
+                casacore::IPosition(3,0,0,0),
+                casacore::IPosition(3,1,1,aSize),
+                casacore::IPosition(3,1,1,1));
+            casacore::Vector<bool> fg = msmc->flag().getColumn()
+            (flagSlice).reform(casacore::IPosition(1, aSize))
+            (epochIndices);
 
             //Start calculations
 
@@ -608,12 +354,12 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Array<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, fg, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
                 casacore::Array<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, fg, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 
                 A = ToMatrix(casaA);
@@ -621,25 +367,26 @@ namespace icrar
                 A1 = ToMatrix(casaA1);
                 I1 = ToVector(casaI1);
             }
-            if(impl == ComputeImplementation::cpu)
+            else if(impl == ComputeImplementation::cpu)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1);
+                auto efg = ToVector(fg);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0);
+                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
-            if(impl == ComputeImplementation::cuda)
+            else
             {
-                throw not_implemented_exception(__FILE__, __LINE__);
+                throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
             }
 
             double TOLERANCE = 0.00001;
 
             // A
-            const int aRows = 5152; 
+            const int aRows = 4753; 
             ASSERT_DOUBLE_EQ(aRows, A.rows());
             ASSERT_DOUBLE_EQ(128, A.cols());
             EXPECT_EQ(1.00, A(0,0));
@@ -647,19 +394,19 @@ namespace icrar
             EXPECT_EQ(0.00, A(0,2));
             //...
             EXPECT_NEAR(0.00, A(aRows-1, 125), TOLERANCE);
-            EXPECT_NEAR(0.00, A(aRows-1, 126), TOLERANCE);
-            EXPECT_NEAR(0.00, A(aRows-1, 127), TOLERANCE);
+            EXPECT_NEAR(1.00, A(aRows-1, 126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A(aRows-1, 127), TOLERANCE);
 
             // I
-            const int nBaselines = 5152;
+            const int nBaselines = 4753;
             ASSERT_EQ(nBaselines, I.size());
             EXPECT_EQ(1.00, I(0));
-            EXPECT_EQ(2.00, I(1));
-            EXPECT_EQ(3.00, I(2));
+            EXPECT_EQ(3.00, I(1));
+            EXPECT_EQ(4.00, I(2));
             //...
-            EXPECT_EQ(5249, I(nBaselines-3));
-            EXPECT_EQ(5251, I(nBaselines-2));
-            EXPECT_EQ(-1, I(nBaselines-1));
+            EXPECT_EQ(5248, I(nBaselines-3));
+            EXPECT_EQ(5249, I(nBaselines-2));
+            EXPECT_EQ(5251, I(nBaselines-1));
 
             // Ad
             ASSERT_DOUBLE_EQ(128, Ad.rows());
@@ -674,30 +421,31 @@ namespace icrar
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
             //A1
-            ASSERT_DOUBLE_EQ(102, A1.rows()); //-32=98, -split=102
+            const int k1 = 97;
+            ASSERT_DOUBLE_EQ(k1, A1.rows());
             ASSERT_DOUBLE_EQ(128, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
             //...
-            EXPECT_NEAR(0.00, A1(97,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(k1-1,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(k1-1,126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A1(k1-1,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(102, I1.size());
+            ASSERT_DOUBLE_EQ(k1, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
-            EXPECT_DOUBLE_EQ(2.00, I1(1));
-            EXPECT_DOUBLE_EQ(3.00, I1(2));
+            EXPECT_DOUBLE_EQ(3.00, I1(1));
+            EXPECT_DOUBLE_EQ(4.00, I1(2));
             //...
-            EXPECT_DOUBLE_EQ(96.00, I1(95));
-            EXPECT_DOUBLE_EQ(97.00, I1(96));
-            EXPECT_DOUBLE_EQ(98.00, I1(97));
+            EXPECT_DOUBLE_EQ(99.00, I1(k1-3));
+            EXPECT_DOUBLE_EQ(100.00, I1(k1-2));
+            EXPECT_DOUBLE_EQ(101.00, I1(k1-1));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(102, Ad1.cols());
+            ASSERT_DOUBLE_EQ(97, Ad1.cols());
             ASSERT_DOUBLE_EQ(128, Ad1.rows());
-            //TODO: Ad1 not identical
+            //TODO: Ad1 not identical to LEAP-Cal
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent

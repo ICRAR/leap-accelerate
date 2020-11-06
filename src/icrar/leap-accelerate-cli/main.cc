@@ -132,7 +132,7 @@ namespace icrar
                 }
                 else
                 {
-                    throw std::invalid_argument("source filename not provided");
+                    throw std::invalid_argument("input measurement set filename not provided");
                 }
                 break;
             case InputType::APACHE_ARROW:

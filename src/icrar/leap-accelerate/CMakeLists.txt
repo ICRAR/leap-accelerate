@@ -57,7 +57,9 @@ set(sources
 
     json/json_helper.cc
     
+    algorithm/casa/PhaseMatrixFunction.cc
     algorithm/casa/PhaseRotate.cc
+    algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )
 

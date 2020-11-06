@@ -92,14 +92,14 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            const int expectedK = 5152;
+            const int expectedK = 4753;
             ASSERT_EQ(expectedK, meta.A.shape()[0]);
             ASSERT_EQ(128, meta.A.shape()[1]);
             ASSERT_EQ(128, meta.Ad.shape()[0]);
             ASSERT_EQ(expectedK, meta.Ad.shape()[1]);
             ASSERT_EQ(expectedK, meta.I.shape()[0]);
 
-            const int expectedK1 = 102;
+            const int expectedK1 = 97;
             ASSERT_EQ(expectedK1, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
@@ -126,14 +126,14 @@ namespace icrar
             ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
             ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
 
-            const int expectedK = 5152;
+            const int expectedK = 4753;
             ASSERT_EQ(expectedK, meta.A.shape()[0]); // (102-1)*102/2 + 1
             ASSERT_EQ(128, meta.A.shape()[1]);
             ASSERT_EQ(128, meta.Ad.shape()[0]);
             ASSERT_EQ(expectedK, meta.Ad.shape()[1]);
             ASSERT_EQ(expectedK, meta.I.shape()[0]);
 
-            const int expectedK1 = 102;
+            const int expectedK1 = 97;
             ASSERT_EQ(expectedK1, meta.A1.shape()[0]);
             ASSERT_EQ(128, meta.A1.shape()[1]);
             ASSERT_EQ(128, meta.Ad1.shape()[0]);
