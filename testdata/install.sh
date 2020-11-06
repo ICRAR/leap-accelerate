@@ -26,6 +26,3 @@ tar -C ./ -xvf ./1197638568-split.tar.gz
 
 wget "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" -O ./SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
 tar -C ./ -xvf ./SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
-
-wget "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" -O ./SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.tar.gz
-tar -C ./ -xvf ./SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
