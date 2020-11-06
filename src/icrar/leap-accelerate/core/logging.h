@@ -23,34 +23,26 @@
 #pragma once
 
 #include <boost/log/trivial.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/manipulators/add_value.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/attributes/mutable_constant.hpp>
-
-#include <boost/log/expressions.hpp>
-#include <boost/log/core.hpp>
-#include <string>
 
 namespace icrar
 {
 namespace log
 {
+
+    /// The default verbosity level with which the logging system is initialized
+    constexpr int DEFAULT_VERBOSITY = 3;
+
     /**
      * @brief Initializes logging singletons
-     * 
+     * @param verbosity The verbosity to initialize the library with, higher
+     * values yield more verbose output.
      */
-    void Initialize();
+    void Initialize(int verbosity=DEFAULT_VERBOSITY);
+
+    /// The logging level set on the application
+    extern ::boost::log::trivial::severity_level logging_level;
 }
 }
 
-#ifdef PROFILING
-#define PROFILER_LOG(svr, stream) BOOST_LOG_TRIVIAL(svr) << stream
-#else
-#define PROFILER_LOG(svr, stream) ()
-#endif
+#define LOG(X) BOOST_LOG_TRIVIAL(X)
+#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

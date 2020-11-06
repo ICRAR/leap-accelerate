@@ -36,6 +36,7 @@
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 
@@ -72,20 +73,22 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cuda";
-        BOOST_LOG_TRIVIAL(info)
+        LOG(info) << "Starting Calibration using cuda";
+        LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size();
+        profiling::timer calibration_timer;
 
         if(GetCudaDeviceCount() == 0)
         {
             throw std::runtime_error("Could not find CUDA device");
         }
 
+        profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
@@ -105,27 +108,42 @@ namespace cuda
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
-        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
+        profiling::timer metadata_read_timer;
+        LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(0, integration.GetVis().dimensions());
+        auto constantMetadata = std::make_shared<ConstantMetaData>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
 
+        input_queue.emplace_back(0, integration.GetVis().dimensions());
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+
+        profiling::timer phase_rotate_timer;
         for(int i = 0; i < directions.size(); ++i)
         {
-            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
-            BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
+            LOG(info) << "Processing direction " << i;
+            LOG(info) << "Setting Metadata";
             metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA
             input_queue[0].SetData(integration);
 
-            BOOST_LOG_TRIVIAL(info) << "Copying Metadata to Device";
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
-            BOOST_LOG_TRIVIAL(info) << "PhaseRotate";
+            LOG(info) << "Copying Metadata to Device";
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
+            LOG(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
-        
-        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -140,7 +158,7 @@ namespace cuda
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
-            BOOST_LOG_TRIVIAL(info) << "Rotating integration " << integration.GetIntegrationNumber();
+            LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.emplace_back(
                 direction,
@@ -148,19 +166,11 @@ namespace cuda
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
 
-        BOOST_LOG_TRIVIAL(info) << "Copying Metadata from Device";
+        LOG(info) << "Copying Metadata from Device";
         deviceMetadata.AvgDataToHost(hostMetadata.GetAvgData());
 
-        BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
-#ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(hostMetadata.GetAvgData());
-        {
-            std::ofstream file;
-            file.open("avg_data.txt");
-            file << hostMetadata.avg_data << std::endl;
-            file.close();
-        }
-#endif
+        LOG(info) << "Calibrating on cpu";
+        trace_matrix(hostMetadata.GetAvgData(), "avg_data");
 
         auto avg_data_angles = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 

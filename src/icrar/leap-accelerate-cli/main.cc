@@ -33,6 +33,7 @@
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 #include <icrar/leap-accelerate/core/version.h>
 
 #include <CLI/CLI.hpp>
@@ -67,6 +68,7 @@ namespace icrar
         boost::optional<std::string> implementation = std::string("casa");
         bool mwaSupport = false;
         bool readAutocorrelations = true;
+        int verbosity = log::DEFAULT_VERBOSITY;
 
         Arguments() {}
     };
@@ -86,6 +88,7 @@ namespace icrar
         ComputeImplementation m_computeImplementation;
         bool m_mwaSupport;
         bool m_readAutocorrelations;
+        int m_verbosity;
 
         /**
          * Resources
@@ -99,6 +102,7 @@ namespace icrar
             , m_filePath(std::move(args.filePath))
             , m_mwaSupport(std::move(args.mwaSupport))
             , m_readAutocorrelations(std::move(args.readAutocorrelations))
+            , m_verbosity(std::move(args.verbosity))
         {
             if(args.stations.is_initialized())
             {
@@ -177,6 +181,11 @@ namespace icrar
         {
             return m_computeImplementation;
         }
+
+        int GetVerbosity()
+        {
+            return m_verbosity;
+        }
     };
 }
 
@@ -205,10 +214,9 @@ std::string version_information(const char *name)
 
 int main(int argc, char** argv)
 {
-    icrar::log::Initialize();
     auto appName = "LeapAccelerateCLI";
     CLI::App app { appName };
-    app.set_version_flag("-v,--version", [&]() { return version_information(appName); });
+    app.set_version_flag("--version", [&]() { return version_information(appName); });
 
     //Parse Arguments
     Arguments rawArgs;
@@ -220,6 +228,7 @@ int main(int argc, char** argv)
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
     app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
+    app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 
     try
     {
@@ -230,15 +239,17 @@ int main(int argc, char** argv)
         return app.exit(e);
     }
 
+    icrar::profiling::UsageReporter _;
     try
     {
         ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
+        icrar::log::Initialize(args.GetVerbosity());
 
         //=========================
         // Calibration to std::cout
         //=========================
-        BOOST_LOG_TRIVIAL(info) << version_information(argv[0]);
-        BOOST_LOG_TRIVIAL(info) << arg_string(argc, argv);
+        LOG(info) << version_information(argv[0]);
+        LOG(info) << arg_string(argc, argv);
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:

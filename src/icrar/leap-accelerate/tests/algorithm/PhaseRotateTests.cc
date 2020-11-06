@@ -151,7 +151,6 @@ namespace icrar
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
-            boost::optional<icrar::cpu::Integration> integrationOptionalOutput;
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
             if(impl == ComputeImplementation::casa)
             {
@@ -165,7 +164,6 @@ namespace icrar
                     ms->GetNumPols());
 
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                integrationOptionalOutput = icrar::cpu::Integration(integration);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
             if(impl == ComputeImplementation::cpu)
@@ -179,11 +177,10 @@ namespace icrar
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
 
-                auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-                icrar::cpu::RotateVisibilities(integration, metadatahost);
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                icrar::cpu::RotateVisibilities(integration, hostMetadata);
 
-                integrationOptionalOutput = integration;
-                metadataOptionalOutput = metadatahost;
+                metadataOptionalOutput = hostMetadata;
             }
             if(impl == ComputeImplementation::cuda)
             {
@@ -195,16 +192,22 @@ namespace icrar
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
 
-                auto metadatahost = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-                auto metadatadevice = icrar::cuda::DeviceMetaData(metadatahost);
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
+                    hostMetadata.GetConstants(),
+                    hostMetadata.GetA(),
+                    hostMetadata.GetI(),
+                    hostMetadata.GetAd(),
+                    hostMetadata.GetA1(),
+                    hostMetadata.GetI1(),
+                    hostMetadata.GetAd1()
+                );
+                auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, hostMetadata);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
-                icrar::cuda::RotateVisibilities(deviceIntegration, metadatadevice);
-                metadatadevice.ToHost(metadatahost);
-                integrationOptionalOutput = integration;
-                metadataOptionalOutput = metadatahost;
+                icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
+                deviceMetadata.ToHost(hostMetadata);
+                metadataOptionalOutput = hostMetadata;
             }
-            ASSERT_TRUE(integrationOptionalOutput.is_initialized());
-            //icrar::cpu::Integration& integrationOutput = integrationOptionalOutput.get();
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();

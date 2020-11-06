@@ -33,7 +33,6 @@
 #include <Eigen/Core>
 
 #include <vector>
-#include <chrono>
 
 namespace icrar
 {
@@ -130,9 +129,4 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value);
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
-
-    /**
-     * @brief Convert duration to millisecond string
-     */
-    std::string ToMSString(std::chrono::nanoseconds duration);
 }

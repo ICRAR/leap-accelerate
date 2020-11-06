@@ -20,37 +20,38 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#pragma once
+
+#include <cstdint>
+#include <iosfwd>
 
 namespace icrar
 {
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
-    {
-        if(value == "casa")
-        {
-            out = ComputeImplementation::casa;
-            return true;
-        }
-        else if(value == "eigen")
-        {
-            LOG(info) << "argument 'eigen' deprecated, use 'cpu' instead";
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cpu")
-        {
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cuda")
-        {
-            out = ComputeImplementation::cuda;
-            return true;
-        }
-        return false;
-    }
-}
+namespace profiling
+{
+
+using usec_t = std::uint64_t;
+
+/// A collection of resource-related statistics
+struct ResourceUsage
+{
+	/// Time spent in user mode, in microseconds
+	usec_t utime;
+	/// Time spent in kernel mode, in microseconds
+	usec_t stime;
+	/// Total walltime spent since program started
+	usec_t wtime;
+	/// Maximum amount of memory used, in bytes
+	std::size_t peak_rss;
+};
+
+/// Stream output operator for instances of ResourceUsage
+template <typename CharT>
+std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
+    const ResourceUsage &ru);
+
+/// Returns the maximum Resident Storage Size of this process
+ResourceUsage get_resource_usage();
+
+} // namespace profiling
+} // namespace icrar

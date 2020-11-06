@@ -20,37 +20,19 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#pragma once
 
 namespace icrar
 {
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
-    {
-        if(value == "casa")
-        {
-            out = ComputeImplementation::casa;
-            return true;
-        }
-        else if(value == "eigen")
-        {
-            LOG(info) << "argument 'eigen' deprecated, use 'cpu' instead";
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cpu")
-        {
-            out = ComputeImplementation::cpu;
-            return true;
-        }
-        else if(value == "cuda")
-        {
-            out = ComputeImplementation::cuda;
-            return true;
-        }
-        return false;
-    }
-}
+namespace profiling
+{
+
+/// Reports high-level, process-wide resource usage values on destruction
+class UsageReporter
+{
+public:
+    ~UsageReporter() noexcept;
+};
+
+} // namespace profiling
+} // namespace icrar
