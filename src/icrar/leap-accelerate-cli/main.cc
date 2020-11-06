@@ -20,6 +20,8 @@
  * MA 02111 - 1307  USA
  */
 
+#include <icrar/leap-accelerate-cli/Arguments.h>
+
 #include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
@@ -47,31 +49,26 @@
 
 namespace icrar
 {
-    enum class InputType
-    {
-        STREAM,
-        FILENAME,
-        APACHE_ARROW
-    };
-
     /**
-     * Raw set of command line interface arguments
+     * Default set of command line interface arguments
      */
-    struct Arguments
+    Arguments GetDefaultArguments()
     {
-        InputType source = InputType::FILENAME;
-        boost::optional<std::string> filePath = boost::none; // Measurement set filepath
-        boost::optional<std::string> configFilePath = boost::none; // Config filepath
+        auto args = Arguments();
+        args.source = InputType::FILENAME;
+        args.filePath = boost::none; // Measurement set filepath
+        args.configFilePath = boost::none; // Config filepath
+        args.outFilePath = boost::none;
 
-        boost::optional<std::string> stations = boost::none;
-        boost::optional<std::string> directions = boost::none;
-        boost::optional<std::string> implementation = std::string("casa");
-        bool mwaSupport = false;
-        bool readAutocorrelations = true;
-        int verbosity = log::DEFAULT_VERBOSITY;
-
-        Arguments() {}
-    };
+        args.stations = boost::none;
+        args.directions = boost::none;
+        args.implementation = std::string("cpu");
+        
+        args.mwaSupport = false;
+        args.readAutocorrelations = true;
+        args.verbosity = log::DEFAULT_VERBOSITY;
+        return args;
+    }
 
     /**
      * Validated set of command line arguments
@@ -83,6 +80,9 @@ namespace icrar
          */
         InputType m_source; // MeasurementSet source type
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
+        boost::optional<std::string> m_configFilePath = boost::none; // Config filepath
+        boost::optional<std::string> m_outFilePath = boost::none; // Calibration output filepath
+
         boost::optional<int> m_stations; // Overriden number of stations
         std::vector<MVDirection> m_directions;
         ComputeImplementation m_computeImplementation;
@@ -98,12 +98,20 @@ namespace icrar
 
     public:
         ArgumentsValidated(Arguments&& args)
-            : m_source(std::move(args.source))
+            : m_source(std::move(args.source.get()))
             , m_filePath(std::move(args.filePath))
+            , m_configFilePath(std::move(args.configFilePath))
+            , m_outFilePath(std::move(args.outFilePath))
             , m_mwaSupport(std::move(args.mwaSupport))
             , m_readAutocorrelations(std::move(args.readAutocorrelations))
-            , m_verbosity(std::move(args.verbosity))
+            , m_verbosity(std::move(args.verbosity.get()))
         {
+            if(args.configFilePath.is_initialized())
+            {
+                // Configuration via json config
+                Config config = ParseConfig(args.configFilePath.get());
+            }
+
             if(args.stations.is_initialized())
             {
                 m_stations = std::stoi(args.stations.get());
@@ -132,7 +140,7 @@ namespace icrar
                 }
                 else
                 {
-                    throw std::invalid_argument("source filename not provided");
+                    throw std::invalid_argument("measurement set filename not provided");
                 }
                 break;
             case InputType::APACHE_ARROW:
@@ -143,22 +151,17 @@ namespace icrar
                 break;
             }
 
-            if(args.configFilePath.is_initialized())
+            if(args.directions.is_initialized())
             {
-                // Configuration via json config
-                throw std::invalid_argument("json config not supported");
+                m_directions = ParseDirections(args.directions.get());
             }
-            else
+        }
+
+        void Validate() const
+        {
+            if(m_directions.size() == 0)
             {
-                // Configuration via arguments
-                if(!args.directions.is_initialized())
-                {
-                    throw std::invalid_argument("directions argument not provided");
-                }
-                else
-                {
-                    m_directions = ParseDirections(args.directions.get());
-                }
+                throw std::invalid_argument("directions argument not provided");
             }
         }
 
@@ -219,7 +222,7 @@ int main(int argc, char** argv)
     app.set_version_flag("--version", [&]() { return version_information(appName); });
 
     //Parse Arguments
-    Arguments rawArgs;
+    Arguments rawArgs = GetDefaultArguments();
     //app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
