@@ -27,6 +27,7 @@
 #include <vector>
 #include <functional>
 #include <type_traits>
+#include <algorithm>
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)

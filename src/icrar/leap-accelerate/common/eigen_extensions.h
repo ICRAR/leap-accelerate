@@ -90,10 +90,11 @@ namespace icrar
             }
             
             ss << "\n[";
-            for(int c = 0; c < 7; ++c)
+            int print_cols = std::min(value.cols(), 7l);
+            for(int c = 0; c < print_cols; ++c)
             {
                 ss << std::setw(pretty_width) << "...";
-                if(c != 6) { ss << " "; }
+                if(c != print_cols-1) { ss << " "; }
             }
             ss << "]\n";
             

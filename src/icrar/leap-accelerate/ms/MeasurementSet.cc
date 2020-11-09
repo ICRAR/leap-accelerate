@@ -22,6 +22,8 @@
 
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
+#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/common/vector_extensions.h>
 
 namespace icrar
 {
@@ -32,30 +34,69 @@ namespace icrar
     , m_filepath(filepath)
     , m_readAutocorrelations(readAutocorrelations)
     {
-        m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
+        // Check and use unique antennas 
+        m_antennas = CalculateUniqueAntennas();
+
+        if(overrideNStations.is_initialized())
+        {
+            m_stations = overrideNStations.get();
+            LOG(warning) << "overriding number of stations will be removed in future releases";
+        }
+
+        else if(m_antennas.size() != m_measurementSet->antenna().nrow())
+        {
+            LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
+            LOG(warning) << "unique antennas = " << m_antennas.size();
+            LOG(warning) << "using unique antennas";
+            m_stations = m_antennas.size();
+        }
+        else
+        {
+            m_stations = m_measurementSet->antenna().nrow();
+        }
+
+        Validate();
     }
 
-    MeasurementSet::MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations)
-    : m_measurementSet(std::make_unique<casacore::MeasurementSet>(ms))
-    , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
-    , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
-    , m_readAutocorrelations(readAutocorrelations)
+    void MeasurementSet::Validate() const
     {
-        m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
+        //Stations        
+        if(m_antennas.size() != GetNumStations())
+        {
+            LOG(warning) << "unique antennas (" << m_antennas.size() << ")"
+                       << "does not match number of stations (" << GetNumStations() << ")";
+        }
+
+        //Baselines
+        //Validate number of baselines in first epoch
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        auto epoch = time[0];
+        auto epochRows = std::count(time.begin(), time.end(), epoch);
+
+        if(epochRows != GetNumBaselines())
+        {
+            LOG(error) << "epoch rows does not match baselines";
+            LOG(error) << "epoch rows: " << epochRows;
+            LOG(error) << "baselines: " << GetNumBaselines();
+            throw exception("epoch size doesnt match number of baselines", __FILE__, __LINE__);
+        }
+
+        if(GetNumRows() < GetNumBaselines())
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >=" << GetNumBaselines() << ", got " << GetNumRows();
+            throw icrar::file_exception(GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
+        if(GetNumRows() % GetNumBaselines() != 0)
+        {
+            LOG(error) << "number of rows not an integer multiple of number of baselines";
+            LOG(error) << "baselines: " << GetNumBaselines()
+                         << " rows: " << GetNumRows()
+                         << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
+            throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
+        }
     }
-
-    // MeasurementSet::MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations)
-    // {
-    //     // don't skip the whitespace while reading
-    //     std::cin >> std::noskipws;
-
-    //     // use stream iterators to copy the stream to a string
-    //     std::istream_iterator<char> it(std::cin);
-    //     std::istream_iterator<char> end;
-    //     std::string results = std::string(it, end);
-        
-    //     m_stations = overrideNStations.is_initialized() ? overrideNStations.get() : m_measurementSet->antenna().nrow();
-    // }
 
     unsigned int MeasurementSet::GetNumRows() const
     {
@@ -148,5 +189,16 @@ namespace icrar
         auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
         icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
         return visibilities;
+    }
+
+    std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
+    {
+        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
+        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
+        std::set<std::int32_t> antennas;
+        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
+        return antennas; 
     }
 }

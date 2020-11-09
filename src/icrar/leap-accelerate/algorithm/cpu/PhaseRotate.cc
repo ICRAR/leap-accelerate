@@ -74,7 +74,8 @@ namespace cpu
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
 
@@ -86,21 +87,12 @@ namespace cpu
 
         unsigned int integrationNumber = 0;
 
-        // Flooring to remove incomplete measurements
-        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
-        if(integrations == 0)
-        {
-            std::stringstream ss;
-            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
-            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
-        }
-
         auto integration = Integration(
                 integrationNumber,
                 ms,
                 0,
                 ms.GetNumChannels(),
-                integrations * ms.GetNumBaselines(),
+                ms.GetNumRows(),
                 ms.GetNumPols());
 
         for(size_t i = 0; i < directions.size(); ++i)
@@ -233,7 +225,7 @@ namespace cpu
         }
     }
 
-std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
         int refAnt)

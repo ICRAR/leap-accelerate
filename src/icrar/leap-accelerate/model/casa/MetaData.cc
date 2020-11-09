@@ -107,16 +107,8 @@ namespace casalib
             msc->observation().timeRange().get(0, range);
         }
 
-        casacore::Vector<double> time = msmc->time().getColumn();
-
         //select the first epoch only
-        int epochRows = 0;
-        double epoch = time[0];
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) epochRows++;
-        }
-        auto epochIndices = Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
         

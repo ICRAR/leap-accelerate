@@ -69,8 +69,6 @@ namespace icrar
         bool mwaSupport = false;
         bool readAutocorrelations = true;
         int verbosity = log::DEFAULT_VERBOSITY;
-
-        Arguments() {}
     };
 
     /**
