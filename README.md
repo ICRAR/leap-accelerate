@@ -82,7 +82,7 @@ or
 #### Recommended Versions Compatibility
 
 * g++ 9.3.0
-* cuda 10.1
+* cuda 10.1 (nvidia-driver-440)
 * boost 1.71.0
 * casacore 3.1.2
 * eigen 3.3.90

@@ -30,11 +30,10 @@
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/json/json_helper.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
 #include <icrar/leap-accelerate/core/version.h>
 
@@ -46,151 +45,6 @@
 #include <queue>
 #include <string>
 #include <exception>
-
-namespace icrar
-{
-    /**
-     * Default set of command line interface arguments
-     */
-    Arguments GetDefaultArguments()
-    {
-        auto args = Arguments();
-        args.source = InputType::FILENAME;
-        args.filePath = boost::none; // Measurement set filepath
-        args.configFilePath = boost::none; // Config filepath
-        args.outFilePath = boost::none;
-
-        args.stations = boost::none;
-        args.directions = boost::none;
-        args.implementation = std::string("cpu");
-        
-        args.mwaSupport = false;
-        args.readAutocorrelations = true;
-        args.verbosity = log::DEFAULT_VERBOSITY;
-        return args;
-    }
-
-    /**
-     * Validated set of command line arguments
-     */
-    class ArgumentsValidated
-    {
-        /**
-         * Constants
-         */
-        InputType m_source; // MeasurementSet source type
-        boost::optional<std::string> m_filePath; // MeasurementSet filepath
-        boost::optional<std::string> m_configFilePath = boost::none; // Config filepath
-        boost::optional<std::string> m_outFilePath = boost::none; // Calibration output filepath
-
-        boost::optional<int> m_stations; // Overriden number of stations
-        std::vector<MVDirection> m_directions;
-        ComputeImplementation m_computeImplementation;
-        bool m_mwaSupport;
-        bool m_readAutocorrelations;
-        int m_verbosity;
-
-        /**
-         * Resources
-         */
-        std::unique_ptr<MeasurementSet> m_measurementSet;
-        std::istream* m_inputStream = nullptr; // Cached reference to the input stream
-
-    public:
-        ArgumentsValidated(Arguments&& args)
-            : m_source(std::move(args.source.get()))
-            , m_filePath(std::move(args.filePath))
-            , m_configFilePath(std::move(args.configFilePath))
-            , m_outFilePath(std::move(args.outFilePath))
-            , m_mwaSupport(std::move(args.mwaSupport))
-            , m_readAutocorrelations(std::move(args.readAutocorrelations))
-            , m_verbosity(std::move(args.verbosity.get()))
-        {
-            if(args.configFilePath.is_initialized())
-            {
-                // Configuration via json config
-                Config config = ParseConfig(args.configFilePath.get());
-            }
-
-            if(args.stations.is_initialized())
-            {
-                m_stations = std::stoi(args.stations.get());
-            }
-            
-            if(args.implementation.is_initialized())
-            {
-                if(!TryParseComputeImplementation(args.implementation.get(), m_computeImplementation))
-                {
-                    throw std::invalid_argument("invalid implementation argument");
-                }
-            }
-            
-            switch (m_source)
-            {
-            case InputType::STREAM:
-                m_inputStream = &std::cin;
-                break;
-            case InputType::FILENAME:
-                if (m_filePath.is_initialized())
-                {
-                    m_measurementSet = std::make_unique<MeasurementSet>(
-                        m_filePath.get(),
-                        m_stations,
-                        m_readAutocorrelations);
-                }
-                else
-                {
-                    throw std::invalid_argument("measurement set filename not provided");
-                }
-                break;
-            case InputType::APACHE_ARROW:
-                throw new std::runtime_error("only stream in and file input are currently supported");
-                break;
-            default:
-                throw new std::invalid_argument("only stream in and file input are currently supported");
-                break;
-            }
-
-            if(args.directions.is_initialized())
-            {
-                m_directions = ParseDirections(args.directions.get());
-            }
-        }
-
-        void Validate() const
-        {
-            if(m_directions.size() == 0)
-            {
-                throw std::invalid_argument("directions argument not provided");
-            }
-        }
-
-        std::istream& GetInputStream()
-        {
-            return *m_inputStream;
-        }
-
-        MeasurementSet& GetMeasurementSet()
-        {
-            return *m_measurementSet;
-        }
-
-        std::vector<icrar::MVDirection>& GetDirections()
-        {
-            return m_directions;
-        }
-
-        ComputeImplementation GetComputeImplementation()
-        {
-            return m_computeImplementation;
-        }
-
-        int GetVerbosity()
-        {
-            return m_verbosity;
-        }
-    };
-}
 
 using namespace icrar;
 
@@ -222,12 +76,13 @@ int main(int argc, char** argv)
     app.set_version_flag("--version", [&]() { return version_information(appName); });
 
     //Parse Arguments
-    Arguments rawArgs = GetDefaultArguments();
+    CLIArguments rawArgs = CLIArguments();
+
     //app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
-    app.add_option("-i,--implementation", rawArgs.implementation, "Compute implementation type (casa, cpu, cuda)");
+    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
     app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "True if rows store autocorrelations");
@@ -245,7 +100,8 @@ int main(int argc, char** argv)
     icrar::profiling::UsageReporter _;
     try
     {
-        ArgumentsValidated args = ArgumentsValidated(std::move(rawArgs));
+        ArgumentsValidated args = ArgumentsValidated(std::move(Arguments(std::move(rawArgs))));
+
         icrar::log::Initialize(args.GetVerbosity());
 
         //=========================

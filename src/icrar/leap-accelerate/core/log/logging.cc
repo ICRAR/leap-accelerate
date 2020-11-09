@@ -34,7 +34,7 @@
 #include <boost/log/utility/setup/console.hpp>
 #include <boost/log/utility/setup/file.hpp>
 
-#include "icrar/leap-accelerate/core/logging.h"
+#include "icrar/leap-accelerate/core/log/logging.h"
 
 namespace icrar
 {
@@ -47,7 +47,7 @@ namespace log
      * @brief Initializes logging
      * 
      */
-    void Initialize(int verbosity)
+    void Initialize(Verbosity verbosity)
     {
         boost::log::core::get()->add_global_attribute("TimeStamp", boost::log::attributes::local_clock());
 
@@ -70,9 +70,7 @@ namespace log
         );
 
         // low verbosity values mean higher severity levels
-        verbosity = std::min(std::max(verbosity, 0), 5);
-        verbosity = 5 - verbosity;
-        logging_level = boost::log::trivial::severity_level(verbosity);
+        logging_level = boost::log::trivial::severity_level(5 - static_cast<int>(verbosity));
         boost::log::core::get()->set_filter([](const boost::log::attribute_value_set &s)
         {
             return s["Severity"].extract<boost::log::trivial::severity_level>() >= logging_level;

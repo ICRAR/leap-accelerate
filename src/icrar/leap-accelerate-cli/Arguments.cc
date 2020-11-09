@@ -22,26 +22,209 @@
 
 #include "Arguments.h"
 
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/json/json_helper.h>
 
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/ostreamwrapper.h>
 
-#include <fstream>
-#include <iostream>
-
 namespace icrar
 {
-    Config ParseConfig(const std::string& configFilepath)
+    /**
+     * Default set of command line interface arguments
+     */
+    CLIArguments GetDefaultArguments()
     {
-        Config args;
+        auto args = CLIArguments();
+        args.source = InputType::FILENAME;
+        args.filePath = boost::none; // Measurement set filepath
+        args.configFilePath = boost::none; // Config filepath
+        args.outFilePath = boost::none;
+
+        args.stations = boost::none;
+        args.directions = boost::none;
+        args.computeImplementation = std::string("cpu");
+        
+        args.mwaSupport = false;
+        args.readAutocorrelations = true;
+        args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
+        return args;
+    }
+
+    Arguments::Arguments(CLIArguments&& args)
+        : source(std::move(args.source))
+        , filePath(std::move(args.filePath))
+        , configFilePath(std::move(args.configFilePath))
+        , outFilePath(std::move(args.outFilePath))
+        , mwaSupport(std::move(args.mwaSupport))
+        , readAutocorrelations(std::move(args.readAutocorrelations))
+    {
+        if(args.stations.is_initialized())
+        {
+            stations = std::stoi(args.stations.get());
+        }
+        
+        if(args.computeImplementation.is_initialized())
+        {
+            computeImplementation.reset(ComputeImplementation()); //Defualt value ignored
+            if(!TryParseComputeImplementation(args.computeImplementation.get(), computeImplementation.get()))
+            {
+                throw std::invalid_argument("invalid compute implementation argument");
+            }
+        }
+
+        if(args.directions.is_initialized())
+        {
+            directions = ParseDirections(args.directions.get());
+        }
+
+        if(args.verbosity.is_initialized())
+        {
+            verbosity = static_cast<icrar::log::Verbosity>(args.verbosity.get());
+        }
+    }
+
+    void ArgumentsValidated::ApplyArguments(Arguments&& args)
+    {
+        if(args.source.is_initialized())
+        {
+            m_source = std::move(args.source.get());
+        }
+
+        if(args.filePath.is_initialized())
+        {
+            m_filePath = std::move(args.filePath.get());
+        }
+
+        if(args.configFilePath.is_initialized())
+        {
+            m_configFilePath = std::move(args.configFilePath.get());
+        }
+
+        if(args.outFilePath.is_initialized())
+        {
+            m_outFilePath = std::move(args.outFilePath.get());
+        }
+
+        if(args.stations.is_initialized())
+        {
+            m_stations = std::move(args.stations.get());
+        }
+
+        if(args.directions.is_initialized())
+        {
+            m_directions = std::move(args.directions.get());
+        }
+
+        if(args.computeImplementation.is_initialized())
+        {
+            m_computeImplementation = std::move(args.computeImplementation.get());
+        }
+
+        if(args.mwaSupport.is_initialized())
+        {
+            m_mwaSupport = std::move(args.mwaSupport.get());
+        }
+        
+        if(args.readAutocorrelations.is_initialized())
+        {
+            m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+        }
+
+        if(args.verbosity.is_initialized())
+        {
+            m_verbosity = std::move(args.verbosity.get());
+        }
+    }
+
+    ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
+    {
+        ApplyArguments(GetDefaultArguments());
+
+        // Read the config argument first and apply the config settings
+        if(cliArgs.configFilePath.is_initialized())
+        {
+            // Configuration via json config
+            ApplyArguments(std::move(ParseConfig(cliArgs.configFilePath.get())));
+        }
+
+        // Overwrite the config args with the remaining cli args
+        ApplyArguments(std::move(cliArgs));
+        Validate();
+
+        //Override config arguments with CLI arguments
+
+        switch (m_source)
+        {
+        case InputType::STREAM:
+            m_inputStream = &std::cin;
+            break;
+        case InputType::FILENAME:
+            if (m_filePath.is_initialized())
+            {
+                m_measurementSet = std::make_unique<MeasurementSet>(
+                    m_filePath.get(),
+                    m_stations,
+                    m_readAutocorrelations);
+            }
+            else
+            {
+                throw std::invalid_argument("measurement set filename not provided");
+            }
+            break;
+        case InputType::APACHE_ARROW:
+            throw new std::runtime_error("only stream in and file input are currently supported");
+            break;
+        default:
+            throw new std::invalid_argument("only stream in and file input are currently supported");
+            break;
+        }
+
+
+    }
+
+    void ArgumentsValidated::Validate() const
+    {
+        if(m_directions.size() == 0)
+        {
+            throw std::invalid_argument("directions argument not provided");
+        }
+    }
+
+    std::istream& ArgumentsValidated::GetInputStream()
+    {
+        return *m_inputStream;
+    }
+
+    MeasurementSet& ArgumentsValidated::GetMeasurementSet()
+    {
+        return *m_measurementSet;
+    }
+
+    std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    {
+        return m_directions;
+    }
+
+    ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
+    {
+        return m_computeImplementation;
+    }
+
+    icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
+    {
+        return m_verbosity;
+    }
+
+    Arguments ParseConfig(const std::string& configFilepath)
+    {
+        Arguments args;
         ParseConfig(configFilepath, args);
         return args;
     }
 
-    void ParseConfig(const std::string& configFilepath, Config& args)
+    void ParseConfig(const std::string& configFilepath, Arguments& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);
@@ -50,65 +233,125 @@ namespace icrar
 
         if(!doc.IsObject())
         {
-            throw icrar::json_exception("expected config to be an object", __FILE__, __LINE__);
+            throw json_exception("expected config to be an object", __FILE__, __LINE__);
         }
         for(auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it)
         {
             if(!it->name.IsString())
             {
-                throw icrar::json_exception("config keys must be a string", __FILE__, __LINE__);
+                throw json_exception("config keys must be of type string", __FILE__, __LINE__);
             }
             else
             {
                 std::string key = it->name.GetString();
-
                 if(key == "source")
                 {
-                    //args.source = it->value.GetInt(); //TODO: change to string
+                    //args.source = it->value.GetInt(); //TODO: use string
                 }
                 else if(key == "filePath")
                 {
                     args.filePath = it->value.GetString();
-                }
-                else if(key == "configFilePath")
-                {
-                    throw icrar::json_exception("recursive config detected", __FILE__, __LINE__);
-                }
-                else if(key == "outFilePath")
-                {
-                    args.outFilePath = it->value.GetString();
-                }
-                else if(key == "stations")
-                {
-                    args.stations = it->value.GetInt();
-                }
-                else if(key == "directions")
-                {
-                    args.directions = ParseDirections(it->value.GetString());
-                }
-                else if(key == "implementation")
-                {
-                    ComputeImplementation i;
-                    if(!TryParseComputeImplementation(it->value.GetString(), i))
+                    if(it->value.IsString())
                     {
-                        throw icrar::json_exception("invalid implementation string", __FILE__, __LINE__);
+                        args.filePath = it->value.GetString();
                     }
                     else
                     {
-                        args.implementation = i;
+                        throw json_exception("filePath must be of type string", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "configFilePath")
+                {
+                    throw json_exception("recursive config detected", __FILE__, __LINE__);
+                }
+                else if(key == "outFilePath")
+                {
+                    if(it->value.IsString())
+                    {
+                        args.outFilePath = it->value.GetString();
+                    }
+                    else
+                    {
+                        throw json_exception("outFilePath must be of type string", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "stations")
+                {
+                    if(it->value.IsInt())
+                    {
+                        args.stations = it->value.GetInt();
+                    }
+                    else
+                    {
+                        throw json_exception("outFilePath must be of type int", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "directions")
+                {
+                    args.directions = ParseDirections(it->value);
+                }
+                else if(key == "computeImplementation")
+                {
+                    ComputeImplementation e;
+                    if(TryParseComputeImplementation(it->value.GetString(), e))
+                    {
+                        args.computeImplementation = e;
+                    }
+                    else
+                    {
+                        throw json_exception("invalid compute implementation string", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "mwaSupport")
                 {
-                    args.mwaSupport = it->value.GetBool();
+                    if(it->value.IsBool())
+                    {
+                        args.mwaSupport = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("mwaSupport must be of type bool", __FILE__, __LINE__);
+                    }
                 }
                 else if(key == "readAutoCorrelations")
                 {
-                    args.mwaSupport = it->value.GetBool();
+                    if(it->value.IsBool())
+                    {
+                        args.readAutocorrelations = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("readAutoCorrelations must be of type bool", __FILE__, __LINE__);
+                    }
                 }
                 else if(key == "verbosity")
                 {
-                    args.verbosity = it->value.GetBool();
+                    if(it->value.IsInt())
+                    {
+                        args.verbosity = static_cast<log::Verbosity>(it->value.GetInt());
+                    }
+                    if(it->value.IsString())
+                    {
+                        log::Verbosity e;
+                        if(TryParseVerbosity(it->value.GetString(), e))
+                        {
+                            args.verbosity = e;
+                        }
+                        else
+                        {
+                            throw json_exception("invalid verbosity string", __FILE__, __LINE__);
+                        }
+                    }
+                    else
+                    {
+                        throw json_exception("verbosity must be of type int or string", __FILE__, __LINE__);
+                    }
+                }
+                else
+                {
+                    std::stringstream ss;
+                    ss << "invalid config key: " << key; 
+                    throw json_exception(ss.str(), __FILE__, __LINE__);
                 }
             }
         }

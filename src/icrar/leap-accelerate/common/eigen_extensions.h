@@ -32,7 +32,7 @@
 #include <functional>
 #include <type_traits>
 
-#include "icrar/leap-accelerate/core/logging.h"
+#include "icrar/leap-accelerate/core/log/logging.h"
 
 constexpr int pretty_width = 12;
 
