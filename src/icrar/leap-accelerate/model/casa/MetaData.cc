@@ -111,18 +111,14 @@ namespace casalib
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-        // Check for flagged data on the first channel and polarization. TODO: may want to consider using logical OR over
-        // for each channel and polarization.
-        auto aSize = ms.GetNumBaselines();
-        auto flagSlice = Slicer(IPosition(3,0,0,0), IPosition(3,1,1,aSize), IPosition(3,1,1,1));
-        casacore::Vector<bool> baselineFlags = msmc->flag().getColumn()(flagSlice).reform(IPosition(1, aSize))(epochIndices);
+        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines());
 
         auto uvwShape = msmc->uvw().getColumn().shape();
         auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
         casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
 
-		if(a1.size() != a2.size())
-		{
+        if(a1.size() != a2.size())
+        {
             throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
         }
         for(size_t i = a2.size(); i < a2.size(); ++i)

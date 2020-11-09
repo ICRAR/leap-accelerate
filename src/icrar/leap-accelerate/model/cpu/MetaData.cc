@@ -118,22 +118,7 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
-        //select the first epoch only
-        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
-        
-        
-        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
-        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-
-        auto aSize = ms.GetNumBaselines();
-
-        auto flagSlice = casacore::Slicer(
-            casacore::IPosition(3,0,0,0),
-            casacore::IPosition(3,1,1,aSize),
-            casacore::IPosition(3,1,1,1));
-        casacore::Vector<bool> fg = msmc->flag().getColumn()
-        (flagSlice).reform(casacore::IPosition(1, aSize))
-        (epochIndices);
+        auto fg = ms.GetFlaggedBaselines();
 
         auto uvwShape = msmc->uvw().getColumn().shape();
         auto uvSlice = casacore::Slicer(
@@ -142,22 +127,20 @@ namespace cpu
             casacore::IPosition(2,1,1));
         casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
 
-        // if(a1.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-        // if(a2.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-
+        //select the first epoch only
+        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
+        casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
+        casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
+        
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ToVector(fg), 0);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), fg, 0);
         trace_matrix(m_A1, "A1");
+        trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), ToVector(fg), -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), fg, -1);
         trace_matrix(m_A, "A");
+        trace_matrix(m_I, "I");
 
         LOG(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);

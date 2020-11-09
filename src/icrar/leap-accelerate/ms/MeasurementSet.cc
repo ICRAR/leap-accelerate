@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/logging.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 
 namespace icrar
 {
@@ -184,6 +185,21 @@ namespace icrar
         {
             return 0;
         }
+    }
+
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    {
+        // TODO: may want to consider using logical OR over for each channel and polarization.
+        auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
+        auto nBaselines = GetNumBaselines();
+        auto flagSlice = casacore::Slicer(
+            casacore::IPosition(3,0,0,0),
+            casacore::IPosition(3,1,1,nBaselines),
+            casacore::IPosition(3,1,1,1));
+        casacore::Vector<bool> fg = m_msmc->flag().getColumn()
+        (flagSlice).reform(casacore::IPosition(1, nBaselines))
+        (epochIndices);
+        return ToVector(fg);
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
