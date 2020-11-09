@@ -22,16 +22,12 @@
 
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
-#include <icrar/leap-accelerate/model/casa/Integration.h>
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/core/git_revision.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/UsageReporter.h>
