@@ -33,21 +33,47 @@ add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
-include(lint)
 include(CTest)
 
-# External projects
-if (BUILD_TESTING)
-  #add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
-  # installed as git submodule - if this is your first clone you need to
-  # git submodule init
-  # git submodule update
-  # This is a cmake module and needs no further input from you
+# Gather External Projects
+find_package(Git)
+if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+  # Update submodules as needed, see https://cliutils.gitlab.io/modern-cmake/chapters/projects/submodule.html
+  option(GIT_SUBMODULE "Check submodules during build" ON)
+  if(GIT_SUBMODULE)
+      message(STATUS "Submodule update")
+      execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                      RESULT_VARIABLE GIT_SUBMOD_RESULT)
+      if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+          message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+      endif()
+  endif()
+else()
+  message(WARNING "git not found!")
+endif()
 
-  #${PROJECT_SOURCE_DIR}
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/cmake-modules/dependencies.cmake")
+  message(FATAL_ERROR "Submodule cmake-modules was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/CLI11/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule CLI11 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/eigen-3.3.90/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule eigen-3.3.90 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/gtest-1.8.1/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule gtest-1.8.1 was not downloaded! Please update submodules and try again.")
+endif()
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/CMakeLists.txt")
+  message(FATAL_ERROR "Submodule rapidjson-1.1.0 was not downloaded! Please update submodules and try again.")
+endif()
+
+
+if (BUILD_TESTING)
   #find_package(GTest)
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # required for Win32
-  add_subdirectory(external/gtest-1.8.1)
+  add_subdirectory(external/gtest-1.8.1 googletest EXCLUDE_FROM_ALL)
   enable_testing()
   
   include(GoogleTest)
@@ -61,6 +87,8 @@ if (BUILD_TESTING)
   set_target_properties(gmock PROPERTIES FOLDER external)
   #set_target_properties(gmock_main PROPERTIES FOLDER external)
 endif()
+
+# Global Libraries
 
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
@@ -82,11 +110,11 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_package(CUDA)
+find_package(CUDA REQUIRED)
 enable_language(CUDA)
 
-# Global Libraries
 add_definitions(-DBOOST_ALL_DYN_LINK)
+
 find_package(Boost REQUIRED COMPONENTS log log_setup)
 
 find_package(Casacore REQUIRED)
@@ -103,7 +131,9 @@ find_package(Eigen3 REQUIRED)
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
 
+
 # Local Targets
+include(lint)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)
