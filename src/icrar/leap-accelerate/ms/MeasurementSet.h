@@ -134,5 +134,13 @@ namespace icrar
          * @return unsigned int 
          */
         unsigned int GetNumBaselines(bool useAutocorrelations) const;
+
+        /**
+         * @brief Calculates the set of unique antenna indices.
+         * 
+         * @return unsigned int 
+         */
+        std::set<int32_t> CalculateUniqueAntennas() const;
+
     };
 }
