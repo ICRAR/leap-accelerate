@@ -85,6 +85,51 @@ namespace icrar
         }
     }
 
+    ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
+    {
+        // Initialize default arguments first
+        ApplyArguments(GetDefaultArguments());
+
+        // Read the config argument second and apply the config arguments over the default arguments
+        if(cliArgs.configFilePath.is_initialized())
+        {
+            // Configuration via json config
+            ApplyArguments(ParseConfig(cliArgs.configFilePath.get()));
+        }
+
+        // OVerride the config args with the remaining cli arguments
+        ApplyArguments(std::move(cliArgs));
+        Validate();
+
+        // Load resources
+        switch (m_source)
+        {
+        case InputType::STREAM:
+            m_inputStream = &std::cin;
+            break;
+        case InputType::FILENAME:
+            if (m_filePath.is_initialized())
+            {
+                m_measurementSet = std::make_unique<MeasurementSet>(
+                    m_filePath.get(),
+                    m_stations,
+                    m_readAutocorrelations);
+            }
+            else
+            {
+                throw std::invalid_argument("measurement set filename not provided");
+            }
+            break;
+        case InputType::APACHE_ARROW:
+            throw new std::runtime_error("only stream in and file input are currently supported");
+            break;
+        default:
+            throw new std::invalid_argument("only stream in and file input are currently supported");
+            break;
+        }
+    }
+
+
     void ArgumentsValidated::ApplyArguments(Arguments&& args)
     {
         if(args.source.is_initialized())
@@ -138,51 +183,6 @@ namespace icrar
         }
     }
 
-    ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
-    {
-        ApplyArguments(GetDefaultArguments());
-
-        // Read the config argument first and apply the config settings
-        if(cliArgs.configFilePath.is_initialized())
-        {
-            // Configuration via json config
-            ApplyArguments(std::move(ParseConfig(cliArgs.configFilePath.get())));
-        }
-
-        // Overwrite the config args with the remaining cli args
-        ApplyArguments(std::move(cliArgs));
-        Validate();
-
-        //Override config arguments with CLI arguments
-
-        switch (m_source)
-        {
-        case InputType::STREAM:
-            m_inputStream = &std::cin;
-            break;
-        case InputType::FILENAME:
-            if (m_filePath.is_initialized())
-            {
-                m_measurementSet = std::make_unique<MeasurementSet>(
-                    m_filePath.get(),
-                    m_stations,
-                    m_readAutocorrelations);
-            }
-            else
-            {
-                throw std::invalid_argument("measurement set filename not provided");
-            }
-            break;
-        case InputType::APACHE_ARROW:
-            throw new std::runtime_error("only stream in and file input are currently supported");
-            break;
-        default:
-            throw new std::invalid_argument("only stream in and file input are currently supported");
-            break;
-        }
-
-
-    }
 
     void ArgumentsValidated::Validate() const
     {

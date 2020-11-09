@@ -72,7 +72,7 @@ int main(int argc, char** argv)
     app.set_version_flag("--version", [&]() { return version_information(appName); });
 
     //Parse Arguments
-    CLIArguments rawArgs = CLIArguments();
+    CLIArguments rawArgs;
 
     //app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
@@ -96,7 +96,7 @@ int main(int argc, char** argv)
     icrar::profiling::UsageReporter _;
     try
     {
-        ArgumentsValidated args = ArgumentsValidated(std::move(Arguments(std::move(rawArgs))));
+        ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
 
         icrar::log::Initialize(args.GetVerbosity());
 
