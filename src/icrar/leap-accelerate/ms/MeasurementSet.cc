@@ -40,7 +40,9 @@ namespace icrar
         if(overrideNStations.is_initialized())
         {
             m_stations = overrideNStations.get();
+            LOG(warning) << "overriding number of stations will be removed in future releases";
         }
+
         else if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
             LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
