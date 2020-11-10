@@ -20,12 +20,35 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#pragma once
 
-#include <rapidjson/document.h>
-#include <vector>
+#include <string>
 
 namespace icrar
 {
-    std::vector<icrar::MVDirection> ParseDirections(const std::string json);
+namespace log
+{
+    enum class Verbosity
+    {
+        fatal = 0,
+        error = 1,
+        warn = 2,
+        info = 3,
+        debug = 4,
+        trace = 5
+    };
+    
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return ComputeImplementation 
+     */
+    Verbosity ParseVerbosity(const std::string& value);
+
+    /**
+     * @return true if value was converted succesfully, false otherwise.
+     */
+    bool TryParseVerbosity(const std::string& value, Verbosity& out);
+}
 }

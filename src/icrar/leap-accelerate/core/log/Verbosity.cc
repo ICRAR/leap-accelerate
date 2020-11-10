@@ -20,47 +20,60 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
 
 namespace icrar
 {
-    ComputeImplementation ParseComputeImplementation(std::string value)
+namespace log
+{
+    Verbosity ParseVerbosity(const std::string& value)
     {
-        ComputeImplementation i;
-        if(!TryParseComputeImplementation(value, i))
+        Verbosity e;
+        if(!TryParseVerbosity(value, e))
         {
             throw std::invalid_argument("value");
         }
-        return i;
+        return e;
     }
 
-    /**
-     * @return true if value was converted succesfully, false otherwise
-     */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
+    bool TryParseVerbosity(const std::string& value, Verbosity& out)
     {
-        if(value == "casa")
+        string lower_value = value;
+        std::transform(
+            value.begin(), value.end(), lower_value.begin(), 
+            [](unsigned char c){ return std::tolower(c); });
+
+        if(lower_value == "fatal")
         {
-            out = ComputeImplementation::casa;
+            out = Verbosity::fatal;
             return true;
         }
-        else if(value == "eigen")
+        else if(lower_value == "error")
         {
-            LOG(info) << "argument 'eigen' deprecated, use 'cpu' instead";
-            out = ComputeImplementation::cpu;
+            out = Verbosity::error;
             return true;
         }
-        else if(value == "cpu")
+        else if(lower_value == "warn")
         {
-            out = ComputeImplementation::cpu;
+            out = Verbosity::warn;
             return true;
         }
-        else if(value == "cuda")
+        else if(lower_value == "info")
         {
-            out = ComputeImplementation::cuda;
+            out = Verbosity::info;
+            return true;
+        }
+        else if(lower_value == "debug")
+        {
+            out = Verbosity::debug;
+            return true;
+        }
+        else if(lower_value == "trace")
+        {
+            out = Verbosity::trace;
             return true;
         }
         return false;
     }
+}
 }

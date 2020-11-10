@@ -22,22 +22,22 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
 #include <boost/log/trivial.hpp>
 
 namespace icrar
 {
 namespace log
 {
-
     /// The default verbosity level with which the logging system is initialized
-    constexpr int DEFAULT_VERBOSITY = 3;
+    constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::info;
 
     /**
      * @brief Initializes logging singletons
      * @param verbosity The verbosity to initialize the library with, higher
      * values yield more verbose output.
      */
-    void Initialize(int verbosity=DEFAULT_VERBOSITY);
+    void Initialize(Verbosity verbosity=DEFAULT_VERBOSITY);
 
     /// The logging level set on the application
     extern ::boost::log::trivial::severity_level logging_level;

@@ -50,12 +50,13 @@ set(sources
     math/cpu/vector.cc
 
     core/compute_implementation.cc
-    core/logging.cc
+    core/log/logging.cc
+    core/log/Verbosity.cc
     core/profiling/resource_usage.cc
     core/profiling/UsageReporter.cc
     core/version.cc
 
-    json/json_helper.cc
+    common/MVDirection.cc
     
     algorithm/casa/PhaseRotate.cc
     algorithm/cpu/PhaseRotate.cc

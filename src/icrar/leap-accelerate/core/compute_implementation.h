@@ -33,6 +33,8 @@ namespace icrar
         cuda = 2, // Compute implementation on gpu use nvidia cuda
     };
 
+    ComputeImplementation ParseComputeImplementation(std::string value);
+
     /**
      * @return true if value was converted succesfully, false otherwise
      */

@@ -27,7 +27,7 @@
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
 #include <icrar/leap-accelerate/core/ioutils.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
 {
