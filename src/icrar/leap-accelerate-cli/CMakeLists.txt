@@ -3,13 +3,19 @@ set(TARGET_EXPORT leapaccelerate-targest)
 
 set(sources
   main.cc
+  Arguments.cc
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/external/CLI11/include)
 
 # add the executable
-add_executable (${TARGET_NAME} main.cc)
-target_link_libraries (${TARGET_NAME} LeapAccelerate)
+add_executable(
+  ${TARGET_NAME}
+  ${sources}
+)
+target_link_libraries(${TARGET_NAME} LeapAccelerate)
+target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
+
 set_target_properties(${TARGET_NAME}
   PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"

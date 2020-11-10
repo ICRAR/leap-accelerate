@@ -24,7 +24,24 @@
 
 #include <Eigen/Core>
 
+#include <rapidjson/document.h>
+#include <vector>
+
 namespace icrar
 {
     using MVDirection = Eigen::RowVector3d;
+
+    /**
+     * @brief Parses a json string to a collection of MVDirections
+     * 
+     * @param json 
+     * @return std::vector<icrar::MVDirection> 
+     */
+    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
+
+    /**
+     * @brief Parses a json object to a collection of MVDirections
+     * 
+     */
+    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
 }
