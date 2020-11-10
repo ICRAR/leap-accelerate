@@ -30,7 +30,7 @@ namespace icrar
 namespace log
 {
     /// The default verbosity level with which the logging system is initialized
-    constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::INFO;
+    constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::info;
 
     /**
      * @brief Initializes logging singletons

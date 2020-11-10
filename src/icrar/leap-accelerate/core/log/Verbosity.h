@@ -30,12 +30,12 @@ namespace log
 {
     enum class Verbosity
     {
-        FATAL = 0,
-        ERROR = 1,
-        WARN = 2,
-        INFO = 3,
-        DEBUG = 4,
-        TRACE = 5
+        fatal = 0,
+        error = 1,
+        warn = 2,
+        info = 3,
+        debug = 4,
+        trace = 5
     };
     
     /**
