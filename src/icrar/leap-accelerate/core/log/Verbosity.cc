@@ -45,32 +45,32 @@ namespace log
 
         if(lower_value == "fatal")
         {
-            out = Verbosity::FATAL;
+            out = Verbosity::fatal;
             return true;
         }
         else if(lower_value == "error")
         {
-            out = Verbosity::ERROR;
+            out = Verbosity::error;
             return true;
         }
         else if(lower_value == "warn")
         {
-            out = Verbosity::WARN;
+            out = Verbosity::warn;
             return true;
         }
         else if(lower_value == "info")
         {
-            out = Verbosity::INFO;
+            out = Verbosity::info;
             return true;
         }
         else if(lower_value == "debug")
         {
-            out = Verbosity::DEBUG;
+            out = Verbosity::debug;
             return true;
         }
         else if(lower_value == "trace")
         {
-            out = Verbosity::TRACE;
+            out = Verbosity::trace;
             return true;
         }
         return false;
