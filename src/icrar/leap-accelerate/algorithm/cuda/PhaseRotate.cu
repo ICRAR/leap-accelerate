@@ -95,6 +95,13 @@ namespace cuda
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        if(integrations == 0)
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
         auto integration = cpu::Integration(
             0,
             ms,

@@ -259,7 +259,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(n) != a2(n))
+            if(a1(n) != a2(n)) // skip autocorrelations
             {
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {

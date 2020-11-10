@@ -77,6 +77,7 @@ int main(int argc, char** argv)
     //app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the measurement set");
     app.add_option("-f,--filepath", rawArgs.filePath, "MeasurementSet file path");
+    app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
     app.add_option("-c,--config", rawArgs.configFilePath, "Config filepath");
@@ -105,24 +106,25 @@ int main(int argc, char** argv)
         //=========================
         LOG(info) << version_information(argv[0]);
         LOG(info) << arg_string(argc, argv);
+
         switch(args.GetComputeImplementation())
         {
         case ComputeImplementation::casa:
         {
             casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()));
-            cpu::PrintResult(cpu::ToCalibrateResult(result));
+            cpu::PrintResult(cpu::ToCalibrateResult(result), args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cpu:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
-            cpu::PrintResult(result);
+            cpu::PrintResult(result, args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cuda:
         {
             cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections());
-            cpu::PrintResult(result);
+            cpu::PrintResult(result ,args.GetOutputStream());
             break;
         }
         }

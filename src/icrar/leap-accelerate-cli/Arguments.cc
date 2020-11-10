@@ -40,7 +40,7 @@ namespace icrar
         args.source = InputType::FILENAME;
         args.filePath = boost::none;
         args.configFilePath = boost::none;
-        args.outFilePath = boost::none;
+        args.outputFilePath = boost::none;
 
         args.stations = boost::none;
         args.directions = boost::none;
@@ -55,7 +55,7 @@ namespace icrar
         : source(std::move(args.source))
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
-        , outFilePath(std::move(args.outFilePath))
+        , outputFilePath(std::move(args.outputFilePath))
         , mwaSupport(std::move(args.mwaSupport))
         , readAutocorrelations(std::move(args.readAutocorrelations))
     {
@@ -126,6 +126,24 @@ namespace icrar
             throw new std::invalid_argument("only stream in and file input are currently supported");
             break;
         }
+
+        if(m_outputFilePath.is_initialized())
+        {
+            //std::cout << "writing to " << m_outputFilePath.get() + ".json" << std::endl;
+            m_outputFileStream = std::make_unique<std::ofstream>(m_outputFilePath.get() + ".json");
+            if(!m_outputFileStream->is_open())
+            {
+                std::stringstream ss;
+                ss << "failed to open file " << m_outputFilePath.get() << ".json" << std::endl;
+                throw exception(ss.str(), __FILE__, __LINE__);
+            }
+
+            m_outputStream = m_outputFileStream.get();
+        }
+        else
+        {
+            m_outputStream = &std::cout;
+        }
     }
 
 
@@ -146,9 +164,9 @@ namespace icrar
             m_configFilePath = std::move(args.configFilePath.get());
         }
 
-        if(args.outFilePath.is_initialized())
+        if(args.outputFilePath.is_initialized())
         {
-            m_outFilePath = std::move(args.outFilePath.get());
+            m_outputFilePath = std::move(args.outputFilePath.get());
         }
 
         if(args.stations.is_initialized())
@@ -194,6 +212,16 @@ namespace icrar
     std::istream& ArgumentsValidated::GetInputStream()
     {
         return *m_inputStream;
+    }
+
+    boost::optional<std::string> ArgumentsValidated::GetOutputFilePath() const
+    {
+        return m_outputFilePath;
+    }
+
+    std::ostream& ArgumentsValidated::GetOutputStream()
+    {
+        return *m_outputStream;
     }
 
     MeasurementSet& ArgumentsValidated::GetMeasurementSet()
@@ -263,11 +291,11 @@ namespace icrar
                 {
                     throw json_exception("recursive config detected", __FILE__, __LINE__);
                 }
-                else if(key == "outFilePath")
+                else if(key == "outputFilePath")
                 {
                     if(it->value.IsString())
                     {
-                        args.outFilePath = it->value.GetString();
+                        args.outputFilePath = it->value.GetString();
                     }
                     else
                     {
