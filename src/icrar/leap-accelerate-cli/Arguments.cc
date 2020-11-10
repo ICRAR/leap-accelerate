@@ -38,14 +38,13 @@ namespace icrar
     {
         auto args = CLIArguments();
         args.source = InputType::FILENAME;
-        args.filePath = boost::none; // Measurement set filepath
-        args.configFilePath = boost::none; // Config filepath
+        args.filePath = boost::none;
+        args.configFilePath = boost::none;
         args.outFilePath = boost::none;
 
         args.stations = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
-        
         args.mwaSupport = false;
         args.readAutocorrelations = true;
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
@@ -217,14 +216,14 @@ namespace icrar
         return m_verbosity;
     }
 
-    Arguments ParseConfig(const std::string& configFilepath)
+    Arguments ArgumentsValidated::ParseConfig(const std::string& configFilepath)
     {
         Arguments args;
         ParseConfig(configFilepath, args);
         return args;
     }
 
-    void ParseConfig(const std::string& configFilepath, Arguments& args)
+    void ArgumentsValidated::ParseConfig(const std::string& configFilepath, Arguments& args)
     {
         auto ifs = std::ifstream(configFilepath);
         rapidjson::IStreamWrapper isw(ifs);

@@ -55,14 +55,13 @@ namespace icrar
     struct CLIArguments
     {
         boost::optional<InputType> source;
-        boost::optional<std::string> filePath; // Measurement set filepath
-        boost::optional<std::string> configFilePath; // Config filepath
+        boost::optional<std::string> filePath;
+        boost::optional<std::string> configFilePath;
         boost::optional<std::string> outFilePath;
 
         boost::optional<std::string> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
-        
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
         boost::optional<int> verbosity;
@@ -77,15 +76,14 @@ namespace icrar
         Arguments() {}
         Arguments(CLIArguments&& args);
 
-        boost::optional<InputType> source;
-        boost::optional<std::string> filePath;
-        boost::optional<std::string> configFilePath;
-        boost::optional<std::string> outFilePath;
+        boost::optional<InputType> source; // MeasurementSet source type
+        boost::optional<std::string> filePath; // MeasurementSet filepath
+        boost::optional<std::string> configFilePath; // Optional config filepath
+        boost::optional<std::string> outFilePath; // Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
         boost::optional<std::vector<icrar::MVDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
-        
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
         boost::optional<icrar::log::Verbosity> verbosity;
@@ -99,17 +97,17 @@ namespace icrar
         /**
          * Constants
          */
-        InputType m_source; // MeasurementSet source type
+        InputType m_source;
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
-        boost::optional<std::string> m_configFilePath = boost::none; // Config filepath
-        boost::optional<std::string> m_outFilePath = boost::none; // Calibration output filepath
+        boost::optional<std::string> m_configFilePath; // Config filepath
+        boost::optional<std::string> m_outFilePath; // Calibration output filepath
 
-        boost::optional<int> m_stations; // Overriden number of stations
-        std::vector<MVDirection> m_directions;
-        ComputeImplementation m_computeImplementation;
-        bool m_mwaSupport;
-        bool m_readAutocorrelations;
-        icrar::log::Verbosity m_verbosity;
+        boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
+        std::vector<MVDirection> m_directions; // Calibration directions
+        ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
+        bool m_mwaSupport; // Negates baselines when enabled
+        bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
+        icrar::log::Verbosity m_verbosity; // Defines logging level for std::out
 
         /**
          * Resources
@@ -138,21 +136,22 @@ namespace icrar
         ComputeImplementation GetComputeImplementation() const;
 
         icrar::log::Verbosity GetVerbosity() const;
-    };
 
-    /**
-     * @brief Converts a JSON file to a config
-     * 
-     * @param configFilepath 
-     * @return Config 
-     */
-    Arguments ParseConfig(const std::string& configFilepath);
-    
-    /**
-     * @brief 
-     * 
-     * @param configFilepath 
-     * @param args 
-     */
-    void ParseConfig(const std::string& configFilepath, Arguments& args);
+    private:
+        /**
+         * @brief Converts a JSON file to a config
+         * 
+         * @param configFilepath 
+         * @return Config 
+         */
+        Arguments ParseConfig(const std::string& configFilepath);
+        
+        /**
+         * @brief Converts a JSON file to a config
+         * 
+         * @param configFilepath 
+         * @param args 
+         */
+        void ParseConfig(const std::string& configFilepath, Arguments& args);
+    };
 }
