@@ -78,6 +78,7 @@ namespace cuda
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "

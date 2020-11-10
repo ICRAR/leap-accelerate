@@ -26,6 +26,8 @@
 #include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
+#include <cstddef>
+
 namespace icrar
 {
     MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
@@ -200,6 +202,20 @@ namespace icrar
         (flagSlice).reform(casacore::IPosition(1, nBaselines))
         (epochIndices);
         return ToVector(fg);
+    }
+
+    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    {
+        auto flaggedBaselines = GetFlaggedBaselines();
+        unsigned int sum = 0;
+        for(bool b : flaggedBaselines)
+        {
+            if(b)
+            {
+                sum++;
+            }
+        }
+        return sum;
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const

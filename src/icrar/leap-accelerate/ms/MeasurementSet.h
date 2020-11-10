@@ -118,6 +118,8 @@ namespace icrar
          */
         Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
 
+        unsigned int GetNumFlaggedBaselines() const;
+
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;
         Eigen::MatrixX3d GetCoords(unsigned int start_row, unsigned int nBaselines) const;
