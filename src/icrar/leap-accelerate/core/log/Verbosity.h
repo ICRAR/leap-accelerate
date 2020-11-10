@@ -22,27 +22,33 @@
 
 #pragma once
 
-#include <boost/log/trivial.hpp>
+#include <string>
 
 namespace icrar
 {
 namespace log
 {
-
-    /// The default verbosity level with which the logging system is initialized
-    constexpr int DEFAULT_VERBOSITY = 3;
+    enum class Verbosity
+    {
+        FATAL = 0,
+        ERROR = 1,
+        WARN = 2,
+        INFO = 3,
+        DEBUG = 4,
+        TRACE = 5
+    };
+    
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return ComputeImplementation 
+     */
+    Verbosity ParseVerbosity(const std::string& value);
 
     /**
-     * @brief Initializes logging singletons
-     * @param verbosity The verbosity to initialize the library with, higher
-     * values yield more verbose output.
+     * @return true if value was converted succesfully, false otherwise.
      */
-    void Initialize(int verbosity=DEFAULT_VERBOSITY);
-
-    /// The logging level set on the application
-    extern ::boost::log::trivial::severity_level logging_level;
+    bool TryParseVerbosity(const std::string& value, Verbosity& out);
 }
 }
-
-#define LOG(X) BOOST_LOG_TRIVIAL(X)
-#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

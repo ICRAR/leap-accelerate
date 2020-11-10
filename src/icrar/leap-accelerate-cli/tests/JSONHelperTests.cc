@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/json/json_helper.h>
+#include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>

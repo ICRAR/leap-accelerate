@@ -20,12 +20,29 @@
  * MA 02111 - 1307  USA
  */
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#pragma once
 
-#include <rapidjson/document.h>
-#include <vector>
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
+#include <boost/log/trivial.hpp>
 
 namespace icrar
 {
-    std::vector<icrar::MVDirection> ParseDirections(const std::string json);
+namespace log
+{
+    /// The default verbosity level with which the logging system is initialized
+    constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::INFO;
+
+    /**
+     * @brief Initializes logging singletons
+     * @param verbosity The verbosity to initialize the library with, higher
+     * values yield more verbose output.
+     */
+    void Initialize(Verbosity verbosity=DEFAULT_VERBOSITY);
+
+    /// The logging level set on the application
+    extern ::boost::log::trivial::severity_level logging_level;
 }
+}
+
+#define LOG(X) BOOST_LOG_TRIVIAL(X)
+#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

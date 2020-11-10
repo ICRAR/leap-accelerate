@@ -35,7 +35,7 @@
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
