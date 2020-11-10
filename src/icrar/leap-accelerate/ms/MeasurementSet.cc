@@ -22,7 +22,7 @@
 
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
