@@ -55,18 +55,20 @@ namespace cpu
 {
     class IntegrationResult
     {
+        int m_integrationNumber;
         MVDirection m_direction;
-        int m_integration_number;
+
+        //TODO(calgray) use Eigen types
         boost::optional<std::vector<casacore::Vector<double>>> m_data;
 
     public:
         IntegrationResult(
+            int integrationNumber,
             icrar::MVDirection direction,
-            int integration_number,
             boost::optional<std::vector<casacore::Vector<double>>> data)
-            : m_direction(direction)
-            , m_integration_number(integration_number)
-            , m_data(data)
+            : m_integrationNumber(integrationNumber)
+            , m_direction(std::move(direction))
+            , m_data(std::move(data))
         {
 
         }
@@ -79,10 +81,10 @@ namespace cpu
 
     public:
         CalibrationResult(
-            const MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
-            : m_direction(direction)
-            , m_data(data)
+            MVDirection direction,
+            std::vector<casacore::Matrix<double>> data)
+            : m_direction(std::move(direction))
+            , m_data(std::move(data))
         {
         }
 

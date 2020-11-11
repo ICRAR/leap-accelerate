@@ -6,8 +6,9 @@ Checks:
     readibility-*,
     modernize-*,
     misc-*,
-    clang-analyzer-*,
     google-*,
+    -google-runtime-references,
+    -google-readability-namespace-comments,
     -modernize-use-trailing-return-type'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

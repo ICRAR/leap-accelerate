@@ -121,4 +121,4 @@ namespace icrar
         }
 #endif
     }
-}
+} // namespace icrar

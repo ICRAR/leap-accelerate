@@ -147,7 +147,7 @@ namespace cpu
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
+            output_integrations.emplace_back(integration.GetIntegrationNumber(), direction, boost::none);
         }
         trace_matrix(metadata.GetAvgData(), "avg_data");
 

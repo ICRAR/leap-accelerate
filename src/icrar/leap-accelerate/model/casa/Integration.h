@@ -48,23 +48,16 @@ namespace casalib
     class Integration
     {
     public:
-        /**
-         * @brief Construct a new Integration object
-         * 
-         * @param integrationNumber the id of the integration
-         * @param ms 
-         * @param index the row index of the uvw
-         * @param channels the number of channels
-         * @param baselines the number of baselines
-         * @param polarizations the number of polarizations
-         */
-        Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
-
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         Eigen::Tensor<std::complex<double>, 3> data; //data is an array data[npol][nbl][nch]
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<casacore::MVuvw> uvw; //uvw is an array uvw[3][nbl]
+        
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int integration_number;
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         union
         {
             std::array<size_t, 4> parameters; // index, 0, channels, baselines
@@ -76,6 +69,18 @@ namespace casalib
                 size_t baselines;
             };
         };
+
+        /**
+         * @brief Construct a new Integration object
+         * 
+         * @param integrationNumber the id of the integration
+         * @param ms 
+         * @param index the row index of the uvw
+         * @param channels the number of channels
+         * @param baselines the number of baselines
+         * @param polarizations the number of polarizations
+         */
+        Integration(int integrationNumber, const icrar::MeasurementSet& ms, int index, int channels, int baselines, int polarizations);
 
         bool operator==(const Integration& rhs) const;
     };

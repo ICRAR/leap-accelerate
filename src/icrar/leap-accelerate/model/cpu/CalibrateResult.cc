@@ -33,12 +33,13 @@ namespace cpu
 {
     void CalibrationResult::Serialize(std::ostream& os) const
     {
-        os.precision(15);
+        constexpr uint32_t PRECISION = 15;
+        os.precision(PRECISION);
         os.setf(std::ios::fixed);
 
         rapidjson::StringBuffer s;
 
-        //TODO: could also support PrettyWriter
+        //TODO(calgray): could also support PrettyWriter
         rapidjson::Writer<rapidjson::StringBuffer> writer(s);
         CreateJsonStrFormat(writer);
         os << s.GetString() << std::endl;
@@ -57,8 +58,8 @@ namespace cpu
             {
                 auto& integrationResult = queues.front();
                 output_integrations[index].emplace_back(
-                    ToDirection(integrationResult.GetDirection()),
                     integrationResult.GetIntegrationNumber(),
+                    ToDirection(integrationResult.GetDirection()),
                     integrationResult.GetData()
                 );
                 queues.pop();
@@ -68,7 +69,7 @@ namespace cpu
         for(auto& queues : result.second)
         {
             int index = output_calibrations.size();
-            output_calibrations.push_back(std::vector<CalibrationResult>());
+            output_calibrations.emplace_back();
             while(!queues.empty())
             {
                 auto& calibrationResult = queues.front();

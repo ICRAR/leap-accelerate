@@ -53,7 +53,7 @@ namespace icrar
         std::unique_ptr<casacore::MSColumns> m_msc;
 
         boost::optional<std::string> m_filepath;
-        int m_stations;
+        std::uint32_t m_stations;
         bool m_readAutocorrelations;
 
 

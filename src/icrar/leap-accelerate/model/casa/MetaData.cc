@@ -165,7 +165,7 @@ namespace casalib
         }
     }
 
-    // TODO: rename to CalcDD or UpdateDD
+    // TODO(calgray): rename to CalcDD or UpdateDD
     void MetaData::SetDD(const casacore::MVDirection& direction)
     {
         if(!dd.is_initialized())

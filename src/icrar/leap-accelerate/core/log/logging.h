@@ -41,8 +41,8 @@ namespace log
 
     /// The logging level set on the application
     extern ::boost::log::trivial::severity_level logging_level;
-}
-}
+} // namespace log
+} //namespace icrar
 
 #define LOG(X) BOOST_LOG_TRIVIAL(X)
 #define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

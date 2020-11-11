@@ -45,64 +45,70 @@ namespace icrar
     class MeasurementSet;
 }
 
-#pragma clang
 namespace icrar
 {
 namespace casalib
 {
     struct MetaData
     {
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         bool m_initialized;
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int nbaseline;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int channels; // The number of channels of the current observation
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int num_pols; // The number of polarizations used by the current observation
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int stations; // The number of stations used by the current observation
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         int rows;
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         double freq_start_hz; // The frequency of the first channel, in Hz
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<double> channel_wavelength;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         std::vector<casacore::MVuvw> oldUVW;
-
+        
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         boost::optional<casacore::Matrix<double>> dd;
-
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         boost::optional<casacore::Matrix<std::complex<double>>> avg_data;
 
-        union
-        {
-            std::array<double, 2> phase_centre;
-            struct
-            {
-                double phase_centre_ra_rad;
-                double phase_centre_dec_rad;
-            };
-        };
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        double phase_centre_ra_rad;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        double phase_centre_dec_rad;
 
-        union
-        {
-            std::array<double, 2> dlm;
-            struct
-            {
-                double dlm_ra;
-                double dlm_dec;
-            };
-        };
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        double dlm_ra;
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
+        double dlm_dec;
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Matrix<double> A; // [baselines+1,stations] Antennas (all, including flagged) PhaseMatrix
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Matrix<double> Ad; // A inverse
         
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Matrix<double> A1; // [baselines,stations] Antennas ((all, including flagged) with baseline PhaseMatrix
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Matrix<double> Ad1; //A1 inverse
 
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Vector<int> I1; // The indexes of the antennas used by A
+        // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         casacore::Vector<int> I; // The indexes of the antennas used by A1
 
     public:
         MetaData();
-        MetaData(std::istream& input);
-        MetaData(const icrar::MeasurementSet& ms);
+        explicit MetaData(std::istream& input);
+        explicit MetaData(const icrar::MeasurementSet& ms);
         
         /**
          * @brief Gets the number of baselines
@@ -124,7 +130,7 @@ namespace casalib
          * @param uvw 
          * @param metadata 
          */
-        void CalcUVW(std::vector<casacore::MVuvw>& uvw);
+        void CalcUVW(std::vector<casacore::MVuvw>& uvw); // NOLINT(google-runtime-references)
 
         /**
          * @brief 

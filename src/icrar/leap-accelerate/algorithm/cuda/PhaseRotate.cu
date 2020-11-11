@@ -170,8 +170,8 @@ namespace cuda
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.emplace_back(
-                direction,
                 integration.GetIntegrationNumber(),
+                direction,
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
 
@@ -202,7 +202,7 @@ namespace cuda
         assert(dIntColumn.cols() == 1);
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.emplace_back(direction, std::move(cal));
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
