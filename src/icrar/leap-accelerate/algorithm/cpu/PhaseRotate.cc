@@ -74,7 +74,8 @@ namespace cpu
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
         profiling::timer calibration_timer;
 
@@ -259,7 +260,7 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         for(int n = 0; n < a1.size(); n++)
         {
-            if(a1(n) != a2(n))
+            if(a1(n) != a2(n)) // skip autocorrelations
             {
                 if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
                 {

@@ -127,6 +127,6 @@ namespace cpu
 
     icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
 
-    void PrintResult(const CalibrateResult& result);
+    void PrintResult(const CalibrateResult& result, std::ostream& out);
 }
 }

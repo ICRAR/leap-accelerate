@@ -57,7 +57,7 @@ namespace icrar
         boost::optional<InputType> source;
         boost::optional<std::string> filePath;
         boost::optional<std::string> configFilePath;
-        boost::optional<std::string> outFilePath;
+        boost::optional<std::string> outputFilePath;
 
         boost::optional<std::string> stations;
         boost::optional<std::string> directions;
@@ -79,7 +79,7 @@ namespace icrar
         boost::optional<InputType> source; // MeasurementSet source type
         boost::optional<std::string> filePath; // MeasurementSet filepath
         boost::optional<std::string> configFilePath; // Optional config filepath
-        boost::optional<std::string> outFilePath; // Calibration output file, print to terminal if empty
+        boost::optional<std::string> outputFilePath; // Calibration output file, print to terminal if empty
 
         boost::optional<int> stations;
         boost::optional<std::vector<icrar::MVDirection>> directions;
@@ -100,7 +100,7 @@ namespace icrar
         InputType m_source;
         boost::optional<std::string> m_filePath; // MeasurementSet filepath
         boost::optional<std::string> m_configFilePath; // Config filepath
-        boost::optional<std::string> m_outFilePath; // Calibration output filepath
+        boost::optional<std::string> m_outputFilePath; // Calibration output filepath
 
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
         std::vector<MVDirection> m_directions; // Calibration directions
@@ -114,6 +114,9 @@ namespace icrar
          */
         std::unique_ptr<MeasurementSet> m_measurementSet;
         std::istream* m_inputStream = nullptr; // Cached reference to the input stream
+        
+        std::unique_ptr<std::ofstream> m_outputFileStream;
+        std::ostream* m_outputStream = nullptr;
 
     public:
         ArgumentsValidated(Arguments&& cliArgs);
@@ -128,6 +131,10 @@ namespace icrar
         void Validate() const;
 
         std::istream& GetInputStream();
+
+        boost::optional<std::string> GetOutputFilePath() const;
+
+        std::ostream& GetOutputStream();
 
         MeasurementSet& GetMeasurementSet();
 

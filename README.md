@@ -7,8 +7,8 @@ Low-frequency Excision of the Atmosphere in Parallel (LEAP) Calibration using GP
 
 LEAP-Accelerate includes:
 
-* leap-accelerate: a shared library for gpu accelerated direction centering and phase calibration
-* leap-accelerate-cli: a CLI interface for I/O datastream or plasma data access 
+* [leap-accelerate-lib](src/icrar/leap-accelerate/ReadMe.md): a shared library for gpu accelerated direction centering and phase calibration
+* [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md): a CLI interface for I/O datastream or plasma data access 
 * leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server
 * leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients
 
