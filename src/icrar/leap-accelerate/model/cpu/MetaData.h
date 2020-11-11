@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "cuda_runtime.h"
+#include <cuda_runtime.h>
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
@@ -55,8 +55,8 @@ namespace cuda
 {
     class DeviceMetaData;
     class ConstantMetaData;
-}
-}
+} // namespace cuda
+} // namespace icrar
 
 namespace icrar
 {
@@ -166,5 +166,5 @@ namespace cpu
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantMetaData;
     };
-    }
-}
+} // namespace cpu
+} // namespace icrar

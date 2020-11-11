@@ -145,4 +145,4 @@ namespace icrar
             }
         }
     }
-}
+} // namespace icrar

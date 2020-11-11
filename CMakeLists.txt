@@ -133,6 +133,7 @@ find_package(RapidJSON REQUIRED)
 
 
 # Local Targets
+set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
 include(lint)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)

@@ -45,6 +45,7 @@ namespace icrar
     class MeasurementSet;
 }
 
+#pragma clang
 namespace icrar
 {
 namespace casalib
@@ -137,5 +138,5 @@ namespace casalib
 
         bool operator==(const MetaData& rhs) const;
     };
-}
-}
+} // namespace casalib
+} // namespace icrar

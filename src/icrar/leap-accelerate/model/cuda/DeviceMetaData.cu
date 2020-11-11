@@ -46,7 +46,7 @@ namespace cuda
         , m_I1(I1)
         , m_Ad1(Ad1) { }
 
-    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host)
+    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host) const
     {
         host.m_constants = m_constants;
 
@@ -101,7 +101,7 @@ namespace cuda
         cudaMemset(m_avg_data.Get(), v, m_avg_data.GetSize());
     }
 
-    void DeviceMetaData::ToHost(const cpu::MetaData& metadata) const
+    void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
     {
         m_constantMetadata->ToHost(metadata);
 
@@ -112,7 +112,7 @@ namespace cuda
         m_avg_data.ToHost(metadata.m_avg_data);
     }
 
-    void DeviceMetaData::AvgDataToHost(const Eigen::MatrixXcd& host) const
+    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
     {
         m_avg_data.ToHost(host);
     }
@@ -128,7 +128,7 @@ namespace cuda
         return result;
     }
 
-    void DeviceMetaData::ToHostAsync(const cpu::MetaData& host) const
+    void DeviceMetaData::ToHostAsync(cpu::MetaData& host) const
     {
         throw std::runtime_error("not implemented");
     }

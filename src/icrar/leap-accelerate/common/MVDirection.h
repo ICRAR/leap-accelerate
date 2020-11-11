@@ -44,4 +44,4 @@ namespace icrar
      * 
      */
     std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
-}
+} // namespace icrar

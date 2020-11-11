@@ -59,4 +59,4 @@ namespace icrar
 
         return dimsEqual() && dataEqual();
     }
-}
+} // namespace icrar

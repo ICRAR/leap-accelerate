@@ -23,7 +23,7 @@
 #include "math_conversion.h"
 
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 namespace icrar
 {

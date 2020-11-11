@@ -125,11 +125,9 @@ target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencod
 target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
 configure_cuda_warnings(${TARGET_NAME})
 
-
-#target_link_libraries(${TARGET_NAME} CUDA)
-
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
+target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
 
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)

@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/core/log/Verbosity.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <algorithm>
 
 namespace icrar

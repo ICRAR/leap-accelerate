@@ -129,4 +129,4 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value);
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
-}
+} // namespace icrar

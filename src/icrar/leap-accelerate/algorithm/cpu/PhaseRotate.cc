@@ -284,5 +284,5 @@ std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
 
         return std::make_pair(std::move(A), std::move(I));
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

@@ -28,7 +28,6 @@
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 

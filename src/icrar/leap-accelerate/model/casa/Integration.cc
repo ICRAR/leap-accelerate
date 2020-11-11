@@ -50,5 +50,5 @@ namespace casalib
         && uvw == rhs.uvw
         && integration_number == rhs.integration_number;
     }
-}
-}
+} // namespace casalib
+} // namespace icrar
