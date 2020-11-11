@@ -83,13 +83,13 @@ namespace cpu
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    void PrintResult(const CalibrateResult& result)
+    void PrintResult(const CalibrateResult& result, std::ostream& out)
     {
         for(auto& calibrations : result.second)
         {
             for(auto& calibration : calibrations)
             {
-                calibration.Serialize(std::cout);
+                calibration.Serialize(out);
             }
         }
     }

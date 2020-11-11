@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/core/log/Verbosity.h>
+#include <algorithm>
 
 namespace icrar
 {
@@ -38,7 +39,7 @@ namespace log
 
     bool TryParseVerbosity(const std::string& value, Verbosity& out)
     {
-        string lower_value = value;
+        std::string lower_value = value;
         std::transform(
             value.begin(), value.end(), lower_value.begin(), 
             [](unsigned char c){ return std::tolower(c); });
