@@ -77,7 +77,7 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-split.ms";
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 102, true);
             std::cout << std::setprecision(15);
         }

@@ -38,15 +38,12 @@ namespace icrar
     , m_readAutocorrelations(readAutocorrelations)
     {
         // Check and use unique antennas 
-        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
-        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
-        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
-        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(m_antennas, m_antennas.begin()));
-        
+        m_antennas = CalculateUniqueAntennas();
+
         if(overrideNStations.is_initialized())
         {
             m_stations = overrideNStations.get();
+            LOG(warning) << "overriding number of stations will be removed in future releases";
         }
         else if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
@@ -65,30 +62,19 @@ namespace icrar
 
     void MeasurementSet::Validate() const
     {
-        //Stations
-        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
-        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
-        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
-        std::set<std::int32_t> antennas;
-        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin())); 
-        
-        if(antennas.size() != GetNumStations())
+        // Stations
+        if(m_antennas.size() != GetNumStations())
         {
-            LOG(warning) << "unique antennas does not match number of stations";
-            LOG(warning) << "unique antennas: " << antennas.size();
-            LOG(warning) << "stations: " << GetNumStations();
+            LOG(error) << "unique antennas does not match number of stations";
+            LOG(error) << "unique antennas: " << m_antennas.size();
+            LOG(error) << "stations: " << GetNumStations();
         }
 
         //Baselines
         //Validate number of baselines in first epoch
         casacore::Vector<double> time = m_msmc->time().getColumn();
         auto epoch = time[0];
-        uint32_t epochRows = 0;
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) epochRows++;
-        }
+        auto epochRows = std::count(time.begin(), time.end(), epoch);
 
         if(epochRows != GetNumBaselines())
         {
@@ -113,24 +99,6 @@ namespace icrar
                          << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
             throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
         }
-
-        //Flags
-        auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
-        auto flagSlice = casacore::Slicer(
-            casacore::IPosition(3,0,0,0),
-            casacore::IPosition(3,1,1,GetNumBaselines()),
-            casacore::IPosition(3,1,1,1));
-
-        casacore::Vector<bool> fg = m_msmc->flag().getColumn()
-        (flagSlice).reform(casacore::IPosition(1, GetNumBaselines()))
-        (epochIndices);
-
-        if(fg.size() != GetNumBaselines())
-        {
-            throw exception("invalidv number of flags", __FILE__, __LINE__);
-        }
-        //std::cout << "flags size: " << fg.size() << std::endl;
-        //std::cout << "flags total: " << std::accumulate(fg.begin(), fg.end(), 0) << std::endl;
     }
 
     unsigned int MeasurementSet::GetNumRows() const
@@ -153,7 +121,6 @@ namespace icrar
         {
             throw icrar::not_implemented_exception(__FILE__, __LINE__);
         }
-        
     }
 
     unsigned int MeasurementSet::GetNumBaselines() const
@@ -253,5 +220,16 @@ namespace icrar
         auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
         icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
         return visibilities;
+    }
+
+    std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
+    {
+        casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
+        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
+        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
+        std::set<std::int32_t> antennas;
+        std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
+        return antennas; 
     }
 }

@@ -118,11 +118,11 @@ namespace icrar
     };
 
     // These measurements have flagged data removed and complete data for each timestep
-    TEST_F(E2EPerformanceTests, MWACleanTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/1197638568-split.ms", 102, true); }
-    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/1197638568-split.ms", 102, true); }
-    TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
     
     // These measurements are clean and use a single timestep
-    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
-    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
 }

@@ -94,7 +94,7 @@ namespace icrar
         /**
          * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
          * and including stations not recording rows.
-         * @note TODO: baselines is always n*(n-1) / 2 and without autocorrelations
+         * @note TODO: baselines should always be n*(n-1) / 2 and without autocorrelations
          * @return unsigned int 
          */
         unsigned int GetNumBaselines() const;
@@ -142,5 +142,13 @@ namespace icrar
          * @return unsigned int 
          */
         unsigned int GetNumBaselines(bool useAutocorrelations) const;
+
+        /**
+         * @brief Calculates the set of unique antenna indices.
+         * 
+         * @return unsigned int 
+         */
+        std::set<int32_t> CalculateUniqueAntennas() const;
+
     };
 }
