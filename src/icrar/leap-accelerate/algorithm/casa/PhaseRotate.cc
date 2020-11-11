@@ -79,7 +79,9 @@ namespace casalib
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+
         profiling::timer calibration_timer;
 
         profiling::timer metadata_read_timer;
