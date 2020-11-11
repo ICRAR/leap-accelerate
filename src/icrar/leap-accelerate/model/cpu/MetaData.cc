@@ -29,7 +29,8 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
 {
@@ -115,7 +116,7 @@ namespace cpu
         }
 
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        BOOST_LOG_TRIVIAL(info) << "avg_data:" << m_avg_data.size() * sizeof(std::complex<double>) / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
         //select the first epoch only
         casacore::Vector<double> time = msmc->time().getColumn();
@@ -138,61 +139,29 @@ namespace cpu
         //     throw std::runtime_error("incorrect antenna size");
         // }
 
-        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A1";
+        LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
-#ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "A1 Matrix " << pretty_matrix(m_A1);
-        {
-            std::ofstream file;
-            file.open("A1.txt");
-            file << m_A1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_A1, "A1");
 
-        BOOST_LOG_TRIVIAL(info) << "Calculating PhaseMatrix A";
+        LOG(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
-#ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "A Matrix " << pretty_matrix(m_A);
-        {
-            std::ofstream file;
-            file.open("A.txt");
-            file << m_A << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_A, "A");
 
-        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A1";
+        LOG(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-#ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "Ad1 Matrix " << pretty_matrix(m_Ad1);
-        {
-            std::ofstream file;
-            file.open("Ad1.txt");
-            file << m_Ad1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_Ad1, "Ad1");
 
-        BOOST_LOG_TRIVIAL(info) << "Inverting PhaseMatrix A";
+        LOG(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
-#ifdef TRACE
-        BOOST_LOG_TRIVIAL(trace) << "Ad Matrix " << pretty_matrix(m_Ad);
-        {
-            std::ofstream file;
-            file.open("Ad.txt");
-            file << m_Ad1 << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(m_Ad, "Ad");
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad is degenerate";
+            LOG(warning) << "m_Ad is degenerate";
         }
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
-            BOOST_LOG_TRIVIAL(warning) << "m_Ad1 is degenerate";
+            LOG(warning) << "m_Ad1 is degenerate";
         }
 
         SetOldUVW(uvws);

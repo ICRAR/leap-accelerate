@@ -22,26 +22,36 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
+#include <cstdint>
+#include <iosfwd>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+namespace profiling
+{
 
-    /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
+using usec_t = std::uint64_t;
 
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
-}
+/// A collection of resource-related statistics
+struct ResourceUsage
+{
+	/// Time spent in user mode, in microseconds
+	usec_t utime;
+	/// Time spent in kernel mode, in microseconds
+	usec_t stime;
+	/// Total walltime spent since program started
+	usec_t wtime;
+	/// Maximum amount of memory used, in bytes
+	std::size_t peak_rss;
+};
+
+/// Stream output operator for instances of ResourceUsage
+template <typename CharT>
+std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
+    const ResourceUsage &ru);
+
+/// Returns the maximum Resident Storage Size of this process
+ResourceUsage get_resource_usage();
+
+} // namespace profiling
+} // namespace icrar

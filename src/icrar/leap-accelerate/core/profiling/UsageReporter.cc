@@ -20,28 +20,29 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include <exception>
+#include <iostream>
 
-#include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
+#include "icrar/leap-accelerate/core/log/logging.h"
+#include "icrar/leap-accelerate/core/profiling/resource_usage.h"
+#include "icrar/leap-accelerate/core/profiling/UsageReporter.h"
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+namespace profiling
+{
 
-    /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
-
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
+UsageReporter::~UsageReporter() noexcept
+{
+    try
+    {
+        LOG(info) << get_resource_usage();
+    }
+    catch (std::exception &e)
+    {
+        std::cerr << "Error while trying to report stats: " << e.what() << '\n';
+    }
 }
+
+}  // namespace profiling
+}  // namespace icrar

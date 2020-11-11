@@ -35,7 +35,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/core/profiling_timer.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -74,21 +74,21 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        LOG(info) << "Starting Calibration using casa library";
+        LOG(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
-        auto timer = profiling_timer();
-        timer.start();
+        profiling::timer calibration_timer;
+
+        profiling::timer metadata_read_timer;
         auto metadata = casalib::MetaData(ms);
-        timer.stop();
-        timer.log("metadata read time");
-        timer.restart();
+        LOG(info) << "Read metadata in " << metadata_read_timer;
 
-
+        profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -115,20 +115,17 @@ namespace casalib
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
-        timer.stop();
-        timer.log("integration read time");
-        timer.restart();
-
+        profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        timer.stop();
-        timer.log("PhaseRotate time");
-
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
