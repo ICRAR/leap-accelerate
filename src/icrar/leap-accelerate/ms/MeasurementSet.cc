@@ -75,10 +75,9 @@ namespace icrar
         
         if(antennas.size() != GetNumStations())
         {
-            LOG(error) << "unique antennas does not match number of stations";
-            LOG(error) << "unique antennas: " << antennas.size();
-            LOG(error) << "stations: " << GetNumStations();
-            //throw exception("number of stations incorrect", __FILE__, __LINE__);
+            LOG(warning) << "unique antennas does not match number of stations";
+            LOG(warning) << "unique antennas: " << antennas.size();
+            LOG(warning) << "stations: " << GetNumStations();
         }
 
         //Baselines
@@ -93,9 +92,9 @@ namespace icrar
 
         if(epochRows != GetNumBaselines())
         {
-            LOG(warning) << "epoch rows does not match baselines";
-            LOG(warning) << "epoch rows: " << epochRows;
-            LOG(warning) << "baselines: " << GetNumBaselines();
+            LOG(error) << "epoch rows does not match baselines";
+            LOG(error) << "epoch rows: " << epochRows;
+            LOG(error) << "baselines: " << GetNumBaselines();
             throw exception("epoch size doesnt match number of baselines", __FILE__, __LINE__);
         }
 
@@ -108,8 +107,8 @@ namespace icrar
 
         if(GetNumRows() % GetNumBaselines() != 0)
         {
-            LOG(warning) << "number of rows not an integer multiple of number of baselines";
-            LOG(warning) << "baselines: " << GetNumBaselines()
+            LOG(error) << "number of rows not an integer multiple of number of baselines";
+            LOG(error) << "baselines: " << GetNumBaselines()
                          << " rows: " << GetNumRows()
                          << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
             throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
