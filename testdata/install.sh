@@ -22,7 +22,7 @@
 #
 
 wget "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" -O ./mwa/1197638568-split.tar.gz
-tar -C ./ -xvf ./1197638568-split.tar.gz
+tar -C ./ -xvf ./mwa/1197638568-split.tar.gz
 
 wget "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" -O ./ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
-tar -C ./ -xvf ./SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
+tar -C ./ -xvf ./ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
