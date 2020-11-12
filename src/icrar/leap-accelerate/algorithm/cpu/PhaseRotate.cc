@@ -129,6 +129,11 @@ namespace cpu
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
+    double get_arg(std::complex<double> v)
+    {
+        return std::arg(v);
+    }
+
     void PhaseRotate(
         cpu::MetaData& metadata,
         const icrar::MVDirection& direction,
@@ -146,41 +151,40 @@ namespace cpu
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
-        auto avg_data_args = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
-        // TODO: reference antenna should be included and set to 0?
-        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_args, metadata.GetI1(), 0); // 1st pol only
-        // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-        // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
+        auto phaseAverages = metadata.GetAvgData().unaryExpr([](std::complex<double> c){ return std::arg(c); });
+        
+        // PhaseAverages I1
+        Eigen::VectorXd phaseAveragesI1 = icrar::cpu::VectorRangeSelect(phaseAverages, metadata.GetI1(), 0); // 1st pol only
+        // Value at last index of phaseAveragesI1 must be 0 (which is the reference antenna phase value)
+        phaseAveragesI1.conservativeResize(phaseAveragesI1.rows() + 1);
+        phaseAveragesI1(phaseAveragesI1.rows() - 1) = 0;
 
-        if(metadata.GetAd1().cols() != cal_avg_data.rows())
+        // PhaseAverages I
+        Eigen::MatrixXd phaseAveragesI = icrar::cpu::MatrixRangeSelect(phaseAverages, metadata.GetI(), Eigen::all);
+        // Value at last index of phaseAveragesI must be 0 (which is the reference antenna phase value)
+        //phaseAveragesI.conservativeResize(phaseAveragesI.cols() + 1);
+        //phaseAveragesI(phaseAveragesI.size() - 1) = 0;
+
+        if(metadata.GetAd1().cols() != phaseAveragesI1.rows())
         {
+            std::cout << metadata.GetAd1().cols() << "!=" << phaseAveragesI1.rows() << std::endl;
             throw exception("Ad1 x cal_avg_data", __FILE__, __LINE__);
         }
-        Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
-
+        Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAveragesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_args, metadata.GetI(), Eigen::all);
+
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
-            double sum = cumsum.sum();
-            dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            double sum = metadata.GetA()(n, Eigen::all) * cal1;
+            dInt(n, Eigen::all) = phaseAveragesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
 
-        Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
-        assert(dIntColumn.cols() == 1);
+        Eigen::VectorXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
+        dIntColumn.conservativeResize(dIntColumn.size() + 1);
+        dIntColumn(dIntColumn.size() - 1) = 0;
 
-        if(metadata.GetAd().cols() != dIntColumn.rows())
-        {
-            throw exception("Ad x dIntColumn", __FILE__, __LINE__);
-        }
-        if(dIntColumn.cols() != cal1.cols())
-        {
-            throw exception("dIntColumn + cal1", __FILE__, __LINE__);
-        }
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
-        std::cout << "calc done!" << std::endl;
 
         output_calibrations.emplace_back(direction, cal);
     }

@@ -171,16 +171,16 @@ namespace casalib
                 auto e_avg_data_angles = ToMatrix(avg_data_args);
                 auto e_I1 = ToVector(metadata.I1);
 
-                // TODO: reference antenna should be included and set to 0?
                 Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // FIX TODO 1st pol only, Only last value incorrect
                 // Target Pol will be first of 1, or first and last of 2 or 4. These could be indepdent or summed
                 // In initial code let us go for summed.
                 // Can I use "-1" for last?
 
-                auto cal_avg_data = ConvertVector(e_cal_avg_data);
-                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
+                auto cal_avg_data_args = ConvertVector(e_cal_avg_data);
+                // Value at last index of cal_avg_data_args must be 0 (which is the reference antenna phase value)
+                cal_avg_data_args(cal_avg_data_args.size() - 1) = 0.0; 
+                
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data_args);
 
                 auto e_I = ToVector(metadata.I);
                 Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);

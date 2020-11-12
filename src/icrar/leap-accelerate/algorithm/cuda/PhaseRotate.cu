@@ -182,13 +182,13 @@ namespace cuda
         LOG(info) << "Calibrating on cpu";
         trace_matrix(hostMetadata.GetAvgData(), "avg_data");
 
-        auto avg_data_args = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        Eigen::MatrixXd avg_data_args = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
-        // TODO: reference antenna should be included and set to 0?
-        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_args, hostMetadata.GetI1(), 0); // 1st pol only
-        // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-        // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
-        Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data;
+        auto cal_avg_data_args = icrar::cpu::VectorRangeSelect(avg_data_args, hostMetadata.GetI1(), 0); // 1st pol only
+        // Value at last index of cal_avg_data_args must be 0 (which is the reference antenna phase value)
+        cal_avg_data_args(cal_avg_data_args.size() - 1) = 0.0;
+
+        Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data_args;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.GetAvgData().cols());
         Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_args, hostMetadata.GetI(), Eigen::all);
