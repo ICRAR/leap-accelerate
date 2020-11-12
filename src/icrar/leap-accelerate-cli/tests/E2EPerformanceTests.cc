@@ -126,6 +126,6 @@ namespace icrar
     TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 126, true); }
     
     // These measurements are clean and use a single timestep
-    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
-    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
 }
