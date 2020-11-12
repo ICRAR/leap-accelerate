@@ -424,7 +424,7 @@ namespace icrar
             // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
 
-            ASSERT_EQ(Ad.cols(), I.size() - 1);
+            ASSERT_EQ(Ad.cols(), I.size() + 1);
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
             //A1
@@ -465,7 +465,7 @@ namespace icrar
             // EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
             
-            ASSERT_EQ(Ad1.cols(), I1.size() - 1);
+            ASSERT_EQ(Ad1.cols(), I1.size() + 1);
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
 
         }

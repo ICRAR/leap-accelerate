@@ -152,27 +152,27 @@ namespace cpu
 
         LOG(info) << "Calculating Calibration";
 
-        auto phaseAverages = metadata.GetAvgData().unaryExpr([](std::complex<double> c){ return std::arg(c); });
+        auto phaseAngles = metadata.GetAvgData().unaryExpr([](std::complex<double> c){ return std::arg(c); });
         
-        // PhaseAverages I1
-        Eigen::VectorXd phaseAveragesI1 = icrar::cpu::VectorRangeSelect(phaseAverages, metadata.GetI1(), 0); // 1st pol only
-        // Value at last index of phaseAveragesI1 must be 0 (which is the reference antenna phase value)
-        phaseAveragesI1.conservativeResize(phaseAveragesI1.rows() + 1);
-        phaseAveragesI1(phaseAveragesI1.rows() - 1) = 0;
+        // PhaseAngles I1
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
+        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
+        phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
+        phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        // PhaseAverages I
-        Eigen::MatrixXd phaseAveragesI = icrar::cpu::MatrixRangeSelect(phaseAverages, metadata.GetI(), Eigen::all);
-        // Value at last index of phaseAveragesI must be 0 (which is the reference antenna phase value)
-        //phaseAveragesI.conservativeResize(phaseAveragesI.cols() + 1);
-        //phaseAveragesI(phaseAveragesI.size() - 1) = 0;
+        // PhaseAngles I
+        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
+        // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
+        //phaseAnglesI.conservativeResize(phaseAnglesI.cols() + 1);
+        //phaseAnglesI(phaseAnglesI.size() - 1) = 0;
 
-        Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAveragesI1;
+        Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
 
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(Eigen::all, Eigen::all) = phaseAveragesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -180,7 +180,6 @@ namespace cpu
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * deltaPhaseColumn) + cal1)));
-
         output_calibrations.emplace_back(direction, cal);
     }
 
