@@ -93,8 +93,8 @@ namespace casalib
         A(k, refAnt) = 1;
         k++;
         
-        auto Atemp = casacore::Matrix<double>(k-1, STATIONS);
-        Atemp = A(Slice(0, k-1), Slice(0, STATIONS));
+        auto Atemp = casacore::Matrix<double>(k, STATIONS);
+        Atemp = A(Slice(0, k), Slice(0, STATIONS));
         A.resize(0,0);
         A = Atemp;
 

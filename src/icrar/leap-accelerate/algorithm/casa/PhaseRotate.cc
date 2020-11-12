@@ -163,12 +163,12 @@ namespace casalib
                 }
 
 
-                casacore::Matrix<Radians> avg_data_angles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
+                casacore::Matrix<Radians> avg_data_args = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
                 {
                     return std::arg(c);
                 });
 
-                auto e_avg_data_angles = ToMatrix(avg_data_angles);
+                auto e_avg_data_angles = ToMatrix(avg_data_args);
                 auto e_I1 = ToVector(metadata.I1);
 
                 // TODO: reference antenna should be included and set to 0?
@@ -187,7 +187,7 @@ namespace casalib
                 casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
 
                 // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_args.shape()[1]);
                 dInt = 0;
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {

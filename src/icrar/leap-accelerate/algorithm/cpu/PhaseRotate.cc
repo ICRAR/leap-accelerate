@@ -146,16 +146,21 @@ namespace cpu
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
         LOG(info) << "Calculating Calibration";
-        auto avg_data_angles = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        auto avg_data_args = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
-        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
+        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_args, metadata.GetI1(), 0); // 1st pol only
         // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
+
+        if(metadata.GetAd1().cols() != cal_avg_data.rows())
+        {
+            throw exception("Ad1 x cal_avg_data", __FILE__, __LINE__);
+        }
         Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
+        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_args, metadata.GetI(), Eigen::all);
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             Eigen::MatrixXd cumsum = metadata.GetA()(n, Eigen::all) * cal1;
@@ -166,7 +171,16 @@ namespace cpu
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
 
+        if(metadata.GetAd().cols() != dIntColumn.rows())
+        {
+            throw exception("Ad x dIntColumn", __FILE__, __LINE__);
+        }
+        if(dIntColumn.cols() != cal1.cols())
+        {
+            throw exception("dIntColumn + cal1", __FILE__, __LINE__);
+        }
         cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
+        std::cout << "calc done!" << std::endl;
 
         output_calibrations.emplace_back(direction, cal);
     }

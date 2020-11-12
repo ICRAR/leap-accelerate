@@ -90,7 +90,7 @@ namespace icrar
 
         void PhaseRotateTest(ComputeImplementation impl)
         {
-            const double THRESHOLD = 1e-12;
+            const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::casalib::MetaData(*ms);
 
@@ -387,16 +387,20 @@ namespace icrar
             double TOLERANCE = 0.00001;
 
             // A
-            const int aRows = 4753; 
+            const int aRows = 4754; 
+            const int aCols = 128;
             ASSERT_DOUBLE_EQ(aRows, A.rows());
-            ASSERT_DOUBLE_EQ(128, A.cols());
+            ASSERT_DOUBLE_EQ(aCols, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
             //...
+            EXPECT_NEAR(0.00, A(aRows-2, 125), TOLERANCE);
+            EXPECT_NEAR(1.00, A(aRows-2, 126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A(aRows-2, 127), TOLERANCE);
             EXPECT_NEAR(0.00, A(aRows-1, 125), TOLERANCE);
-            EXPECT_NEAR(1.00, A(aRows-1, 126), TOLERANCE);
-            EXPECT_NEAR(-1.00, A(aRows-1, 127), TOLERANCE);
+            EXPECT_NEAR(0.00, A(aRows-1, 126), TOLERANCE);
+            EXPECT_NEAR(0.00, A(aRows-1, 127), TOLERANCE);
 
             // I
             const int nBaselines = 4753;
@@ -410,8 +414,8 @@ namespace icrar
             EXPECT_EQ(5251, I(nBaselines-1));
 
             // Ad
-            ASSERT_DOUBLE_EQ(128, Ad.rows());
-            ASSERT_DOUBLE_EQ(nBaselines, Ad.cols());
+            ASSERT_DOUBLE_EQ(aCols, Ad.rows());
+            ASSERT_DOUBLE_EQ(aRows, Ad.cols());
             // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
@@ -419,33 +423,38 @@ namespace icrar
             // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+            
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
             //A1
-            const int k1 = 97;
-            ASSERT_DOUBLE_EQ(k1, A1.rows());
-            ASSERT_DOUBLE_EQ(128, A1.cols());
+            const int a1Rows = 98;
+            const int a1Cols = 128;
+            ASSERT_DOUBLE_EQ(a1Rows, A1.rows());
+            ASSERT_DOUBLE_EQ(a1Cols, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
             //...
-            EXPECT_NEAR(0.00, A1(k1-1,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(k1-1,126), TOLERANCE);
-            EXPECT_NEAR(-1.00, A1(k1-1,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-2,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-2,126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A1(a1Rows-2,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,126), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(k1, I1.size());
+            ASSERT_DOUBLE_EQ(a1Rows-1, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
             EXPECT_DOUBLE_EQ(3.00, I1(1));
             EXPECT_DOUBLE_EQ(4.00, I1(2));
             //...
-            EXPECT_DOUBLE_EQ(99.00, I1(k1-3));
-            EXPECT_DOUBLE_EQ(100.00, I1(k1-2));
-            EXPECT_DOUBLE_EQ(101.00, I1(k1-1));
+            EXPECT_DOUBLE_EQ(99.00, I1(a1Rows-4));
+            EXPECT_DOUBLE_EQ(100.00, I1(a1Rows-3));
+            EXPECT_DOUBLE_EQ(101.00, I1(a1Rows-2));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(97, Ad1.cols());
-            ASSERT_DOUBLE_EQ(128, Ad1.rows());
+            ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
+            ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
             //TODO: Ad1 not identical to LEAP-Cal
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
@@ -454,7 +463,10 @@ namespace icrar
             // EXPECT_DOUBLE_EQ(5.4194040934156436e-17, Ad1(127,95)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
+            
+            ASSERT_EQ(Ad1.cols(), I1.size());
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
+
         }
     };
 
