@@ -49,18 +49,27 @@ namespace cpu
         auto output_integrations = std::vector<std::vector<IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<CalibrationResult>>();
 
+        //ignore integrations
         for(auto& queues : result.first)
         {
-            int index = output_integrations.size();
             output_integrations.push_back(std::vector<IntegrationResult>());
             while(!queues.empty())
             {
-                auto& integrationResult = queues.front();
-                output_integrations[index].emplace_back(
-                    ToDirection(integrationResult.GetDirection()),
-                    integrationResult.GetIntegrationNumber(),
-                    integrationResult.GetData()
-                );
+                int index = output_calibrations.size();
+                casalib::IntegrationResult& integrationResult = queues.front();
+
+                if(integrationResult.GetData().is_initialized())
+                {
+                    std::vector<Eigen::VectorXd> data = icrar::vector_map(
+                        integrationResult.GetData().get(),
+                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); });
+
+                    output_integrations[index].emplace_back(
+                        integrationResult.GetIntegrationNumber(),
+                        ToDirection(integrationResult.GetDirection()),
+                        data
+                    );
+                }
                 queues.pop();
             }
         }
@@ -71,10 +80,10 @@ namespace cpu
             output_calibrations.push_back(std::vector<CalibrationResult>());
             while(!queues.empty())
             {
-                auto& calibrationResult = queues.front();
+                casalib::CalibrationResult& calibrationResult = queues.front();
                 output_calibrations[index].emplace_back(
                     ToDirection(calibrationResult.GetDirection()),
-                    calibrationResult.GetData()
+                    ToMatrix(calibrationResult.GetData()[0])
                 );
                 queues.pop();
             }
