@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "True if measurement set rows store autocorrelations");
+    app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
     app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 
     try

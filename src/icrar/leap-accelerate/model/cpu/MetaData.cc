@@ -23,7 +23,7 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
