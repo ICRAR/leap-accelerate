@@ -166,25 +166,20 @@ namespace cpu
         //phaseAveragesI.conservativeResize(phaseAveragesI.cols() + 1);
         //phaseAveragesI(phaseAveragesI.size() - 1) = 0;
 
-        if(metadata.GetAd1().cols() != phaseAveragesI1.rows())
-        {
-            std::cout << metadata.GetAd1().cols() << "!=" << phaseAveragesI1.rows() << std::endl;
-            throw exception("Ad1 x cal_avg_data", __FILE__, __LINE__);
-        }
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAveragesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
 
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = phaseAveragesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            dInt(Eigen::all, Eigen::all) = phaseAveragesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
         }
 
-        Eigen::VectorXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
-        dIntColumn.conservativeResize(dIntColumn.size() + 1);
-        dIntColumn(dIntColumn.size() - 1) = 0;
+        Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
+        deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
+        deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
-        cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1)));
+        cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * deltaPhaseColumn) + cal1)));
 
         output_calibrations.emplace_back(direction, cal);
     }
