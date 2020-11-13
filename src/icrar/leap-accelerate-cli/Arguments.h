@@ -64,7 +64,9 @@ namespace icrar
         boost::optional<std::string> computeImplementation;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
+        bool readAutocorrelationsXenial;
         boost::optional<int> verbosity;
+        bool verbosityXenial;
     };
 
     /**
