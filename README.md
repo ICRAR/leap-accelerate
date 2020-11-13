@@ -33,7 +33,8 @@ or
 16.04 LTS
 
 * https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
-* sudo apt-get install gcc g++ gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
+* sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
+* 
 
 ### Recommended Versions Compatibility
 
@@ -41,7 +42,6 @@ or
 * cuda 10.1
 * boost 1.71.0
 * casacore 3.1.2
-* eigen 3.3.90
 
 ### Minimum Versions Compatibility
 

@@ -141,12 +141,11 @@ namespace cpu
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
-        auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
-            output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
+            output_integrations.emplace_back(integration.GetIntegrationNumber(), direction, boost::none);
         }
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
@@ -179,8 +178,7 @@ namespace cpu
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
-        cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * deltaPhaseColumn) + cal1)));
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)

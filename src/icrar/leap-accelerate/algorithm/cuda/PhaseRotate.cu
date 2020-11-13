@@ -165,15 +165,16 @@ namespace cuda
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
-        auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
+
+            //TODO: currently unused
             output_integrations.emplace_back(
-                direction,
                 integration.GetIntegrationNumber(),
-                boost::optional<std::vector<casacore::Vector<double>>>());
+                direction,
+                boost::optional<std::vector<Eigen::VectorXd>>());
         }
 
         LOG(info) << "Copying Metadata from Device";
@@ -208,9 +209,7 @@ namespace cuda
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
-
-        cal.push_back(ConvertMatrix(Eigen::MatrixXd((metadata.GetAd() * deltaPhaseColumn) + cal1)));
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
