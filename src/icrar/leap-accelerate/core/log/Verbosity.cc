@@ -33,7 +33,7 @@ namespace log
         Verbosity e;
         if(!TryParseVerbosity(value, e))
         {
-            throw std::invalid_argument("value");
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
         }
         return e;
     }

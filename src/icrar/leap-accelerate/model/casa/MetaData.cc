@@ -29,7 +29,7 @@
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>

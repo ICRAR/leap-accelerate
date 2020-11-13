@@ -75,7 +75,7 @@ namespace icrar
     }
 
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T> value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Vector<T> value)
     {
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         std::copy(value.begin(), value.end(), output.reshaped().begin());

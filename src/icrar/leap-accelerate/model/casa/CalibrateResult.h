@@ -58,7 +58,7 @@ namespace casalib
         }
 
         const casacore::MVDirection GetDirection() const { return m_direction; }
-        const boost::optional<std::vector<casacore::Vector<double>>>& GetData() const { return m_data; }
+        boost::optional<std::vector<casacore::Vector<double>>> GetData() const { return m_data; }
         int GetIntegrationNumber() const { return m_integrationNumber; }
     };
 

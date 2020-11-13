@@ -164,15 +164,16 @@ namespace cuda
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
-        auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
+
+            //TODO: currently unused
             output_integrations.emplace_back(
                 integration.GetIntegrationNumber(),
                 direction,
-                boost::optional<std::vector<casacore::Vector<double>>>());
+                boost::optional<std::vector<Eigen::VectorXd>>());
         }
 
         LOG(info) << "Copying Metadata from Device";
@@ -201,7 +202,7 @@ namespace cuda
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
 
-        cal.push_back(ConvertMatrix(Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1)));
+        auto cal = Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1);
         output_calibrations.emplace_back(direction, std::move(cal));
     }
 
@@ -323,67 +324,6 @@ namespace cuda
             (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
             (double3*)metadata.GetOldUVW().Get(), metadata.GetOldUVW().GetCount(),
             (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
-    }
-
-    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
-        const Eigen::VectorXi& a1,
-        const Eigen::VectorXi& a2,
-        int refAnt)
-    {
-        if(a1.size() != a2.size())
-        {
-            throw std::invalid_argument("a1 and a2 must be equal size");
-        }
-
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
-        int nAnt = unique.size();
-        if(refAnt >= nAnt - 1)
-        {
-            throw std::invalid_argument("RefAnt out of bounds");
-        }
-
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
-
-        int STATIONS = A.cols(); //TODO verify correctness
-
-        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(-1);
-
-        int k = 0;
-
-        for(int n = 0; n < a1.size(); n++)
-        {
-            if(a1(n) != a2(n))
-            {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
-                {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
-                    I(k) = n;
-                    k++;
-                }
-            }
-        }
-        if(refAnt < 0)
-        {
-            refAnt = 0;
-        }
-
-        A(k, refAnt) = 1;
-        k++;
-        
-        auto Atemp = Eigen::MatrixXd(k, STATIONS);
-        Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
-        A.resize(0,0);
-        A = Atemp;
-
-        auto Itemp = Eigen::VectorXi(k);
-        Itemp = I(Eigen::seqN(0, k));
-        I.resize(0);
-        I = Itemp;
-
-        return std::make_pair(A, I);
     }
 }
 }
