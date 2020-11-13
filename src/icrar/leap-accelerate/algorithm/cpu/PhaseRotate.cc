@@ -144,7 +144,6 @@ namespace cpu
         std::vector<cpu::IntegrationResult>& output_integrations,
         std::vector<cpu::CalibrationResult>& output_calibrations)
     {
-        //auto cal = std::vector<Eigen::MatrixXd>();
         for(auto& integration : input)
         {
             LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
@@ -174,9 +173,7 @@ namespace cpu
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
 
-        auto cal = Eigen::MatrixXd((metadata.GetAd() * dIntColumn) + cal1);
-
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.emplace_back(direction, (metadata.GetAd() * dIntColumn) + cal1);
     }
 
     void RotateVisibilities(cpu::Integration& integration, cpu::MetaData& metadata)

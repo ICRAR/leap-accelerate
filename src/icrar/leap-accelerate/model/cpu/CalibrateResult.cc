@@ -49,7 +49,6 @@ namespace cpu
         auto output_integrations = std::vector<std::vector<IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<CalibrationResult>>();
 
-        //ignore integrations
         for(auto& queues : result.first)
         {
             output_integrations.push_back(std::vector<IntegrationResult>());
@@ -57,17 +56,13 @@ namespace cpu
             {
                 int index = output_calibrations.size();
                 casalib::IntegrationResult& integrationResult = queues.front();
-
                 if(integrationResult.GetData().is_initialized())
                 {
-                    std::vector<Eigen::VectorXd> data = icrar::vector_map(
-                        integrationResult.GetData().get(),
-                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); });
-
                     output_integrations[index].emplace_back(
                         integrationResult.GetIntegrationNumber(),
                         ToDirection(integrationResult.GetDirection()),
-                        data
+                        std::move(icrar::vector_map(integrationResult.GetData().get(),
+                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); }))
                     );
                 }
                 queues.pop();
