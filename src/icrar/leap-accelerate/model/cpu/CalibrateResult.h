@@ -99,7 +99,7 @@ namespace cpu
          * 
          * @return const Eigen::MatrixXd 
          */
-        const Eigen::MatrixXd GetData() const { return m_data; }
+        const Eigen::MatrixXd& GetData() const { return m_data; }
 
         void Serialize(std::ostream& os) const;
 
