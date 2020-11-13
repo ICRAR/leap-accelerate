@@ -249,11 +249,11 @@ namespace casalib
 
 
             // Loop over channels
-            for(int channel = 0; channel < metadata.channels; channel++)
+            for(unsigned int channel = 0; channel < metadata.channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.channel_wavelength[channel];
 
-                for(int polarization = 0; polarization < metadata.num_pols; polarization++)
+                for(unsigned int polarization = 0; polarization < metadata.num_pols; polarization++)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp((std::complex<double>(0.0, 1.0)) * std::complex<double>(shiftRad, 0.0));
                 }
@@ -261,14 +261,14 @@ namespace casalib
                 bool hasNaN = false;
 
                 const Eigen::Tensor<std::complex<double>, 1> polarizations = integration_data.chip(channel, 2).chip(baseline, 1);
-                for(int i = 0; i < metadata.num_pols; ++i)
+                for(unsigned int i = 0; i < metadata.num_pols; ++i)
                 {
                     hasNaN |= std::isnan(polarizations(i).real()) || std::isnan(polarizations(i).imag());
                 }
 
                 if(!hasNaN)
                 {
-                    for(int polarization = 0; polarization < metadata.num_pols; polarization++)
+                    for(unsigned int polarization = 0; polarization < metadata.num_pols; polarization++)
                     {
                         metadata.avg_data.get()(baseline, polarization) += integration_data(polarization, baseline, channel);
                     }

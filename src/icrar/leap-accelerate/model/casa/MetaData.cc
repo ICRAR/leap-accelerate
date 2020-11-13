@@ -54,19 +54,21 @@ namespace casalib
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
-    : channels(0)
+    : m_initialized(false)
+    , nbaselines(0)
+    , channels(0)
     , num_pols(0)
     , stations(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
     , phase_centre_ra_rad(0)
     , phase_centre_dec_rad(0)
+    , dlm_ra(0)
+    , dlm_dec(0)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
-
-        this->m_initialized = false;
 
         this->rows = msmc->uvw().nrow();
         this->num_pols = 0;
@@ -116,7 +118,7 @@ namespace casalib
         {
             if(time[i] == epoch) epochRows++;
         }
-        auto epochIndices = Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = Slice(0, epochRows, 1); //TODO(calgray) assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
         
@@ -219,7 +221,7 @@ namespace casalib
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_initialized == rhs.m_initialized
-        && nbaseline == rhs.nbaseline
+        && nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations

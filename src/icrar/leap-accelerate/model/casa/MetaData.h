@@ -55,15 +55,15 @@ namespace casalib
         bool m_initialized;
 
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        int nbaseline;
+        unsigned int nbaselines;
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        int channels; // The number of channels of the current observation
+        unsigned int channels; // The number of channels of the current observation
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        int num_pols; // The number of polarizations used by the current observation
+        unsigned int num_pols; // The number of polarizations used by the current observation
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        int stations; // The number of stations used by the current observation
+        unsigned int stations; // The number of stations used by the current observation
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
-        int rows;
+        unsigned int rows;
 
         // NOLINTNEXTLINE(misc-non-private-member-variables-in-classes)
         double freq_start_hz; // The frequency of the first channel, in Hz
@@ -115,7 +115,7 @@ namespace casalib
          * 
          * @return int
          */
-        int GetBaselines() const { return stations * (stations + 1) / 2; }
+        unsigned int GetBaselines() const { return stations * (stations + 1) / 2; }
 
         /**
          * @brief 

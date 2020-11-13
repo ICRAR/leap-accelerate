@@ -7,6 +7,7 @@ Checks:
     modernize-*,
     misc-*,
     google-*,
+    -google-build-using-namespace,
     -google-runtime-references,
     -google-readability-namespace-comments,
     -modernize-use-trailing-return-type'
@@ -94,6 +95,8 @@ CheckOptions:
   - key:             misc-definitions-in-headers.HeaderFileExtensions
     value:           ',h,hh,hpp,hxx'
   - key:             misc-definitions-in-headers.UseHeaderFileExtension
+    value:           '1'
+  - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
   - key:             misc-throw-by-value-catch-by-reference.CheckThrowTemporaries
     value:           '1'
