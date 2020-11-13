@@ -175,20 +175,29 @@ namespace casalib
                 e_phaseAnglesI1(e_phaseAnglesI1.size() - 1) = 0.0;
                 auto phaseAnglesI1 = ConvertVector(e_phaseAnglesI1);
                 
+                if(metadata.Ad1.shape()[1] != phaseAnglesI1.shape()[0])
+                {
+                    std::cout << "Ad1" << metadata.Ad1.shape()[1] << "!=" << phaseAnglesI1.shape()[0] << std::endl;
+                }
                 casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, phaseAnglesI1);
 
                 Eigen::MatrixXd e_phaseAnglesI = icrar::cpu::MatrixRangeSelect(e_phaseAngles, ToVector(metadata.I), Eigen::all);
                 casacore::Matrix<double> phaseAnglesI = ConvertMatrix(e_phaseAnglesI);
 
                 // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), phaseAngles.shape()[1]);
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size() + 1, phaseAngles.shape()[1]);
                 dInt = 0;
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     dInt.row(n) = phaseAnglesI.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
                 }
+                dInt(dInt.shape()[0] - 1, 0) = 0;
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
+                if(metadata.Ad.shape()[1] != dIntColumn.shape()[0])
+                {
+                    std::cout << "Ad" << metadata.Ad.shape()[1] << "!=" << dIntColumn.shape()[0] << std::endl;
+                }
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
