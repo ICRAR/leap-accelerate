@@ -61,8 +61,8 @@ namespace cpu
                     output_integrations[index].emplace_back(
                         integrationResult.GetIntegrationNumber(),
                         ToDirection(integrationResult.GetDirection()),
-                        std::move(icrar::vector_map(integrationResult.GetData().get(),
-                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); }))
+                        icrar::vector_map(integrationResult.GetData().get(),
+                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); })
                     );
                 }
                 queues.pop();

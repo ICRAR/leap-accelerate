@@ -202,8 +202,7 @@ namespace cuda
         Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
         assert(dIntColumn.cols() == 1);
 
-        auto cal = Eigen::MatrixXd((hostMetadata.GetAd() * dIntColumn) + cal1);
-        output_calibrations.emplace_back(direction, cal);
+        output_calibrations.emplace_back(direction, (hostMetadata.GetAd() * dIntColumn) + cal1);
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
