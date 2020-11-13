@@ -191,6 +191,7 @@ namespace icrar
             EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
         }
 
+#ifdef CUDA_ENABLED
         void TestCudaBufferCopy()
         {
             auto meta = icrar::casalib::MetaData(*ms);
@@ -218,6 +219,7 @@ namespace icrar
             
             ASSERT_MDEQ(expectedhostMetadata, hostMetadata, THRESHOLD);
         }
+#endif
     };
 
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
@@ -225,6 +227,9 @@ namespace icrar
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
     TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
-    TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
     TEST_F(MetaDataTests, TestDD) { TestDD(); }
+
+#ifdef CUDA_ENABLED
+    TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
+#endif
 }

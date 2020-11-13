@@ -123,8 +123,12 @@ int main(int argc, char** argv)
         }
         case ComputeImplementation::cuda:
         {
+#ifdef CUDA_ENABLED
             cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections());
             cpu::PrintResult(result ,args.GetOutputStream());
+#else
+            throw exception("cuda build option required", __FILE__, __LINE__);
+#endif
             break;
         }
         }

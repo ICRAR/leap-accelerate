@@ -79,7 +79,7 @@ namespace cpu
         double dlm_ra;
         double dlm_dec;
 
-        __device__ __host__ double GetChannelWavelength(int i) const
+        double GetChannelWavelength(int i) const
         {
             return speed_of_light / (freq_start_hz + i * freq_inc_hz);
         }

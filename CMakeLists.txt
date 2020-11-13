@@ -9,6 +9,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" ON)
 option(TRACE "Trace Data Values" OFF)
 
@@ -110,8 +111,10 @@ else (DOXYGEN_FOUND)
   message("Doxygen needs to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
-find_package(CUDA REQUIRED)
-enable_language(CUDA)
+if(CUDA_ENABLED)
+  find_package(CUDA)
+  enable_language(CUDA)
+endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
 

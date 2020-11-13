@@ -117,7 +117,9 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
+#ifdef CUDA_ENABLED
                 std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions));
+#endif // CUDA_ENABLED
             }
             else
             {
@@ -189,6 +191,7 @@ namespace icrar
             }
             if(impl == ComputeImplementation::cuda)
             {
+#ifdef CUDA_ENABLED
                 auto integration = icrar::cpu::Integration(
                     0,
                     *ms,
@@ -212,6 +215,7 @@ namespace icrar
                 icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
+#endif // CUDA_ENABLED
             }
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());

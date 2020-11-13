@@ -30,7 +30,7 @@
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>

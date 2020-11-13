@@ -22,6 +22,8 @@
 
 #pragma once
 
+#ifdef CUDA_ENABLED
+
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <casacore/casa/Arrays/Array.h>
 
@@ -58,3 +60,5 @@ namespace cuda
 
 }
 }
+
+#endif // CUDA_ENABLED
