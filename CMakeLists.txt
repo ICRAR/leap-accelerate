@@ -9,7 +9,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-option(WERROR "Warnings as Errors" ON)
+option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 
 # Project configuration, specifying version, languages,
