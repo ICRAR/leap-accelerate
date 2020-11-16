@@ -69,11 +69,13 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
+        double MIN_BASELINE_LENGTH = 0.0;
         LOG(info) << "Starting Calibration using cpu";
         LOG(info)
 		<< "stations: " << ms.GetNumStations() << ", "
 		<< "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "min baseline length: " << MIN_BASELINE_LENGTH << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -111,7 +113,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), MIN_BASELINE_LENGTH);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;

@@ -79,7 +79,8 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength)
+    : m_minBaselineLength(minBaselineLength)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -164,8 +165,8 @@ namespace cpu
         SetOldUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
-    : MetaData(ms, uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength)
+    : MetaData(ms, uvws, minBaselineLength)
     {
         SetDD(direction);
         CalcUVW();

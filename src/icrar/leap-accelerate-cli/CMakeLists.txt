@@ -35,5 +35,3 @@ install (
   DESTINATION
     bin
 )
-
-#add_test(NAME ${TARGET_TEST} COMMAND ${TARGET_NAME})

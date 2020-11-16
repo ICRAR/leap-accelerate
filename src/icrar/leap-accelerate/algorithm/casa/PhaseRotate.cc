@@ -76,9 +76,11 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
+        double MIN_BASELINE_LENGTH = 0.0;
         LOG(info) << "Starting Calibration using casa library";
         LOG(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "min baseline length: " << MIN_BASELINE_LENGTH << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -87,7 +89,7 @@ namespace casalib
         profiling::timer calibration_timer;
 
         profiling::timer metadata_read_timer;
-        auto metadata = casalib::MetaData(ms);
+        auto metadata = casalib::MetaData(ms, MIN_BASELINE_LENGTH);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer integration_read_timer;
@@ -122,7 +124,7 @@ namespace casalib
         profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
-            metadata = MetaData(ms);
+            metadata = casalib::MetaData(ms, MIN_BASELINE_LENGTH);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
         LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;

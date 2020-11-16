@@ -73,11 +73,13 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
+        double MIN_BASELINE_LENGTH = 0.0;
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "min baseline length: " << MIN_BASELINE_LENGTH << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
@@ -122,7 +124,7 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), MIN_BASELINE_LENGTH);
         auto constantMetadata = std::make_shared<ConstantMetaData>(
             metadata.GetConstants(),
             metadata.GetA(),
