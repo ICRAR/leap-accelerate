@@ -12,6 +12,40 @@ LEAP-Accelerate includes:
 * leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server
 * leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients
 
+## Docker image build
+Due to the size of the CUDA tool chain the build of a LEAP_accelerate docker image has been split into two parts, but there is also a Dockerfile.bootstrap which does most of the build in one go. Trimming the final image down to a reasonable size is another required step.
+
+### Bootstrap build
+The Dockerfile.bootstrap builds the image from scratch, but that takes pretty long. NOTE: Depending on the network connection this build can take a long time. It is downloading the CUDA tool chain which is about 2.7 GB. After the download the unpacking and installation takes significant time in addition.
+
+`docker build --tag icrar/leap_cli:big -f Dockerfile.bootstrap`
+
+NOTE: Replace the `<version>` with the version of leap-accelarate this image had been build from.
+
+### Separate build
+The Dockerfile.base builds an image with the CUDA toolchain, which is the base for the actual leap_accelarate image and needs to be build far less often than the leap_accelarate.
+
+`docker build --tag 20.04cuda:installed -f Dockerfile.base`
+
+To get the leap_accelarate image run
+
+`docker build . --tag icrar/leap_cli:big`
+
+### Stripping the image
+
+That image is still very large (>5GB). In order to clean this up it is possible to run the tool from https://github.com/mvanholsteijn/strip-docker-image.git
+
+`strip-docker-image -i icrar/leap_cli:big -t icrar/leap_cli:<version> -f /usr/local/bin/LeapAccelerateCLI -f /usr/bin/sh`
+
+NOTE: Replace the `<version>` with the version of leap-accelarate this image had been build from.
+
+### Test the image
+Run install.sh in the testdata directory and then in the main directory of leap_accelarate:
+
+`docker run -v "$(pwd)"/testdata:/testdata icrar/leap_cli:0.4 LeapAccelerateCLI -f /testdata/1197638568-split.ms -s 126 -i eigen -d "[[-0.4606549305661674,-0.29719233792392513]]"`
+
+The output should be a JSON data structure.
+
 ## Build
 
 ### Linux
