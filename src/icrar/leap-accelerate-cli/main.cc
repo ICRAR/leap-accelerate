@@ -81,6 +81,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
+    app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
 
 #if __has_include(<optional>)
     app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
@@ -121,19 +122,19 @@ int main(int argc, char** argv)
         {
         case ComputeImplementation::casa:
         {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()));
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), args.GetMinumumBaselineLength());
             cpu::PrintResult(cpu::ToCalibrateResult(result), args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cpu:
         {
-            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections());
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinumumBaselineLength());
             cpu::PrintResult(result, args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cuda:
         {
-            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections());
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinumumBaselineLength());
             cpu::PrintResult(result ,args.GetOutputStream());
             break;
         }

@@ -67,16 +67,17 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold)
     {
-        double MIN_BASELINE_LENGTH = 0.0;
         LOG(info) << "Starting Calibration using cpu";
         LOG(info)
-		<< "stations: " << ms.GetNumStations() << ", "
-		<< "rows: " << ms.GetNumRows() << ", "
+        << "stations: " << ms.GetNumStations() << ", "
+        << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
-        << "min baseline length: " << MIN_BASELINE_LENGTH << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "baseline threshold: " << minimumBaselineThreshold << ", "
+        << "short baselines: " << ms.GetNumFlaggedBaselines(minimumBaselineThreshold) - ms.GetNumFlaggedBaselines(0.0) << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -113,7 +114,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), MIN_BASELINE_LENGTH);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;

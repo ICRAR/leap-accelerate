@@ -105,8 +105,8 @@ namespace casalib
 
     public:
         MetaData();
-        MetaData(std::istream& input, double minBaselineLength = 0.0);
-        MetaData(const icrar::MeasurementSet& ms, double minBaselineLength = 0.0);
+        MetaData(std::istream& input, double minimumBaselineThreshold = 0.0);
+        MetaData(const icrar::MeasurementSet& ms, double minimumBaselineThreshold = 0.0);
         
         /**
          * @brief Gets the number of baselines

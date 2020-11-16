@@ -71,16 +71,17 @@ namespace cuda
 {
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold)
     {
-        double MIN_BASELINE_LENGTH = 0.0;
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
-        << "min baseline length: " << MIN_BASELINE_LENGTH << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "baseline threshold: " << minimumBaselineThreshold << ", "
+        << "short baselines: " << ms.GetNumFlaggedBaselines(minimumBaselineThreshold) - ms.GetNumFlaggedBaselines(0.0) << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -124,7 +125,7 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), MIN_BASELINE_LENGTH);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold);
         auto constantMetadata = std::make_shared<ConstantMetaData>(
             metadata.GetConstants(),
             metadata.GetA(),

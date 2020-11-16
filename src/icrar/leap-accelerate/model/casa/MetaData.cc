@@ -53,7 +53,7 @@ namespace casalib
         
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, double minBaselineLength)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, double minimumBaselineThreshold)
     : nbaselines(0)
     , channels(0)
     , num_pols(0)
@@ -61,7 +61,7 @@ namespace casalib
     , rows(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
-    , min_baseline_length(minBaselineLength)
+    , min_baseline_length(minimumBaselineThreshold)
     , phase_centre_ra_rad(0)
     , phase_centre_dec_rad(0)
     {
@@ -112,11 +112,7 @@ namespace casalib
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines());
-
-        auto uvwShape = msmc->uvw().getColumn().shape();
-        auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
-        casacore::Matrix<double> uv = msmc->uvw().getColumn()(uvSlice);
+        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines(minimumBaselineThreshold));
 
         if(a1.size() != a2.size())
         {
@@ -134,14 +130,6 @@ namespace casalib
             }
         }
 
-        // Remove short baselines
-        for(int i = 0; i < uv.shape()[1]; i++)
-        {
-            if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1) + uv(i, 2) * uv(i, 2)) < min_baseline_length)
-            {
-                baselineFlags(i) = false;
-            }
-        }
 
         //Start calculations
         std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, 0);
@@ -151,7 +139,7 @@ namespace casalib
         this->Ad = icrar::casalib::PseudoInverse(A);
     }
 
-    MetaData::MetaData(std::istream& /*input*/, double /*minBaselineLength*/)
+    MetaData::MetaData(std::istream& /*input*/, double /*minimumBaselineThreshold*/)
     {
         throw std::runtime_error("not implemented");
     }

@@ -112,16 +112,16 @@ namespace icrar
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
             if(impl == ComputeImplementation::casa)
             {
-                auto pair = icrar::casalib::Calibrate(*ms, directions);
+                auto pair = icrar::casalib::Calibrate(*ms, directions, 0.0);
                 std::tie(integrations, calibrations) = cpu::ToCalibrateResult(pair);
             }
             else if(impl == ComputeImplementation::cpu)
             {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions));
+                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0);
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions));
+                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0);
             }
             else
             {

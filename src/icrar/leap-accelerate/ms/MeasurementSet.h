@@ -116,9 +116,14 @@ namespace icrar
          * 
          * @return Eigen::Matrix<bool, -1, 1> 
          */
-        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
+        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines(double minimumBaselineThreshold = 0.0) const;
 
-        unsigned int GetNumFlaggedBaselines() const;
+        unsigned int GetNumFlaggedBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        //TODO(calgray): more flagged utils
+        //Eigen::Matrix<bool, -1, 1> GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
+        // void FilterShortBaselines(Eigen::Matrix<bool, -1, 1>& inout) const;
+        // void FilterFlaggedBaselines(Eigen::Matrix<bool, -1, 1>& inout) const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;

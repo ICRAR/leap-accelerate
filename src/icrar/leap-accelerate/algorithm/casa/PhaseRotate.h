@@ -63,7 +63,8 @@ namespace casalib
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<casacore::MVDirection>& directions);
+        const std::vector<casacore::MVDirection>& directions,
+        double minimumBaselineThreshold);
 
     /**
      * @brief 

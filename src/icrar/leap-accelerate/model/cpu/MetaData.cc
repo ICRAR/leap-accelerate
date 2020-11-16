@@ -79,8 +79,8 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength)
-    : m_minBaselineLength(minBaselineLength)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold)
+    : m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -119,14 +119,16 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
-        auto fg = ms.GetFlaggedBaselines();
 
         auto uvwShape = msmc->uvw().getColumn().shape();
         auto uvSlice = casacore::Slicer(
             casacore::IPosition(2,0,0),
             casacore::IPosition(2,1,uvwShape[1]),
             casacore::IPosition(2,1,1));
-        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
+        casacore::Matrix<double> cuv = msmc->uvw().getColumn()(uvSlice);
+        Eigen::MatrixXd uv = ToMatrix(cuv);
+
+        auto flaggedBaselines = ms.GetFlaggedBaselines(m_minimumBaselineThreshold);
 
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
@@ -134,12 +136,12 @@ namespace cpu
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), fg, 0);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, 0);
         trace_matrix(m_A1, "A1");
         trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), fg, -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, -1);
         trace_matrix(m_A, "A");
         trace_matrix(m_I, "I");
 
@@ -165,8 +167,8 @@ namespace cpu
         SetOldUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength)
-    : MetaData(ms, uvws, minBaselineLength)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold)
+    : MetaData(ms, uvws, minimumBaselineThreshold)
     {
         SetDD(direction);
         CalcUVW();

@@ -155,7 +155,7 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines(double minimumBaselineThreshold) const
     {
         // TODO: may want to consider using logical OR over for each channel and polarization.
         auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
@@ -164,15 +164,32 @@ namespace icrar
             casacore::IPosition(3,0,0,0),
             casacore::IPosition(3,1,1,nBaselines),
             casacore::IPosition(3,1,1,1));
-        casacore::Vector<bool> fg = m_msmc->flag().getColumn()
+        casacore::Vector<bool> baselineFlags = m_msmc->flag().getColumn()
         (flagSlice).reform(casacore::IPosition(1, nBaselines))
         (epochIndices);
-        return ToVector(fg);
+
+        // Filter short baselines
+        if(minimumBaselineThreshold > 0.0)
+        {
+            auto uvwShape = m_msmc->uvw().getColumn().shape();
+            auto uvSlice = casacore::Slicer(casacore::IPosition(2,0,0), casacore::IPosition(2,1,uvwShape[1]), casacore::IPosition(2,1,1));
+            casacore::Matrix<double> uv = m_msmc->uvw().getColumn()(uvSlice);
+
+            for(int i = 0; i < uv.shape()[1]; i++)
+            {
+                if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
+                {
+                    baselineFlags(i) = true;
+                }
+            }
+        }
+
+        return ToVector(baselineFlags);
     }
 
-    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    unsigned int MeasurementSet::GetNumFlaggedBaselines(double minimumBaselineThreshold) const
     {
-        auto flaggedBaselines = GetFlaggedBaselines();
+        auto flaggedBaselines = GetFlaggedBaselines(minimumBaselineThreshold);
         unsigned int sum = 0;
         for(bool b : flaggedBaselines)
         {

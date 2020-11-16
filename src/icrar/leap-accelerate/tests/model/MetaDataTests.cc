@@ -84,7 +84,7 @@ namespace icrar
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(102, meta.stations);
-            ASSERT_EQ(5253, meta.GetBaselines()); //This is with autocorrelations and 102 antennas
+            ASSERT_EQ(5253, meta.GetBaselines());
             ASSERT_EQ(73542, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
             ASSERT_EQ(640000, meta.freq_inc_hz);
