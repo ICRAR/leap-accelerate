@@ -128,7 +128,7 @@ namespace cpu
         casacore::Matrix<double> cuv = msmc->uvw().getColumn()(uvSlice);
         Eigen::MatrixXd uv = ToMatrix(cuv);
 
-        auto flaggedBaselines = ms.GetFlaggedBaselines(m_minimumBaselineThreshold);
+        auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted

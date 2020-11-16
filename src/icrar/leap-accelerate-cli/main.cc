@@ -135,7 +135,7 @@ int main(int argc, char** argv)
         case ComputeImplementation::cuda:
         {
             cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinumumBaselineLength());
-            cpu::PrintResult(result ,args.GetOutputStream());
+            //cpu::PrintResult(result ,args.GetOutputStream());
             break;
         }
         }

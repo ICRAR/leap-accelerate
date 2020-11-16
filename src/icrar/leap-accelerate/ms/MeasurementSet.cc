@@ -24,6 +24,7 @@
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
 #include <cstddef>
@@ -155,7 +156,7 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines(double minimumBaselineThreshold) const
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
     {
         // TODO: may want to consider using logical OR over for each channel and polarization.
         auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
@@ -165,8 +166,21 @@ namespace icrar
             casacore::IPosition(3,1,1,nBaselines),
             casacore::IPosition(3,1,1,1));
         casacore::Vector<bool> baselineFlags = m_msmc->flag().getColumn()
-        (flagSlice).reform(casacore::IPosition(1, nBaselines))
-        (epochIndices);
+            (flagSlice).reform(casacore::IPosition(1, nBaselines))
+            (epochIndices);
+
+        return ToVector(baselineFlags);
+    }
+
+    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    {
+        return bool_sum(GetFlaggedBaselines());
+    }
+
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
+    {
+        auto nBaselines = GetNumBaselines();
+        Eigen::Matrix<bool, -1, 1> baselineFlags = Eigen::Matrix<bool, -1, 1>::Zero(nBaselines); 
 
         // Filter short baselines
         if(minimumBaselineThreshold > 0.0)
@@ -175,7 +189,8 @@ namespace icrar
             auto uvSlice = casacore::Slicer(casacore::IPosition(2,0,0), casacore::IPosition(2,1,uvwShape[1]), casacore::IPosition(2,1,1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn()(uvSlice);
 
-            for(int i = 0; i < uv.shape()[1]; i++)
+            //TODO: uv is of size baselines * timesteps
+            for(unsigned int i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
                 {
@@ -184,21 +199,23 @@ namespace icrar
             }
         }
 
-        return ToVector(baselineFlags);
+        return baselineFlags;
     }
 
-    unsigned int MeasurementSet::GetNumFlaggedBaselines(double minimumBaselineThreshold) const
+    unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
-        auto flaggedBaselines = GetFlaggedBaselines(minimumBaselineThreshold);
-        unsigned int sum = 0;
-        for(bool b : flaggedBaselines)
-        {
-            if(b)
-            {
-                sum++;
-            }
-        }
-        return sum;
+        return bool_sum(GetShortBaselines(minimumBaselineThreshold));
+    }
+
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
+    {
+        Eigen::Matrix<bool, -1, 1> result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
+        return result;
+    }
+
+    unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
+    {
+        return bool_sum(GetFilteredBaselines(minimumBaselineThreshold));
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const

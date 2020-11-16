@@ -112,7 +112,7 @@ namespace casalib
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines(minimumBaselineThreshold));
+        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFilteredBaselines(minimumBaselineThreshold));
 
         if(a1.size() != a2.size())
         {
