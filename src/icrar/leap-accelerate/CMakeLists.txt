@@ -132,6 +132,7 @@ configure_cuda_warnings(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
