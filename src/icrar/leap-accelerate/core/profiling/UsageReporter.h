@@ -22,35 +22,17 @@
 
 #pragma once
 
-#include <boost/log/trivial.hpp>
-#include <boost/log/sources/global_logger_storage.hpp>
-#include <boost/log/sources/severity_channel_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/utility/manipulators/add_value.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/attributes/mutable_constant.hpp>
-
-#include <boost/log/expressions.hpp>
-#include <boost/log/core.hpp>
-#include <string>
-
 namespace icrar
 {
-namespace log
+namespace profiling
 {
-    /**
-     * @brief Initializes logging singletons
-     * 
-     */
-    void Initialize();
-}
-}
 
-#ifdef PROFILING
-#define PROFILER_LOG(svr, stream) BOOST_LOG_TRIVIAL(svr) << stream
-#else
-#define PROFILER_LOG(svr, stream) ()
-#endif
+/// Reports high-level, process-wide resource usage values on destruction
+class UsageReporter
+{
+public:
+    ~UsageReporter() noexcept;
+};
+
+} // namespace profiling
+} // namespace icrar

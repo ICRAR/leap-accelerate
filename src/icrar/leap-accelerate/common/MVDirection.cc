@@ -20,7 +20,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "json_helper.h"
+#include "MVDirection.h"
 
 #include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -30,11 +30,15 @@ using namespace rapidjson;
 
 namespace icrar
 {
-    std::vector<icrar::MVDirection> ParseDirections(const std::string json)
+    std::vector<icrar::MVDirection> ParseDirections(const std::string& json)
     {
         Document doc;
         doc.Parse(json.c_str());
+        return ParseDirections(doc);
+    }
 
+    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc)
+    {
         //Validate Schema
         if(!doc.IsArray())
         {

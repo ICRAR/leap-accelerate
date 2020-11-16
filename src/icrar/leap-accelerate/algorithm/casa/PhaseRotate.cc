@@ -23,6 +23,8 @@
 
 #include "PhaseRotate.h"
 
+#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
+
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -35,7 +37,7 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
-#include <icrar/leap-accelerate/core/profiling_timer.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -74,21 +76,21 @@ namespace casalib
         const icrar::MeasurementSet& ms,
         const std::vector<casacore::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using casa library";
-        BOOST_LOG_TRIVIAL(info) << "rows: " << ms.GetNumRows() << ", "
+        LOG(info) << "Starting Calibration using casa library";
+        LOG(info) << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
 
-        auto timer = profiling_timer();
-        timer.start();
+        profiling::timer calibration_timer;
+
+        profiling::timer metadata_read_timer;
         auto metadata = casalib::MetaData(ms);
-        timer.stop();
-        timer.log("metadata read time");
-        timer.restart();
+        LOG(info) << "Read metadata in " << metadata_read_timer;
 
-
+        profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::queue<IntegrationResult>>();
         auto output_calibrations = std::vector<std::queue<CalibrationResult>>();
         auto input_queues = std::vector<std::queue<Integration>>();
@@ -115,20 +117,17 @@ namespace casalib
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
-        timer.stop();
-        timer.log("integration read time");
-        timer.restart();
-
+        profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = MetaData(ms);
             icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        timer.stop();
-        timer.log("PhaseRotate time");
-
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -276,67 +275,6 @@ namespace casalib
                 }
             }
         }
-    }
-
-    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
-        const casacore::Vector<std::int32_t>& a1,
-        const casacore::Vector<std::int32_t>& a2,
-        int refAnt)
-    {
-        if(a1.size() != a2.size())
-        {
-            throw std::invalid_argument("a1 and a2 must be equal size");
-        }
-
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
-        int nAnt = unique.size();
-        if(refAnt >= nAnt - 1)
-        {
-            throw std::invalid_argument("RefAnt out of bounds");
-        }
-
-        Matrix<double> A = Matrix<double>(a1.size() + 1, std::max(icrar::ArrayMax(a1), icrar::ArrayMax(a2)) + 1);
-        A = 0.0;
-
-        Vector<int> I = Vector<int>(a1.size() + 1);
-        I = -1;
-
-        int STATIONS = A.shape()[1]; //TODO verify correctness
-        int k = 0;
-
-        for(size_t n = 0; n < a1.size(); n++)
-        {
-            if(a1(n) != a2(n))
-            {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
-                {
-                    A(k, a1(n)) = 1.0; // set scalear
-                    A(k, a2(n)) = -1.0; // set scalear
-                    I(k) = n; //set scalear
-                    k++;
-                }
-            }
-        }
-        if(refAnt < 0)
-        {
-            refAnt = 0;
-        }
-
-        A(k, refAnt) = 1;
-        k++;
-        
-        auto Atemp = casacore::Matrix<double>(k, STATIONS);
-        Atemp = A(Slice(0, k), Slice(0, STATIONS));
-        A.resize(0,0);
-        A = Atemp;
-
-        auto Itemp = casacore::Vector<int>(k);
-        Itemp = I(Slice(0, k));
-        I.resize(0);
-        I = Itemp;
-
-        return std::make_pair(A, I);
     }
 }
 }

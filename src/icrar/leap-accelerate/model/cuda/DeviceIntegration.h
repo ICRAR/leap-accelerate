@@ -62,7 +62,7 @@ namespace cuda
     class DeviceIntegration
     {
         int m_integrationNumber;
-        device_tensor3<std::complex<double>> m_data; //data is an array data[polarizations][baselines][channels]
+        device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
 
         union
         {
@@ -81,7 +81,7 @@ namespace cuda
          * 
          * @param shape 
          */
-        DeviceIntegration(Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy
@@ -96,8 +96,8 @@ namespace cuda
         size_t GetChannels() const { return channels; }
         size_t GetBaselines() const { return baselines; }
         
-        const device_tensor3<std::complex<double>>& GetData() const { return m_data; }
-        device_tensor3<std::complex<double>>& GetData() { return m_data; }
+        const device_tensor3<std::complex<double>>& GetVis() const { return m_visibilities; }
+        device_tensor3<std::complex<double>>& GetVis() { return m_visibilities; }
 
         /**
          * @brief Set the Data object
@@ -106,6 +106,12 @@ namespace cuda
          */
         void SetData(const icrar::cpu::Integration& integration);
 
+        /**
+         * @brief Copies device data to a host object
+         * 
+         * @param host object with data on cpu memory
+         */
+        void ToHost(cpu::Integration& host) const;
     };
 }
 }

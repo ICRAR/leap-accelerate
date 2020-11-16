@@ -90,11 +90,4 @@ namespace icrar
     {
         return vector_map(value, ToCasaDirection);
     }
-
-    std::string ToMSString(std::chrono::system_clock::duration duration)
-    {
-        std::stringstream ss;
-        ss << std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count() / 1000000.0 << " ms";
-        return ss.str();
-    }
 }

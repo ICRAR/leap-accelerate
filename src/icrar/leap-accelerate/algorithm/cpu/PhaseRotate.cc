@@ -22,6 +22,8 @@
 
 #include "PhaseRotate.h"
 
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
@@ -33,8 +35,8 @@
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 
-#include <icrar/leap-accelerate/core/logging.h>
-#include <icrar/leap-accelerate/core/profiling_timer.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
@@ -67,21 +69,23 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cpu";
-        BOOST_LOG_TRIVIAL(info)
+        LOG(info) << "Starting Calibration using cpu";
+        LOG(info)
 		<< "stations: " << ms.GetNumStations() << ", "
 		<< "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+
+        profiling::timer calibration_timer;
 
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queues = std::vector<std::vector<cpu::Integration>>();
-        
-        auto timer = profiling_timer();
-        timer.start();
+
+        profiling::timer integration_read_timer;
 
         unsigned int integrationNumber = 0;
 
@@ -111,29 +115,25 @@ namespace cpu
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
-        
-        timer.stop();
-        timer.log("integration read time");
-        timer.restart();
-        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
-        timer.stop();
-        timer.log("metadata read time");
-        timer.restart();
+        profiling::timer metadata_read_timer;
+        LOG(info) << "Loading MetaData";
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        LOG(info) << "Read metadata in " << metadata_read_timer;
+
+        profiling::timer phase_rotate_timer;
         for(size_t i = 0; i < directions.size(); ++i)
         {
-            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
+            LOG(info) << "Processing direction " << i;
             metadata.SetDD(directions[i]);
             metadata.CalcUVW();
-            metadata.avg_data.setConstant(std::complex<double>(0.0,0.0));
+            metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
-        timer.stop();
-        timer.log("PhaseRotate time");
-
-        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -147,21 +147,14 @@ namespace cpu
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
-            BOOST_LOG_TRIVIAL(info) << "Rotating Integration " << integration.GetIntegrationNumber();
+            LOG(info) << "Rotating Integration " << integration.GetIntegrationNumber();
             icrar::cpu::RotateVisibilities(integration, metadata);
             output_integrations.emplace_back(direction, integration.GetIntegrationNumber(), boost::none);
         }
-        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(metadata.avg_data);
-#ifdef TRACE
-        {
-            std::ofstream file;
-            file.open("avg_data.txt");
-            file << metadata.avg_data << std::endl;
-            file.close();
-        }
-#endif
+        trace_matrix(metadata.GetAvgData(), "avg_data");
 
-        auto avg_data_angles = metadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        LOG(info) << "Calculating Calibration";
+        auto avg_data_angles = metadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, metadata.GetI1(), 0); // 1st pol only
@@ -169,7 +162,7 @@ namespace cpu
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         Eigen::VectorXd cal1 = metadata.GetAd1() * cal_avg_data;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.avg_data.cols());
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
         Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, metadata.GetI(), Eigen::all);
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
@@ -193,7 +186,7 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::ToPolar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
@@ -236,62 +229,11 @@ namespace cpu
                 {
                     for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                     {
-                        metadata.avg_data(md_baseline, polarization) += integration_data(polarization, baseline, channel);
+                        metadata.GetAvgData()(md_baseline, polarization) += integration_data(polarization, baseline, channel);
                     }
                 }
             }
         }
-    }
-
-std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
-        const Eigen::VectorXi& a1,
-        const Eigen::VectorXi& a2,
-        int refAnt)
-    {
-        if(a1.size() != a2.size())
-        {
-            throw std::invalid_argument("a1 and a2 must be equal size");
-        }
-
-        auto unique = std::set<std::int32_t>(a1.begin(), a1.end());
-        unique.insert(a2.begin(), a2.end());
-        int nAnt = unique.size();
-        if(refAnt >= nAnt - 1)
-        {
-            throw std::invalid_argument("RefAnt out of bounds");
-        }
-
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
-        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(-1);
-
-        int k = 0;
-
-        for(int n = 0; n < a1.size(); n++)
-        {
-            if(a1(n) != a2(n))
-            {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
-                {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
-                    I(k) = n;
-                    k++;
-                }
-            }
-        }
-        if(refAnt < 0)
-        {
-            refAnt = 0;
-        }
-
-        A(k, refAnt) = 1;
-        k++;
-
-        A.conservativeResize(k, Eigen::NoChange);
-        I.conservativeResize(k);
-
-        return std::make_pair(std::move(A), std::move(I));
     }
 }
 }

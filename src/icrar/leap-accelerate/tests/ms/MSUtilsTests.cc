@@ -42,7 +42,7 @@ public:
 
     void SetUp() override
     {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
             ms = casacore::MeasurementSet(filename);
     }
 

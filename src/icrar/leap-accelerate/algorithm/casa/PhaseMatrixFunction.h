@@ -23,25 +23,29 @@
 #pragma once
 
 #include <casacore/casa/Arrays/Matrix.h>
+#include <casacore/casa/Arrays/Vector.h>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/LU>
-
-namespace Eigen
-{
-    template<typename T>
-    using Matrix3D = Eigen::Matrix<EigenMatrix<T, -1, 1>, -1, -1>;
-}
+#include <utility>
 
 namespace icrar
 {
-namespace cpu
+namespace casalib
 {
-    template<typename T>
-    Matrix3D Matrix3DZeros(int rows, int cols, int depth)
-    {
-
-    }
+    /**
+     * @brief Form Phase Matrix
+     * Given the antenna lists from MS and (optionally) RefAnt & Map:
+     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
+     * If True Map is provided it returns the index map for the matrix (only useful if RefAnt set).
+     *
+     * This function generates and returns the linear matrix for the phase calibration (only)
+     * @param a1 indexes of 1st antenna of each baselines
+     * @param a2 indexes of 2nd antenna of each baselines
+     * @param refAnt the reference antenna (0, 1), -1 
+     * @return std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> 
+     */
+    std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
+        const casacore::Vector<std::int32_t>& a1,
+        const casacore::Vector<std::int32_t>& a2,
+        int refAnt);
 }
-}
+} 

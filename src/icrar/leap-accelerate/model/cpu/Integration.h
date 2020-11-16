@@ -78,7 +78,7 @@ namespace cpu
         };
 
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
-        Eigen::Tensor<std::complex<double>, 3> m_data; //data is an array data[nch][nbl][npol]
+        Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
 
     public:
         /**

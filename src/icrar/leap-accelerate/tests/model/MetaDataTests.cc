@@ -55,7 +55,7 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
             ms = std::make_unique<icrar::MeasurementSet>(filename, 126, true);
         }
 
@@ -76,12 +76,11 @@ namespace icrar
 
         void TestRawReadFromFile()
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/1197638568-32.ms";
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
             auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
             auto meta = icrar::casalib::MetaData(*rawms);
 
             ASSERT_EQ(false, meta.m_initialized);
-            //ASSERT_EQ(4853, meta.nantennas);
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
             ASSERT_EQ(128, meta.stations);
@@ -114,10 +113,9 @@ namespace icrar
             auto meta = icrar::casalib::MetaData(*ms);
 
             ASSERT_EQ(false, meta.m_initialized);
-            //ASSERT_EQ(4853, meta.nantennas); // TODO assert
             ASSERT_EQ(48, meta.channels);
             ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(126, meta.stations); // TODO 98?
+            ASSERT_EQ(126, meta.stations);
             ASSERT_EQ(8001, meta.GetBaselines());
             ASSERT_EQ(63089, meta.rows);
             ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
@@ -202,13 +200,23 @@ namespace icrar
             meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             meta.avg_data.get() = 0;
 
-            auto expectedMetadataHost = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
-            auto metadataDevice = icrar::cuda::DeviceMetaData(expectedMetadataHost);
+            auto expectedhostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
+
+            auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
+                expectedhostMetadata.GetConstants(),
+                expectedhostMetadata.GetA(),
+                expectedhostMetadata.GetI(),
+                expectedhostMetadata.GetAd(),
+                expectedhostMetadata.GetA1(),
+                expectedhostMetadata.GetI1(),
+                expectedhostMetadata.GetAd1()
+            );
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, expectedhostMetadata);
 
             // copy from device back to host
-            icrar::cpu::MetaData metaDataHost = metadataDevice.ToHost();
+            icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();
             
-            ASSERT_MDEQ(expectedMetadataHost, metaDataHost, THRESHOLD);
+            ASSERT_MDEQ(expectedhostMetadata, hostMetadata, THRESHOLD);
         }
     };
 

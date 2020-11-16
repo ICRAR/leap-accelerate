@@ -35,7 +35,8 @@
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/profiling/timer.h>
 
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 
@@ -72,26 +73,37 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions)
     {
-        BOOST_LOG_TRIVIAL(info) << "Starting Calibration using cuda";
-        BOOST_LOG_TRIVIAL(info)
+        LOG(info) << "Starting Calibration using cuda";
+        LOG(info)
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
-        << "directions: " << directions.size();
+        << "directions: " << directions.size() << ", "
+        << "timesteps: " << ms.GetNumRows() / ms.GetNumBaselines();
+
+        profiling::timer calibration_timer;
 
         if(GetCudaDeviceCount() == 0)
         {
             throw std::runtime_error("Could not find CUDA device");
         }
 
+        profiling::timer integration_read_timer;
         auto output_integrations = std::vector<std::vector<cpu::IntegrationResult>>();
         auto output_calibrations = std::vector<std::vector<cpu::CalibrationResult>>();
         auto input_queue = std::vector<cuda::DeviceIntegration>();
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        if(integrations == 0)
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
+
         auto integration = cpu::Integration(
             0,
             ms,
@@ -105,27 +117,42 @@ namespace cuda
             output_integrations.emplace_back();
             output_calibrations.emplace_back();
         }
+        LOG(info) << "Read integration data in " << integration_read_timer;
 
-        BOOST_LOG_TRIVIAL(info) << "Loading MetaData";
+        profiling::timer metadata_read_timer;
+        LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
-        input_queue.emplace_back(integration.GetVis().dimensions());
+        auto constantMetadata = std::make_shared<ConstantMetaData>(
+            metadata.GetConstants(),
+            metadata.GetA(),
+            metadata.GetI(),
+            metadata.GetAd(),
+            metadata.GetA1(),
+            metadata.GetI1(),
+            metadata.GetAd1()
+        );
 
+        input_queue.emplace_back(0, integration.GetVis().dimensions());
+        LOG(info) << "Metadata loaded in " << metadata_read_timer;
+
+        profiling::timer phase_rotate_timer;
         for(int i = 0; i < directions.size(); ++i)
         {
-            BOOST_LOG_TRIVIAL(info) << "Processing direction " << i;
-            BOOST_LOG_TRIVIAL(info) << "Setting Metadata";
-            metadata.avg_data.setConstant(std::complex<double>(0.0, 0.0));
+            LOG(info) << "Processing direction " << i;
+            LOG(info) << "Setting Metadata";
+            metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDD(directions[i]);
-            metadata.CalcUVW(); //TODO: Can be performed in CUDA 
+            metadata.CalcUVW(); //TODO: Can be performed in CUDA
             input_queue[0].SetData(integration);
 
-            BOOST_LOG_TRIVIAL(info) << "Copying Metadata to Device";
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(metadata);
-            BOOST_LOG_TRIVIAL(info) << "PhaseRotate";
+            LOG(info) << "Copying Metadata to Device";
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
+            LOG(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
-        
-        BOOST_LOG_TRIVIAL(info) << "Calibration Complete";
+        LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
+
+        LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
@@ -140,28 +167,21 @@ namespace cuda
         auto cal = std::vector<casacore::Matrix<double>>();
         for(auto& integration : input)
         {
-            BOOST_LOG_TRIVIAL(info) << "Rotating integration " << integration.GetIntegrationNumber();
+            LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
             output_integrations.emplace_back(
                 direction,
                 integration.GetIntegrationNumber(),
                 boost::optional<std::vector<casacore::Vector<double>>>());
         }
-        BOOST_LOG_TRIVIAL(info) << "Copying Metadata from Device";
-        deviceMetadata.ToHost(hostMetadata);
-        
-        BOOST_LOG_TRIVIAL(info) << "Calibrating on cpu";
-        BOOST_LOG_TRIVIAL(trace) << "avg_data: " << pretty_matrix(hostMetadata.avg_data);
-#ifdef TRACE
-        {
-            std::ofstream file;
-            file.open("avg_data.txt");
-            file << hostMetadata.avg_data << std::endl;
-            file.close();
-        }
-#endif
 
-        auto avg_data_angles = hostMetadata.avg_data.unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        LOG(info) << "Copying Metadata from Device";
+        deviceMetadata.AvgDataToHost(hostMetadata.GetAvgData());
+
+        LOG(info) << "Calibrating on cpu";
+        trace_matrix(hostMetadata.GetAvgData(), "avg_data");
+
+        auto avg_data_angles = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
 
         // TODO: reference antenna should be included and set to 0?
         auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI1(), 0); // 1st pol only
@@ -169,7 +189,7 @@ namespace cuda
         // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
         Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.avg_data.cols());
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.GetAvgData().cols());
         Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
         for(int n = 0; n < hostMetadata.GetI().size(); ++n)
         {
@@ -281,9 +301,9 @@ namespace cuda
         DeviceMetaData& metadata)
     {
         const auto& constants = metadata.GetConstants(); 
-        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetData().GetDimensionSize(2));
-        assert(constants.nbaselines == metadata.avg_data.GetRows() && integration.GetBaselines() == integration.GetData().GetDimensionSize(1));
-        assert(constants.num_pols == integration.GetData().GetDimensionSize(0));
+        assert(constants.channels == integration.GetChannels() && integration.GetChannels() == integration.GetVis().GetDimensionSize(2));
+        assert(constants.nbaselines == metadata.GetAvgData().GetRows() && integration.GetBaselines() == integration.GetVis().GetDimensionSize(1));
+        assert(constants.num_pols == integration.GetVis().GetDimensionSize(0));
 
         // block size can any value where the product is 1024
         dim3 blockSize = dim3(128, 8, 1);
@@ -294,76 +314,15 @@ namespace cuda
         );
 
         //TODO: store polar form in advance
-        const auto polar_direction = icrar::ToPolar(metadata.direction);
+        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         g_RotateVisibilities<<<gridSize, blockSize>>>(
-            (cuDoubleComplex*)integration.GetData().Get(), integration.GetData().GetDimensionSize(0), integration.GetData().GetDimensionSize(1), integration.GetData().GetDimensionSize(2),
+            (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),
             constants,
-            metadata.dd,
+            metadata.GetDD(),
             make_double2(polar_direction(0), polar_direction(1)),
-            (double3*)metadata.UVW.Get(), metadata.UVW.GetCount(),
-            (double3*)metadata.oldUVW.Get(), metadata.oldUVW.GetCount(),
-            (cuDoubleComplex*)metadata.avg_data.Get(), metadata.avg_data.GetRows(), metadata.avg_data.GetCols());
-    }
-
-    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
-        const Eigen::VectorXi& a1,
-        const Eigen::VectorXi& a2,
-        int refAnt)
-    {
-        if(a1.size() != a2.size())
-        {
-            throw std::invalid_argument("a1 and a2 must be equal size");
-        }
-
-        auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
-        unique.insert(a2.cbegin(), a2.cend());
-        int nAnt = unique.size();
-        if(refAnt >= nAnt - 1)
-        {
-            throw std::invalid_argument("RefAnt out of bounds");
-        }
-
-        Eigen::MatrixXd A = Eigen::MatrixXd::Zero(a1.size() + 1, std::max(a1.maxCoeff(), a2.maxCoeff()) + 1);
-
-        int STATIONS = A.cols(); //TODO verify correctness
-
-        Eigen::VectorXi I = Eigen::VectorXi(a1.size() + 1);
-        I.setConstant(-1);
-
-        int k = 0;
-
-        for(int n = 0; n < a1.size(); n++)
-        {
-            if(a1(n) != a2(n))
-            {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
-                {
-                    A(k, a1(n)) = 1;
-                    A(k, a2(n)) = -1;
-                    I(k) = n;
-                    k++;
-                }
-            }
-        }
-        if(refAnt < 0)
-        {
-            refAnt = 0;
-        }
-
-        A(k, refAnt) = 1;
-        k++;
-        
-        auto Atemp = Eigen::MatrixXd(k, STATIONS);
-        Atemp = A(Eigen::seqN(0, k), Eigen::seqN(0, STATIONS));
-        A.resize(0,0);
-        A = Atemp;
-
-        auto Itemp = Eigen::VectorXi(k);
-        Itemp = I(Eigen::seqN(0, k));
-        I.resize(0);
-        I = Itemp;
-
-        return std::make_pair(A, I);
+            (double3*)metadata.GetUVW().Get(), metadata.GetUVW().GetCount(),
+            (double3*)metadata.GetOldUVW().Get(), metadata.GetOldUVW().GetCount(),
+            (cuDoubleComplex*)metadata.GetAvgData().Get(), metadata.GetAvgData().GetRows(), metadata.GetAvgData().GetCols());
     }
 }
 }

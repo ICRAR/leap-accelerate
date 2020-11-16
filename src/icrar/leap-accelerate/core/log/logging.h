@@ -22,26 +22,27 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
+#include <icrar/leap-accelerate/core/log/Verbosity.h>
+#include <boost/log/trivial.hpp>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+namespace log
+{
+    /// The default verbosity level with which the logging system is initialized
+    constexpr Verbosity DEFAULT_VERBOSITY = Verbosity::info;
 
     /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
+     * @brief Initializes logging singletons
+     * @param verbosity The verbosity to initialize the library with, higher
+     * values yield more verbose output.
      */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
+    void Initialize(Verbosity verbosity=DEFAULT_VERBOSITY);
 
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
+    /// The logging level set on the application
+    extern ::boost::log::trivial::severity_level logging_level;
 }
+}
+
+#define LOG(X) BOOST_LOG_TRIVIAL(X)
+#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)

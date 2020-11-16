@@ -22,26 +22,33 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
+#include <string>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
+namespace log
+{
+    enum class Verbosity
+    {
+        fatal = 0,
+        error = 1,
+        warn = 2,
+        info = 3,
+        debug = 4,
+        trace = 5
+    };
+    
+    /**
+     * @brief Parses string argument into an enum, throws an exception otherwise.
+     * 
+     * @param value 
+     * @return ComputeImplementation 
+     */
+    Verbosity ParseVerbosity(const std::string& value);
 
     /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
+     * @return true if value was converted succesfully, false otherwise.
      */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
-
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
+    bool TryParseVerbosity(const std::string& value, Verbosity& out);
+}
 }

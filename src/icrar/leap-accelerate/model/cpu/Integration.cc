@@ -26,7 +26,8 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-#include <icrar/leap-accelerate/core/logging.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
 {
@@ -58,9 +59,9 @@ namespace cpu
     {
         constexpr int startChannel = 0;
         size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
-        BOOST_LOG_TRIVIAL(info) << "vis:" << vis_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        LOG(info) << "vis: " << memory_amount(vis_size);
         size_t uvw_size = (baselines - startBaseline) * 3;
-        BOOST_LOG_TRIVIAL(info) << "uvw:" << uvw_size / (1024.0 * 1024.0 * 1024.0) << " GiB";
+        LOG(info) << "uvw: " << memory_amount(uvw_size);
         m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
         m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
     }

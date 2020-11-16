@@ -23,25 +23,28 @@
 #pragma once
 
 #include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
+#include <utility>
 
 namespace icrar
 {
-    using MVDirection = Eigen::RowVector3d;
-
+namespace cpu
+{
     /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
+     * @brief Form Phase Matrix
+     * Given the antenna lists from MS and (optionally) RefAnt & Map:
+     * If non-negative RefAnt is provided it only forms the matrix for baselines with that antenna.
+     * If True Map is provided it returns the index map for the matrix (only useful if RefAnt set).
+     *
+     * This function generates and returns the linear matrix for the phase calibration (only)
+     * @param a1 indexes of 1st antenna of each baselines
+     * @param a2 indexes of 2nd antenna of each baselines
+     * @param refAnt the reference antenna (0, 1), -1 
+     * @param map 
+     * @return std::pair<Matrixd, Matrixi> 
      */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
-
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
+    std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
+        const Eigen::VectorXi& a1,
+        const Eigen::VectorXi& a2,
+        int refAnt=-1);
 }
+} 

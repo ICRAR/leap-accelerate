@@ -172,10 +172,8 @@ void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::
     }
 
     const double THRESHOLD = 0.001;
-    //ASSERT_EQ(expectedIntegration.baselines, metadataOutput.avg_data.rows());
     
-    ASSERT_EQ(expected.GetConstants().nantennas, actual.GetConstants().nantennas);
-    //ASSERT_EQ(expected.nbaseline, metadata.nbaseline);
+    ASSERT_EQ(expected.GetConstants().nbaselines, actual.GetConstants().nbaselines);
     ASSERT_EQ(expected.GetConstants().channels, actual.GetConstants().channels);
     ASSERT_EQ(expected.GetConstants().num_pols, actual.GetConstants().num_pols);
     ASSERT_EQ(expected.GetConstants().stations, actual.GetConstants().stations);
@@ -195,8 +193,8 @@ void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::
     ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
     ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
-    ASSERT_MEQ3D(expected.dd, actual.dd, THRESHOLD);
-    ASSERT_MEQCD(expected.avg_data, actual.avg_data, THRESHOLD);
+    ASSERT_MEQ3D(expected.GetDD(), actual.GetDD(), THRESHOLD);
+    ASSERT_MEQCD(expected.GetAvgData(), actual.GetAvgData(), THRESHOLD);
     
     // TODO: ensure these copy correctly
     //ASSERT_EQ(expected.direction, actual.direction);

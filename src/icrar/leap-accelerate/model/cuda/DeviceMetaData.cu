@@ -30,43 +30,91 @@ namespace icrar
 {
 namespace cuda
 {
+    ConstantMetaData::ConstantMetaData(
+            const icrar::cpu::Constants constants,
+            Eigen::MatrixXd A,
+            Eigen::VectorXi I,
+            Eigen::MatrixXd Ad,
+            Eigen::MatrixXd A1,
+            Eigen::VectorXi I1,
+            Eigen::MatrixXd Ad1)
+        : m_constants(constants)
+        , m_A(A)
+        , m_I(I)
+        , m_Ad(Ad)
+        , m_A1(A1)
+        , m_I1(I1)
+        , m_Ad1(Ad1) { }
+
+    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host)
+    {
+        host.m_constants = m_constants;
+
+        m_A.ToHost(host.m_A);
+        m_I.ToHost(host.m_I);
+        m_Ad.ToHost(host.m_Ad);
+        m_A1.ToHost(host.m_A1);
+        m_I1.ToHost(host.m_I1);
+        m_Ad1.ToHost(host.m_Ad1);
+    }
+
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
-    : constants(metadata.GetConstants())
-    , UVW(metadata.m_UVW)
-    , oldUVW(metadata.m_oldUVW)
-    , dd(metadata.dd)
-    , direction(metadata.direction)
-    , avg_data(metadata.avg_data)
-    , A(metadata.GetA())
-    , I(metadata.GetI())
-    , Ad(metadata.GetAd())
-    , A1(metadata.GetA1())
-    , I1(metadata.GetI1())
-    , Ad1(metadata.GetAd1())
+    : m_constantMetadata(std::make_shared<ConstantMetaData>(
+        metadata.GetConstants(),
+        metadata.GetA(),
+        metadata.GetI(),
+        metadata.GetAd(),
+        metadata.GetA1(),
+        metadata.GetI1(),
+        metadata.GetAd1()))
+    , m_oldUVW(metadata.GetOldUVW())
+    , m_UVW(metadata.GetUVW())
+    , m_dd(metadata.GetDD())
+    , m_direction(metadata.GetDirection())
+    , m_avg_data(metadata.GetAvgData())
     {
     }
 
-    const icrar::cpu::Constants& DeviceMetaData::GetConstants()
+    DeviceMetaData::DeviceMetaData(std::shared_ptr<ConstantMetaData> constantMetadata, const icrar::cpu::MetaData& metadata)
+    : m_constantMetadata(constantMetadata)
+    , m_oldUVW(metadata.GetOldUVW())
+    , m_UVW(metadata.GetUVW())
+    , m_dd(metadata.GetDD())
+    , m_direction(metadata.GetDirection())
+    , m_avg_data(metadata.GetAvgData())
     {
-        return constants;
+
+    }
+
+    const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
+    {
+        return m_constantMetadata->GetConstants();
+    }
+
+    void DeviceMetaData::SetDirection(const icrar::MVDirection& direction)
+    {
+        m_direction = direction;
+    }
+
+    void DeviceMetaData::SetAvgData(int v)
+    {
+        cudaMemset(m_avg_data.Get(), v, m_avg_data.GetSize());
     }
 
     void DeviceMetaData::ToHost(cpu::MetaData& metadata) const
     {
-        metadata.m_constants = constants;
+        m_constantMetadata->ToHost(metadata);
 
-        A.ToHost(metadata.m_A);
-        I.ToHost(metadata.m_I);
-        Ad.ToHost(metadata.m_Ad);
-        A1.ToHost(metadata.m_A1);
-        I1.ToHost(metadata.m_I1);
-        Ad1.ToHost(metadata.m_Ad1);
+        m_oldUVW.ToHost(metadata.m_oldUVW);
+        m_UVW.ToHost(metadata.m_UVW);
+        metadata.m_direction = m_direction;
+        metadata.m_dd = m_dd;
+        m_avg_data.ToHost(metadata.m_avg_data);
+    }
 
-        oldUVW.ToHost(metadata.m_oldUVW);
-        UVW.ToHost(metadata.m_UVW);
-        metadata.direction = direction;
-        metadata.dd = dd;
-        avg_data.ToHost(metadata.avg_data);
+    void DeviceMetaData::AvgDataToHost(Eigen::MatrixXcd& host) const
+    {
+        m_avg_data.ToHost(host);
     }
 
     cpu::MetaData DeviceMetaData::ToHost() const
@@ -74,7 +122,7 @@ namespace cuda
         //TODO: tidy up using a constructor for now
         //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
-        UVW.ToHost(uvwTemp);
+        m_UVW.ToHost(uvwTemp);
         cpu::MetaData result = cpu::MetaData();
         ToHost(result);
         return result;
