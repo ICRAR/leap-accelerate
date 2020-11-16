@@ -59,9 +59,7 @@ std::string version_information(const char *name)
 {
     std::ostringstream os;
     os << name << " version " << version() << '\n'
-       << "git revision " << git_sha1() << '\n';
-    os << "Has local git changes: " << std::boolalpha << git_has_local_changes()
-       << std::noboolalpha << '\n';
+       << "git revision " << git_sha1() << (git_has_local_changes() ? "-dirty\n" : "\n");
     os << name << " built on " << __DATE__ << ' ' << __TIME__;
     return os.str();
 }

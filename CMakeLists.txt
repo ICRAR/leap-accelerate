@@ -12,6 +12,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(WERROR "Warnings as Errors" ON)
 option(TRACE "Trace Data Values" OFF)
 
+# Override config via environment variables
+if(DEFINED ENV{WERROR})
+  set(WERROR $ENV{WERROR})
+endif()
+if(DEFINED ENV{TRACE})
+  set(TRACE $ENV{TRACE})
+endif()
+
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
 project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})

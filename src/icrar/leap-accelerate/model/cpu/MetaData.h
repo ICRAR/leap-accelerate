@@ -116,7 +116,7 @@ namespace cpu
          * @param ms 
          * @param uvws 
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength = 0.0);
 
         /**
          * @brief Construct a new MetaData object
@@ -125,7 +125,7 @@ namespace cpu
          * @param direction 
          * @param uvws 
          */
-        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength);
+        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minBaselineLength = 0.0);
         
         /**
          * @brief Constructs a MetaData object from an equivalent casa MetaData object
