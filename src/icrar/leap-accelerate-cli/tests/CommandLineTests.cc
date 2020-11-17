@@ -121,7 +121,7 @@ namespace icrar
         void TestMultipleCuda()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-32.ms";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
             command += " -s 102";
             command += " -i cuda";
             command += " -d ["
