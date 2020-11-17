@@ -153,7 +153,7 @@ namespace casalib
             if(integration.is_initialized())
             {
                 icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
-                output_integrations.emplace(direction, integration.get().integration_number, boost::none);
+                output_integrations.emplace(integration.get().integration_number, direction, boost::none);
             }
             else
             {
