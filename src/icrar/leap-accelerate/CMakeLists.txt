@@ -128,12 +128,13 @@ target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudaf
 configure_cuda_warnings(${TARGET_NAME})
 
 
-#target_link_libraries(${TARGET_NAME} CUDA)
-
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
+# Legacy TODO: build support for xenial
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+
+#target_link_libraries(${TARGET_NAME} CUDA)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
