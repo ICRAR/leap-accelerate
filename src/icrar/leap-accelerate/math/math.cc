@@ -25,6 +25,11 @@
 
 namespace icrar
 {
+    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+    {
+        return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
+    }
+
     Eigen::Vector2d ToPolar(const MVDirection& xyz)
     {
         auto tmp = Eigen::Vector2d();
