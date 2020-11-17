@@ -1,13 +1,15 @@
-name: Automated Tests
+name: EAGLE
 on: [push]
 
 jobs:
   test:
-    name: Run TestCafe Tests
+    name: Generate component palette
     runs-on: ubuntu-latest
     steps:
-      - name: Check out the repository
-        uses: actions/checkout@v1
+      - name: Check out the repository (branch yan-494)
+        uses: actions/checkout@v2
+        with:
+          ref: yan-494
       - name: Setup Python
         uses: actions/setup-python@v2
       - name: Install Dependencies
