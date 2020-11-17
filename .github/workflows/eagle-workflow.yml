@@ -38,5 +38,5 @@ jobs:
           rm -rf LEAP/
           mv ../LEAP/ .
           git add *
-          git diff-index --quiet HEAD || git commit -m 'doxygen commit'
+          git diff-index --quiet HEAD || git commit -m 'New EAGLE Component Palette'
           git push
