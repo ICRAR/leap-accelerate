@@ -310,7 +310,7 @@ namespace icrar
             {
                 FAIL() << "Expected std::invalid_argument";
             }
-		}
+        }
 
         void PhaseMatrixFunctionDataTest(ComputeImplementation impl)
         {

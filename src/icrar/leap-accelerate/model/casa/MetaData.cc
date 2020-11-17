@@ -113,10 +113,6 @@ namespace casalib
 
         casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines());
 
-        auto uvwShape = msmc->uvw().getColumn().shape();
-        auto uvSlice = Slicer(IPosition(2,0,0), IPosition(2,1,uvwShape[1]), IPosition(2,1,1));
-        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
-
         if(a1.size() != a2.size())
         {
             throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
@@ -136,9 +132,6 @@ namespace casalib
         //Start calculations
         std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, 0);
         this->Ad1 = icrar::casalib::PseudoInverse(A1);
-
-        // Here we will check for baselines < minimum and add them to flags
-        // if sqrt(uv[0]*uv[0]+uv[1]*uv[1]+uv[2]*uv[2])<X { fg(n)=False }
         std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, -1);
         this->Ad = icrar::casalib::PseudoInverse(A);
     }
@@ -164,7 +157,7 @@ namespace casalib
         }
     }
 
-    // TODO: rename to CalcDD or UpdateDD
+    // TODO(calgray): rename to CalcDD or UpdateDD
     void MetaData::SetDD(const casacore::MVDirection& direction)
     {
         if(!dd.is_initialized())
@@ -175,7 +168,7 @@ namespace casalib
         auto& dd3d = dd.value();
 
         //NOTE: using polar direction
-        //This is the way using astropy -- we need to repeat
+        //TODO(calgray): This is the way using astropy -- need to repeat
         /*
         from astropy.coordinates import SkyCoord
         import astropy.units as u
