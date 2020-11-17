@@ -10,7 +10,7 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
-option(WERROR "Warnings as Errors" ON)
+option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 
 # Project configuration, specifying version, languages,
@@ -133,7 +133,6 @@ find_package(Eigen3 REQUIRED)
 
 set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 find_package(RapidJSON REQUIRED)
-
 
 # Local Targets
 include(lint)
