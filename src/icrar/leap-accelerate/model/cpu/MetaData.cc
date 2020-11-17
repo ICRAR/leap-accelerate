@@ -155,11 +155,11 @@ namespace cpu
         BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
         trace_matrix(m_Ad, "Ad");
 
-        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
+        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
             LOG(warning) << "Ad is degenerate";
         }
-        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
+        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
             LOG(warning) << "Ad1 is degenerate";
         }

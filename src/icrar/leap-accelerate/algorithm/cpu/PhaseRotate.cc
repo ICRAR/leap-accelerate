@@ -166,8 +166,8 @@ namespace cpu
         // PhaseAngles I
         Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
         // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
-        //phaseAnglesI.conservativeResize(phaseAnglesI.cols() + 1);
-        //phaseAnglesI(phaseAnglesI.size() - 1) = 0;
+        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
+        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
