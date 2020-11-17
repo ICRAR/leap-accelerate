@@ -1,0 +1,42 @@
+name: EAGLE
+on: [push]
+
+jobs:
+  test:
+    name: Generate component palette
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository (branch yan-494)
+        uses: actions/checkout@v2
+        with:
+          ref: yan-494
+      - name: Setup Python
+        uses: actions/setup-python@v2
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get install -y doxygen && sudo apt-get install -y xsltproc
+      - name: Run Doxygen
+        run: GIT_REPO=$(git config --get remote.origin.url) PROJECT_VERSION=$(git rev-parse --short HEAD) doxygen
+      - name: Process Doxygen XML
+        run: |
+          cd LEAP/xml
+          xsltproc combine.xslt index.xml >leap.xml
+          wget https://raw.githubusercontent.com/ICRAR/EAGLE/master/tools/xml2palette/xml2palette.py
+          python3 xml2palette.py -i leap.xml -o leap.palette
+          mv leap.palette ../.
+          cd ..
+          rm -rf xml/
+          cd ..
+      - name: Push palette
+        env:
+          EAGLE_USERNAME: eagle-updater
+          EAGLE_GITHUB_ACCESS_TOKEN: ${{secrets.EAGLE_GITHUB_ACCESS_TOKEN}}
+        run: |
+          git config --global user.name $EAGLE_USERNAME
+          git config --global user.email "$EAGLE_USERNAME@gmail.com"
+          git clone https://$EAGLE_GITHUB_ACCESS_TOKEN@github.com/ICRAR/EAGLE_test_repo
+          cd EAGLE_test_repo/
+          rm -rf LEAP/
+          mv ../LEAP/ .
+          git add *
+          git diff-index --quiet HEAD || git commit -m 'New EAGLE Component Palette'
+          git push
