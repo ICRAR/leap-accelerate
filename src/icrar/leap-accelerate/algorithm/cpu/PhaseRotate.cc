@@ -76,7 +76,7 @@ namespace cpu
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
-        << "baseline threshold: " << minimumBaselineThreshold << ", "
+        << "baseline threshold: " << minimumBaselineThreshold << "m, "
         << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
         << "filtered baselines: " << ms.GetNumFilteredBaselines(minimumBaselineThreshold) << ", "
         << "channels: " << ms.GetNumChannels() << ", "
