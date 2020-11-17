@@ -195,18 +195,87 @@ namespace cpu
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
-        m_dd = Eigen::Matrix3d();
-        m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(0,1) = -std::sin(m_constants.dlm_ra);
-        m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
-        
-        m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(1,1) = std::cos(m_constants.dlm_ra);
-        m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        ang1 = M_PI/2.-m_constants.phase_centre_dec_rad;
+	ang2 = polar_direction(0)-m_constants.phase_centre_ra_rad;
+	ang3 = -M_PI/2+polar_direction(1);
 
-        m_dd(2,0) = -std::sin(m_constants.dlm_dec);
-        m_dd(2,1) = 0;
-        m_dd(2,2) = std::cos(m_constants.dlm_dec);
+        m_dd  = Eigen::Matrix3d();
+        m_dd1 = Eigen::Matrix3d();
+        m_dd2 = Eigen::Matrix3d();
+        m_dd3 = Eigen::Matrix3d();
+	m_lmn = Eigen::Vector3d();
+
+        m_dd1(0,0) = 1;
+        m_dd1(0,1) = 0;
+        m_dd1(0,2) = 0;
+                
+        m_dd1(1,0) = 0;
+        m_dd1(1,1) = std::cos(ang1);
+	m_dd1(1,2) = -std::sin(ang1);
+	        
+        m_dd1(2,0) = 0;
+        m_dd1(2,1) = std::sin(ang1);
+	m_dd1(2,2) = std::cos(ang1);
+	        
+        m_dd2(0,0) = std::cos(ang2);
+        m_dd2(0,1) = std::sin(ang2);
+        m_dd2(0,2) = 0;
+                 
+        m_dd2(1,0) = -std::sin(ang2);
+        m_dd2(1,1) = std::cos(ang2);
+	m_dd2(1,2) = 0;
+	         
+        m_dd2(2,0) = 0;
+        m_dd2(2,1) = 0;
+	m_dd2(2,2) = 1;
+	        
+        m_dd3(0,0) = 1;
+        m_dd3(0,1) = 0;
+        m_dd3(0,2) = 0;
+                 
+        m_dd3(1,0) = 0;
+        m_dd3(1,1) = std::cos(ang3);
+	m_dd3(1,2) = -std::sin(ang3);
+	         
+        m_dd3(2,0) = 0;
+        m_dd3(2,1) = std::sin(ang3);
+	m_dd3(2,2) = std::cos(ang3);
+
+	// 3,3 matrix from explicitly rotating around three axes
+	m_dd=(m_dd3*m_dd2);
+	LOG(info) << "m_dd check: " << m_dd(0,0)  << ", " << m_dd(0,1) << ", " << m_dd(2,2);
+	m_dd=m_dd*m_dd1;
+	LOG(info) << "m_dd check: " << m_dd(0,0)  << ", " << m_dd(0,1) << ", " << m_dd(2,2);
+
+	// 3,3 matrix from TMS
+        // m_dd(0,0) =  std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        // m_dd(0,1) = -std::sin(m_constants.dlm_ra);
+        // m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        
+        // m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        // m_dd(1,1) = std::cos(m_constants.dlm_ra);
+        // m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+
+        // m_dd(2,0) = -std::sin(m_constants.dlm_dec);
+        // m_dd(2,1) = 0;
+        // m_dd(2,2) = std::cos(m_constants.dlm_dec);
+
+	/* R=
+array([[ 0.9998477 , -0.00792323, -0.01555021],
+       [ 0.00765063,  0.99981738, -0.0175119 ],
+       [ 0.01568612,  0.01739026,  0.99972572]]) */
+
+	// Alternatively calc only the three vec
+	m_lmn(0)=std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
+	m_lmn(1)=std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - 
+	  std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * 
+	  std::sin(-m_constants.dlm_ra);
+	m_lmn(2)=std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + 
+	  std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * 
+	  std::cos(-m_constants.dlm_ra);
+	  // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
+	m_lmn(2) = m_lmn(2) -1;
+     
     }
 
     void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)

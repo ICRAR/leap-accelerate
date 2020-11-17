@@ -171,14 +171,21 @@ namespace cpu
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+	constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
             dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            //dInt(n, Eigen::all) = (std::exp(-sum*two_pi)*metadata.GetAvgData()(n,Eigen::all).unaryExpr([](std::complex<double>c) { return std::arg(c); }));
+	    if (dInt(n,0)>5)  { dInt(n,0)-=two_pi; }
+	    if (dInt(n,0)<-5) { dInt(n,0)+=two_pi; }
+	    if (dInt(n,3)>5)  { dInt(n,3)-=two_pi; }
+	    if (dInt(n,3)<-5) { dInt(n,3)+=two_pi; }
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
+	//LOG(info) << dInt ;
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
 
@@ -192,7 +199,7 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
+        //const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
@@ -201,18 +208,18 @@ namespace cpu
 
             constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
-            shiftFactor +=
-            (
-                metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
-                - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
-            );
-            shiftFactor -=
-            (
-                polar_direction(0) * metadata.GetUVW()[baseline](0)
-                - polar_direction(1) * metadata.GetUVW()[baseline](1)
-            );
+            // shiftFactor +=
+            // (
+            //     metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
+            //     - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
+            // );
+            // shiftFactor -=
+            // (
+            //     polar_direction(0) * metadata.GetUVW()[baseline](0)
+            //     - polar_direction(1) * metadata.GetUVW()[baseline](1)
+            // );
             shiftFactor *= two_pi;
 
             // Loop over channels

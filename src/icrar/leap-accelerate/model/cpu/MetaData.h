@@ -81,7 +81,7 @@ namespace cpu
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
-            return speed_of_light / (freq_start_hz + i * freq_inc_hz);
+	  return speed_of_light / (freq_start_hz + (i+0.5) * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;
@@ -107,7 +107,13 @@ namespace cpu
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd1; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd2; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd3; // direction matrix, late initialized
+        Eigen::Vector3d m_lmn; // direction matrix, late initialized
         Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
+	double ang1,ang2,ang3; // angles
+
     
     public:
         /**
