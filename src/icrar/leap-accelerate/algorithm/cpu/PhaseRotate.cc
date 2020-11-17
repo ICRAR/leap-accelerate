@@ -192,7 +192,7 @@ namespace cpu
 
         metadata.CalcUVW();
 
-        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
+        //const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
@@ -201,8 +201,8 @@ namespace cpu
 
             constexpr double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
-
+            double shiftFactor = metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2);
+            /* These are for offsets in the image - which do not apply
             shiftFactor +=
             (
                 metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
@@ -213,6 +213,7 @@ namespace cpu
                 polar_direction(0) * metadata.GetUVW()[baseline](0)
                 - polar_direction(1) * metadata.GetUVW()[baseline](1)
             );
+            */
             shiftFactor *= two_pi;
 
             // Loop over channels

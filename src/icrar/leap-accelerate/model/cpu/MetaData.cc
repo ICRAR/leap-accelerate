@@ -32,6 +32,8 @@
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
+#include <boost/math/constants/constants.hpp>
+
 namespace icrar
 {
 namespace cpu
@@ -189,24 +191,61 @@ namespace cpu
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
-        this->m_direction = direction;
+        m_direction = direction;
 
         Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
 
-        m_dd = Eigen::Matrix3d();
-        m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(0,1) = -std::sin(m_constants.dlm_ra);
-        m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
-        
-        m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(1,1) = std::cos(m_constants.dlm_ra);
-        m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        //m_dd = Eigen::Matrix3d();
+        //m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        //m_dd(0,1) = -std::sin(m_constants.dlm_ra);
+        //m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
 
-        m_dd(2,0) = -std::sin(m_constants.dlm_dec);
-        m_dd(2,1) = 0;
-        m_dd(2,2) = std::cos(m_constants.dlm_dec);
+        // m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
+        // m_dd(1,1) = std::cos(m_constants.dlm_ra);
+        // m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+
+        // m_dd(2,0) = -std::sin(m_constants.dlm_dec);
+        // m_dd(2,1) = 0;
+        // m_dd(2,2) = std::cos(m_constants.dlm_dec);
+        
+        constexpr double pi = boost::math::constants::pi<double>();
+        double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
+        double ang2 = polar_direction(0) - m_constants.phase_centre_ra_rad;
+        double ang3 = -pi / 2.0 + polar_direction(1);
+
+        m_dd1 = Eigen::Matrix3d();
+        m_dd1 <<
+        1,              0,               0,
+        0, std::cos(ang1), -std::sin(ang1),
+        0, std::sin(ang1),  std::cos(ang1);
+
+        m_dd2 = Eigen::Matrix3d();
+        m_dd2 <<
+         std::cos(ang2), std::sin(ang2), 0,
+        -std::sin(ang2), std::cos(ang2), 0,
+                      0,              0, 1;
+
+        m_dd3 <<
+        1,              0,               0,
+        0, std::cos(ang3), -std::sin(ang3),
+        0, std::sin(ang3),  std::cos(ang3);
+
+        m_lmn = Eigen::Vector3d::Zero();
+
+        m_dd = m_dd3 * m_dd2;
+        LOG(info) << "m_dd check: " << m_dd;
+        m_dd = m_dd * m_dd1;
+        LOG(info) << "m_dd check: " << m_dd;
+
+        // Alternatively calc only the three vec
+        m_lmn = Eigen::Vector3d();
+        m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
+        m_lmn(1) = std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::sin(-m_constants.dlm_ra);
+        m_lmn(2) = std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::cos(-m_constants.dlm_ra);
+        // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
+        m_lmn(2) = m_lmn(2) - 1;
     }
 
     void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
