@@ -26,13 +26,11 @@
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <rapidjson/document.h>
 
-using namespace rapidjson;
-
 namespace icrar
 {
     std::vector<icrar::MVDirection> ParseDirections(const std::string& json)
     {
-        Document doc;
+        rapidjson::Document doc;
         doc.Parse(json.c_str());
         return ParseDirections(doc);
     }

@@ -41,25 +41,25 @@ namespace casalib
 {
     class IntegrationResult
     {
+        int m_integrationNumber;
         casacore::MVDirection m_direction;
-        int m_integration_number;
         boost::optional<std::vector<casacore::Vector<double>>> m_data;
 
     public:
         IntegrationResult(
+            int integrationNumber,
             casacore::MVDirection direction,
-            int integration_number,
             boost::optional<std::vector<casacore::Vector<double>>> data)
-            : m_direction(direction)
-            , m_integration_number(integration_number)
-            , m_data(data)
+            : m_integrationNumber(std::move(integrationNumber))
+            , m_direction(direction)
+            , m_data(std::move(data))
         {
 
         }
 
-        const casacore::MVDirection GetDirection() const { return m_direction; }
+        const casacore::MVDirection& GetDirection() const { return m_direction; }
         const boost::optional<std::vector<casacore::Vector<double>>>& GetData() const { return m_data; }
-        int GetIntegrationNumber() const { return m_integration_number; }
+        int GetIntegrationNumber() const { return m_integrationNumber; }
     };
 
     class CalibrationResult

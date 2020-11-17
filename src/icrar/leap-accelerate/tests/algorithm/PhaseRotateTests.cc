@@ -135,17 +135,15 @@ namespace icrar
 
                 ASSERT_EQ(1, calibrations[i].size());
                 const auto& result = calibrations[i].front();
-                ASSERT_EQ(1, result.GetData().size());
 
-                //TODO: assert with LEAP-Cal
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
 
-                if(!ToVector(expectedCalibration).isApprox(ToMatrix(result.GetData()[0]), THRESHOLD))
+                if(!ToVector(expectedCalibration).isApprox(result.GetData(), THRESHOLD))
                 {
-                    std::cout << i+1 << "/" << expected.size() << " got:\n" << ToMatrix(result.GetData()[0]) << std::endl;
+                    std::cout << i+1 << "/" << expected.size() << " got:\n" << result.GetData() << std::endl;
                 }
-                ASSERT_MEQD(ToVector(expectedCalibration), ToMatrix(result.GetData()[0]), THRESHOLD);
+                ASSERT_MEQD(ToVector(expectedCalibration), result.GetData(), THRESHOLD);
             }
         }
 
@@ -338,12 +336,12 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 casacore::Matrix<double> casaA;
-                casacore::Array<std::int32_t> casaI;
+                casacore::Vector<std::int32_t> casaI;
                 std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
-                casacore::Array<std::int32_t> casaI1;
+                casacore::Vector<std::int32_t> casaI1;
                 std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 

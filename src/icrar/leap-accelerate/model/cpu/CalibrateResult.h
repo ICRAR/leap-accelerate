@@ -56,18 +56,18 @@ namespace cpu
 {
     class IntegrationResult
     {
+        int m_integrationNumber;
         MVDirection m_direction;
-        int m_integration_number;
-        boost::optional<std::vector<casacore::Vector<double>>> m_data;
+        boost::optional<std::vector<Eigen::VectorXd>> m_data;
 
     public:
         IntegrationResult(
+            int integrationNumber,
             icrar::MVDirection direction,
-            int integration_number,
-            boost::optional<std::vector<casacore::Vector<double>>> data)
-            : m_direction(direction)
-            , m_integration_number(integration_number)
-            , m_data(data)
+            boost::optional<std::vector<Eigen::VectorXd>> data)
+            : m_integrationNumber(integrationNumber)
+            , m_direction(std::move(direction))
+            , m_data(std::move(data))
         {
 
         }
@@ -76,19 +76,30 @@ namespace cpu
     class CalibrationResult
     {
         MVDirection m_direction;
-        std::vector<casacore::Matrix<double>> m_data;
+        Eigen::MatrixXd m_data;
 
     public:
         CalibrationResult(
-            const MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
-            : m_direction(direction)
-            , m_data(data)
+            MVDirection direction,
+            Eigen::MatrixXd data)
+            : m_direction(std::move(direction))
+            , m_data(std::move(data))
         {
         }
 
+        /**
+         * @brief Gets the calibration direction
+         * 
+         * @return const MVDirection 
+         */
         const MVDirection GetDirection() const { return m_direction; }
-        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
+
+        /**
+         * @brief Get the calibration Vector for the antenna array in the specified direction
+         * 
+         * @return const Eigen::MatrixXd 
+         */
+        const Eigen::MatrixXd& GetData() const { return m_data; }
 
         void Serialize(std::ostream& os) const;
 
@@ -96,8 +107,7 @@ namespace cpu
         template<typename Writer>
         void CreateJsonStrFormat(Writer& writer) const
         {
-            assert(m_data.size() == 1);
-            assert(m_data[0].shape()[1] == 1);
+            assert(m_data.cols() == 1);
 
             writer.StartObject();
             writer.String("direction");
@@ -110,9 +120,9 @@ namespace cpu
 
             writer.String("data");
             writer.StartArray();
-            for(auto& v : m_data[0])
+            for(int i = 0; i < m_data.rows(); ++i)
             {
-                writer.Double(v);
+                writer.Double(m_data(i,0));
             }
             writer.EndArray();
 

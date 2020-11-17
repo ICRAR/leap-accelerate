@@ -28,19 +28,19 @@
 bash .travis/before_install.sh
 
 # Kernsuite Casacore
-sudo apt-get install software-properties-common
+sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y -s ppa:kernsuite/kern-3
 sudo apt-add-repository -y multiverse
 sudo apt-add-repository -y restricted
 sudo apt-get update
-sudo apt-get install casacore-dev
+sudo apt-get install -y casacore-dev
 
 # CUDA 9.0
 wget http://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
 sudo apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub
 sudo apt-get update
-sudo apt-get install cuda
+sudo apt-get install -y cuda
 
 export CUDA_HOME=/usr/local/cuda
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
