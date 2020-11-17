@@ -26,6 +26,7 @@
 
 #include <rapidjson/document.h>
 #include <vector>
+#include <rapidjson/document.h>
 
 namespace icrar
 {
