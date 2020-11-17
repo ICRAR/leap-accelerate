@@ -82,6 +82,8 @@ namespace icrar
         return range(IntType(0), stop, IntType(1));
     }
 
+    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
+
     /**
      * @brief Converts a unit catersian direction to polar coordinates
      * 

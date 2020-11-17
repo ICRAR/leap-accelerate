@@ -121,7 +121,6 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
-
         auto uvwShape = msmc->uvw().getColumn().shape();
         auto uvSlice = casacore::Slicer(
             casacore::IPosition(2,0,0),
@@ -196,19 +195,6 @@ namespace cpu
         Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
-
-        //m_dd = Eigen::Matrix3d();
-        //m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        //m_dd(0,1) = -std::sin(m_constants.dlm_ra);
-        //m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
-
-        // m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        // m_dd(1,1) = std::cos(m_constants.dlm_ra);
-        // m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
-
-        // m_dd(2,0) = -std::sin(m_constants.dlm_dec);
-        // m_dd(2,1) = 0;
-        // m_dd(2,2) = std::cos(m_constants.dlm_dec);
         
         constexpr double pi = boost::math::constants::pi<double>();
         double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
@@ -239,13 +225,13 @@ namespace cpu
         m_dd = m_dd * m_dd1;
         LOG(info) << "m_dd check: " << m_dd;
 
-        // Alternatively calc only the three vec
-        m_lmn = Eigen::Vector3d();
-        m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
-        m_lmn(1) = std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::sin(-m_constants.dlm_ra);
-        m_lmn(2) = std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::cos(-m_constants.dlm_ra);
-        // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
-        m_lmn(2) = m_lmn(2) - 1;
+        // TODO(calgray) Alternatively calc only the three vec
+        // m_lmn = Eigen::Vector3d();
+        // m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
+        // m_lmn(1) = std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::sin(-m_constants.dlm_ra);
+        // m_lmn(2) = std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::cos(-m_constants.dlm_ra);
+        // // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
+        // m_lmn(2) = m_lmn(2) - 1;
     }
 
     void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)

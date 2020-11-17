@@ -187,27 +187,27 @@ namespace cuda
         LOG(info) << "Calibrating on cpu";
         trace_matrix(metadata.GetAvgData(), "avg_data");
 
-        auto phaseAngles = metadata.GetAvgData().unaryExpr([](std::complex<double> c){ return std::arg(c); });
+        auto phaseAngles = icrar::arg(metadata.GetAvgData());
         
         // PhaseAngles I1
-        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
         // PhaseAngles I
-        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
         // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
-        //phaseAnglesI.conservativeResize(phaseAnglesI.cols() + 1);
-        //phaseAnglesI(phaseAnglesI.size() - 1) = 0;
+        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
+        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
+        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
+        
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([=](double v) { return v - sum; });
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -266,7 +266,8 @@ namespace cuda
 
             // loop over baselines
             const double two_pi = 2 * CUDART_PI;
-            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
+            double shiftFactor = (uvw[baseline].z - oldUVW[baseline].z);
+            /*
             shiftFactor +=
             (
                constants.phase_centre_ra_rad * oldUVW[baseline].x
@@ -277,6 +278,7 @@ namespace cuda
                 direction.x * uvw[baseline].x
                 - direction.y * uvw[baseline].y
             );
+            */
             shiftFactor *= two_pi;
 
             // loop over channels

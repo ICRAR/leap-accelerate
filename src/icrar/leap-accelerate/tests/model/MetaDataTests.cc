@@ -154,17 +154,17 @@ namespace icrar
             auto direction = casacore::MVDirection(-0.4606549305661674,-0.29719233792392513);
             meta.SetDD(direction);
             
-            EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
-            EXPECT_DOUBLE_EQ(0.86068501306022194, meta.dd.get()(0,1));
-            EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.dd.get()(0,2));
+            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(0,0));
+            EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.dd.get()(0,1));
+            EXPECT_DOUBLE_EQ(0.85597009050371897, meta.dd.get()(0,2));
 
-            EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.dd.get()(1,0));
-            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(1,1));
-            EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(1,2));
+            EXPECT_DOUBLE_EQ(-0.2520402307174327, meta.dd.get()(1,0));
+            EXPECT_DOUBLE_EQ(0.93533988977932658, meta.dd.get()(1,1));
+            EXPECT_DOUBLE_EQ(0.24822371499818516, meta.dd.get()(1,2));
 
-            EXPECT_DOUBLE_EQ(0.39117878367889541, meta.dd.get()(2,0));
-            EXPECT_DOUBLE_EQ(0.00000000000000000, meta.dd.get()(2,1));
-            EXPECT_DOUBLE_EQ(0.92031470660828840, meta.dd.get()(2,2));
+            EXPECT_DOUBLE_EQ(-0.82295468514759529, meta.dd.get()(2,0));
+            EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.dd.get()(2,1));
+            EXPECT_DOUBLE_EQ(0.45354182990718139, meta.dd.get()(2,2));
 
             //TODO: add astropy changes
             // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
@@ -193,10 +193,10 @@ namespace icrar
             casaMetadata.SetWv();
 
             ASSERT_EQ(48, casaMetadata.channel_wavelength.size());
-            EXPECT_DOUBLE_EQ(2.1537588131757608, casaMetadata.channel_wavelength[0]);
+            EXPECT_DOUBLE_EQ(2.1488188223488516, casaMetadata.channel_wavelength[0]);
             
             auto cpuMetadata = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
-            EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
+            EXPECT_DOUBLE_EQ(2.1488188223488516, cpuMetadata.GetConstants().GetChannelWavelength(0));
         }
 
         void TestCudaBufferCopy()

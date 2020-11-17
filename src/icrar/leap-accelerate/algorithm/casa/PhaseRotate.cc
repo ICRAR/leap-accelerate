@@ -241,8 +241,8 @@ namespace casalib
             // For baseline
             const double two_pi = 2 * boost::math::constants::pi<double>();
 
-            double shiftFactor = -(uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
-
+            double shiftFactor = (uvw[baseline](2) - metadata.oldUVW[baseline](2));
+            /* TODO These are for offsets in the image - which do not apply
             shiftFactor +=
             (
                 metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
@@ -254,6 +254,7 @@ namespace casalib
                 direction.get()[0] * uvw[baseline](0)
                 - direction.get()[1] * uvw[baseline](1)
             );
+            */
             shiftFactor *= two_pi;
 
             // Loop over channels
