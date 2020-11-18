@@ -62,6 +62,7 @@ namespace icrar
         boost::optional<std::string> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
+        boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
         boost::optional<int> verbosity;
@@ -84,6 +85,7 @@ namespace icrar
         boost::optional<int> stations;
         boost::optional<std::vector<icrar::MVDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
+        boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
         boost::optional<icrar::log::Verbosity> verbosity;
@@ -105,6 +107,7 @@ namespace icrar
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
         std::vector<MVDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
+        bool m_useFileSystemCache; // Enables caching of expensive calculations to the filesystem
         bool m_mwaSupport; // Negates baselines when enabled
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
         icrar::log::Verbosity m_verbosity; // Defines logging level for std::out
@@ -138,9 +141,11 @@ namespace icrar
 
         MeasurementSet& GetMeasurementSet();
 
-        std::vector<icrar::MVDirection>& GetDirections();
+        const std::vector<icrar::MVDirection>& GetDirections() const;
 
         ComputeImplementation GetComputeImplementation() const;
+
+        bool IsFileSystemCacheEnabled() const;
 
         icrar::log::Verbosity GetVerbosity() const;
 

@@ -130,15 +130,6 @@ namespace cpu
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
 
-        // if(a1.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-        // if(a2.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
         trace_matrix(m_A1, "A1");
@@ -159,15 +150,10 @@ namespace cpu
             return icrar::cpu::PseudoInverse(a);
         };
 
+
+        m_Ad1 = computeAd1(m_A1);
         if(useCache)
         {
-            //cache Ad1 with A1 hash
-            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
-                matrix_hash<Eigen::MatrixXd>()(m_A1),
-                m_A1, m_Ad1,
-                "A1.hash", "Ad1.cache",
-                computeAd1);
-        
             //cache Ad with A hash
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
                 matrix_hash<Eigen::MatrixXd>()(m_A),
@@ -177,7 +163,6 @@ namespace cpu
         }
         else
         {
-            m_Ad1 = computeAd1(m_A1);
             m_Ad = computeAd(m_A);
         }
 

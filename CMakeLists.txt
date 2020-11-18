@@ -29,7 +29,6 @@ if(TRACE)
 endif()
 
 add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
-#add_definitions(-DEIGEN_DEFAULT_DENSE_INDEX_TYPE=size_t)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)

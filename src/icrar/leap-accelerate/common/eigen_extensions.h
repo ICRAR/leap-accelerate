@@ -123,7 +123,7 @@ namespace icrar
     template<typename In, typename Out>
     void ProcessCache(size_t hash,
         const In& in, Out& out,
-        std::string cacheFile, std::string hashFile,
+        std::string hashFile, std::string cacheFile,
         std::function<Out(const In&)> transform)
     {
         size_t fileHash;
@@ -140,7 +140,6 @@ namespace icrar
             write_hash(hashFile.c_str(), hash);
             write_binary(cacheFile.c_str(), out);
         }
-
     }
 
     template<typename RowVector>

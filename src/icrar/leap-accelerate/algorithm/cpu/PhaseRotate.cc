@@ -67,7 +67,8 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cpu";
         LOG(info)
@@ -119,7 +120,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
