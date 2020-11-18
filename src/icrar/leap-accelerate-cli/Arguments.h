@@ -137,15 +137,31 @@ namespace icrar
 
         boost::optional<std::string> GetOutputFilePath() const;
 
+        /**
+         * @brief Gets the user defined output stream for results
+         * 
+         * @return std::ostream& 
+         */
         std::ostream& GetOutputStream();
 
+        /**
+         * @brief Gets the user specifified measurement set
+         * 
+         * @return MeasurementSet& 
+         */
         MeasurementSet& GetMeasurementSet();
 
-        std::vector<icrar::MVDirection>& GetDirections();
+        const std::vector<icrar::MVDirection>& GetDirections();
 
         ComputeImplementation GetComputeImplementation() const;
 
-        double GetMinumumBaselineLength() const;
+        /**
+         * @brief Gets the minimum baseline threshold in meteres. Baselines
+         * of length beneath the threshold are to be filtered/flagged.
+         * 
+         * @return double baseline threshold length in meters
+         */
+        double GetMinimumBaselineThreshold() const;
 
         icrar::log::Verbosity GetVerbosity() const;
 
