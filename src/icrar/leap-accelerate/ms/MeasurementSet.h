@@ -134,7 +134,7 @@ namespace icrar
         Eigen::Matrix<bool, -1, 1> GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
 
         /**
-         * @brief Get the number of baselines that below the \e minimumBaselineThreshold
+         * @brief Get the number of baselines that below the @p minimumBaselineThreshold
          * 
          * @param minimumBaselineThreshold 
          * @return unsigned int 
