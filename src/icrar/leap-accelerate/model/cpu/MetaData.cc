@@ -79,7 +79,7 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, bool useCache)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -147,12 +147,41 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
         trace_matrix(m_A, "A");
 
-        LOG(info) << "Inverting PhaseMatrix A1";
-        m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-        trace_matrix(m_Ad1, "Ad1");
 
-        LOG(info) << "Inverting PhaseMatrix A";
-        m_Ad = icrar::cpu::PseudoInverse(m_A);
+        auto computeAd1 = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A1";
+            return icrar::cpu::PseudoInverse(a);
+        };
+        auto computeAd = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A";
+            return icrar::cpu::PseudoInverse(a);
+        };
+
+        if(useCache)
+        {
+            //cache Ad1 with A1 hash
+            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                matrix_hash<Eigen::MatrixXd>()(m_A1),
+                m_A1, m_Ad1,
+                "A1.hash", "Ad1.cache",
+                computeAd1);
+        
+            //cache Ad with A hash
+            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                matrix_hash<Eigen::MatrixXd>()(m_A),
+                m_A, m_Ad,
+                "A.hash", "Ad.cache",
+                computeAd);
+        }
+        else
+        {
+            m_Ad1 = computeAd1(m_A1);
+            m_Ad = computeAd(m_A);
+        }
+
+        trace_matrix(m_Ad1, "Ad1");
         trace_matrix(m_Ad, "Ad");
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
@@ -167,8 +196,8 @@ namespace cpu
         SetOldUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
-    : MetaData(ms, uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, bool useCache)
+    : MetaData(ms, uvws, useCache)
     {
         SetDD(direction);
         CalcUVW();

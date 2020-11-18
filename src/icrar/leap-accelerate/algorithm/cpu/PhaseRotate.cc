@@ -87,7 +87,7 @@ namespace cpu
 
         profiling::timer integration_read_timer;
 
-        unsigned int integrationNumber = 0;
+        constexpr unsigned int integrationNumber = 0;
 
         // Flooring to remove incomplete measurements
         int integrations = ms.GetNumRows() / ms.GetNumBaselines();
