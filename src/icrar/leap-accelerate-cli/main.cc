@@ -126,19 +126,19 @@ int main(int argc, char** argv)
         {
         case ComputeImplementation::casa:
         {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), args.GetMinimumBaselineThreshold());
+            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), args.GetMinumumBaselineLength());
             cpu::PrintResult(cpu::ToCalibrateResult(result), args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cpu:
         {
-            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold());
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinumumBaselineLength());
             cpu::PrintResult(result, args.GetOutputStream());
             break;
         }
         case ComputeImplementation::cuda:
         {
-            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold());
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinumumBaselineLength());
             cpu::PrintResult(result ,args.GetOutputStream());
             break;
         }

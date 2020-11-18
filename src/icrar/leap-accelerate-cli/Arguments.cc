@@ -234,7 +234,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
     {
         return m_directions;
     }
@@ -244,7 +244,7 @@ namespace icrar
         return m_computeImplementation;
     }
 
-    double ArgumentsValidated::GetMinimumBaselineThreshold() const
+    double ArgumentsValidated::GetMinumumBaselineLength() const
     {
         return m_minimumBaselineThreshold;
     }

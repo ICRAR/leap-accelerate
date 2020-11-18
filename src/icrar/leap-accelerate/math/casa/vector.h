@@ -24,14 +24,15 @@
 
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <casacore/casa/Arrays.h>
+
 #include <casacore/casa/Arrays/Array.h>
 
 namespace icrar
 {
-namespace casalib
+namespace cpu
 {
     template<typename T>
-    void add(const casacore::Vector<T>& a, const casacore::Vector<T>& b, casacore::Vector<T>& c)
+    void add(const casacore::Array<T>& a, const casacore::Array<T>& b, casacore::Array<T>& c)
     {
         if (a.shape() != b.shape() && a.shape() != c.shape())
         {
@@ -39,34 +40,6 @@ namespace casalib
         }
 
         add(a.size(), a.data(), b.data(), c.data());
-    }
-
-    template<typename T>
-    void multiply(T a, const casacore::Vector<T>& b, casacore::Vector<T>& c)
-    {
-        for(int col = 0; col < b.shape()[0]; ++col)
-        {
-            c(col) = a * b(col);
-        }
-    }
-
-    template<typename T>
-    casacore::Vector<T> multiply(T a, const casacore::Vector<T>& b)
-    {
-        casacore::Vector<T> c(b.shape());
-        multiply(a, b, c);
-        return c;
-    }
-
-    template<typename T>
-    casacore::Vector<T> arg(const casacore::Vector<std::complex<T>>& a)
-    {
-        casacore::Vector<T> c(a.shape());
-        for(int col = 0; col < a.shape()[0]; ++col)
-        {
-            c(col) = std::arg(a(col));
-        }
-        return c;
     }
 }
 }

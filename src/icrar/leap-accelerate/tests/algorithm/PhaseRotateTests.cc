@@ -239,9 +239,9 @@ namespace icrar
             expectedConstants.dlm_dec = -0.40191209304358488;
             auto expectedDD = Eigen::Matrix3d();
             expectedDD <<
-             0.50913780874486769, -0.089966081772685239,  0.85597009050371897,
-             -0.2520402307174327,   0.93533988977932658,  0.24822371499818516,
-            -0.82295468514759529,  -0.34211897743046571,  0.45354182990718139;
+            0.46856701307821974, 0.860685013060222, -0.19916390874975543,
+            -0.792101075276669, 0.509137808744868, 0.336681716539552,
+            0.39117878367889541, 0, 0.920314706608288;
 
             //========
             // ASSERT
@@ -271,10 +271,10 @@ namespace icrar
 
             ASSERT_EQ(5253, metadataOutput.GetAvgData().rows());
             ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
-            ASSERT_EQCD(-92.9808046594221 + 217.15095232225i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
-            ASSERT_EQCD(176.626048517064 + -175.56273241735i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
-            ASSERT_EQCD(249.90761250883 + 176.058264834248i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
-            ASSERT_EQCD(-151.395227567189 + -6.49211532724997i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
+            ASSERT_EQCD(152.207482222774 + 157.780854994143i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
+            ASSERT_EQCD(237.735520799299 + 123.628127794715i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
+            ASSERT_EQCD(3.57682429815259 + -75.3381937487565i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
+            ASSERT_EQCD(-168.342543770758 + -87.1917020804175i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)
