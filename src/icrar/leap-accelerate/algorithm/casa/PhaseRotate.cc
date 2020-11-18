@@ -27,7 +27,6 @@
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
-#include <icrar/leap-accelerate/math/casa/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
@@ -65,6 +64,8 @@
 #include <chrono>
 
 using Radians = double;
+
+using namespace casacore;
 
 namespace icrar
 {
@@ -124,7 +125,7 @@ namespace casalib
         for(size_t i = 0; i < directions.size(); ++i)
         {
             metadata = casalib::MetaData(ms, minimumBaselineThreshold);
-            casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
+            icrar::casalib::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);
         }
         LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
@@ -153,15 +154,16 @@ namespace casalib
 
             if(integration.is_initialized())
             {
-                casalib::RotateVisibilities(integration.get(), metadata, direction);
+                icrar::casalib::RotateVisibilities(integration.get(), metadata, direction);
                 output_integrations.emplace(integration.get().integration_number, direction, boost::none);
             }
             else
             {
                 if(!metadata.avg_data.is_initialized())
                 {
-                    throw exception("avg_data must be initialized", __FILE__, __LINE__);
+                    throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
+
 
                 casacore::Matrix<Radians> phaseAngles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c)
                 {
@@ -169,32 +171,36 @@ namespace casalib
                 });
 
                 auto e_phaseAngles = ToMatrix(phaseAngles);
-                Eigen::VectorXd e_phaseAnglesI1 = cpu::VectorRangeSelect(e_phaseAngles, ToVector(metadata.I1), 0); // 1st pol only
+                Eigen::VectorXd e_phaseAnglesI1 = icrar::cpu::VectorRangeSelect(e_phaseAngles, ToVector(metadata.I1), 0); // 1st pol only
                 // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
                 e_phaseAnglesI1.conservativeResize(e_phaseAnglesI1.rows() + 1);
                 e_phaseAnglesI1(e_phaseAnglesI1.size() - 1) = 0.0;
                 auto phaseAnglesI1 = ConvertVector(e_phaseAnglesI1);
                 
-                casacore::Matrix<double> cal1 = casalib::multiply(metadata.Ad1, phaseAnglesI1);
+                if(metadata.Ad1.shape()[1] != phaseAnglesI1.shape()[0])
+                {
+                    std::cout << "Ad1" << metadata.Ad1.shape()[1] << "!=" << phaseAnglesI1.shape()[0] << std::endl;
+                }
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, phaseAnglesI1);
 
-                Eigen::MatrixXd e_phaseAnglesI = cpu::MatrixRangeSelect(e_phaseAngles, ToVector(metadata.I), Eigen::all);
+                Eigen::MatrixXd e_phaseAnglesI = icrar::cpu::MatrixRangeSelect(e_phaseAngles, ToVector(metadata.I), Eigen::all);
                 casacore::Matrix<double> phaseAnglesI = ConvertMatrix(e_phaseAnglesI);
 
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size() + 1, phaseAngles.shape()[1]);
                 dInt = 0;
-                constexpr double two_pi = boost::math::constants::pi<double>();
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
-                    double sum = casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0));
-                    std::complex<double> scalear = std::exp(-sum*two_pi) + 0i;
-                    dInt.row(n) = casalib::arg(casalib::multiply(scalear, metadata.avg_data.get().row(n)));
+                    dInt.row(n) = phaseAnglesI.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
                 }
                 dInt(dInt.shape()[0] - 1, 0) = 0;
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
-
-                cal.push_back(casalib::multiply(metadata.Ad, dIntColumn) + cal1);
+                if(metadata.Ad.shape()[1] != dIntColumn.shape()[0])
+                {
+                    std::cout << "Ad" << metadata.Ad.shape()[1] << "!=" << dIntColumn.shape()[0] << std::endl;
+                }
+                cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
         }
@@ -215,7 +221,7 @@ namespace casalib
             metadata.SetWv();
             
             // Allocate a zero vector for averaging in time and freq
-            metadata.avg_data = casacore::Matrix<casacore::DComplex>(integration.baselines, metadata.num_pols);
+            metadata.avg_data = casacore::Matrix<DComplex>(integration.baselines, metadata.num_pols);
             metadata.avg_data.get() = 0;
             metadata.m_initialized = true;
         }
@@ -233,8 +239,22 @@ namespace casalib
         for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
-            double shiftFactor = two_pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2));
+            const double two_pi = 2 * boost::math::constants::pi<double>();
+
+            double shiftFactor = -(uvw[baseline](2) - metadata.oldUVW[baseline](2)); // check these are correct
+
+            shiftFactor +=
+            (
+                metadata.phase_centre_ra_rad * metadata.oldUVW[baseline](0)
+                - metadata.phase_centre_dec_rad * metadata.oldUVW[baseline](1)
+            );
+            shiftFactor -=
+            (
+                //NOTE: polar direction
+                direction.get()[0] * uvw[baseline](0)
+                - direction.get()[1] * uvw[baseline](1)
+            );
+            shiftFactor *= two_pi;
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
