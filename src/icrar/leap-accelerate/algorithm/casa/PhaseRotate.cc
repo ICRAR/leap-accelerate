@@ -27,6 +27,7 @@
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
+#include <icrar/leap-accelerate/math/casa/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/casa/matrix.h>
 
@@ -164,7 +165,6 @@ namespace casalib
                     throw icrar::exception("avg_data must be initialized", __FILE__, __LINE__);
                 }
 
-
                 casacore::Matrix<Radians> phaseAngles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c)
                 {
                     return std::arg(c);
@@ -189,9 +189,11 @@ namespace casalib
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size() + 1, phaseAngles.shape()[1]);
                 dInt = 0;
+                constexpr double two_pi = boost::math::constants::pi<double>();
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt.row(n) = phaseAnglesI.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
+                    double sum = casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0));
+                    dInt.row(n) = casalib::arg(casalib::multiply(std::exp(-sum*two_pi)+0i, metadata.avg_data.get().row(n)));
                 }
                 dInt(dInt.shape()[0] - 1, 0) = 0;
 
@@ -200,7 +202,8 @@ namespace casalib
                 {
                     std::cout << "Ad" << metadata.Ad.shape()[1] << "!=" << dIntColumn.shape()[0] << std::endl;
                 }
-                cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
+
+                cal.push_back(casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }
         }

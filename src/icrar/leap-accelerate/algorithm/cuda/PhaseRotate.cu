@@ -195,19 +195,14 @@ namespace cuda
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        // PhaseAngles I
-        // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
-        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
-        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
-        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
-
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        constexpr double two_pi = boost::math::constants::pi<double>();
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([=](double v) { return v - sum; });
+            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum*two_pi) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
