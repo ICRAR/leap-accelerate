@@ -159,25 +159,25 @@ namespace icrar
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
     {
         // TODO: may want to consider using logical OR over for each channel and polarization.
-        auto epochIndices = casacore::Slice(0, GetNumBaselines(), 1);
         auto nBaselines = GetNumBaselines();
+        auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
+        
+        // Selects only the flags of the first channel and polarization
         auto flagSlice = casacore::Slicer(
-            casacore::IPosition(3,0,0,0),
-            casacore::IPosition(3,1,1,nBaselines),
-            casacore::IPosition(3,1,1,1));
-        casacore::Vector<bool> baselineFlags = m_msmc->flag().getColumn()
-            (flagSlice).reform(casacore::IPosition(1, nBaselines))
-            (epochIndices);
-
-        return ToVector(baselineFlags);
+            casacore::IPosition(2, 0, 0),
+            casacore::IPosition(2, 1, 1),
+            casacore::IPosition(2, 1, 1));
+        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
+        return ToVector(flags);
     }
 
     unsigned int MeasurementSet::GetNumFlaggedBaselines() const
     {
-        return bool_sum(GetFlaggedBaselines());
+        auto flaggedBaselines = GetFlaggedBaselines();
+        return std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true);
     }
-
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
+	
+	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
     {
         auto nBaselines = GetNumBaselines();
         Eigen::Matrix<bool, -1, 1> baselineFlags = Eigen::Matrix<bool, -1, 1>::Zero(nBaselines); 
@@ -186,8 +186,12 @@ namespace icrar
         if(minimumBaselineThreshold > 0.0)
         {
             auto uvwShape = m_msmc->uvw().getColumn().shape();
-            auto uvSlice = casacore::Slicer(casacore::IPosition(2,0,0), casacore::IPosition(2,1,uvwShape[1]), casacore::IPosition(2,1,1));
-            casacore::Matrix<double> uv = m_msmc->uvw().getColumn()(uvSlice);
+            auto uvIndices = casacore::Slice(0, uvwShape[1]); 
+            auto uvSlice = casacore::Slicer(
+                casacore::IPosition(1,0),
+                casacore::IPosition(1,1),
+                casacore::IPosition(1,1));
+            casacore::Matrix<double> uv = m_msmc->uvw().getColumnRange(uvIndices, uvSlice);
 
             //TODO: uv is of size baselines * timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
@@ -204,7 +208,8 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
-        return bool_sum(GetShortBaselines(minimumBaselineThreshold));
+        auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
+        return std::count(shortBaselines.cbegin(), shortBaselines.cend(), true);
     }
 
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
@@ -215,8 +220,9 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
     {
-        return bool_sum(GetFilteredBaselines(minimumBaselineThreshold));
-    }
+        auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
+        return std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true);
+	}
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
     {

@@ -169,27 +169,6 @@ namespace icrar
         }
     }
 
-    /**
-     * @brief Sums the number of true values in a boolean container.
-     * 
-     * @tparam Container 
-     * @param container 
-     * @return unsigned int 
-     */
-    template<typename Container>
-    unsigned int bool_sum(const Container& container)
-    {
-        unsigned int sum = 0;
-        for(bool b : container)
-        {
-            if(b)
-            {
-                sum++;
-            }
-        }
-        return sum;
-    }
-
     template<typename RowVector>
     void pretty_row(const RowVector& row, std::stringstream& ss)
     {

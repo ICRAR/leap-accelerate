@@ -260,7 +260,7 @@ namespace casalib
        
         for(double& v : channel_wavelength)
         {
-            v = speed_of_light / v;
+            v = constants::speed_of_light / v;
         }
     }
 
