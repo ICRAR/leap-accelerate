@@ -241,9 +241,11 @@ namespace cpu
         m_lmn = Eigen::Vector3d::Zero();
 
         m_dd = m_dd3 * m_dd2;
-        LOG(info) << "m_dd check: " << m_dd;
         m_dd = m_dd * m_dd1;
-        LOG(info) << "m_dd check: " << m_dd;
+        LOG(trace) << "dd3: " << pretty_matrix(m_dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(m_dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(m_dd1);
+        LOG(trace) << "dd: " << pretty_matrix(m_dd);
 
         // TODO(calgray) Alternatively calc only the three vec
         // m_lmn = Eigen::Vector3d();

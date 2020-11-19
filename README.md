@@ -130,11 +130,13 @@ Generated doxygen is available at the following file location:
 
 ## Run CLI
 
-`./src/icrar/leap-accelerate-cli/LeapAccelerateCLI`
+See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md)
 
-or
+Example:
 
-`./bin/LeapAccelerateCLI`
+`./LeapAccelerateCLI --help`
+
+`./LeapAccelerateCLI --config "./askap.json"`
 
 ## Profiling
 
