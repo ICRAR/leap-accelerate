@@ -186,8 +186,12 @@ namespace icrar
         if(minimumBaselineThreshold > 0.0)
         {
             auto uvwShape = m_msmc->uvw().getColumn().shape();
-            auto uvSlice = casacore::Slicer(casacore::IPosition(2,0,0), casacore::IPosition(2,1,uvwShape[1]), casacore::IPosition(2,1,1));
-            casacore::Matrix<double> uv = m_msmc->uvw().getColumn()(uvSlice);
+            auto uvIndices = casacore::Slice(0, uvwShape[1]); 
+            auto uvSlice = casacore::Slicer(
+                casacore::IPosition(2,0,0),
+                casacore::IPosition(2,1,uvwShape[1]),
+                casacore::IPosition(2,1,1));
+            casacore::Matrix<double> uv = m_msmc->uvw().getColumnRange(uvIndices, uvSlice);
 
             //TODO: uv is of size baselines * timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
