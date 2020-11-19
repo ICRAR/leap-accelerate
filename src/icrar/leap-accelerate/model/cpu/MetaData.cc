@@ -121,11 +121,13 @@ namespace cpu
         auto fg = ms.GetFlaggedBaselines();
 
         auto uvwShape = msmc->uvw().getColumn().shape();
+
+        auto uvwIndices = casacore::Slice(0, uvwShape[1], 1);
         auto uvSlice = casacore::Slicer(
-            casacore::IPosition(2,0,0),
-            casacore::IPosition(2,1,uvwShape[1]),
-            casacore::IPosition(2,1,1));
-        casacore::Array<double> uv = msmc->uvw().getColumn()(uvSlice);
+            casacore::IPosition(1, 0),
+            casacore::IPosition(1, 1),
+            casacore::IPosition(1, 1));
+        casacore::Array<double> uv = msmc->uvw().getColumnRange(uvwIndices, uvSlice);
 
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
