@@ -361,7 +361,7 @@ namespace icrar
                     }
                     else
                     {
-                        throw json_exception("useFileSystemCache bust be of type bool", __FILE__, __LINE__);
+                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "minimumBaselineThreshold")

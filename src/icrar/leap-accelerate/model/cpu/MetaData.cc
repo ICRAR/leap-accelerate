@@ -146,19 +146,18 @@ namespace cpu
         trace_matrix(m_A, "A");
 
 
-        auto computeAd1 = [](const Eigen::MatrixXd& a)
+        auto invertA1 = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A1";
             return icrar::cpu::PseudoInverse(a);
         };
-        auto computeAd = [](const Eigen::MatrixXd& a)
+        auto invertA = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A";
             return icrar::cpu::PseudoInverse(a);
         };
 
-
-        m_Ad1 = computeAd1(m_A1);
+        m_Ad1 = invertA1(m_A1);
         if(useCache)
         {
             //cache Ad with A hash
@@ -166,11 +165,11 @@ namespace cpu
                 matrix_hash<Eigen::MatrixXd>()(m_A),
                 m_A, m_Ad,
                 "A.hash", "Ad.cache",
-                computeAd);
+                invertA);
         }
         else
         {
-            m_Ad = computeAd(m_A);
+            m_Ad = invertA(m_A);
         }
 
         trace_matrix(m_Ad1, "Ad1");
