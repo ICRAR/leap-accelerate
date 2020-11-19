@@ -78,6 +78,7 @@ namespace cuda
         << "stations: " << ms.GetNumStations() << ", "
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
+        << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -157,7 +158,7 @@ namespace cuda
     }
 
     void PhaseRotate(
-        cpu::MetaData& hostMetadata,
+        cpu::MetaData& metadata,
         DeviceMetaData& deviceMetadata,
         const icrar::MVDirection& direction,
         std::vector<cuda::DeviceIntegration>& input,
@@ -177,32 +178,38 @@ namespace cuda
         }
 
         LOG(info) << "Copying Metadata from Device";
-        deviceMetadata.AvgDataToHost(hostMetadata.GetAvgData());
+        deviceMetadata.AvgDataToHost(metadata.GetAvgData());
 
         LOG(info) << "Calibrating on cpu";
-        trace_matrix(hostMetadata.GetAvgData(), "avg_data");
+        trace_matrix(metadata.GetAvgData(), "avg_data");
 
-        auto avg_data_angles = hostMetadata.GetAvgData().unaryExpr([](std::complex<double> c) -> Radians { return std::arg(c); });
+        auto phaseAngles = icrar::arg(metadata.GetAvgData());
+        
+        // PhaseAngles I1
+        // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
+        Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
+        phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
+        phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        // TODO: reference antenna should be included and set to 0?
-        auto cal_avg_data = icrar::cpu::VectorRangeSelect(avg_data_angles, hostMetadata.GetI1(), 0); // 1st pol only
-        // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-        // cal_avg_data(cal_avg_data.size() - 1) = 0.0;
-        Eigen::VectorXd cal1 = hostMetadata.GetAd1() * cal_avg_data;
+        // PhaseAngles I
+        // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
+        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
+        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
+        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
 
-        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(hostMetadata.GetI().size(), hostMetadata.GetAvgData().cols());
-        Eigen::MatrixXd avg_data_slice = icrar::cpu::MatrixRangeSelect(avg_data_angles, hostMetadata.GetI(), Eigen::all);
-        for(int n = 0; n < hostMetadata.GetI().size(); ++n)
+        Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
+        
+        Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        for(int n = 0; n < metadata.GetI().size(); ++n)
         {
-            Eigen::MatrixXd cumsum = hostMetadata.GetA()(n, Eigen::all) * cal1;
-            double sum = cumsum.sum();
-            dInt(n, Eigen::all) = avg_data_slice(n, Eigen::all).unaryExpr([&](double v) { return v - sum; });
+            double sum = metadata.GetA()(n, Eigen::all) * cal1;
+            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([=](double v) { return v - sum; });
         }
 
-        Eigen::MatrixXd dIntColumn = dInt(Eigen::all, 0); // 1st pol only
-        assert(dIntColumn.cols() == 1);
-
-        output_calibrations.emplace_back(direction, (hostMetadata.GetAd() * dIntColumn) + cal1);
+        Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
+        deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
+        deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
+        output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
     }
 
     __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)

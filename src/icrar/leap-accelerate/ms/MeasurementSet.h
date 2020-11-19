@@ -60,8 +60,6 @@ namespace icrar
 
     public:
         MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        //MeasurementSet(std::string filepath, const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        //MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         
@@ -96,7 +94,7 @@ namespace icrar
         /**
          * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
          * and including stations not recording rows.
-         * @note TODO: baselines is always n*(n-1) / 2 and without autocorrelations
+         * @note TODO: baselines should always be n*(n-1) / 2 and without autocorrelations
          * @return unsigned int 
          */
         unsigned int GetNumBaselines() const;
@@ -111,6 +109,16 @@ namespace icrar
         unsigned int GetNumChannels() const;
 
         unsigned int GetNumRows() const;
+
+        /**
+         * @brief Gets a vector of size nBaselines with a true value at the index of flagged baselines.
+         * Checks for flagged data on the first channel and polarization.
+         * 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
+
+        unsigned int GetNumFlaggedBaselines() const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;

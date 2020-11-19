@@ -118,45 +118,40 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
+        auto flags = ms.GetFlaggedBaselines();
+
         //select the first epoch only
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
-        
-        
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-
-        // if(a1.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-        // if(a2.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-
+        
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flags, 0);
         trace_matrix(m_A1, "A1");
+        trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flags, -1);
         trace_matrix(m_A, "A");
+        trace_matrix(m_I, "I");
 
         LOG(info) << "Inverting PhaseMatrix A1";
         m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
         trace_matrix(m_Ad1, "Ad1");
 
         LOG(info) << "Inverting PhaseMatrix A";
         m_Ad = icrar::cpu::PseudoInverse(m_A);
+        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
         trace_matrix(m_Ad, "Ad");
 
         if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
-            LOG(warning) << "m_Ad is degenerate";
+            LOG(warning) << "Ad is degenerate";
         }
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
-            LOG(warning) << "m_Ad1 is degenerate";
+            LOG(warning) << "Ad1 is degenerate";
         }
 
         SetOldUVW(uvws);

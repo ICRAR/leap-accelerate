@@ -57,6 +57,10 @@ using namespace std::literals::complex_literals;
 
 namespace icrar
 {
+    /**
+     * @brief Test suite for PhaseRotate.cc functionality
+     * 
+     */
     class PhaseRotateTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
@@ -86,7 +90,7 @@ namespace icrar
 
         void PhaseRotateTest(ComputeImplementation impl)
         {
-            const double THRESHOLD = 1e-12;
+            const double THRESHOLD = 1e-11;
 
             auto metadata = icrar::casalib::MetaData(*ms);
 
@@ -169,7 +173,7 @@ namespace icrar
                 icrar::casalib::RotateVisibilities(integration, metadata, direction);
                 metadataOptionalOutput = icrar::cpu::MetaData(metadata);
             }
-            if(impl == ComputeImplementation::cpu)
+            else if(impl == ComputeImplementation::cpu)
             {
                 
                 auto integration = cpu::Integration(
@@ -283,13 +287,15 @@ namespace icrar
                 {
                     const casacore::Vector<int32_t> a1;
                     const casacore::Vector<int32_t> a2;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, refAnt);
+                    const casacore::Vector<bool> fg;
+                    icrar::casalib::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
-                if(impl == ComputeImplementation::cpu)
+                else if(impl == ComputeImplementation::cpu)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
-                    icrar::cpu::PhaseMatrixFunction(a1, a2, refAnt);
+                    auto fg = Eigen::Matrix<bool, Eigen::Dynamic, 1>();
+                    icrar::cpu::PhaseMatrixFunction(a1, a2, fg, refAnt);
                 }
                 else
                 {
@@ -318,10 +324,19 @@ namespace icrar
             {
                 if(time[i] == epoch) epochRows++;
             }
-            auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+
+            const int aSize = epochRows;
+            auto epochIndices = casacore::Slice(0, aSize); //TODO assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
+
+            // Selects only the flags of the first channel and polarization
+            auto flagSlice = casacore::Slicer(
+                casacore::IPosition(2, 0, 0),
+                casacore::IPosition(2, 1, 1),
+                casacore::IPosition(2, 1, 1));
+            casacore::Vector<bool> flags = msmc->flag().getColumnRange(epochIndices, flagSlice);
 
             //Start calculations
 
@@ -337,12 +352,12 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Vector<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, -1);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, flags, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
                 casacore::Vector<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, 0);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, flags, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 
                 A = ToMatrix(casaA);
@@ -354,45 +369,50 @@ namespace icrar
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, -1);
+                auto efg = ToVector(flags);
+                std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 
-                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, 0);
+                std::tie(A1, I1) = cpu::PhaseMatrixFunction(ea1, ea2, efg, 0);
                 Ad1 = icrar::cpu::PseudoInverse(A1);
             }
             else
             {
-                throw std::invalid_argument("impl");
+                throw icrar::invalid_argument_exception("invalid PhaseMatrixFunction implementation", "impl", __FILE__, __LINE__);
             }
 
             double TOLERANCE = 0.00001;
 
             // A
-            const int aRows = 5152; 
+            const int aRows = 4754; 
+            const int aCols = 128;
             ASSERT_DOUBLE_EQ(aRows, A.rows());
-            ASSERT_DOUBLE_EQ(128, A.cols());
+            ASSERT_DOUBLE_EQ(aCols, A.cols());
             EXPECT_EQ(1.00, A(0,0));
             EXPECT_EQ(-1.00, A(0,1));
             EXPECT_EQ(0.00, A(0,2));
             //...
+            EXPECT_NEAR(0.00, A(aRows-2, 125), TOLERANCE);
+            EXPECT_NEAR(1.00, A(aRows-2, 126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A(aRows-2, 127), TOLERANCE);
             EXPECT_NEAR(0.00, A(aRows-1, 125), TOLERANCE);
             EXPECT_NEAR(0.00, A(aRows-1, 126), TOLERANCE);
             EXPECT_NEAR(0.00, A(aRows-1, 127), TOLERANCE);
 
             // I
-            const int nBaselines = 5152;
+            const int nBaselines = 4753;
             ASSERT_EQ(nBaselines, I.size());
             EXPECT_EQ(1.00, I(0));
-            EXPECT_EQ(2.00, I(1));
-            EXPECT_EQ(3.00, I(2));
+            EXPECT_EQ(3.00, I(1));
+            EXPECT_EQ(4.00, I(2));
             //...
-            EXPECT_EQ(5249, I(nBaselines-3));
-            EXPECT_EQ(5251, I(nBaselines-2));
-            EXPECT_EQ(-1, I(nBaselines-1));
+            EXPECT_EQ(5248, I(nBaselines-3));
+            EXPECT_EQ(5249, I(nBaselines-2));
+            EXPECT_EQ(5251, I(nBaselines-1));
 
             // Ad
-            ASSERT_DOUBLE_EQ(128, Ad.rows());
-            ASSERT_DOUBLE_EQ(nBaselines, Ad.cols());
+            ASSERT_DOUBLE_EQ(aCols, Ad.rows());
+            ASSERT_DOUBLE_EQ(aRows, Ad.cols());
             // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
@@ -400,33 +420,40 @@ namespace icrar
             // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
             // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+
+            ASSERT_EQ(Ad.cols(), I.size() + 1);
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
 
             //A1
-            ASSERT_DOUBLE_EQ(102, A1.rows()); //-32=98, -split=102
-            ASSERT_DOUBLE_EQ(128, A1.cols());
+            const int a1Rows = 98;
+            const int a1Cols = 128;
+            ASSERT_DOUBLE_EQ(a1Rows, A1.rows());
+            ASSERT_DOUBLE_EQ(a1Cols, A1.cols());
             EXPECT_DOUBLE_EQ(1.0, A1(0,0));
             EXPECT_DOUBLE_EQ(-1.0, A1(0,1));
             EXPECT_DOUBLE_EQ(0.0, A1(0,2));
             //...
-            EXPECT_NEAR(0.00, A1(97,125), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,126), TOLERANCE);
-            EXPECT_NEAR(0.00, A1(97,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-2,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-2,126), TOLERANCE);
+            EXPECT_NEAR(-1.00, A1(a1Rows-2,127), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,125), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,126), TOLERANCE);
+            EXPECT_NEAR(0.00, A1(a1Rows-1,127), TOLERANCE);
 
             //I1
-            ASSERT_DOUBLE_EQ(102, I1.size());
+            ASSERT_DOUBLE_EQ(a1Rows-1, I1.size());
             EXPECT_DOUBLE_EQ(1.00, I1(0));
-            EXPECT_DOUBLE_EQ(2.00, I1(1));
-            EXPECT_DOUBLE_EQ(3.00, I1(2));
+            EXPECT_DOUBLE_EQ(3.00, I1(1));
+            EXPECT_DOUBLE_EQ(4.00, I1(2));
             //...
-            EXPECT_DOUBLE_EQ(96.00, I1(95));
-            EXPECT_DOUBLE_EQ(97.00, I1(96));
-            EXPECT_DOUBLE_EQ(98.00, I1(97));
+            EXPECT_DOUBLE_EQ(99.00, I1(a1Rows-4));
+            EXPECT_DOUBLE_EQ(100.00, I1(a1Rows-3));
+            EXPECT_DOUBLE_EQ(101.00, I1(a1Rows-2));
 
             //Ad1
-            ASSERT_DOUBLE_EQ(102, Ad1.cols());
-            ASSERT_DOUBLE_EQ(128, Ad1.rows());
-            //TODO: Ad1 not identical
+            ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
+            ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
+            //TODO: Ad1 not identical to LEAP-Cal
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
@@ -434,7 +461,10 @@ namespace icrar
             // EXPECT_DOUBLE_EQ(5.4194040934156436e-17, Ad1(127,95)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(-1.0, Ad1(127,96)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(1.0, Ad1(127,97)); // TODO: emergent
+            
+            ASSERT_EQ(Ad1.cols(), I1.size() + 1);
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
+
         }
     };
 

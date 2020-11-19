@@ -49,15 +49,19 @@ namespace icrar
 {
 namespace casalib
 {
+    /**
+     * @brief Container for phaserotation constants and variables.
+     */
     struct MetaData
     {
         bool m_initialized;
 
-        int nbaseline;
+
+        int nbaselines;
         int channels; // The number of channels of the current observation
         int num_pols; // The number of polarizations used by the current observation
         int stations; // The number of stations used by the current observation
-        int rows;
+        int rows; // The number of rows in the visibility table
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
@@ -108,7 +112,7 @@ namespace casalib
          * 
          * @return int
          */
-        int GetBaselines() const { return stations * (stations + 1) / 2; }
+        int GetBaselines() const { return nbaselines; }
 
         /**
          * @brief 

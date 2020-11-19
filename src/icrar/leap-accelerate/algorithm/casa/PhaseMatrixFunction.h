@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -40,12 +41,14 @@ namespace casalib
      * This function generates and returns the linear matrix for the phase calibration (only)
      * @param a1 indexes of 1st antenna of each baselines
      * @param a2 indexes of 2nd antenna of each baselines
+     * @param fg 
      * @param refAnt the reference antenna (0, 1), -1 
      * @return std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> 
      */
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
+        const casacore::Vector<bool>& fg,
         int refAnt);
 }
-} 
+}

@@ -163,34 +163,41 @@ namespace casalib
                 }
 
 
-                casacore::Matrix<Radians> avg_data_angles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c) -> Radians
+                casacore::Matrix<Radians> phaseAngles = casa_matrix_map(metadata.avg_data.get(), [](std::complex<double> c)
                 {
                     return std::arg(c);
                 });
 
-                auto e_avg_data_angles = ToMatrix(avg_data_angles);
-                auto e_I1 = ToVector(metadata.I1);
+                auto e_phaseAngles = ToMatrix(phaseAngles);
+                Eigen::VectorXd e_phaseAnglesI1 = icrar::cpu::VectorRangeSelect(e_phaseAngles, ToVector(metadata.I1), 0); // 1st pol only
+                // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
+                e_phaseAnglesI1.conservativeResize(e_phaseAnglesI1.rows() + 1);
+                e_phaseAnglesI1(e_phaseAnglesI1.size() - 1) = 0.0;
+                auto phaseAnglesI1 = ConvertVector(e_phaseAnglesI1);
+                
+                if(metadata.Ad1.shape()[1] != phaseAnglesI1.shape()[0])
+                {
+                    std::cout << "Ad1" << metadata.Ad1.shape()[1] << "!=" << phaseAnglesI1.shape()[0] << std::endl;
+                }
+                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, phaseAnglesI1);
 
-                // TODO: reference antenna should be included and set to 0?
-                Eigen::VectorXd e_cal_avg_data = icrar::cpu::VectorRangeSelect(e_avg_data_angles, e_I1, 0); // 1st pol only
-                auto cal_avg_data = ConvertVector(e_cal_avg_data);
-                // TODO: Value at last index of cal_avg_data must be 0 (which is the reference antenna phase value)
-                // cal_avg_data(cal_avg_data.size() - 1) = 0.0; 
-                casacore::Matrix<double> cal1 = icrar::casalib::multiply(metadata.Ad1, cal_avg_data);
-
-                auto e_I = ToVector(metadata.I);
-                Eigen::MatrixXd e_avg_data_slice = icrar::cpu::MatrixRangeSelect(e_avg_data_angles, e_I, Eigen::all);
-                casacore::Matrix<double> avg_data_slice = ConvertMatrix(e_avg_data_slice);
+                Eigen::MatrixXd e_phaseAnglesI = icrar::cpu::MatrixRangeSelect(e_phaseAngles, ToVector(metadata.I), Eigen::all);
+                casacore::Matrix<double> phaseAnglesI = ConvertMatrix(e_phaseAnglesI);
 
                 // Calculate DInt
-                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size(), avg_data_angles.shape()[1]);
+                casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size() + 1, phaseAngles.shape()[1]);
                 dInt = 0;
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
-                    dInt.row(n) = avg_data_slice.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
+                    dInt.row(n) = phaseAnglesI.row(n) - (casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0)));
                 }
+                dInt(dInt.shape()[0] - 1, 0) = 0;
 
                 casacore::Matrix<double> dIntColumn = dInt.column(0); // 1st pol only
+                if(metadata.Ad.shape()[1] != dIntColumn.shape()[0])
+                {
+                    std::cout << "Ad" << metadata.Ad.shape()[1] << "!=" << dIntColumn.shape()[0] << std::endl;
+                }
                 cal.push_back(icrar::casalib::multiply(metadata.Ad, dIntColumn) + cal1);
                 break;
             }

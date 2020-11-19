@@ -54,9 +54,11 @@ namespace casalib
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms)
-    : channels(0)
+    : nbaselines(0)
+    , channels(0)
     , num_pols(0)
     , stations(0)
+    , rows(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
     , phase_centre_ra_rad(0)
@@ -68,12 +70,9 @@ namespace casalib
 
         this->m_initialized = false;
 
-        this->rows = msmc->uvw().nrow();
-        this->num_pols = 0;
-        if(pms->polarization().nrow() > 0)
-        {
-            this->num_pols = msc->polarization().numCorr().get(0);
-        }
+        this->nbaselines = ms.GetNumBaselines();
+        this->rows = ms.GetNumRows();
+        this->num_pols = ms.GetNumPols();
 
         if(pms->spectralWindow().nrow() > 0)
         {
@@ -111,7 +110,9 @@ namespace casalib
         auto epochIndices = Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-        
+
+        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines());
+
         if(a1.size() != a2.size())
         {
             throw icrar::file_exception("a1 and a2 not equal size", ms.GetFilepath().is_initialized() ? ms.GetFilepath().get() : "unknown", __FILE__, __LINE__);
@@ -129,10 +130,9 @@ namespace casalib
         }
 
         //Start calculations
-        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, 0);
+        std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, 0);
         this->Ad1 = icrar::casalib::PseudoInverse(A1);
-
-        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, -1);
+        std::tie(this->A, this->I) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, -1);
         this->Ad = icrar::casalib::PseudoInverse(A);
     }
 
@@ -157,7 +157,7 @@ namespace casalib
         }
     }
 
-    // TODO: rename to CalcDD or UpdateDD
+    // TODO(calgray): rename to CalcDD or UpdateDD
     void MetaData::SetDD(const casacore::MVDirection& direction)
     {
         if(!dd.is_initialized())
@@ -168,6 +168,24 @@ namespace casalib
         auto& dd3d = dd.value();
 
         //NOTE: using polar direction
+        //TODO(calgray): This is the way using astropy -- need to repeat
+        /*
+        from astropy.coordinates import SkyCoord
+        import astropy.units as u
+
+        # First move to epoch of Obs
+        coords=[(metadata['phase_centre_ra_rad'],metadata['phase_centre_dec_rad'])]
+        c_obs_phase_centre=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                    #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+        coords=[(direction[0],direction[1])]
+        c_obs_direction=SkyCoord(coords, frame=FK5, unit=(u.rad, u.rad))
+                                    #,obstime=metadata['observation_date'],location=EarthLocation.of_site('mwa'))
+        offset=c_obs_phase_centre.spherical_offsets_to(c_obs_direction)
+        */
+
+        // Also see:
+        // https://stackoverflow.com/questions/25404613/converting-spherical-coordinates-to-cartesian
+
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 
@@ -211,7 +229,7 @@ namespace casalib
     bool MetaData::operator==(const MetaData& rhs) const
     {
         return m_initialized == rhs.m_initialized
-        && nbaseline == rhs.nbaseline
+        && nbaselines == rhs.nbaselines
         && channels == rhs.channels
         && num_pols == rhs.num_pols
         && stations == rhs.stations
@@ -232,7 +250,6 @@ namespace casalib
         && icrar::Equal(A1, rhs.A1)
         && icrar::Equal(I1, rhs.I1)
         && icrar::Equal(Ad1, rhs.Ad1);
-
     }
 }
 }

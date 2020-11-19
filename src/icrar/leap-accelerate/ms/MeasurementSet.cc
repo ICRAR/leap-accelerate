@@ -24,6 +24,9 @@
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
+
+#include <cstddef>
 
 namespace icrar
 {
@@ -42,7 +45,6 @@ namespace icrar
             m_stations = overrideNStations.get();
             LOG(warning) << "overriding number of stations will be removed in future releases";
         }
-
         else if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
             LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
@@ -60,11 +62,12 @@ namespace icrar
 
     void MeasurementSet::Validate() const
     {
-        //Stations        
+        // Stations
         if(m_antennas.size() != GetNumStations())
         {
-            LOG(warning) << "unique antennas (" << m_antennas.size() << ")"
-                       << "does not match number of stations (" << GetNumStations() << ")";
+            LOG(error) << "unique antennas does not match number of stations";
+            LOG(error) << "unique antennas: " << m_antennas.size();
+            LOG(error) << "stations: " << GetNumStations();
         }
 
         //Baselines
@@ -118,7 +121,6 @@ namespace icrar
         {
             throw icrar::not_implemented_exception(__FILE__, __LINE__);
         }
-        
     }
 
     unsigned int MeasurementSet::GetNumBaselines() const
@@ -151,6 +153,27 @@ namespace icrar
         {
             return 0;
         }
+    }
+
+    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    {
+        // TODO: may want to consider using logical OR over for each channel and polarization.
+        auto nBaselines = GetNumBaselines();
+        auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
+        
+        // Selects only the flags of the first channel and polarization
+        auto flagSlice = casacore::Slicer(
+            casacore::IPosition(2, 0, 0),
+            casacore::IPosition(2, 1, 1),
+            casacore::IPosition(2, 1, 1));
+        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
+        return ToVector(flags);
+    }
+
+    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    {
+        auto flaggedBaselines = GetFlaggedBaselines();
+        return std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true);
     }
 
     Eigen::MatrixX3d MeasurementSet::GetCoords() const
