@@ -23,16 +23,16 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/core/log/logging.h>
+#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <Eigen/Core>
-
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
 #include <functional>
 #include <type_traits>
-
-#include "icrar/leap-accelerate/core/log/logging.h"
 
 constexpr int pretty_width = 12;
 
@@ -43,7 +43,7 @@ namespace icrar
      * The code is from `hash_combine` function of the Boost library. See
      * http://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine .
      * 
-     * @tparam T 
+     * @tparam T Eigen Dense Matrix type 
      */
     template<typename T>
     struct matrix_hash : std::unary_function<T, size_t>
@@ -68,10 +68,11 @@ namespace icrar
     {
         std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
         typename Matrix::Index rows = matrix.rows(), cols = matrix.cols();
-        out.write((char*) (&rows), sizeof(typename Matrix::Index));
-        out.write((char*) (&cols), sizeof(typename Matrix::Index));
-        out.write((char*) matrix.data(), rows * cols * sizeof(typename Matrix::Scalar) );
-        LOG(info) << "writing " << rows * cols * sizeof(typename Matrix::Scalar);
+        LOG(info) << "Writing " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " to " << filename;
+        out.write(reinterpret_cast<const char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        out.write(reinterpret_cast<const char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        out.write(reinterpret_cast<const char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         out.close();
     }
 
@@ -80,10 +81,12 @@ namespace icrar
     {
         std::ifstream in(filename, std::ios::in | std::ios::binary);
         typename Matrix::Index rows = 0, cols = 0;
-        in.read((char*) (&rows),sizeof(typename Matrix::Index));
-        in.read((char*) (&cols),sizeof(typename Matrix::Index));
+        in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+        in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         matrix.resize(rows, cols);
-        in.read( (char *) matrix.data() , rows * cols * sizeof(typename Matrix::Scalar) );
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filename;
+        in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         in.close();
     }
 
@@ -96,6 +99,10 @@ namespace icrar
         {
             hashIn.read((char*)(&hash), sizeof(T));
         }
+        else
+        {
+            throw icrar::file_exception("could not read file", filename, __FILE__, __LINE__);
+        }
     }
 
     template<typename T>
@@ -106,39 +113,59 @@ namespace icrar
         {
             hashOut.write((char*)(&hash), sizeof(T));
         }
+        else
+        {
+            throw icrar::file_exception("could not write file", filename, __FILE__, __LINE__);
+        }
     }
 
     /**
      * @brief Reads the file file hash and writes to cache if hash file is different
      * or reads the cache if hash file is the same. 
      * 
-     * @tparam Matrix 
-     * @tparam R 
+     * @tparam In 
+     * @tparam Out
+     * @tparam Lambda lambda type of signature Out(const In&)
      * @param in The input matrix to hash and transform
      * @param out The transformed output
      * @param transform the transform lambda
      * @param cacheFile the transformed cache file
      * @param hashFile the input hash file
      */
-    template<typename In, typename Out>
+    template<typename In, typename Out, typename Lambda>
     void ProcessCache(size_t hash,
         const In& in, Out& out,
         std::string hashFile, std::string cacheFile,
-        std::function<Out(const In&)> transform)
+        Lambda transform)
     {
-        size_t fileHash;
-        read_hash(hashFile.c_str(), fileHash);
-        if(fileHash == hash)
+        bool cacheRead = false;
+        size_t fileHash = 0;
+        try
         {
-            LOG(info) << "Reading cache from " << cacheFile;
-            read_binary(cacheFile.c_str(), out);
+            read_hash(hashFile.c_str(), fileHash);
+            if(fileHash == hash)
+            {
+                read_binary(cacheFile.c_str(), out);
+                cacheRead = true;
+            }
         }
-        else
+        catch(const std::exception& e)
+        {
+            LOG(error) << e.what() << '\n';
+        }
+
+        if(!cacheRead)
         {
             out = transform(in);
-            LOG(info) << "Writing cache to " << cacheFile;
-            write_hash(hashFile.c_str(), hash);
-            write_binary(cacheFile.c_str(), out);
+            try
+            {
+                write_hash(hashFile.c_str(), hash);
+                write_binary(cacheFile.c_str(), out);
+            }
+            catch(const std::exception& e)
+            {
+                std::cerr << e.what() << '\n';
+            }
         }
     }
 
