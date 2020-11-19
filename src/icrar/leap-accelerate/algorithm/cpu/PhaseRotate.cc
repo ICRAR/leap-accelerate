@@ -132,11 +132,6 @@ namespace cpu
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    double get_arg(std::complex<double> v)
-    {
-        return std::arg(v);
-    }
-
     void PhaseRotate(
         cpu::MetaData& metadata,
         const icrar::MVDirection& direction,
