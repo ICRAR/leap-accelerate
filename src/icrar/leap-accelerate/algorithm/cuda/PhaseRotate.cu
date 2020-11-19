@@ -200,7 +200,7 @@ namespace cuda
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum*two_pi<double>()) * metadata.GetAvgData()(n, Eigen::all));
+            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum * boost::math::constants::two_pi<double>()) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
