@@ -104,11 +104,11 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cpu)
             {
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else
             {

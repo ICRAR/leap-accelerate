@@ -45,6 +45,8 @@ namespace icrar
         args.stations = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
+        args.useFileSystemCache = true;
+		args.minimumBaselineThreshold = 0.0;
         args.mwaSupport = false;
         args.readAutocorrelations = true;
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
@@ -56,6 +58,7 @@ namespace icrar
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
+        , useFileSystemCache(std::move(args.useFileSystemCache))
         , minimumBaselineThreshold(std::move(args.minimumBaselineThreshold))
         , mwaSupport(std::move(args.mwaSupport))
         , readAutocorrelations(std::move(args.readAutocorrelations))
@@ -185,6 +188,11 @@ namespace icrar
             m_computeImplementation = std::move(args.computeImplementation.get());
         }
 
+        if(args.useFileSystemCache.is_initialized())
+        {
+            m_useFileSystemCache = std::move(args.useFileSystemCache.get());
+        }
+
         if(args.minimumBaselineThreshold.is_initialized())
         {
             m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
@@ -235,7 +243,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections() const
     {
         return m_directions;
     }
@@ -243,6 +251,11 @@ namespace icrar
     ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
     {
         return m_computeImplementation;
+    }
+
+    bool ArgumentsValidated::IsFileSystemCacheEnabled() const
+    {
+        return m_useFileSystemCache;
     }
 
     double ArgumentsValidated::GetMinimumBaselineThreshold() const
@@ -338,6 +351,17 @@ namespace icrar
                     else
                     {
                         throw json_exception("invalid compute implementation string", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useFileSystemCache")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useFileSystemCache = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useFileSystemCache bust be of type bool", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "minimumBaselineThreshold")

@@ -69,7 +69,8 @@ namespace cuda
     cpu::CalibrateResult Calibrate(
         const MeasurementSet& ms,
         const std::vector<MVDirection>& directions,
-        double minimumBaselineThreshold);
+        double minimumBaselineThreshold,
+		bool isFileSystemCacheEnabled);
 
     /**
      * Performs only visibilities rotation on the GPU

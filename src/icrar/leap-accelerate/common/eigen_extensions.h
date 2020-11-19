@@ -39,6 +39,110 @@ constexpr int pretty_width = 12;
 namespace icrar
 {
     /**
+     * @brief Hash function for Eigen matrix and vector.
+     * The code is from `hash_combine` function of the Boost library. See
+     * http://www.boost.org/doc/libs/1_55_0/doc/html/hash/reference.html#boost.hash_combine .
+     * 
+     * @tparam T 
+     */
+    template<typename T>
+    struct matrix_hash : std::unary_function<T, size_t>
+    {
+        std::size_t operator()(const T& matrix) const
+        {
+            // Note that it is oblivious to the storage order of Eigen matrix (column- or
+            // row-major). It will give you the same hash value for two different matrices if they
+            // are the transpose of each other in different storage order.
+            size_t seed = 0;
+            for (Eigen::Index i = 0; i < matrix.size(); ++i)
+            {
+                auto elem = *(matrix.data() + i);
+                seed ^= std::hash<typename T::Scalar>()(elem) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            }
+            return seed;
+        }
+    };
+
+    template<class Matrix>
+    void write_binary(const char* filename, const Matrix& matrix)
+    {
+        std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        typename Matrix::Index rows = matrix.rows(), cols = matrix.cols();
+        out.write((char*) (&rows), sizeof(typename Matrix::Index));
+        out.write((char*) (&cols), sizeof(typename Matrix::Index));
+        out.write((char*) matrix.data(), rows * cols * sizeof(typename Matrix::Scalar) );
+        LOG(info) << "writing " << rows * cols * sizeof(typename Matrix::Scalar);
+        out.close();
+    }
+
+    template<class Matrix>
+    void read_binary(const char* filename, Matrix& matrix)
+    {
+        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        typename Matrix::Index rows = 0, cols = 0;
+        in.read((char*) (&rows),sizeof(typename Matrix::Index));
+        in.read((char*) (&cols),sizeof(typename Matrix::Index));
+        matrix.resize(rows, cols);
+        in.read( (char *) matrix.data() , rows * cols * sizeof(typename Matrix::Scalar) );
+        in.close();
+    }
+
+
+    template<typename T>
+    void read_hash(const char* filename, T& hash)
+    {
+        std::ifstream hashIn(filename, std::ios::in | std::ios::binary);
+        if(hashIn.good())
+        {
+            hashIn.read((char*)(&hash), sizeof(T));
+        }
+    }
+
+    template<typename T>
+    void write_hash(const char* filename, T hash)
+    {
+        std::ofstream hashOut(filename, std::ios::out | std::ios::binary);
+        if(hashOut.good())
+        {
+            hashOut.write((char*)(&hash), sizeof(T));
+        }
+    }
+
+    /**
+     * @brief Reads the file file hash and writes to cache if hash file is different
+     * or reads the cache if hash file is the same. 
+     * 
+     * @tparam Matrix 
+     * @tparam R 
+     * @param in The input matrix to hash and transform
+     * @param out The transformed output
+     * @param transform the transform lambda
+     * @param cacheFile the transformed cache file
+     * @param hashFile the input hash file
+     */
+    template<typename In, typename Out>
+    void ProcessCache(size_t hash,
+        const In& in, Out& out,
+        std::string hashFile, std::string cacheFile,
+        std::function<Out(const In&)> transform)
+    {
+        size_t fileHash;
+        read_hash(hashFile.c_str(), fileHash);
+        if(fileHash == hash)
+        {
+            LOG(info) << "Reading cache from " << cacheFile;
+            read_binary(cacheFile.c_str(), out);
+        }
+        else
+        {
+            out = transform(in);
+            LOG(info) << "Writing cache to " << cacheFile;
+            write_hash(hashFile.c_str(), hash);
+            write_binary(cacheFile.c_str(), out);
+        }
+    }
+
+    /**
      * @brief Sums the number of true values in a boolean container.
      * 
      * @tparam Container 

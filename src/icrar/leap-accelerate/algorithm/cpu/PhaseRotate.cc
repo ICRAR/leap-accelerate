@@ -66,7 +66,8 @@ namespace cpu
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
-        double minimumBaselineThreshold)
+        double minimumBaselineThreshold,
+		bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cpu";
         LOG(info)
@@ -90,7 +91,16 @@ namespace cpu
 
         profiling::timer integration_read_timer;
 
-        unsigned int integrationNumber = 0;
+        constexpr unsigned int integrationNumber = 0;
+
+        // Flooring to remove incomplete measurements
+        int integrations = ms.GetNumRows() / ms.GetNumBaselines();
+        if(integrations == 0)
+        {
+            std::stringstream ss;
+            ss << "invalid number of rows, expected >" << ms.GetNumBaselines() << ", got " << ms.GetNumRows();
+            throw icrar::file_exception(ms.GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
+        }
 
         auto integration = Integration(
                 integrationNumber,
@@ -113,7 +123,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;

@@ -117,11 +117,11 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cpu)
             {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0);
+                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0);
+                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else
             {
