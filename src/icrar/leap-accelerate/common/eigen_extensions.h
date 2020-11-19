@@ -139,9 +139,9 @@ namespace icrar
         Lambda transform)
     {
         bool cacheRead = false;
-        size_t fileHash = 0;
         try
         {
+            size_t fileHash = 0;
             read_hash(hashFile.c_str(), fileHash);
             if(fileHash == hash)
             {
