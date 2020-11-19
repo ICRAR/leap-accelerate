@@ -71,7 +71,8 @@ namespace cuda
 {
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        bool isFileSystemCacheEnabled)
     {
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -121,7 +122,7 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), isFileSystemCacheEnabled);
         auto constantMetadata = std::make_shared<ConstantMetaData>(
             metadata.GetConstants(),
             metadata.GetA(),
