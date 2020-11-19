@@ -188,7 +188,7 @@ namespace casalib
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     double sum = casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0));
-                    std::complex<double> scalear { std::exp(-sum * two_pi<double>()), 0.0 };
+                    auto scalear = std::exp(std::complex<double>(0.0, -sum * two_pi<double>()));
                     dInt.row(n) = casalib::arg(casalib::multiply(scalear, metadata.avg_data.get().row(n)));
                 }
                 dInt(dInt.shape()[0] - 1, 0) = 0;
