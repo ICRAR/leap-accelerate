@@ -63,8 +63,6 @@
 
 using Radians = double;
 
-using namespace casacore;
-
 namespace icrar
 {
 namespace cuda
@@ -198,11 +196,11 @@ namespace cuda
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-        constexpr double two_pi = boost::math::constants::pi<double>();
+        
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum*two_pi) * metadata.GetAvgData()(n, Eigen::all));
+            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum*two_pi<double>()) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only

@@ -65,6 +65,7 @@
 #include <chrono>
 
 using Radians = double;
+using namespace boost::math::constants;
 
 namespace icrar
 {
@@ -183,11 +184,11 @@ namespace casalib
                 // Calculate DInt
                 casacore::Matrix<double> dInt = casacore::Matrix<double>(metadata.I.size() + 1, phaseAngles.shape()[1]);
                 dInt = 0;
-                constexpr double two_pi = boost::math::constants::pi<double>();
+
                 for(size_t n = 0; n < metadata.I.size(); ++n)
                 {
                     double sum = casacore::sum((casacore::Array<double>)metadata.A.row(n) * (casacore::Array<double>)cal1.column(0));
-                    std::complex<double> scalear = std::exp(-sum*two_pi) + 0i;
+                    std::complex<double> scalear { std::exp(-sum * two_pi<double>()), 0.0 };
                     dInt.row(n) = casalib::arg(casalib::multiply(scalear, metadata.avg_data.get().row(n)));
                 }
                 dInt(dInt.shape()[0] - 1, 0) = 0;
@@ -233,8 +234,7 @@ namespace casalib
         for(size_t baseline = 0; baseline < integration.baselines; ++baseline)
         {
             // For baseline
-            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
-            double shiftFactor = two_pi * (uvw[baseline](2) - metadata.oldUVW[baseline](2));
+            double shiftFactor = two_pi<double>() * (uvw[baseline](2) - metadata.oldUVW[baseline](2));
 
             // Loop over channels
             for(int channel = 0; channel < metadata.channels; channel++)
