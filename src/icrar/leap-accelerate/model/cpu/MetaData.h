@@ -159,8 +159,8 @@ namespace cpu
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
-         * @brief Updates the rotated UVW vector member
-         * preconditions - DD is set, oldUVW is set
+         * @brief Updates the rotated UVW vector using the DD matrix
+         * @pre DD is set, oldUVW is set
          */
         void CalcUVW();
 
