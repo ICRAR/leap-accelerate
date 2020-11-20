@@ -228,7 +228,7 @@ namespace cuda
 
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
-     * @note Atomic operator required for writing to @param pavg_data
+     * @note Atomic operator required for writing to @p pavg_data
      */
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
@@ -259,21 +259,8 @@ namespace cuda
             int md_baseline = baseline % md_baselines;
 
             // loop over baselines
-            const double two_pi = 2 * CUDART_PI;
-            double shiftFactor = (uvw[baseline].z - oldUVW[baseline].z);
-            /*
-            shiftFactor +=
-            (
-               constants.phase_centre_ra_rad * oldUVW[baseline].x
-               - constants.phase_centre_dec_rad * oldUVW[baseline].y
-            );
-            shiftFactor -=
-            (
-                direction.x * uvw[baseline].x
-                - direction.y * uvw[baseline].y
-            );
-            */
-            shiftFactor *= two_pi;
+            constexpr double two_pi = 2 * CUDART_PI;
+            double shiftFactor = two_pi * (uvw[baseline].z - oldUVW[baseline].z);
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);

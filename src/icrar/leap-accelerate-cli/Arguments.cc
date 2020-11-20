@@ -102,6 +102,7 @@ namespace icrar
         Validate();
 
         // Load resources
+        icrar::log::Initialize(GetVerbosity());
         switch (m_source)
         {
         case InputType::STREAM:
