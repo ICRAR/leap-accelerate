@@ -260,7 +260,7 @@ namespace casalib
        
         for(double& v : channel_wavelength)
         {
-            v = speed_of_light / v;
+            v = constants::speed_of_light / v;
         }
     }
 
@@ -288,7 +288,6 @@ namespace casalib
         && icrar::Equal(A1, rhs.A1)
         && icrar::Equal(I1, rhs.I1)
         && icrar::Equal(Ad1, rhs.Ad1);
-
     }
 }
 }

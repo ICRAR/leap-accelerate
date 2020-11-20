@@ -22,7 +22,12 @@
 
 #pragma once
 
+#include <boost/math/constants/constants.hpp>
+
 namespace icrar
 {
+namespace constants
+{
     constexpr double speed_of_light = 299792458.0;
+}
 }

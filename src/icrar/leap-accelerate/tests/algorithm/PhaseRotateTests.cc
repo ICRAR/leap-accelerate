@@ -326,18 +326,17 @@ namespace icrar
             }
 
             const int aSize = epochRows;
-            auto epochIndices = casacore::Slice(0, aSize, 1); //TODO assuming epoch indices are sorted
+            auto epochIndices = casacore::Slice(0, aSize); //TODO assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
-            
+
+            // Selects only the flags of the first channel and polarization
             auto flagSlice = casacore::Slicer(
-                casacore::IPosition(3,0,0,0),
-                casacore::IPosition(3,1,1,aSize),
-                casacore::IPosition(3,1,1,1));
-            casacore::Vector<bool> fg = msmc->flag().getColumn()
-            (flagSlice).reform(casacore::IPosition(1, aSize))
-            (epochIndices);
+                casacore::IPosition(2, 0, 0),
+                casacore::IPosition(2, 1, 1),
+                casacore::IPosition(2, 1, 1));
+            casacore::Vector<bool> flags = msmc->flag().getColumnRange(epochIndices, flagSlice);
 
             //Start calculations
 
@@ -353,12 +352,12 @@ namespace icrar
             {
                 casacore::Matrix<double> casaA;
                 casacore::Vector<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, fg, -1);
+                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, flags, -1);
                 Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
 
                 casacore::Matrix<double> casaA1;
                 casacore::Vector<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, fg, 0);
+                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, flags, 0);
                 Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
 
                 A = ToMatrix(casaA);
@@ -370,7 +369,7 @@ namespace icrar
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
-                auto efg = ToVector(fg);
+                auto efg = ToVector(flags);
                 std::tie(A, I) = cpu::PhaseMatrixFunction(ea1, ea2, efg, -1);
                 Ad = icrar::cpu::PseudoInverse(A);
 

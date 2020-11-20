@@ -58,6 +58,7 @@
 #include <sstream>
 
 using Radians = double;
+using namespace boost::math::constants;
 
 namespace icrar
 {
@@ -131,11 +132,6 @@ namespace cpu
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    double get_arg(std::complex<double> v)
-    {
-        return std::arg(v);
-    }
-
     void PhaseRotate(
         cpu::MetaData& metadata,
         const icrar::MVDirection& direction,
@@ -163,11 +159,10 @@ namespace cpu
 
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-        constexpr double two_pi = boost::math::constants::pi<double>();
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = icrar::arg(std::exp(-sum*two_pi) * metadata.GetAvgData()(n, Eigen::all));
+            dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -189,8 +184,7 @@ namespace cpu
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
-            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
-            double shiftFactor = two_pi * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
+            double shiftFactor = two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)

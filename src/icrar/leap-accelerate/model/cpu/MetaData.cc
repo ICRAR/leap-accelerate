@@ -121,13 +121,6 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
-        auto uvwShape = msmc->uvw().getColumn().shape();
-        auto uvSlice = casacore::Slicer(
-            casacore::IPosition(2,0,0),
-            casacore::IPosition(2,1,uvwShape[1]),
-            casacore::IPosition(2,1,1));
-        casacore::Matrix<double> cuv = msmc->uvw().getColumn()(uvSlice);
-        Eigen::MatrixXd uv = ToMatrix(cuv);
 
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
@@ -218,12 +211,13 @@ namespace cpu
         0, std::cos(ang3), -std::sin(ang3),
         0, std::sin(ang3),  std::cos(ang3);
 
-        m_lmn = Eigen::Vector3d::Zero();
 
         m_dd = m_dd3 * m_dd2;
-        LOG(info) << "m_dd check: " << m_dd;
         m_dd = m_dd * m_dd1;
-        LOG(info) << "m_dd check: " << m_dd;
+        LOG(trace) << "dd3: " << pretty_matrix(m_dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(m_dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(m_dd1);
+        LOG(trace) << "dd: " << pretty_matrix(m_dd);
 
         // TODO(calgray) Alternatively calc only the three vec
         // m_lmn = Eigen::Vector3d();
