@@ -93,8 +93,8 @@ int main(int argc, char** argv)
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
 
 #if __has_include(<optional>)
-    app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between system calls");
     app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
+	app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between calls");
     app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
     app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 #else

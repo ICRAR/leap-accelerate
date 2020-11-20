@@ -120,6 +120,8 @@ namespace cpu
          * 
          * @param ms 
          * @param uvws 
+         * @param minimumBaselineThreshold
+         * @param useCache
          */
         MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
@@ -127,8 +129,9 @@ namespace cpu
          * @brief Construct a new MetaData object
          * 
          * @param ms 
-         * @param direction 
          * @param uvws 
+         * @param minimumBaselineThreshold
+         * @param useCache
          */
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
         
