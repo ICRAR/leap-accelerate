@@ -17,9 +17,6 @@ set(public_headers
     
     model/visibility.h
     model/band_data.h
-    model/casa/MetaData.h
-
-    algorithm/casa/PhaseRotate.h
 )
 set(private_headers
 
@@ -34,9 +31,6 @@ set(sources
 
     ms/utils.cc
     ms/MeasurementSet.cc
-
-    model/casa/Integration.cc
-    model/casa/MetaData.cc
 
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
@@ -58,8 +52,6 @@ set(sources
 
     common/MVDirection.cc
     
-    algorithm/casa/PhaseMatrixFunction.cc
-    algorithm/casa/PhaseRotate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )
@@ -81,12 +73,11 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
-    model/cuda/DeviceMetaData.cu
-    model/cuda/DeviceIntegration.cu
-
     math/cuda/vector.cu
     math/cuda/matrix.cu
 
+    model/cuda/DeviceMetaData.cu
+    model/cuda/DeviceIntegration.cu
     algorithm/cuda/PhaseRotate.cu
 )
 

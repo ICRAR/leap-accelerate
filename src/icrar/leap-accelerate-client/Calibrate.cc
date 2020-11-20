@@ -22,9 +22,9 @@
 
 #include "Calibrate.h"
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
-#include <icrar/leap-accelerate/model/casa/Integration.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
 
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -77,14 +77,14 @@ namespace icrar
         
     }
 
-    void LeapRemoteCalibration(std::istream& input, std::ostream& /*output*/, boost::optional<int> overrideStations)
+    void LeapRemoteCalibration(std::istream& /*input*/, std::ostream& /*output*/, boost::optional<int> /*overrideStations*/)
     {
-        casalib::MetaData metadata = casalib::MetaData(input, 0.0);
+        // cpu::MetaData metadata = cpu::MetaData(input, 0.0);
 
-        if(overrideStations.is_initialized())
-        {
-            metadata.stations = overrideStations.value();
-        }
+        // if(overrideStations.is_initialized())
+        // {
+        //     metadata.stations = overrideStations.value();
+        // }
     }
 
 

@@ -26,9 +26,7 @@
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
-
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -51,11 +49,12 @@
 
 namespace icrar
 {
-namespace cuda
-{
-    class DeviceMetaData;
-    class ConstantMetaData;
-}
+    class MeasurementSet;
+    namespace cuda
+    {
+        class DeviceMetaData;
+        class ConstantMetaData;
+    }
 }
 
 namespace icrar
@@ -134,13 +133,6 @@ namespace cpu
          * @param useCache
          */
         MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
-        
-        /**
-         * @brief Constructs a MetaData object from an equivalent casa MetaData object
-         * 
-         * @param metadata 
-         */
-        MetaData(const casalib::MetaData& metadata);
 
         const Constants& GetConstants() const;
 

@@ -42,7 +42,8 @@ namespace icrar
     {
         if(value == "casa")
         {
-            out = ComputeImplementation::casa;
+            LOG(info) << "argument 'casa' deprecated, use 'cpu' instead";
+            out = ComputeImplementation::cpu;
             return true;
         }
         else if(value == "eigen")

@@ -27,6 +27,7 @@
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
@@ -38,49 +39,6 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const casalib::MetaData& metadata)
-    {
-        m_constants.nbaselines = metadata.GetBaselines();
-        m_constants.channels = metadata.channels;
-        m_constants.num_pols = metadata.num_pols;
-        m_constants.stations = metadata.stations;
-        m_constants.rows = metadata.rows;
-        m_constants.freq_start_hz = metadata.freq_start_hz;
-        m_constants.freq_inc_hz = metadata.freq_inc_hz;
-        m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
-        m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
-        m_constants.dlm_ra = metadata.dlm_ra;
-        m_constants.dlm_dec = metadata.dlm_dec;
-
-        m_oldUVW = ToUVWVector(metadata.oldUVW);
-
-        m_A = ToMatrix(metadata.A);
-        m_I = ToMatrix<int>(metadata.I);
-        m_Ad = ToMatrix(metadata.Ad);
-
-        m_A1 = ToMatrix(metadata.A1);
-        m_I1 = ToMatrix<int>(metadata.I1);
-        m_Ad1 = ToMatrix(metadata.Ad1);
-
-        if(metadata.dd.is_initialized())
-        {
-            m_dd = ToMatrix<double, 3, 3>(metadata.dd.value());
-        }
-        else
-        {
-            throw std::runtime_error("dd: metadata not initialized, use alternative constructor");
-        }
-
-        if(metadata.avg_data.is_initialized())
-        {
-            m_avg_data = ToMatrix(metadata.avg_data.value());
-        }
-        else
-        {
-            throw std::runtime_error("avg_data: metadata not initialized, use alternative constructor");
-        }
-    }
-
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
     : m_minimumBaselineThreshold(minimumBaselineThreshold)
     {

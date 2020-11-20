@@ -22,7 +22,6 @@
 
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -141,12 +140,6 @@ int main(int argc, char** argv)
 
         switch(args.GetComputeImplementation())
         {
-        case ComputeImplementation::casa:
-        {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), args.GetMinimumBaselineThreshold());
-            cpu::PrintResult(cpu::ToCalibrateResult(result), args.GetOutputStream());
-            break;
-        }
         case ComputeImplementation::cpu:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());

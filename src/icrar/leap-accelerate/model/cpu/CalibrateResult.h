@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/model/casa/CalibrateResult.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/common/MVuvw.h>
@@ -148,8 +147,6 @@ namespace cpu
         std::vector<std::vector<cpu::IntegrationResult>>,
         std::vector<std::vector<cpu::CalibrationResult>>
     >;
-
-    icrar::cpu::CalibrateResult ToCalibrateResult(icrar::casalib::CalibrateResult& result);
 
     void PrintResult(const CalibrateResult& result, std::ostream& out);
 }
