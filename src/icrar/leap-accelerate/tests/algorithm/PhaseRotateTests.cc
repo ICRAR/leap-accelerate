@@ -143,11 +143,11 @@ namespace icrar
                 ASSERT_EQ(expectedDirection(0), result.GetDirection()(0));
                 ASSERT_EQ(expectedDirection(1), result.GetDirection()(1));
 
-                if(!ToVector(expectedCalibration).isApprox(result.GetData(), THRESHOLD))
+                if(!ToVector(expectedCalibration).isApprox(result.GetCalibration(), THRESHOLD))
                 {
-                    std::cout << i+1 << "/" << expected.size() << " got:\n" << result.GetData() << std::endl;
+                    std::cout << i+1 << "/" << expected.size() << " got:\n" << result.GetCalibration() << std::endl;
                 }
-                ASSERT_MEQD(ToVector(expectedCalibration), result.GetData(), THRESHOLD);
+                ASSERT_MEQD(ToVector(expectedCalibration), result.GetCalibration(), THRESHOLD);
             }
         }
 

@@ -78,7 +78,7 @@ namespace cpu
                 casalib::CalibrationResult& calibrationResult = queues.front();
                 output_calibrations[index].emplace_back(
                     ToDirection(calibrationResult.GetDirection()),
-                    ToMatrix(calibrationResult.GetData()[0])
+                    ToMatrix(calibrationResult.GetCalibration()[0])
                 );
                 queues.pop();
             }
