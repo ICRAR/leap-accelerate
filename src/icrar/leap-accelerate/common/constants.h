@@ -28,6 +28,10 @@ namespace icrar
 {
 namespace constants
 {
+    /**
+     * @brief Speed of light in meters per second
+     * 
+     */
     constexpr double speed_of_light = 299792458.0;
-}
-}
+} // namespace constants
+} // namespace icrar
