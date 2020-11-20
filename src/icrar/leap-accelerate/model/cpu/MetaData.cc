@@ -81,7 +81,7 @@ namespace cpu
         }
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
     : m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
@@ -128,7 +128,7 @@ namespace cpu
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-        
+
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, 0);
         trace_matrix(m_A1, "A1");
@@ -139,14 +139,34 @@ namespace cpu
         trace_matrix(m_A, "A");
         trace_matrix(m_I, "I");
 
-        LOG(info) << "Inverting PhaseMatrix A1";
-        m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad1);
-        trace_matrix(m_Ad1, "Ad1");
 
-        LOG(info) << "Inverting PhaseMatrix A";
-        m_Ad = icrar::cpu::PseudoInverse(m_A);
-        BOOST_LOG_TRIVIAL(trace) << pretty_matrix(m_Ad);
+        auto invertA1 = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A1";
+            return icrar::cpu::PseudoInverse(a);
+        };
+        auto invertA = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A";
+            return icrar::cpu::PseudoInverse(a);
+        };
+
+        m_Ad1 = invertA1(m_A1);
+        if(useCache)
+        {
+            //cache Ad with A hash
+            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                matrix_hash<Eigen::MatrixXd>()(m_A),
+                m_A, m_Ad,
+                "A.hash", "Ad.cache",
+                invertA);
+        }
+        else
+        {
+            m_Ad = invertA(m_A);
+        }
+
+        trace_matrix(m_Ad1, "Ad1");
         trace_matrix(m_Ad, "Ad");
 
         if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
@@ -161,8 +181,8 @@ namespace cpu
         SetOldUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold)
-    : MetaData(ms, uvws, minimumBaselineThreshold)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
+    : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
     {
         SetDD(direction);
         CalcUVW();

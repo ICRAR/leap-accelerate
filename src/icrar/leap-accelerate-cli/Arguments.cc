@@ -45,8 +45,9 @@ namespace icrar
         args.stations = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
-        args.mwaSupport = false;
         args.readAutocorrelations = true;
+        args.mwaSupport = false;
+        args.useFileSystemCache = true;
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
         return args;
     }
@@ -57,8 +58,9 @@ namespace icrar
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
         , minimumBaselineThreshold(std::move(args.minimumBaselineThreshold))
-        , mwaSupport(std::move(args.mwaSupport))
         , readAutocorrelations(std::move(args.readAutocorrelations))
+        , mwaSupport(std::move(args.mwaSupport))
+        , useFileSystemCache(std::move(args.useFileSystemCache))
     {
         if(args.stations.is_initialized())
         {
@@ -189,15 +191,20 @@ namespace icrar
         {
             m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
         }
+        
+        if(args.readAutocorrelations.is_initialized())
+        {
+            m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+        }
 
         if(args.mwaSupport.is_initialized())
         {
             m_mwaSupport = std::move(args.mwaSupport.get());
         }
-        
-        if(args.readAutocorrelations.is_initialized())
+
+        if(args.useFileSystemCache.is_initialized())
         {
-            m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+            m_useFileSystemCache = std::move(args.useFileSystemCache.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -235,7 +242,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections() const
     {
         return m_directions;
     }
@@ -248,6 +255,11 @@ namespace icrar
     double ArgumentsValidated::GetMinimumBaselineThreshold() const
     {
         return m_minimumBaselineThreshold;
+    }
+	
+	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
+    {
+        return m_useFileSystemCache;
     }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
@@ -349,6 +361,17 @@ namespace icrar
                     else
                     {
                         throw json_exception("minimumBaselineThreshold must be of type double", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useFileSystemCache")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useFileSystemCache = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "mwaSupport")
