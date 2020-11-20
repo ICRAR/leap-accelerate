@@ -25,4 +25,4 @@
 namespace icrar
 {
     using MVDirection = Eigen::Vector3d;
-}
+} // namespace icrar

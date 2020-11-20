@@ -25,8 +25,22 @@
 
 #include <complex>
 
-template<typename T>
-bool isApprox(const std::complex<T>& lhs, const std::complex<T>& rhs, T threshold)
+namespace icrar
 {
-    return std::abs(lhs - rhs) < threshold);
-}
+    /**
+     * @brief returns true if the magnitude of the difference between two
+     * values are approximately equal (within the specified threshold)
+     * 
+     * @tparam T 
+     * @param lhs left value
+     * @param rhs right value
+     * @param threshold  
+     * @return true if left value approximately equals right value
+     * @return false if left value does not approximately equals right value
+     */
+    template<typename T>
+    bool isApprox(const std::complex<T>& lhs, const std::complex<T>& rhs, T threshold)
+    {
+        return std::abs(lhs - rhs) < threshold);
+    }
+} // namespace icrar

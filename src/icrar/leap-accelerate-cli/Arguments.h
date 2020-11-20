@@ -94,7 +94,7 @@ namespace icrar
     };
 
     /**
-     * Validated set of command line arguments
+     * Validated set of command line arguments required to perform leap calibration
      */
     class ArgumentsValidated
     {

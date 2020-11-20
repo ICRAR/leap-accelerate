@@ -26,6 +26,10 @@
 
 namespace icrar
 {
+    /**
+     * @brief Specifier for the compute implementation of a LeapCalibrator
+     * 
+     */
     enum class ComputeImplementation
     {
         casa = 0, // Compute implementation using casa math libraries

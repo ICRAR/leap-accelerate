@@ -37,13 +37,6 @@
 #include <complex>
 #include <queue>
 
-namespace casacore
-{
-    class MDirection;
-    class MVDirection;
-    class MVuvw;
-}
-
 namespace icrar
 {
     class MeasurementSet;
@@ -53,8 +46,8 @@ namespace icrar
         class Integration;
         class IntegrationResult;
         class CalibrationResult;
-    }
-}
+    } // namespace cpu
+} // namespace icrar
 
 namespace icrar
 {
@@ -68,8 +61,9 @@ namespace cpu
     >;
 
     /**
-     * @brief 
-     * 
+     * @copydoc ILeapEngine::ILeapCalibrator
+     * Calibrates by performing phase rotation for each direction in @p directions
+     * by splitting uvws into integration batches.
      */
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
@@ -78,15 +72,17 @@ namespace cpu
 		bool isFileSystemCacheEnabled);
 
     /**
-     * @brief 
+     * @brief Performs rotation, summing and calibration for @p direction
      * 
-     * @param metadata 
-     * @param directions 
-     * @param input 
+     * @param metadata metadata object containing data required for calibration
+     * @param direction the direction to calibrate for 
+     * @param input batches of uvws and visibilities to process
+     * @param output_integrations output from summing a function of uvws and visibilities
+     * @param output_calibrations output calibration from summing a function of uvws and visibilities
      */
     void PhaseRotate(
         MetaData& metadata,
-        const MVDirection& directions,
+        const MVDirection& direction,
         std::vector<Integration>& input,
         std::vector<IntegrationResult>& output_integrations,
         std::vector<CalibrationResult>& output_calibrations);
@@ -94,11 +90,11 @@ namespace cpu
     /**
      * @brief Performs averaging over each baseline, channel and polarization.
      * 
-     * @param integration 
-     * @param metadata 
+     * @param integration The input integration batch of uvws and visibilities
+     * @param metadata The metadata object where AverageData is written to
      */
     void RotateVisibilities(
         Integration& integration,
         MetaData& metadata);
-}
-}
+} // namespace cpu
+} // namespace icrar
