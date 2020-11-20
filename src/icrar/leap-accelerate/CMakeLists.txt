@@ -52,6 +52,10 @@ set(sources
 
     common/MVDirection.cc
     
+    algorithm/LeapCalibratorFactory.cc
+    algorithm/cpu/CpuLeapCalibrator.cc
+    algorithm/cuda/CudaLeapCalibrator.cc
+
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )
@@ -85,6 +89,7 @@ set(cuda_sources
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
 
+if(CUDA_ENABLED)
 add_library(
   ${TARGET_NAME} STATIC
     ${sources}
@@ -93,6 +98,14 @@ add_library(
     ${public_headers}
     ${cuda_headers}
 )
+else()
+add_library(
+  ${TARGET_NAME} STATIC
+    ${sources}
+    ${private_headers}
+    ${public_headers}
+)
+endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
   target_precompile_headers(${TARGET_NAME}
@@ -102,22 +115,25 @@ if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 endif()
 
 
+if(CUDA_ENABLED)
 # Request that the target be built with -std=c++14
-# As this is a public compile feature anything that links to the target
+  # As this is a public compile feature anything that links to the target
 # will also build with -std=c++14
-target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
+  target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
+  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
 
-# We need to explicitly state that we need all CUDA files in the target
-# library to be built with -dc as the member functions could be called by
-# other libraries and executables
-set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
-#set(CUDA_PROPAGATE_HOST_FLAGS ON)
-#set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-#set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
-configure_cuda_warnings(${TARGET_NAME})
-
+  # We need to explicitly state that we need all CUDA files in the target
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
+  
+  #set(CUDA_PROPAGATE_HOST_FLAGS ON)
+  #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  configure_cuda_warnings(${TARGET_NAME})
+endif()
 
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")

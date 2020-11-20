@@ -22,42 +22,21 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <boost/noncopyable.hpp>
-#include <vector>
+#include <memory>
 
 namespace icrar
 {
-    class MeasurementSet;
-
-    namespace cpu
-    {
-        class Integration;
-        class IntegrationResult;
-        class CalibrationResult;
-    }
+    class ILeapCalibrator;
 
     /**
      * @brief Interface for Leap Calibration implementations
      * 
      */
-    class ILeapCalibrator : boost::noncopyable
+    class LeapCalibratorFactory : boost::noncopyable
     {
     public:
-        /**
-         * @brief Performs Leap calibration using a specialized implementation.
-         * 
-         * @param ms the mesurement set containing all input measurements
-         * @param directions the directions to calibrate for
-         * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
-         * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
-         * @return CalibrateResult the calibrationn result
-         */
-        virtual cpu::CalibrateResult Calibrate(
-            const icrar::MeasurementSet& ms,
-            const std::vector<MVDirection>& directions,
-            double minimumBaselineThreshold,
-            bool isFileSystemCacheEnabled) = 0;
+        std::unique_ptr<ILeapCalibrator> Create(ComputeImplementation impl) const;
     };
 } // namespace icrar

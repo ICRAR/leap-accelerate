@@ -22,6 +22,8 @@
 
 #pragma once
 
+#ifdef CUDA_ENABLED
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
@@ -51,7 +53,6 @@ namespace cuda
         T* m_buffer;
 
     public:
-
         /**
          * @brief Construct a new device buffer object
          * 
@@ -195,3 +196,5 @@ namespace cuda
     };
 }
 }
+
+#endif //CUDA_ENABLED

@@ -22,6 +22,8 @@
 
 #pragma once
 
+#ifdef CUDA_ENABLED
+
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
@@ -150,3 +152,5 @@ namespace cuda
     };
 }
 }
+
+#endif // CUDA_ENABLED

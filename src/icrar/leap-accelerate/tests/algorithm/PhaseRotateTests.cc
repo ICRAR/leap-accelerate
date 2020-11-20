@@ -114,7 +114,9 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
+#ifdef CUDA_ENABLED
                 std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
+#endif // CUDA_ENABLED
             }
             else
             {
@@ -168,6 +170,7 @@ namespace icrar
 
                 metadataOptionalOutput = hostMetadata;
             }
+#ifdef CUDA_ENABLED
             if(impl == ComputeImplementation::cuda)
             {
                 auto integration = icrar::cpu::Integration(
@@ -194,6 +197,7 @@ namespace icrar
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
+#endif // CUDA_ENABLED
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
@@ -425,8 +429,12 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
+#ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
-    
+#endif
+
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::cpu); }
+#ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
+#endif
 }

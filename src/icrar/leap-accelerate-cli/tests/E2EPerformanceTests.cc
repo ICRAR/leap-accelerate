@@ -98,7 +98,9 @@ namespace icrar
             }
             else if(impl == ComputeImplementation::cuda)
             {
+#ifdef CUDA_ENABLED
                 auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
+#endif
             }
             else
             {
@@ -109,9 +111,13 @@ namespace icrar
 
     // These measurements have flagged data removed and complete data for each timestep
     TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
+#ifdef CUDA_ENABLED
     TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
-    
+#endif
+
     // These measurements are clean and use a single timestep
     TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+#ifdef CUDA_ENABLED
     TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+#endif
 }
