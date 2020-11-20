@@ -66,6 +66,7 @@ namespace casalib
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
 
+        double min_baseline_length;
         std::vector<double> channel_wavelength;
         std::vector<casacore::MVuvw> oldUVW;
 
@@ -104,8 +105,8 @@ namespace casalib
 
     public:
         MetaData();
-        MetaData(std::istream& input);
-        MetaData(const icrar::MeasurementSet& ms);
+        MetaData(std::istream& input, double minimumBaselineThreshold = 0.0);
+        MetaData(const icrar::MeasurementSet& ms, double minimumBaselineThreshold = 0.0);
         
         /**
          * @brief Gets the number of baselines

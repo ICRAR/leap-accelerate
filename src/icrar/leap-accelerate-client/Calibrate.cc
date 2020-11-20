@@ -79,7 +79,7 @@ namespace icrar
 
     void LeapRemoteCalibration(std::istream& input, std::ostream& /*output*/, boost::optional<int> overrideStations)
     {
-        casalib::MetaData metadata = casalib::MetaData(input);
+        casalib::MetaData metadata = casalib::MetaData(input, 0.0);
 
         if(overrideStations.is_initialized())
         {

@@ -55,11 +55,10 @@
 #include <queue>
 #include <exception>
 #include <memory>
-
 #include <sstream>
 
-
 using Radians = double;
+using namespace boost::math::constants;
 
 namespace icrar
 {
@@ -67,14 +66,18 @@ namespace cpu
 {
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold)
     {
         LOG(info) << "Starting Calibration using cpu";
         LOG(info)
-		<< "stations: " << ms.GetNumStations() << ", "
-		<< "rows: " << ms.GetNumRows() << ", "
+        << "stations: " << ms.GetNumStations() << ", "
+        << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "baseline threshold: " << minimumBaselineThreshold << "m, "
+        << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
+        << "filtered baselines: " << ms.GetNumFilteredBaselines(minimumBaselineThreshold) << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -111,7 +114,7 @@ namespace cpu
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold);
         LOG(info) << "Read metadata in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
@@ -147,26 +150,19 @@ namespace cpu
         LOG(info) << "Calculating Calibration";
 
         auto phaseAngles = icrar::arg(metadata.GetAvgData());
-        
+
         // PhaseAngles I1
         // Value at last index of phaseAnglesI1 must be 0 (which is the reference antenna phase value)
         Eigen::VectorXd phaseAnglesI1 = icrar::cpu::VectorRangeSelect(phaseAngles, metadata.GetI1(), 0); // 1st pol only
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        // PhaseAngles I
-        // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
-        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
-        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
-        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
-
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
-
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([=](double v) { return v - sum; });
+            dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -181,35 +177,18 @@ namespace cpu
         using namespace std::literals::complex_literals;
         Eigen::Tensor<std::complex<double>, 3>& integration_data = integration.GetVis();
 
-        metadata.CalcUVW();
-
-        const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
-        
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
             int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
 
-            constexpr double two_pi = 2 * boost::math::constants::pi<double>();
-
-            double shiftFactor = -(metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
-
-            shiftFactor +=
-            (
-                metadata.GetConstants().phase_centre_ra_rad * metadata.GetOldUVW()[baseline](0)
-                - metadata.GetConstants().phase_centre_dec_rad * metadata.GetOldUVW()[baseline](1)
-            );
-            shiftFactor -=
-            (
-                polar_direction(0) * metadata.GetUVW()[baseline](0)
-                - polar_direction(1) * metadata.GetUVW()[baseline](1)
-            );
-            shiftFactor *= two_pi;
+            double shiftFactor = two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 
             // Loop over channels
             for(int channel = 0; channel < metadata.GetConstants().channels; channel++)
             {
                 double shiftRad = shiftFactor / metadata.GetConstants().GetChannelWavelength(channel);
+                
                 for(int polarization = 0; polarization < metadata.GetConstants().num_pols; ++polarization)
                 {
                     integration_data(polarization, baseline, channel) *= std::exp(std::complex<double>(0.0, shiftRad));

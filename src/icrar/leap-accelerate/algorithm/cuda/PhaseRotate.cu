@@ -62,8 +62,7 @@
 #include <set>
 
 using Radians = double;
-
-using namespace casacore;
+using namespace boost::math::constants;
 
 namespace icrar
 {
@@ -71,7 +70,8 @@ namespace cuda
 {
     cpu::CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions)
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold)
     {
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -79,6 +79,9 @@ namespace cuda
         << "rows: " << ms.GetNumRows() << ", "
         << "baselines: " << ms.GetNumBaselines() << ", "
         << "flagged baselines: " << ms.GetNumFlaggedBaselines() << ", "
+        << "baseline threshold: " << minimumBaselineThreshold << ", "
+        << "short baselines: " << ms.GetNumShortBaselines(minimumBaselineThreshold) << ", "
+        << "filtered baselines: " << ms.GetNumFilteredBaselines(minimumBaselineThreshold) << ", "
         << "channels: " << ms.GetNumChannels() << ", "
         << "polarizations: " << ms.GetNumPols() << ", "
         << "directions: " << directions.size() << ", "
@@ -122,7 +125,7 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW());
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold);
         auto constantMetadata = std::make_shared<ConstantMetaData>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -191,19 +194,14 @@ namespace cuda
         phaseAnglesI1.conservativeResize(phaseAnglesI1.rows() + 1);
         phaseAnglesI1(phaseAnglesI1.rows() - 1) = 0;
 
-        // PhaseAngles I
-        // Value at last index of phaseAnglesI must be 0 (which is the reference antenna phase value)
-        Eigen::MatrixXd phaseAnglesI = icrar::cpu::MatrixRangeSelect(phaseAngles, metadata.GetI(), Eigen::all);
-        phaseAnglesI.conservativeResize(phaseAnglesI.rows() + 1, phaseAnglesI.cols());
-        phaseAnglesI(phaseAnglesI.size() - 1) = 0;
-
         Eigen::VectorXd cal1 = metadata.GetAd1() * phaseAnglesI1;
         
         Eigen::MatrixXd dInt = Eigen::MatrixXd::Zero(metadata.GetI().size(), metadata.GetAvgData().cols());
+        
         for(int n = 0; n < metadata.GetI().size(); ++n)
         {
             double sum = metadata.GetA()(n, Eigen::all) * cal1;
-            dInt(n, Eigen::all) = phaseAnglesI(n, Eigen::all).unaryExpr([=](double v) { return v - sum; });
+            dInt(n, Eigen::all) = icrar::arg(std::exp(std::complex<double>(0, -sum * two_pi<double>())) * metadata.GetAvgData()(n, Eigen::all));
         }
 
         Eigen::VectorXd deltaPhaseColumn = dInt(Eigen::all, 0); // 1st pol only
@@ -230,7 +228,7 @@ namespace cuda
 
     /**
      * @brief Rotates visibilities in parallel for baselines and channels
-     * @note Atomic operator required for writing to @param pavg_data
+     * @note Atomic operator required for writing to @p pavg_data
      */
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pintegration_data, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
@@ -261,19 +259,8 @@ namespace cuda
             int md_baseline = baseline % md_baselines;
 
             // loop over baselines
-            const double two_pi = 2 * CUDART_PI;
-            double shiftFactor = -(uvw[baseline].z - oldUVW[baseline].z);
-            shiftFactor +=
-            (
-               constants.phase_centre_ra_rad * oldUVW[baseline].x
-               - constants.phase_centre_dec_rad * oldUVW[baseline].y
-            );
-            shiftFactor -=
-            (
-                direction.x * uvw[baseline].x
-                - direction.y * uvw[baseline].y
-            );
-            shiftFactor *= two_pi;
+            constexpr double two_pi = 2 * CUDART_PI;
+            double shiftFactor = two_pi * (uvw[baseline].z - oldUVW[baseline].z);
 
             // loop over channels
             double shiftRad = shiftFactor / constants.GetChannelWavelength(channel);

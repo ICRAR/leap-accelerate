@@ -56,6 +56,7 @@ namespace icrar
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
+        , minimumBaselineThreshold(std::move(args.minimumBaselineThreshold))
         , mwaSupport(std::move(args.mwaSupport))
         , readAutocorrelations(std::move(args.readAutocorrelations))
     {
@@ -101,6 +102,7 @@ namespace icrar
         Validate();
 
         // Load resources
+        icrar::log::Initialize(GetVerbosity());
         switch (m_source)
         {
         case InputType::STREAM:
@@ -183,6 +185,11 @@ namespace icrar
             m_computeImplementation = std::move(args.computeImplementation.get());
         }
 
+        if(args.minimumBaselineThreshold.is_initialized())
+        {
+            m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
+        }
+
         if(args.mwaSupport.is_initialized())
         {
             m_mwaSupport = std::move(args.mwaSupport.get());
@@ -228,7 +235,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
     {
         return m_directions;
     }
@@ -236,6 +243,11 @@ namespace icrar
     ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
     {
         return m_computeImplementation;
+    }
+
+    double ArgumentsValidated::GetMinimumBaselineThreshold() const
+    {
+        return m_minimumBaselineThreshold;
     }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
@@ -326,6 +338,17 @@ namespace icrar
                     else
                     {
                         throw json_exception("invalid compute implementation string", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "minimumBaselineThreshold")
+                {
+                    if(it->value.IsDouble())
+                    {
+                        args.minimumBaselineThreshold = it->value.GetDouble();
+                    }
+                    else
+                    {
+                        throw json_exception("minimumBaselineThreshold must be of type double", __FILE__, __LINE__);
                     }
                 }
                 else if(key == "mwaSupport")

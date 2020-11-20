@@ -81,7 +81,7 @@ namespace cpu
 
         __device__ __host__ double GetChannelWavelength(int i) const
         {
-            return speed_of_light / (freq_start_hz + i * freq_inc_hz);
+            return constants::speed_of_light / (freq_start_hz + (i + 0.5) * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;
@@ -92,7 +92,8 @@ namespace cpu
         MetaData() {}
 
         Constants m_constants;
-        
+        double m_minimumBaselineThreshold;
+
         Eigen::MatrixXd m_A;
         Eigen::VectorXi m_I; // The flagged indexes of A
         Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
@@ -105,7 +106,12 @@ namespace cpu
         std::vector<icrar::MVuvw> m_UVW; // late initialized
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
+
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd1; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd2; // direction matrix, late initialized
+        Eigen::Matrix3d m_dd3; // direction matrix, late initialized
+        
         Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
     
     public:
@@ -115,7 +121,7 @@ namespace cpu
          * @param ms 
          * @param uvws 
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0);
 
         /**
          * @brief Construct a new MetaData object
@@ -124,7 +130,7 @@ namespace cpu
          * @param direction 
          * @param uvws 
          */
-        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
+        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0);
         
         /**
          * @brief Constructs a MetaData object from an equivalent casa MetaData object
@@ -153,8 +159,8 @@ namespace cpu
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
-         * @brief Updates the rotated UVW vector member
-         * preconditions - DD is set, oldUVW is set
+         * @brief Updates the rotated UVW vector using the DD matrix
+         * @pre DD is set, oldUVW is set
          */
         void CalcUVW();
 
