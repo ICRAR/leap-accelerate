@@ -25,19 +25,14 @@
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
-
-#include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -97,12 +92,7 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            if(impl == ComputeImplementation::casa)
-            {
-                auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, directions, 0.0);
-            }
-            else if(impl == ComputeImplementation::cpu)
+            if(impl == ComputeImplementation::cpu)
             {
                 auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
@@ -118,7 +108,6 @@ namespace icrar
     };
 
     // These measurements have flagged data removed and complete data for each timestep
-    TEST_F(E2EPerformanceTests, MWACleanTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/mwa/1197638568-split.ms", 102, true); }
     TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
     TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
     

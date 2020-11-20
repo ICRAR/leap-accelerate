@@ -26,7 +26,6 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>

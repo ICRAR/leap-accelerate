@@ -44,49 +44,6 @@ namespace cpu
         os << s.GetString() << std::endl;
     }
 
-    CalibrateResult ToCalibrateResult(casalib::CalibrateResult& result)
-    {
-        auto output_integrations = std::vector<std::vector<IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<CalibrationResult>>();
-
-        for(auto& queues : result.first)
-        {
-            output_integrations.push_back(std::vector<IntegrationResult>());
-            while(!queues.empty())
-            {
-                int index = output_calibrations.size();
-                casalib::IntegrationResult& integrationResult = queues.front();
-                if(integrationResult.GetData().is_initialized())
-                {
-                    output_integrations[index].emplace_back(
-                        integrationResult.GetIntegrationNumber(),
-                        ToDirection(integrationResult.GetDirection()),
-                        icrar::vector_map(integrationResult.GetData().get(),
-                        [&](const casacore::Vector<double>& m) { return icrar::ToVector(m); })
-                    );
-                }
-                queues.pop();
-            }
-        }
-
-        for(auto& queues : result.second)
-        {
-            int index = output_calibrations.size();
-            output_calibrations.push_back(std::vector<CalibrationResult>());
-            while(!queues.empty())
-            {
-                casalib::CalibrationResult& calibrationResult = queues.front();
-                output_calibrations[index].emplace_back(
-                    ToDirection(calibrationResult.GetDirection()),
-                    ToMatrix(calibrationResult.GetData()[0])
-                );
-                queues.pop();
-            }
-        }
-
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
-    }
-
     void PrintResult(const CalibrateResult& result, std::ostream& out)
     {
         for(auto& calibrations : result.second)

@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/model/casa/Integration.h>
-
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
@@ -80,12 +78,7 @@ namespace cpu
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
 
-    public:
-        /**
-         * @brief Construct a new Integration object from the equivalent casalib object
-         */
-        Integration(const icrar::casalib::Integration& integration);
-        
+    public:        
         Integration(
             unsigned int integrationNumber,
             const icrar::MeasurementSet& ms,

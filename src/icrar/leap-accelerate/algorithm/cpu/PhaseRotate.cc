@@ -23,22 +23,17 @@
 #include "PhaseRotate.h"
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+#include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/math/math.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-
-#include <icrar/leap-accelerate/model/cpu/Integration.h>
-
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
-
 #include <icrar/leap-accelerate/core/log/logging.h>
 #include <icrar/leap-accelerate/core/profiling/timer.h>
 
-#include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/measures/Measures/MDirection.h>
 #include <casacore/ms/MeasurementSets/MSAntenna.h>
 #include <casacore/casa/Quanta/MVDirection.h>
