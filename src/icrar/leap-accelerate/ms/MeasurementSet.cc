@@ -160,6 +160,8 @@ namespace icrar
     {
         // TODO: may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
+
+        // Selects the flags of the first epoch
         auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
         
         // Selects only the flags of the first channel and polarization
@@ -185,13 +187,8 @@ namespace icrar
         // Filter short baselines
         if(minimumBaselineThreshold > 0.0)
         {
-            auto uvwShape = m_msmc->uvw().getColumn().shape();
-            auto uvIndices = casacore::Slice(0, uvwShape[1]); 
-            auto uvSlice = casacore::Slicer(
-                casacore::IPosition(1,0),
-                casacore::IPosition(1,1),
-                casacore::IPosition(1,1));
-            casacore::Matrix<double> uv = m_msmc->uvw().getColumnRange(uvIndices, uvSlice);
+            auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
+            casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
             //TODO: uv is of size baselines * timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
