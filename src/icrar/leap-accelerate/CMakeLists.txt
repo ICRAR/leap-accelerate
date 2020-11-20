@@ -130,7 +130,6 @@ configure_cuda_warnings(${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-
 # Legacy TODO: build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 

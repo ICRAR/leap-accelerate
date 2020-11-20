@@ -68,7 +68,8 @@ namespace cuda
      */
     cpu::CalibrateResult Calibrate(
         const MeasurementSet& ms,
-        const std::vector<MVDirection>& directions);
+        const std::vector<MVDirection>& directions,
+        double minimumBaselineThreshold);
 
     /**
      * Performs only visibilities rotation on the GPU

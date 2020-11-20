@@ -6,7 +6,6 @@ set(sources
   Arguments.cc
 )
 
-
 # add the executable
 add_executable(
   ${TARGET_NAME}
@@ -39,5 +38,3 @@ install (
   DESTINATION
     bin
 )
-
-#add_test(NAME ${TARGET_TEST} COMMAND ${TARGET_NAME})

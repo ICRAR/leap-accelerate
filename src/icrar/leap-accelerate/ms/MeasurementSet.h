@@ -118,7 +118,44 @@ namespace icrar
          */
         Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
 
+        /**
+         * @brief Get the number of baselines that are flagged by the measurement set
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumFlaggedBaselines() const;
+
+        /**
+         * @brief Gets a flag vector of short baselines
+         * 
+         * @param minimumBaselineThreshold 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Get the number of baselines that below the @p minimumBaselineThreshold
+         * 
+         * @param minimumBaselineThreshold 
+         * @return unsigned int 
+         */
+        unsigned int GetNumShortBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Gets flag vector of filtered baselines that are either flagged or short
+         * 
+         * @param minimumBaselineThreshold 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Gets the number of baselines filtered by measurementset flagging and short baselines
+         * 
+         * @param minimumBaselineThreshold 
+         * @return unsigned int 
+         */
+        unsigned int GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;

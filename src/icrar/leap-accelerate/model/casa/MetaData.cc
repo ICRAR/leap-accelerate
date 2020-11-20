@@ -25,6 +25,7 @@
 #include <icrar/leap-accelerate/common/constants.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/casa/matrix.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
@@ -35,6 +36,8 @@
 #include <casacore/ms/MeasurementSets/MeasurementSet.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 #include <casacore/casa/Quanta/MVuvw.h>
+
+#include <boost/math/constants/constants.hpp>
 
 using namespace casacore;
 
@@ -53,7 +56,7 @@ namespace casalib
         
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, double minimumBaselineThreshold)
     : nbaselines(0)
     , channels(0)
     , num_pols(0)
@@ -61,6 +64,7 @@ namespace casalib
     , rows(0)
     , freq_start_hz(0)
     , freq_inc_hz(0)
+    , min_baseline_length(minimumBaselineThreshold)
     , phase_centre_ra_rad(0)
     , phase_centre_dec_rad(0)
     {
@@ -111,7 +115,7 @@ namespace casalib
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
 
-        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFlaggedBaselines());
+        casacore::Vector<bool> baselineFlags = ConvertVector(ms.GetFilteredBaselines(minimumBaselineThreshold));
 
         if(a1.size() != a2.size())
         {
@@ -129,6 +133,7 @@ namespace casalib
             }
         }
 
+
         //Start calculations
         std::tie(this->A1, this->I1) = icrar::casalib::PhaseMatrixFunction(a1, a2, baselineFlags, 0);
         this->Ad1 = icrar::casalib::PseudoInverse(A1);
@@ -136,7 +141,7 @@ namespace casalib
         this->Ad = icrar::casalib::PseudoInverse(A);
     }
 
-    MetaData::MetaData(std::istream& /*input*/)
+    MetaData::MetaData(std::istream& /*input*/, double /*minimumBaselineThreshold*/)
     {
         throw std::runtime_error("not implemented");
     }
@@ -165,8 +170,6 @@ namespace casalib
             dd.reset(casacore::Matrix<double>(3,3));
         }
 
-        auto& dd3d = dd.value();
-
         //NOTE: using polar direction
         //TODO(calgray): This is the way using astropy -- need to repeat
         /*
@@ -189,17 +192,52 @@ namespace casalib
         dlm_ra = direction.get()[0] - phase_centre_ra_rad;
         dlm_dec = direction.get()[1] - phase_centre_dec_rad;
 
-        dd3d(0,0) = std::cos(dlm_ra) * std::cos(dlm_dec);
-        dd3d(0,1) = -std::sin(dlm_ra);
-        dd3d(0,2) = std::cos(dlm_ra) * std::sin(dlm_dec);
-        
-        dd3d(1,0) = std::sin(dlm_ra) * std::cos(dlm_dec);
-        dd3d(1,1) = std::cos(dlm_ra);
-        dd3d(1,2) = std::sin(dlm_ra) * std::sin(dlm_dec);
+        constexpr double pi = boost::math::constants::pi<double>();
+        double ang1 = pi / 2.0 - phase_centre_dec_rad;
+        double ang2 = direction.get()[0] - phase_centre_ra_rad;
+        double ang3 = -pi / 2.0 + direction.get()[1];
 
-        dd3d(2,0) = -std::sin(dlm_dec);
-        dd3d(2,1) = 0;
-        dd3d(2,2) = std::cos(dlm_dec);
+        casacore::Matrix<double> dd1 = casacore::Matrix<double>(3,3);
+        dd1(0,0) = 1;
+        dd1(0,1) = 0;
+        dd1(0,2) = 0;
+
+        dd1(1,0) = 0;
+        dd1(1,1) = std::cos(ang1);
+        dd1(1,2) = -std::sin(ang1);
+
+        dd1(2,0) = 0;
+        dd1(2,1) = std::sin(ang1);
+        dd1(2,2) = std::cos(ang1);
+
+        casacore::Matrix<double> dd2 = casacore::Matrix<double>(3,3);
+        dd2(0,0) = std::cos(ang2);
+        dd2(0,1) = std::sin(ang2);
+        dd2(0,2) = 0;
+
+        dd2(1,2) = 0;
+        dd2(1,1) = std::cos(ang2);
+        dd2(1,0) = -std::sin(ang2);
+
+        dd2(2,0) = 0;
+        dd2(2,1) = 0;
+        dd2(2,2) = 1;
+
+        casacore::Matrix<double> dd3 = casacore::Matrix<double>(3,3);
+        dd3(0,0) = 1;
+        dd3(0,1) = 0;
+        dd3(0,2) = 0;
+
+        dd3(1,0) = 0;
+        dd3(1,1) = std::cos(ang3);
+        dd3(1,2) = -std::sin(ang3);
+
+        dd3(2,0) = 0;
+        dd3(2,1) = std::sin(ang3);
+        dd3(2,2) = std::cos(ang3);
+
+        dd = casalib::multiply(dd3, dd2);
+        dd = casalib::multiply(dd.get(), dd1);
     }
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
@@ -216,13 +254,13 @@ namespace casalib
     void MetaData::SetWv()
     {
         channel_wavelength = range(
-            freq_start_hz,
-            freq_start_hz + freq_inc_hz * channels,
+            freq_start_hz + freq_inc_hz * 0.5,
+            freq_start_hz + freq_inc_hz * 0.5 + freq_inc_hz * channels,
             freq_inc_hz);
        
         for(double& v : channel_wavelength)
         {
-            v = speed_of_light / v;
+            v = constants::speed_of_light / v;
         }
     }
 
