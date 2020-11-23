@@ -74,6 +74,7 @@ namespace cpu
     CalibrateResult Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<MVDirection>& directions,
+        double minimumBaselineThreshold,
         bool isFileSystemCacheEnabled);
 
     /**

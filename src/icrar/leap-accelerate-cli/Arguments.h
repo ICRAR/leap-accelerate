@@ -62,6 +62,7 @@ namespace icrar
         boost::optional<std::string> stations;
         boost::optional<std::string> directions;
         boost::optional<std::string> computeImplementation;
+        boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> useFileSystemCache;
         boost::optional<bool> mwaSupport;
         boost::optional<bool> readAutocorrelations;
@@ -85,9 +86,10 @@ namespace icrar
         boost::optional<int> stations;
         boost::optional<std::vector<icrar::MVDirection>> directions;
         boost::optional<ComputeImplementation> computeImplementation;
-        boost::optional<bool> useFileSystemCache;
-        boost::optional<bool> mwaSupport;
+        boost::optional<double> minimumBaselineThreshold;
         boost::optional<bool> readAutocorrelations;
+        boost::optional<bool> mwaSupport;
+        boost::optional<bool> useFileSystemCache;
         boost::optional<icrar::log::Verbosity> verbosity;
     };
 
@@ -107,9 +109,10 @@ namespace icrar
         boost::optional<int> m_stations; // Overriden number of stations (will be removed in a later release)
         std::vector<MVDirection> m_directions; // Calibration directions
         ComputeImplementation m_computeImplementation; // Specifies the implementation for calibration computation
-        bool m_useFileSystemCache; // Enables caching of expensive calculations to the filesystem
-        bool m_mwaSupport; // Negates baselines when enabled
+        double m_minimumBaselineThreshold; // Minimum baseline length otherwise flagged at runtime
         bool m_readAutocorrelations; // Adjusts the number of baselines calculation to include autocorrelations
+        bool m_mwaSupport; // Negates baselines when enabled
+        bool m_useFileSystemCache; // Enables caching of expensive calculations to the filesystem
         icrar::log::Verbosity m_verbosity; // Defines logging level for std::out
 
         /**
@@ -137,13 +140,31 @@ namespace icrar
 
         boost::optional<std::string> GetOutputFilePath() const;
 
+        /**
+         * @brief Gets the user defined output stream for results
+         * 
+         * @return std::ostream& 
+         */
         std::ostream& GetOutputStream();
 
+        /**
+         * @brief Gets the user specifified measurement set
+         * 
+         * @return MeasurementSet& 
+         */
         MeasurementSet& GetMeasurementSet();
 
         const std::vector<icrar::MVDirection>& GetDirections() const;
 
         ComputeImplementation GetComputeImplementation() const;
+
+        /**
+         * @brief Gets the minimum baseline threshold in meteres. Baselines
+         * of length beneath the threshold are to be filtered/flagged.
+         * 
+         * @return double baseline threshold length in meters
+         */
+        double GetMinimumBaselineThreshold() const;
 
         bool IsFileSystemCacheEnabled() const;
 

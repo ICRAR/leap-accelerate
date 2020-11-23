@@ -66,8 +66,8 @@ namespace icrar
         void TestSimpleRun()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-32.ms";
-            command += " -s 126";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command += " -s 102";
             command += " -d [[1.0,0.0]]";
 
             std::cout << command << std::endl;
@@ -77,8 +77,8 @@ namespace icrar
         void TestMultipleCasa()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-32.ms";
-            command += " -s 126";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command += " -s 102";
             command += " -i casa";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"
@@ -99,8 +99,8 @@ namespace icrar
         void TestMultipleCpu()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-32.ms";
-            command += " -s 126";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command += " -s 102";
             command += " -i eigen";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"
@@ -121,8 +121,8 @@ namespace icrar
         void TestMultipleCuda()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
-            command += " -f " + m_srcDir + "testdata/mwa/1197638568-32.ms";
-            command += " -s 126";
+            command += " -f " + m_srcDir + "testdata/mwa/1197638568-split.ms";
+            command += " -s 102";
             command += " -i cuda";
             command += " -d ["
                 "[-0.4606549305661674,-0.29719233792392513],"

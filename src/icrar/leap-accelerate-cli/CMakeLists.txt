@@ -6,14 +6,16 @@ set(sources
   Arguments.cc
 )
 
-include_directories(${CMAKE_SOURCE_DIR}/external/CLI11/include)
-include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
-
 # add the executable
 add_executable(
   ${TARGET_NAME}
   ${sources}
-)
+  )
+
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/external/CLI11/include)
+# Legacy TODO: build support for xenial
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+
 target_link_libraries(${TARGET_NAME} LeapAccelerate)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)
 
@@ -36,5 +38,3 @@ install (
   DESTINATION
     bin
 )
-
-#add_test(NAME ${TARGET_TEST} COMMAND ${TARGET_NAME})

@@ -100,15 +100,15 @@ namespace icrar
             if(impl == ComputeImplementation::casa)
             {
                 auto metadata = casalib::MetaData(*ms);
-                auto res = casalib::Calibrate(*ms, directions);
+                auto res = casalib::Calibrate(*ms, directions, 0.0);
             }
             else if(impl == ComputeImplementation::cpu)
             {
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), false);
+                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else if(impl == ComputeImplementation::cuda)
             {
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), false);
+                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
             else
             {
@@ -117,15 +117,12 @@ namespace icrar
         }
     };
 
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/mwa/1197638568-32.ms", 126, true); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-32.ms", 126, true); }
-    TEST_F(E2EPerformanceTests, MultiDirectionTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-32.ms", 126, true); }
-
     // These measurements have flagged data removed and complete data for each timestep
-    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 126, true); }
-    TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 126, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCasa) { MultiDirectionTest(ComputeImplementation::casa, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
+    TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
     
     // These measurements are clean and use a single timestep
-    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
-    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, false); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+    TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
 }

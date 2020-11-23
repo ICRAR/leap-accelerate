@@ -47,6 +47,7 @@ namespace cpu
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
+        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
         int refAnt=-1);
 }
-} 
+}

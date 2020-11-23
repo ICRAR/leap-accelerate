@@ -58,8 +58,8 @@ namespace icrar
 
         void SetUp() override
         {
-            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
-            ms = std::make_unique<icrar::MeasurementSet>(filename, 126, true);
+            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
+            ms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
         }
 
         void TearDown() override
@@ -91,14 +91,14 @@ namespace icrar
                 ASSERT_DOUBLE_EQ(-213.2345748340571, uvw(1,0));
 
                 vis = ms->GetVis(ms->GetNumBaselines(), 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
-                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, vis(4,0,0), THRESHOLD);
-                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, vis(5,0,0), THRESHOLD);
+                ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, vis(4,0,0), THRESHOLD);
+                ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, vis(5,0,0), THRESHOLD);
             }
             {
                 //CASA
                 auto casaIntegration = icrar::casalib::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
                 ASSERT_EQ(4, casaIntegration.data.dimension(0));
-                ASSERT_EQ(8001, casaIntegration.data.dimension(1));
+                ASSERT_EQ(5253, casaIntegration.data.dimension(1));
                 ASSERT_EQ(48, casaIntegration.data.dimension(2));
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, casaIntegration.data(0,1,0), THRESHOLD);
                 ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, casaIntegration.data(1,1,0), THRESHOLD);
@@ -107,18 +107,18 @@ namespace icrar
 
                 casaIntegration = icrar::casalib::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
                 ASSERT_EQ(4, casaIntegration.data.dimension(0));
-                ASSERT_EQ(8001, casaIntegration.data.dimension(1));
+                ASSERT_EQ(5253, casaIntegration.data.dimension(1));
                 ASSERT_EQ(48, casaIntegration.data.dimension(2));
-                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, casaIntegration.data(0,1,0), THRESHOLD);
-                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, casaIntegration.data(1,1,0), THRESHOLD);
-                ASSERT_DOUBLE_EQ(1236.5613097865571, casaIntegration.uvw[0](0));
-                ASSERT_DOUBLE_EQ(1159.9036887675572, casaIntegration.uvw[1](0));
+                ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, casaIntegration.data(0,1,0), THRESHOLD);
+                ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, casaIntegration.data(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, casaIntegration.uvw[0](0));
+                ASSERT_DOUBLE_EQ(-213.16346997196314, casaIntegration.uvw[1](0));
             }
             {
                 //CPU
                 auto integration = cpu::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
                 ASSERT_EQ(4, integration.GetVis().dimension(0));
-                ASSERT_EQ(8001, integration.GetVis().dimension(1));
+                ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
                 ASSERT_EQCD(-0.703454494476318-24.7045249938965i, integration.GetVis()(0,1,0), THRESHOLD);
                 ASSERT_EQCD(5.16687202453613 + -1.57053351402283i, integration.GetVis()(1,1,0), THRESHOLD);
@@ -128,13 +128,12 @@ namespace icrar
 
                 integration = cpu::Integration(1, *ms, ms->GetNumBaselines(), ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
                 ASSERT_EQ(4, integration.GetVis().dimension(0));
-                ASSERT_EQ(8001, integration.GetVis().dimension(1));
+                ASSERT_EQ(5253, integration.GetVis().dimension(1));
                 ASSERT_EQ(48, integration.GetVis().dimension(2));
-                ASSERT_EQCD(75.3053436279297 + 10.4452018737793i, integration.GetVis()(0,1,0), THRESHOLD);
-                ASSERT_EQCD(-1.06057322025299 + 4.49533176422119i, integration.GetVis()(1,1,0), THRESHOLD);
-                //TODO
-                //ASSERT_DOUBLE_EQ(1236.5613097865571, integration.GetUVW()[0](0));
-                //ASSERT_DOUBLE_EQ(1159.9036887675572, integration.GetUVW()[1](0));
+                ASSERT_EQCD(-9.90243244171143 + -39.7880058288574i, integration.GetVis()(0,1,0), THRESHOLD);
+                ASSERT_EQCD(18.1002998352051 + -15.6084890365601i, integration.GetVis()(1,1,0), THRESHOLD);
+                ASSERT_DOUBLE_EQ(0.0, integration.GetUVW()[0](0));
+                ASSERT_DOUBLE_EQ(-213.16346997196314, integration.GetUVW()[1](0));
             }
 
         }

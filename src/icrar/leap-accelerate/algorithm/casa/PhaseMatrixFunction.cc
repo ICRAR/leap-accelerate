@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -41,41 +42,47 @@ namespace casalib
     std::pair<casacore::Matrix<double>, casacore::Vector<std::int32_t>> PhaseMatrixFunction(
         const casacore::Vector<std::int32_t>& a1,
         const casacore::Vector<std::int32_t>& a2,
+        const casacore::Vector<bool>& fg,
         int refAnt)
     {
-        if(a1.size() != a2.size())
+        if(a1.size() != a2.size() || a1.size() != fg.size())
         {
-            throw std::invalid_argument("a1 and a2 must be equal size");
+            throw std::invalid_argument("a1, a2 and fg must be equal size");
         }
 
         auto unique = std::set<std::int32_t>(a1.cbegin(), a1.cend());
         unique.insert(a2.cbegin(), a2.cend());
         int nAnt = unique.size();
+
         if(refAnt >= nAnt - 1)
         {
             throw std::invalid_argument("RefAnt out of bounds");
         }
 
+        // Cross pairs and reference antenna entries
+        // Thus A will be maximum antenna _number_ rather than maximum number of antennas. If, for example Ante `1' is missing the column 1 will be all zeros
         Matrix<double> A = Matrix<double>(a1.size() + 1, std::max(icrar::ArrayMax(a1), icrar::ArrayMax(a2)) + 1);
         A = 0.0;
 
-        Vector<int> I = Vector<int>(a1.size() + 1);
+        Vector<int> I = Vector<int>(a1.size()); // I will be 1 less row than A.
         I = -1;
 
-        int STATIONS = A.shape()[1]; //TODO verify correctness
+
+        int STATIONS = A.shape()[1];
         int k = 0;
 
         for(size_t n = 0; n < a1.size(); n++)
         {
             if(a1(n) != a2(n))
             {
-                if((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt))))
+                // skip entry if data not flagged
+                if(!fg(n) && ((refAnt < 0) || ((refAnt >= 0) && ((a1(n) == refAnt) || (a2(n) == refAnt)))))
                 {
                     A(k, a1(n)) = 1.0; // set scalear
                     A(k, a2(n)) = -1.0; // set scalear
                     I(k) = n; //set scalear
                     k++;
-                }
+                }  // Otherwise the baseline entry (and therefore weight) is zero
             }
         }
         if(refAnt < 0)
@@ -91,12 +98,13 @@ namespace casalib
         A.resize(0,0);
         A = Atemp;
 
-        auto Itemp = casacore::Vector<int>(k);
-        Itemp = I(Slice(0, k));
+
+        auto Itemp = casacore::Vector<int>(k-1);
+        Itemp = I(Slice(0, k-1));
         I.resize(0);
         I = Itemp;
 
         return std::make_pair(A, I);
     }
 }
-} 
+}
