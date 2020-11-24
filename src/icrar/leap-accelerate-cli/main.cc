@@ -94,20 +94,23 @@ int main(int argc, char** argv)
 
     boost::optional<std::string> readAutocorrelations;
     app.add_option("-a,--autocorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
-    rawArgs.readAutocorrelations = readAutocorrelations.is_initialized() ? std::stoi(readAutocorrelations.get()) : (boost::optional<int>)boost::none;
 
     boost::optional<std::string> minimumBaselineThreshold;
     app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");
-    rawArgs.minimumBaselineThreshold = minimumBaselineThreshold.is_initialized() ? std::stod(minimumBaselineThreshold.get()) : (boost::optional<double>)boost::none;
 
     boost::optional<std::string> verbosity;
     app.add_option("-v,--verbosity", verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
-    rawArgs.verbosity = verbosity.is_initialized() ? boost::lexical_cast<bool>(verbosity.get()) : (boost::optional<bool>)boost::none;
 #endif
 
     try
     {
         app.parse(argc, argv);
+
+#if !__has_include(<optional>)
+        rawArgs.readAutocorrelations = readAutocorrelations.is_initialized() ? std::stoi(readAutocorrelations.get()) : (boost::optional<int>)boost::none;
+        rawArgs.minimumBaselineThreshold = minimumBaselineThreshold.is_initialized() ? std::stod(minimumBaselineThreshold.get()) : (boost::optional<double>)boost::none;
+        rawArgs.verbosity = verbosity.is_initialized() ? boost::lexical_cast<bool>(verbosity.get()) : (boost::optional<bool>)boost::none;
+#endif
     }
     catch (const CLI::ParseError& e)
     {
