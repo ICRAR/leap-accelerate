@@ -22,6 +22,7 @@ LEAP-Accelerate includes:
 
 (Optional)
 * https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
+* https://arrow.apache.org/install/
 * sudo apt-get install libarrow200 libsnappy-dev libbrotli-dev libssl-dev liblz4-dev libzstd-dev libre2-dev libutf8proc-dev
 
 or
