@@ -69,7 +69,7 @@ namespace cpu
         const icrar::MeasurementSet& ms,
         const std::vector<MVDirection>& directions,
         double minimumBaselineThreshold,
-		bool isFileSystemCacheEnabled);
+        bool isFileSystemCacheEnabled);
 
     /**
      * @brief Performs rotation, summing and calibration for @p direction

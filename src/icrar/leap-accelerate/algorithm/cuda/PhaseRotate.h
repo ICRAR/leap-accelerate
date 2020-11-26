@@ -70,7 +70,7 @@ namespace cuda
         const MeasurementSet& ms,
         const std::vector<MVDirection>& directions,
         double minimumBaselineThreshold,
-		bool isFileSystemCacheEnabled);
+        bool isFileSystemCacheEnabled);
 
     /**
      * Performs only visibilities rotation on the GPU
