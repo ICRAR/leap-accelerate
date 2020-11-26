@@ -23,10 +23,8 @@
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-
 #include <cstddef>
 
 namespace icrar
@@ -71,8 +69,8 @@ namespace icrar
             LOG(error) << "stations: " << GetNumStations();
         }
 
-        //Baselines
-        //Validate number of baselines in first epoch
+        // Baselines
+        // Validate number of baselines in first epoch
         casacore::Vector<double> time = m_msmc->time().getColumn();
         auto epoch = time[0];
         auto epochRows = std::count(time.begin(), time.end(), epoch);
@@ -158,7 +156,7 @@ namespace icrar
 
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
     {
-        // TODO: may want to consider using logical OR over for each channel and polarization.
+        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
 
         // Selects the flags of the first epoch
@@ -190,7 +188,8 @@ namespace icrar
             auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
-            //TODO: uv is of size baselines * timesteps
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
+            //  in later timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
