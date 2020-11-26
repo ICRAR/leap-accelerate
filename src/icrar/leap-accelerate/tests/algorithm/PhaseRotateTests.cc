@@ -271,10 +271,10 @@ namespace icrar
 
             ASSERT_EQ(5253, metadataOutput.GetAvgData().rows());
             ASSERT_EQ(4, metadataOutput.GetAvgData().cols());
-            ASSERT_EQCD(-92.9808046594221 + 217.15095232225i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
-            ASSERT_EQCD(176.626048517064 + -175.56273241735i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
-            ASSERT_EQCD(249.90761250883 + 176.058264834248i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
-            ASSERT_EQCD(-151.395227567189 + -6.49211532724997i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
+            ASSERT_EQCD(-223.133522849256 + -77.5332000528807i, metadataOutput.GetAvgData()(1,0), THRESHOLD);
+            ASSERT_EQCD(187.50982206464 + 163.887463394502i, metadataOutput.GetAvgData()(1,1), THRESHOLD);
+            ASSERT_EQCD(-158.110634070684 + 261.632098183828i, metadataOutput.GetAvgData()(1,2), THRESHOLD);
+            ASSERT_EQCD(-4.1343440981176 + -151.477951169178i, metadataOutput.GetAvgData()(1,3), THRESHOLD);
         }
 
         void PhaseMatrixFunction0Test(ComputeImplementation impl)
