@@ -89,6 +89,9 @@ set(cuda_sources
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 if(CUDA_ENABLED)
 add_library(
   ${TARGET_NAME} STATIC
@@ -139,6 +142,8 @@ target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
 # Legacy TODO: build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
+
+target_link_libraries(${TARGET_NAME} Threads::Threads)
 
 #target_link_libraries(${TARGET_NAME} CUDA)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
