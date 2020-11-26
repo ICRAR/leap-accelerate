@@ -45,6 +45,10 @@
 
 using namespace icrar;
 
+/**
+ * @brief Combines command line arguments into a formatted string
+ * 
+ */
 std::string arg_string(int argc, char** argv)
 {
     std::stringstream ss;
@@ -55,6 +59,12 @@ std::string arg_string(int argc, char** argv)
     return ss.str();
 }
 
+/**
+ * @brief Displays project version information including git info
+ * 
+ * @param name 
+ * @return std::string 
+ */
 std::string version_information(const char *name)
 {
     std::ostringstream os;

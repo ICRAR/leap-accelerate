@@ -63,12 +63,19 @@ namespace icrar
         }
     };
 
+    /**
+     * @brief Writes @p matrix to a file overwriting existing content (throws if fails)
+     * 
+     * @tparam Matrix Eigen Matrix type
+     * @param filepath filepath to write to
+     * @param matrix matrix to write
+     */
     template<class Matrix>
-    void write_binary(const char* filename, const Matrix& matrix)
+    void write_binary(const char* filepath, const Matrix& matrix)
     {
-        std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+        std::ofstream out(filepath, std::ios::out | std::ios::binary | std::ios::trunc);
         typename Matrix::Index rows = matrix.rows(), cols = matrix.cols();
-        LOG(info) << "Writing " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " to " << filename;
+        LOG(info) << "Writing " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " to " << filepath;
         out.write(reinterpret_cast<const char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         out.write(reinterpret_cast<const char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -76,21 +83,34 @@ namespace icrar
         out.close();
     }
 
+    /**
+     * @brief Reads @p matrix from a file by resizing and overwriting the existing matrix (throws if fails)
+     * 
+     * @tparam Matrix Eigen Matrix type
+     * @param filepath filepath to read from
+     * @param matrix matrix to read
+     */
     template<class Matrix>
-    void read_binary(const char* filename, Matrix& matrix)
+    void read_binary(const char* filepath, Matrix& matrix)
     {
-        std::ifstream in(filename, std::ios::in | std::ios::binary);
+        std::ifstream in(filepath, std::ios::in | std::ios::binary);
         typename Matrix::Index rows = 0, cols = 0;
         in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         matrix.resize(rows, cols);
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filename;
+        LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filepath;
         in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         in.close();
     }
 
-
+    /**
+     * @brief Reads a file containing a binary hash at @p filename and outputs to @p hash
+     * 
+     * @tparam T the hash type
+     * @param filename the hash file to read
+     * @param hash output parameter
+     */
     template<typename T>
     void read_hash(const char* filename, T& hash)
     {
@@ -105,6 +125,13 @@ namespace icrar
         }
     }
 
+    /**
+     * @brief Writes a hash value to a specified file
+     * 
+     * @tparam T the hash value
+     * @param filename the hash file to write to
+     * @param hash the hash value
+     */
     template<typename T>
     void write_hash(const char* filename, T hash)
     {
@@ -169,6 +196,13 @@ namespace icrar
         }
     }
 
+    /**
+     * @brief Prints a formatted displaying up to 6 elements
+     * 
+     * @tparam RowVector Eigen RowVector type
+     * @param row the row to print
+     * @param ss the stream to print to
+     */
     template<typename RowVector>
     void pretty_row(const RowVector& row, std::stringstream& ss)
     {
@@ -198,6 +232,14 @@ namespace icrar
         ss << "]";
     }
 
+    /**
+     * @brief Prints a formatted matrix to a string with a maximum of
+     * 6 rows and columns displayed.
+     * 
+     * @tparam Matrix Eigen Matrix type
+     * @param value the matrix to print
+     * @return std::string the formatted string result
+     */
     template<typename Matrix>
     std::string pretty_matrix(const Eigen::MatrixBase<Matrix>& value)
     {
@@ -239,6 +281,13 @@ namespace icrar
         return ss.str();
     }
 
+    /**
+     * @brief Dumps a matrix to file @p name .txt
+     * 
+     * @tparam Matrix Eigen Matrix type
+     * @param value matrix to dump to file
+     * @param name name of the matrix to dump
+     */
     template<typename Matrix>
     void trace_matrix(const Matrix& value, const std::string &name)
     {
@@ -253,4 +302,4 @@ namespace icrar
         }
 #endif
     }
-}
+} // namespace icrar

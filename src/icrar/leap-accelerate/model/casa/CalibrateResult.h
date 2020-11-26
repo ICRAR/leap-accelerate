@@ -39,6 +39,10 @@ namespace icrar
 {
 namespace casalib
 {
+    /**
+     * @brief Contains the results of the integration stage
+     * 
+     */
     class IntegrationResult
     {
         int m_integrationNumber;
@@ -62,29 +66,38 @@ namespace casalib
         int GetIntegrationNumber() const { return m_integrationNumber; }
     };
 
+    /**
+     * @brief Contains the results of leap calibration
+     * 
+     */
     class CalibrationResult
     {
         casacore::MVDirection m_direction;
-        std::vector<casacore::Matrix<double>> m_data;
+        std::vector<casacore::Matrix<double>> m_calibration;
 
     public:
+        /**
+         * @brief Construct a new Calibration Result object
+         * 
+         * @param direction direciton of calibration
+         * @param calibration calibration of each antenna for the given direction 
+         */
         CalibrationResult(
             const casacore::MVDirection& direction,
-            const std::vector<casacore::Matrix<double>>& data)
+            const std::vector<casacore::Matrix<double>>& calibration)
             : m_direction(direction)
-            , m_data(data)
+            , m_calibration(calibration)
         {
         }
 
         const casacore::MVDirection GetDirection() const { return m_direction; }
-        const std::vector<casacore::Matrix<double>>& GetData() const { return m_data; }
 
-        //bool operator==(const CalibrationResult& rhs) const;
+        const std::vector<casacore::Matrix<double>>& GetCalibration() const { return m_calibration; }
     };
 
     using CalibrateResult = std::pair<
         std::vector<std::queue<IntegrationResult>>,
         std::vector<std::queue<CalibrationResult>>
     >;
-}
-}
+} // namespace casalib
+} // namespace icrar

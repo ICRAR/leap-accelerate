@@ -58,7 +58,7 @@ namespace casalib
     struct MetaData;
 
     /**
-     * @brief 
+     * @copydoc icrar::cpu::Calibrate
      * 
      */
     CalibrateResult Calibrate(
@@ -67,11 +67,8 @@ namespace casalib
         double minimumBaselineThreshold);
 
     /**
-     * @brief 
+     * @copydoc icrar::cpu::PhaseRotate
      * 
-     * @param metadata 
-     * @param directions 
-     * @param input 
      */
     void PhaseRotate(
         MetaData& metadata,
@@ -81,7 +78,7 @@ namespace casalib
         std::queue<CalibrationResult>& output_calibrations);
 
     /**
-     * @brief 
+     * @copydoc icrar::cpu::RotateVisibilities
      * 
      * @param integration 
      * @param metadata 
