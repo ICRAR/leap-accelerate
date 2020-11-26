@@ -88,7 +88,7 @@ namespace cuda
         const device_vector<int>& GetI1() const { return m_I1; }
         const device_matrix<double>& GetAd1() const { return m_Ad1; }
 
-        void ToHost(icrar::cpu::MetaData& host);
+        void ToHost(icrar::cpu::MetaData& host) const;
     };
 
     /**

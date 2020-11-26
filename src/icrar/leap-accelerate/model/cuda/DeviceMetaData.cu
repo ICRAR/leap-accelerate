@@ -21,7 +21,7 @@
  */
 
 #include "DeviceMetaData.h"
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -46,7 +46,7 @@ namespace cuda
         , m_I1(I1)
         , m_Ad1(Ad1) { }
 
-    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host)
+    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host) const
     {
         host.m_constants = m_constants;
 

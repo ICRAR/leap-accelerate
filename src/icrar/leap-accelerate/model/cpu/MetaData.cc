@@ -25,7 +25,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>

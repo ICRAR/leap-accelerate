@@ -37,18 +37,18 @@ namespace icrar
 
 namespace detail {
 
-	template <int N, typename T>
-	struct _fixed {
-		T _val;
-	};
+    template <int N, typename T>
+    struct _fixed {
+        T _val;
+    };
 
-	template <typename T, int N, typename VT>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, detail::_fixed<N, VT> v)
-	{
-		os << std::setprecision(N) << std::fixed << v._val;
-		return os;
-	}
+    template <typename T, int N, typename VT>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, detail::_fixed<N, VT> v)
+    {
+        os << std::setprecision(N) << std::fixed << v._val;
+        return os;
+    }
 
 } // namespace detail
 
@@ -61,93 +61,95 @@ namespace detail {
 template <int N, typename T>
 inline
 detail::_fixed<N, T> fixed(T v) {
-	return {v};
+    return {v};
 }
 
 namespace detail {
 
-	struct _memory_amount {
-		std::size_t _val;
-	};
+    struct _memory_amount {
+        std::size_t _val;
+    };
 
-	struct _microseconds_amount {
-		std::chrono::microseconds::rep _val;
-	};
+    struct _microseconds_amount {
+        std::chrono::microseconds::rep _val;
+    };
 
-	template <typename T>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
-	{
+    template <typename T>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
+    {
+		constexpr uint32_t KILO_BIN = 1024;
 
-		if (m._val < 1024) {
-			os << m._val << " [B]";
-			return os;
-		}
+        if (m._val < KILO_BIN) {
+            os << m._val << " [B]";
+            return os;
+        }
 
-		float v = m._val / 1024.;
-		const char *suffix = " [KiB]";
+        float v = m._val / 1024.;
+        const char *suffix = " [KiB]";
 
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [MiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [GiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [TiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [PiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [EiB]";
-		}
-		// that should be enough...
+        if (v > KILO_BIN) {
+            v /= KILO_BIN;
+            suffix = " [MiB]";
+        }
+        if (v > KILO_BIN) {
+            v /= KILO_BIN;
+            suffix = " [GiB]";
+        }
+        if (v > KILO_BIN) {
+            v /= KILO_BIN;
+            suffix = " [TiB]";
+        }
+        if (v > KILO_BIN) {
+            v /= KILO_BIN;
+            suffix = " [PiB]";
+        }
+        if (v > KILO_BIN) {
+            v /= KILO_BIN;
+            suffix = " [EiB]";
+        }
+        // that should be enough...
 
-		os << fixed<3>(v) << suffix;
-		return os;
-	}
+        os << fixed<3>(v) << suffix;
+        return os;
+    }
 
-	template <typename T>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
-	{
-		auto time = t._val;
-		if (time < 1000) {
-			os << time << " [us]";
-			return os;
-		}
+    template <typename T>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
+    {
+		constexpr uint32_t KILO = 1000;
+        auto time = t._val;
+        if (time < KILO) {
+            os << time << " [us]";
+            return os;
+        }
 
-		time /= 1000;
-		if (time < 1000) {
-			os << time << " [ms]";
-			return os;
-		}
+        time /= KILO;
+        if (time < KILO) {
+            os << time << " [ms]";
+            return os;
+        }
 
-		float ftime = time / 1000.f;
-		const char *prefix = " [s]";
-		if (ftime > 60) {
-			ftime /= 60;
-			prefix = " [min]";
-			if (ftime > 60) {
-				ftime /= 60;
-				prefix = " [h]";
-				if (ftime > 24) {
-					ftime /= 24;
-					prefix = " [d]";
-				}
-			}
-		}
-		// that should be enough...
+        float ftime = time / 1000.f;
+        const char *prefix = " [s]";
+        if (ftime > 60) {
+            ftime /= 60;
+            prefix = " [min]";
+            if (ftime > 60) {
+                ftime /= 60;
+                prefix = " [h]";
+                if (ftime > 24) {
+                    ftime /= 24;
+                    prefix = " [d]";
+                }
+            }
+        }
+        // that should be enough...
 
-		os << fixed<3>(ftime) << prefix;
-		return os;
-	}
+        os << fixed<3>(ftime) << prefix;
+        return os;
+    }
 
 } // namespace detail
 
@@ -159,7 +161,7 @@ namespace detail {
 ///
 inline
 detail::_memory_amount memory_amount(std::size_t amount) {
-	return {amount};
+    return {amount};
 }
 
 ///
@@ -170,7 +172,7 @@ detail::_memory_amount memory_amount(std::size_t amount) {
 ///
 inline
 detail::_microseconds_amount us_time(std::chrono::microseconds::rep amount) {
-	return {amount};
+    return {amount};
 }
 
 }  // namespace icrar

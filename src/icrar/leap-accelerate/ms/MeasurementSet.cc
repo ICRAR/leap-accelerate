@@ -131,15 +131,15 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
     {
-        //TODO: cache value
+        //TODO(calgray): cache value
         if(useAutocorrelations)
         {
-            const size_t num_stations = (size_t)GetNumStations();
+            const auto num_stations = GetNumStations();
             return num_stations * (num_stations + 1) / 2;
         }
         else
         {
-            const size_t num_stations = (size_t)GetNumStations();
+            const auto num_stations = GetNumStations();
             return num_stations * (num_stations - 1) / 2;
         }
     }

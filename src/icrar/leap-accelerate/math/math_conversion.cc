@@ -23,13 +23,13 @@
 #include "math_conversion.h"
 
 #include <icrar/leap-accelerate/exception/exception.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 namespace icrar
 {
     icrar::MVuvw ToUVW(const casacore::MVuvw& value)
     {
-        return icrar::MVuvw(value(0), value(1), value(2));
+        return { value(0), value(1), value(2) };
     }
 
     std::vector<icrar::MVuvw> ToUVWVector(const std::vector<casacore::MVuvw>& value)
@@ -73,7 +73,7 @@ namespace icrar
 
     icrar::MVDirection ToDirection(const casacore::MVDirection& value)
     {
-        return icrar::MVDirection(value(0), value(1), value(2));
+        return { value(0), value(1), value(2) };
     }
 
     std::vector<icrar::MVDirection> ToDirectionVector(const std::vector<casacore::MVDirection>& value)
@@ -83,7 +83,7 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value)
     {
-        return casacore::MVDirection(value(0), value(1), value(2));
+        return { value(0), value(1), value(2) };
     }
 
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value)

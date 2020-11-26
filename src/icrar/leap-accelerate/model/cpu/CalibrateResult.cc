@@ -22,7 +22,7 @@
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/prettywriter.h>
@@ -33,12 +33,13 @@ namespace cpu
 {
     void CalibrationResult::Serialize(std::ostream& os) const
     {
-        os.precision(15);
+        constexpr uint32_t PRECISION = 15;
+        os.precision(PRECISION);
         os.setf(std::ios::fixed);
 
         rapidjson::StringBuffer s;
 
-        //TODO: could also support PrettyWriter
+        //TODO(calgray): could also support PrettyWriter
         rapidjson::Writer<rapidjson::StringBuffer> writer(s);
         CreateJsonStrFormat(writer);
         os << s.GetString() << std::endl;

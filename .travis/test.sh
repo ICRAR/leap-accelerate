@@ -37,3 +37,6 @@ export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
 
 # Run unit tests first
 ctest --verbose || fail "unit tests failed"
+
+# Run linters
+make lint || fail "linting failed"

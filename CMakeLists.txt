@@ -140,6 +140,7 @@ set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/inc
 find_package(RapidJSON REQUIRED)
 
 # Local Targets
+set(CMAKE_EXPORT_COMPILE_COMMANDS=ON)
 include(lint)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
