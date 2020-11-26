@@ -16,19 +16,19 @@ from dlg.droputils import DROPFile
 # @param gitrepo $(GIT_REPO)
 # @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/number_of_stations/1/Integer
+# @param[in] param/number_of_stations/1/Integer/readwrite
 #     \~English The number of stations from the measurement set that should be processed\n
 #     \~Chinese \n
 #     \~
-# @param[in] param/implementation/cpu/String
+# @param[in] param/implementation/cpu/String/readwrite
 #     \~English The implementation of the LEAP algorithm to use (cpu, casa, cuda)\n
 #     \~Chinese \n
 #     \~
-# @param[in] param/auto_correlation/false/string
+# @param[in] param/auto_correlation/false/string/readwrite
 #     \~English Enable auto correlation in the LEAP algorithm\n
 #     \~Chinese \n
 #     \~
-# @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String
+# @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String/readonly
 #     \~English The path to the class that implements this app\n
 #     \~Chinese \n
 #     \~
