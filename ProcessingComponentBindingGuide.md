@@ -70,16 +70,16 @@ AUTOLINK_SUPPORT       = NO
 # The default value is: YES. 
 IDL_PROPERTY_SUPPORT   = NO 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources 
-# # only. Doxygen will then generate output that is more tailored for C. For 
-# # instance, some of the names that are used will be different. The list of all 
-# # members will be omitted, etc. 
-# # The default value is: NO. 
+# only. Doxygen will then generate output that is more tailored for C. For 
+# instance, some of the names that are used will be different. The list of all 
+# members will be omitted, etc. 
+# The default value is: NO. 
 OPTIMIZE_OUTPUT_FOR_C  = YES 
 # Set the OPTIMIZE_OUTPUT_JAVA tag to YES if your project consists of Java or 
-# # Python sources only. Doxygen will then generate output that is more tailored 
-# # for that language. For instance, namespaces will be presented as packages, 
-# # qualified scopes will look different, etc. 
-# # The default value is: NO. 
+# Python sources only. Doxygen will then generate output that is more tailored 
+# for that language. For instance, namespaces will be presented as packages, 
+# qualified scopes will look different, etc. 
+# The default value is: NO. 
 OPTIMIZE_OUTPUT_JAVA   = NO
 
 #---------------------------------------------------------------------------
@@ -157,11 +157,11 @@ WARN_LOGFILE           =
 RECURSIVE              = YES 
 
 # The EXCLUDE tag can be used to specify files and/or directories that should be
-# # excluded from the INPUT source files. This way you can easily exclude a
-# # subdirectory from a directory tree whose root is specified with the INPUT tag.
-# #
-# # Note that relative paths are relative to the directory from which doxygen is
-# # run.
+# excluded from the INPUT source files. This way you can easily exclude a
+# subdirectory from a directory tree whose root is specified with the INPUT tag.
+#
+# Note that relative paths are relative to the directory from which doxygen is
+# run.
 
 EXCLUDE                = ProcessingComponentBindingGuide.md
 
@@ -181,22 +181,25 @@ GENERATE_LATEX         = NO
 # Configuration options related to the XML output 
 #--------------------------------------------------------------------------- 
 # If the SOURCE_BROWSER tag is set to YES then a list of source files will be 
-# # generated. Documented entities will be cross-referenced with these sources. 
-# # 
-# # Note: To get rid of all source code in the generated output, make sure that 
-# # also VERBATIM_HEADERS is set to NO. 
-# # The default value is: NO. 
+# generated. Documented entities will be cross-referenced with these sources. 
+ 
+# Note: To get rid of all source code in the generated output, make sure that 
+# also VERBATIM_HEADERS is set to NO. 
+# The default value is: NO. 
 SOURCE_BROWSER         = NO  
-# If the VERBATIM_HEADERS tag is set the YES then doxygen will generate a 
-# # verbatim copy of the header file for each class for which an include is 
-# # specified. Set to NO to disable this. 
-# # See also: Section \class. 
-# # The default value is: YES. 
+
+If the VERBATIM_HEADERS tag is set the YES then doxygen will generate a 
+# verbatim copy of the header file for each class for which an include is 
+# specified. Set to NO to disable this. 
+# See also: Section \class. 
+# The default value is: YES. 
 VERBATIM_HEADERS       = NO 
+
 # If the GENERATE_XML tag is set to YES, doxygen will generate an XML file that 
 # captures the structure of the code including all documentation. 
 # The default value is: NO. 
 GENERATE_XML           = YES 
+
 # If the XML_PROGRAMLISTING tag is set to YES, doxygen will dump the program 
 # listings (including syntax highlighting and cross-referencing information) to 
 # the XML output. Note that enabling this will significantly increase the size 
@@ -204,11 +207,13 @@ GENERATE_XML           = YES
 # The default value is: YES. 
 # This tag requires that the tag GENERATE_XML is set to YES. 
 XML_PROGRAMLISTING     = NO 
+
 # If the XML_NS_MEMB_FILE_SCOPE tag is set to YES, doxygen will include 
 # namespace members in file scope as well, matching the HTML output. 
 # The default value is: NO. 
 # This tag requires that the tag GENERATE_XML is set to YES. 
 XML_NS_MEMB_FILE_SCOPE = NO 
+
 #--------------------------------------------------------------------------- 
 # Configuration options related to the preprocessor 
 #--------------------------------------------------------------------------- 
@@ -216,6 +221,7 @@ XML_NS_MEMB_FILE_SCOPE = NO
 # C-preprocessor directives found in the sources and include files. 
 # The default value is: YES. 
 ENABLE_PREPROCESSING   = NO 
+
 #--------------------------------------------------------------------------- 
 # Configuration options related to the dot tool 
 #--------------------------------------------------------------------------- 
