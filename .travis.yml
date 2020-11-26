@@ -70,6 +70,32 @@ jobs:
       packages: [g++-9, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.71-all-dev]
     env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3
 
+  - name: doxygencommit
+    if: branch = master 
+    before_install:
+    install:
+      - sudo apt-get update && sudo apt-get install -y doxygen && sudo apt-get install -y xsltproc
+    script:
+      - GIT_REPO=$(git config --get remote.origin.url) PROJECT_VERSION=$(git rev-parse --short HEAD) doxygen
+    after_success:
+      - cd LEAP/xml
+      - xsltproc combine.xslt index.xml >leap.xml
+      - wget https://raw.githubusercontent.com/james-strauss-uwa/xml2palette/master/xml2palette.py
+      - python3 xml2palette.py -i leap.xml -o leap.palette
+      - mv leap.palette ../.
+      - cd ..
+      - rm -rf xml/
+      - cd ..
+      - git config --global user.name $GITHUB_USERNAME
+      - git config --global user.email "$GITHUB_USERNAME@gmail.com"
+      - git clone https://$GITHUB_TOKEN@github.com/ICRAR/EAGLE_test_repo
+      - cd EAGLE_test_repo/
+      - rm -rf LEAP/
+      - mv ../LEAP/ .
+      - git add *
+      - git diff-index --quiet HEAD || git commit -m 'doxygen commit'
+      - git push
+
 # We "source" it because it exports variables
 install:
  - source .travis/install.sh
