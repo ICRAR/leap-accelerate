@@ -126,11 +126,11 @@ int main(int argc, char** argv)
         } 
         if(useFileSystemCache.is_initialized())
         {
-            rawArgs.useFileSystemCache = boost::lexical_cast<bool>(useFileSystemCache.get())
+            rawArgs.useFileSystemCache = boost::lexical_cast<bool>(useFileSystemCache.get());
         } 
         if(verbosity.is_initialized())
         {
-            rawArgs.verbosity = boost::lexical_cast<int>(verbosity.get())
+            rawArgs.verbosity = boost::lexical_cast<int>(verbosity.get());
         }
 #endif
     }
