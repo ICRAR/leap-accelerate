@@ -22,9 +22,8 @@
 
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -89,9 +88,8 @@ int main(int argc, char** argv)
     app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
+    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    //TODO: app.add_option("v,--solutionInterval");
-    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
 
 #if __has_include(<optional>)
     app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
@@ -151,9 +149,22 @@ int main(int argc, char** argv)
         LOG(info) << version_information(argv[0]);
         LOG(info) << arg_string(argc, argv);
 
-        auto calibrator = LeapCalibratorFactory().Create(args.GetComputeImplementation());
-        cpu::CalibrateResult result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
-        cpu::PrintResult(result, args.GetOutputStream());
+        switch(args.GetComputeImplementation())
+        {
+        case ComputeImplementation::cpu:
+        {
+            cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+            cpu::PrintResult(result, args.GetOutputStream());
+            break;
+        }
+        case ComputeImplementation::cuda:
+        {
+            cpu::CalibrateResult result = icrar::cuda::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+            cpu::PrintResult(result ,args.GetOutputStream());
+            break;
+        }
+        }
+        return 0;
     }
     catch(const std::exception& e)
     {

@@ -185,7 +185,7 @@ namespace icrar
             auto meta = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
 
             ASSERT_EQ(48, meta.GetConstants().channels);
-            EXPECT_DOUBLE_EQ(2.1488188223488516, meta.GetConstants().GetChannelWavelength(0));
+            EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
         }
 
 #ifdef CUDA_ENABLED

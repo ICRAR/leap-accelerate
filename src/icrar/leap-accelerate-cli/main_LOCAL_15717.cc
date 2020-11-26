@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
     //TODO: app.add_option("v,--solutionInterval");
-    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
+    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
 
 #if __has_include(<optional>)
     app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
