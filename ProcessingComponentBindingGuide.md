@@ -155,6 +155,16 @@ WARN_LOGFILE           =
 # be searched for input files as well. 
 # The default value is: NO. 
 RECURSIVE              = YES 
+
+# The EXCLUDE tag can be used to specify files and/or directories that should be
+# # excluded from the INPUT source files. This way you can easily exclude a
+# # subdirectory from a directory tree whose root is specified with the INPUT tag.
+# #
+# # Note that relative paths are relative to the directory from which doxygen is
+# # run.
+
+EXCLUDE                = ProcessingComponentBindingGuide.md
+
 #--------------------------------------------------------------------------- 
 # Configuration options related to the HTML output 
 #--------------------------------------------------------------------------- 
@@ -413,7 +423,7 @@ The pattern is:
 ```
 # Run Doxygen 
 
-If  do not need the location and version of the current cod e , could just run  
+If do not need the location and version of the current code, could just run  
 
 ```shell
 doxygen Doxyfile 
@@ -422,7 +432,7 @@ or
 ```shell
 doxygen  #the default configuration file named as Doxyfile 
 ```
-Otherwise ,  could get the location information with: 
+Otherwise, could get the location information with: 
 
 ```plain
 git config --get remote.origin.url 
