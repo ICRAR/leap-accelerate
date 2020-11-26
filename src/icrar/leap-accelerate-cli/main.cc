@@ -94,20 +94,19 @@ int main(int argc, char** argv)
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
 
 #if __has_include(<optional>)
-    app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
-	app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between calls");
     app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
+    app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
+    app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between calls");
     app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 #else
-    boost::optional<std::string> useFileSystemCache;
-    app.add_option("-u, --useFileSystemCache", useFileSystemCache, "Use filesystem caching between calls");
+    boost::optional<std::string> readAutocorrelations;
+    app.add_option("-a,--autocorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
 
     boost::optional<std::string> minimumBaselineThreshold;
     app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");
 
-    boost::optional<std::string> readAutocorrelations;
-    app.add_option("-a,--autocorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
-    rawArgs.readAutocorrelations = readAutocorrelations.is_initialized() ? std::stoi(readAutocorrelations.get()) : (boost::optional<int>)boost::none;
+    boost::optional<std::string> useFileSystemCache;
+    app.add_option("-u, --useFileSystemCache", useFileSystemCache, "Use filesystem caching between calls");
 
     boost::optional<std::string> verbosity;
     app.add_option("-v,--verbosity", verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
@@ -118,10 +117,22 @@ int main(int argc, char** argv)
         app.parse(argc, argv);
 
 #if !__has_include(<optional>)
-	    rawArgs.useFileSystemCache = useFileSystemCache.is_initialized() ? boost::lexical_cast<bool>(useFileSystemCache.get()) : (boost::optional<bool>)boost::none;
-        rawArgs.readAutocorrelations = readAutocorrelations.is_initialized() ? std::stoi(readAutocorrelations.get()) : (boost::optional<int>)boost::none;
-        rawArgs.minimumBaselineThreshold = minimumBaselineThreshold.is_initialized() ? std::stod(minimumBaselineThreshold.get()) : (boost::optional<double>)boost::none;
-        rawArgs.verbosity = verbosity.is_initialized() ? boost::lexical_cast<bool>(verbosity.get()) : (boost::optional<bool>)boost::none;
+        if(readAutocorrelations.is_initialized())
+        {
+            rawArgs.readAutocorrelations = boost::lexical_cast<int>(readAutocorrelations.get());
+        }
+        if(minimumBaselineThreshold.is_initialized())
+        {
+            rawArgs.minimumBaselineThreshold = boost::lexical_cast<double>(minimumBaselineThreshold.get());
+        } 
+        if(useFileSystemCache.is_initialized())
+        {
+            rawArgs.useFileSystemCache = boost::lexical_cast<bool>(useFileSystemCache.get());
+        } 
+        if(verbosity.is_initialized())
+        {
+            rawArgs.verbosity = boost::lexical_cast<int>(verbosity.get());
+        }
 #endif
     }
     catch (const CLI::ParseError& e)

@@ -134,9 +134,9 @@ See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md)
 
 Example:
 
-`./LeapAccelerateCLI --help`
+`./bin/LeapAccelerateCLI --help`
 
-`./LeapAccelerateCLI --config "./askap.json"`
+`./bin/LeapAccelerateCLI --config "./askap.json"`
 
 ## Profiling
 
