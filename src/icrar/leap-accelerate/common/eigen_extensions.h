@@ -199,7 +199,7 @@ namespace icrar
     }
 
     template<typename Matrix>
-    std::string pretty_matrix(const Matrix& value)
+    std::string pretty_matrix(const Eigen::MatrixBase<Matrix>& value)
     {
         std::stringstream ss;
         ss << "Eigen::Matrix [ " << value.rows() << ", " << value.cols() << "]\n";

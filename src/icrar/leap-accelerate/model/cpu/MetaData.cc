@@ -128,7 +128,7 @@ namespace cpu
         auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-
+        
         LOG(info) << "Calculating PhaseMatrix A1";
         std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, 0);
         trace_matrix(m_A1, "A1");
@@ -137,7 +137,6 @@ namespace cpu
         LOG(info) << "Calculating PhaseMatrix A";
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, -1);
         trace_matrix(m_A, "A");
-        trace_matrix(m_I, "I");
 
 
         auto invertA1 = [](const Eigen::MatrixXd& a)
