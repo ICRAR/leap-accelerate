@@ -92,20 +92,20 @@ int main(int argc, char** argv)
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
 
 #if __has_include(<optional>)
-    app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between system calls");
     app.add_option("-m,--minimumBaselineThreshold", rawArgs.minimumBaselineThreshold, "Minimum baseline length in meters");
-    app.add_option("-a,--autoCorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
+	app.add_option("-a,--autocorrelations", rawArgs.readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
+	app.add_option("-u, --useFileSystemCache", rawArgs.useFileSystemCache, "Use filesystem caching between calls");
     app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 #else
     boost::optional<std::string> useFileSystemCache;
     app.add_option("-u, --useFileSystemCache", useFileSystemCache, "Use filesystem caching between calls");
-
-    boost::optional<std::string> minimumBaselineThreshold;
-    app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");
+    rawArgs.useFileSystemCache = useFileSystemCache.is_initialized() ? boost::lexical_cast<bool>(useFileSystemCache.get()) : (boost::optional<bool>)boost::none;
 
     boost::optional<std::string> readAutocorrelations;
     app.add_option("-a,--autocorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
-    rawArgs.readAutocorrelations = readAutocorrelations.is_initialized() ? std::stoi(readAutocorrelations.get()) : (boost::optional<int>)boost::none;
+
+    boost::optional<std::string> minimumBaselineThreshold;
+    app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");
 
     boost::optional<std::string> verbosity;
     app.add_option("-v,--verbosity", verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
