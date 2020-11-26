@@ -254,8 +254,8 @@ namespace casalib
     void MetaData::SetWv()
     {
         channel_wavelength = range(
-            freq_start_hz + freq_inc_hz * 0.5,
-            freq_start_hz + freq_inc_hz * 0.5 + freq_inc_hz * channels,
+            freq_start_hz,
+            freq_start_hz + freq_inc_hz * channels,
             freq_inc_hz);
        
         for(double& v : channel_wavelength)
