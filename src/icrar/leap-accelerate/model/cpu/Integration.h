@@ -78,9 +78,9 @@ namespace cpu
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
 
-    public:        
+    public:
         Integration(
-            unsigned int integrationNumber,
+            int integrationNumber,
             const icrar::MeasurementSet& ms,
             unsigned int index,
             unsigned int channels,

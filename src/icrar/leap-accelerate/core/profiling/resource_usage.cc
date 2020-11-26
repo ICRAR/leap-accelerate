@@ -38,13 +38,15 @@ static profiling::timer walltime_timer;
 
 static usec_t to_usecs(const struct timeval &t)
 {
-    return t.tv_sec * 1000000 + t.tv_usec;
+    constexpr int SECONDS_TO_MICROSECONDS = 1000000;
+    return t.tv_sec * SECONDS_TO_MICROSECONDS + t.tv_usec;
 }
 
 /// Returns the maximum Resident Storage Size of this process
 /// (i.e., the maximum amountof memory used).
 ResourceUsage get_resource_usage()
 {
+    constexpr int KILOBYTES_TO_BYTES = 1024;
     struct rusage ru;
     int err = getrusage(RUSAGE_SELF, &ru);
     if (err != 0) {
@@ -53,7 +55,7 @@ ResourceUsage get_resource_usage()
     auto walltime = std::chrono::duration_cast<std::chrono::microseconds>(
         walltime_timer.get()).count();
     return {to_usecs(ru.ru_utime), to_usecs(ru.ru_stime), usec_t(walltime),
-            std::size_t(ru.ru_maxrss * 1024)};
+            std::size_t(ru.ru_maxrss * KILOBYTES_TO_BYTES)};
 }
 
 template <typename CharT>

@@ -74,6 +74,8 @@ namespace cpu
         {
 
         }
+
+        int GetIntegrationNumber() const { return m_integrationNumber; }
     };
 
     /**

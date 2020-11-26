@@ -7,6 +7,7 @@ Checks:
     modernize-*,
     misc-*,
     google-*,
+    -cppcoreguidelines-avoid-magic-numbers,
     -google-build-using-namespace,
     -google-runtime-references,
     -google-readability-namespace-comments,

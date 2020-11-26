@@ -117,11 +117,12 @@ namespace icrar
         std::ifstream hashIn(filename, std::ios::in | std::ios::binary);
         if(hashIn.good())
         {
-            hashIn.read((char*)(&hash), sizeof(T));
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            hashIn.read(reinterpret_cast<char*>(&hash), sizeof(T));
         }
         else
         {
-            throw icrar::file_exception("could not read file", filename, __FILE__, __LINE__);
+            throw icrar::file_exception("could not read hash from file", filename, __FILE__, __LINE__);
         }
     }
 
@@ -162,7 +163,7 @@ namespace icrar
     template<typename In, typename Out, typename Lambda>
     void ProcessCache(size_t hash,
         const In& in, Out& out,
-        std::string hashFile, std::string cacheFile,
+        const std::string& hashFile, const std::string& cacheFile,
         Lambda transform)
     {
         bool cacheRead = false;

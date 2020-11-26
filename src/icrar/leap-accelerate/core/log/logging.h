@@ -44,5 +44,5 @@ namespace log
 } // namespace log
 } //namespace icrar
 
-#define LOG(X) BOOST_LOG_TRIVIAL(X)
-#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level)
+#define LOG(X) BOOST_LOG_TRIVIAL(X) // NOLINT(cppcoreguidelines-macro-usage)
+#define LOG_ENABLED(lvl) (::boost::log::trivial::severity_level::lvl >= ::icrar::log::logging_level) // NOLINT(cppcoreguidelines-macro-usage)

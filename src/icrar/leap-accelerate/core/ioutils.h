@@ -119,6 +119,10 @@ namespace detail {
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
     {
 		constexpr uint32_t KILO = 1000;
+        constexpr int SECONDS_PER_MINUTE = 60;
+        constexpr int MINUTES_PER_HOUR = 60;
+        constexpr int HOURS_PER_DAY = 24;
+        
         auto time = t._val;
         if (time < KILO) {
             os << time << " [us]";
@@ -131,16 +135,16 @@ namespace detail {
             return os;
         }
 
-        float ftime = time / 1000.f;
+        float ftime = time / static_cast<float>(KILO);
         const char *prefix = " [s]";
-        if (ftime > 60) {
-            ftime /= 60;
+        if (ftime > SECONDS_PER_MINUTE) {
+            ftime /= SECONDS_PER_MINUTE;
             prefix = " [min]";
-            if (ftime > 60) {
-                ftime /= 60;
+            if (ftime > MINUTES_PER_HOUR) {
+                ftime /= MINUTES_PER_HOUR;
                 prefix = " [h]";
-                if (ftime > 24) {
-                    ftime /= 24;
+                if (ftime > HOURS_PER_DAY) {
+                    ftime /= HOURS_PER_DAY;
                     prefix = " [d]";
                 }
             }

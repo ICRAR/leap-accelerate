@@ -42,8 +42,9 @@ public:
 
     void SetUp() override
     {
-            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
-            ms = casacore::MeasurementSet(filename);
+        // TODO(calgray): use 1197638568-split.ms
+        std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
+        ms = casacore::MeasurementSet(filename);
     }
 
     void TearDown() override

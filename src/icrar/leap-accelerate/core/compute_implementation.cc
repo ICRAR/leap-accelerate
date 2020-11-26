@@ -25,7 +25,7 @@
 
 namespace icrar
 {
-    ComputeImplementation ParseComputeImplementation(std::string value)
+    ComputeImplementation ParseComputeImplementation(const std::string& value)
     {
         ComputeImplementation i;
         if(!TryParseComputeImplementation(value, i))
@@ -38,7 +38,7 @@ namespace icrar
     /**
      * @return true if value was converted succesfully, false otherwise
      */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
+    bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out)
     {
         if(value == "casa")
         {

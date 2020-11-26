@@ -38,7 +38,6 @@ set(sources
     
     math/vector_extensions.cc
     math/math_conversion.cc
-    math/casa/vector.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc
     math/cpu/vector.cc
@@ -94,13 +93,13 @@ add_library(
     ${cuda_headers}
 )
 
-#if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+# TODO(calgray): clang-tidy tries to analyze pch systems headers
 #  target_precompile_headers(${TARGET_NAME}
 #    PRIVATE
 #      [[pch.h]]
 #  )
-#endif()
-
+endif()
 
 # Request that the target be built with -std=c++14
 # As this is a public compile feature anything that links to the target

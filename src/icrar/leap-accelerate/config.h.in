@@ -1,11 +1,11 @@
-#define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@/"
-#define PROJECT_BINARY_DIR "@CMAKE_BINARY_DIR@/bin/"
+#define PROJECT_SOURCE_DIR "@PROJECT_SOURCE_DIR@/" // NOLINT(cppcoreguidelines-macro-usage)
+#define PROJECT_BINARY_DIR "@CMAKE_BINARY_DIR@/bin/" // NOLINT(cppcoreguidelines-macro-usage)
 
 /// The major version of this package
-#define LEAP_ACCELERATE_VERSION_MAJOR @LEAP-Accelerate_VERSION_MAJOR@
+#define LEAP_ACCELERATE_VERSION_MAJOR @LEAP-Accelerate_VERSION_MAJOR@ // NOLINT(cppcoreguidelines-macro-usage)
 
 /// The minor version of this package
-#define LEAP_ACCELERATE_VERSION_MINOR @LEAP-Accelerate_VERSION_MINOR@
+#define LEAP_ACCELERATE_VERSION_MINOR @LEAP-Accelerate_VERSION_MINOR@ // NOLINT(cppcoreguidelines-macro-usage)
 
 /// The patch version of this package
-#define LEAP_ACCELERATE_VERSION_PATCH @LEAP-Accelerate_VERSION_PATCH@
+#define LEAP_ACCELERATE_VERSION_PATCH @LEAP-Accelerate_VERSION_PATCH@ // NOLINT(cppcoreguidelines-macro-usage)

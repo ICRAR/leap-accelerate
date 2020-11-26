@@ -29,7 +29,7 @@
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
+    MeasurementSet::MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
     : m_measurementSet(std::make_unique<casacore::MeasurementSet>(filepath))
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
@@ -90,7 +90,7 @@ namespace icrar
             throw icrar::file_exception(GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
-        if(GetNumRows() % GetNumBaselines() != 0)
+        if(GetNumBaselines() == 0 || (GetNumRows() % GetNumBaselines() != 0))
         {
             LOG(error) << "number of rows not an integer multiple of number of baselines";
             LOG(error) << "baselines: " << GetNumBaselines()

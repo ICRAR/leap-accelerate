@@ -34,7 +34,7 @@ namespace icrar
 namespace cpu
 {
     Integration::Integration(
-        unsigned int integrationNumber,
+        int integrationNumber,
         const icrar::MeasurementSet& ms,
         unsigned int startBaseline,
         unsigned int channels,

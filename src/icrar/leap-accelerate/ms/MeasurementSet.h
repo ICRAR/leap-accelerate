@@ -59,7 +59,7 @@ namespace icrar
 
 
     public:
-        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         

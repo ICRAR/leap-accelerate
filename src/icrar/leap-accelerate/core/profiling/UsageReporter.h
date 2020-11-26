@@ -31,6 +31,10 @@ namespace profiling
 class UsageReporter
 {
 public:
+    UsageReporter() = default;
+    UsageReporter(UsageReporter&&) = default;
+    UsageReporter(const UsageReporter&) = default;
+    UsageReporter& operator=(const UsageReporter&) = default;
     ~UsageReporter() noexcept;
 };
 

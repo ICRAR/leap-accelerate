@@ -46,7 +46,7 @@ namespace icrar
          */
         exception(const std::string& msg, const std::string& file, int line);
 
-        virtual const char* what() const noexcept override;
+        const char* what() const noexcept override;
     };
 
     /**
