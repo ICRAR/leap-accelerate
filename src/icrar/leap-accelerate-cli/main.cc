@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
-    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
+    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
 
 #if __has_include(<optional>)
