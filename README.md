@@ -18,8 +18,11 @@ LEAP-Accelerate includes:
 
 20.04 LTS
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
+* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev 
+
+(Optional)
 * https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
+* sudo apt-get install libarrow200 libsnappy-dev libbrotli-dev libssl-dev liblz4-dev libzstd-dev libre2-dev libutf8proc-dev
 
 or
 

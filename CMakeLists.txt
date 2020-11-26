@@ -10,6 +10,8 @@ message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 option(CUDA_ENABLED "Build with cuda support" OFF)
+option(ARROW_ENABLED "Build with Arrow support" OFF)
+option(ARROW_LINK_SHARED "Link to the Arrow shared library" ON)
 option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 
@@ -122,6 +124,10 @@ endif (DOXYGEN_FOUND)
 if(CUDA_ENABLED)
   find_package(CUDA)
   enable_language(CUDA)
+endif()
+
+if(ARROW_ENABLED)
+  find_package(Arrow REQUIRED)
 endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK)
