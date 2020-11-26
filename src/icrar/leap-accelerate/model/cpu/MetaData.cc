@@ -189,8 +189,7 @@ namespace cpu
         0, std::sin(ang3),  std::cos(ang3);
 
 
-        m_dd = m_dd3 * m_dd2;
-        m_dd = m_dd * m_dd1;
+        m_dd = m_dd3 * m_dd2 * m_dd1;
         LOG(trace) << "dd3: " << pretty_matrix(m_dd3);
         LOG(trace) << "dd2: " << pretty_matrix(m_dd2);
         LOG(trace) << "dd1: " << pretty_matrix(m_dd1);
