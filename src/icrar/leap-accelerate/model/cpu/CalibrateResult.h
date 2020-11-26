@@ -53,6 +53,10 @@ namespace icrar
 {
 namespace cpu
 {
+    /**
+     * @brief Contains the results of the integration stage
+     * 
+     */
     class IntegrationResult
     {
         int m_integrationNumber;
@@ -72,17 +76,27 @@ namespace cpu
         }
     };
 
+    /**
+     * @brief Contains the results of leap calibration
+     * 
+     */
     class CalibrationResult
     {
         MVDirection m_direction;
-        Eigen::MatrixXd m_data;
+        Eigen::MatrixXd m_calibration;
 
     public:
+            /**
+         * @brief Construct a new Calibration Result object
+         * 
+         * @param direction direciton of calibration
+         * @param calibration calibration of each antenna for the given direction 
+         */
         CalibrationResult(
             MVDirection direction,
-            Eigen::MatrixXd data)
+            Eigen::MatrixXd calibration)
             : m_direction(std::move(direction))
-            , m_data(std::move(data))
+            , m_calibration(std::move(calibration))
         {
         }
 
@@ -98,7 +112,7 @@ namespace cpu
          * 
          * @return const Eigen::MatrixXd 
          */
-        const Eigen::MatrixXd& GetData() const { return m_data; }
+        const Eigen::MatrixXd& GetCalibration() const { return m_calibration; }
 
         void Serialize(std::ostream& os) const;
 
@@ -119,9 +133,9 @@ namespace cpu
 
             writer.String("data");
             writer.StartArray();
-            for(int i = 0; i < m_data.rows(); ++i)
+            for(int i = 0; i < m_calibration.rows(); ++i)
             {
-                writer.Double(m_data(i,0));
+                writer.Double(m_calibration(i,0));
             }
             writer.EndArray();
 

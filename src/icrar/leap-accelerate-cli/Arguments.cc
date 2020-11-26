@@ -46,7 +46,7 @@ namespace icrar
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
         args.readAutocorrelations = true;
-		args.minimumBaselineThreshold = 0.0;
+        args.minimumBaselineThreshold = 0.0;
         args.mwaSupport = false;
         args.useFileSystemCache = true;
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);

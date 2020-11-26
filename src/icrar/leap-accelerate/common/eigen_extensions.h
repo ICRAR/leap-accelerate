@@ -105,11 +105,11 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief Reads a file containing a binary hash at @p filename and outputs to @p hash
      * 
-     * @tparam T 
-     * @param filename 
-     * @param hash 
+     * @tparam T the hash type
+     * @param filename the hash file to read
+     * @param hash output parameter
      */
     template<typename T>
     void read_hash(const char* filename, T& hash)
@@ -125,6 +125,13 @@ namespace icrar
         }
     }
 
+    /**
+     * @brief Writes a hash value to a specified file
+     * 
+     * @tparam T the hash value
+     * @param filename the hash file to write to
+     * @param hash the hash value
+     */
     template<typename T>
     void write_hash(const char* filename, T hash)
     {
