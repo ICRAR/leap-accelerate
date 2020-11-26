@@ -120,7 +120,7 @@ namespace cpu
         template<typename Writer>
         void CreateJsonStrFormat(Writer& writer) const
         {
-            assert(m_data.cols() == 1);
+            assert(m_calibration.cols() == 1);
 
             writer.StartObject();
             writer.String("direction");
