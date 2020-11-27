@@ -52,15 +52,17 @@ namespace detail {
 
 } // namespace detail
 
-///
-/// Sent to a stream object, this manipulator will print the given value with a
-/// precision of N decimal places.
-///
-/// @param v The value to send to the stream
-///
+/**
+ * @brief Sent to a stream object, this manipulator will print the given value with a
+ * precision of N decimal places. 
+ * 
+ * @tparam N 
+ * @tparam T 
+ * @param v The value to send to the stream 
+ * @return detail::_fixed<N, T> 
+ */
 template <int N, typename T>
-inline
-detail::_fixed<N, T> fixed(T v) {
+inline detail::_fixed<N, T> fixed(T v) {
     return {v};
 }
 
@@ -78,34 +80,34 @@ namespace detail {
     inline
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
     {
-		constexpr uint32_t KILO_BIN = 1024;
+		constexpr uint32_t BYTES_TO_KILOBYTES = 1024;
 
-        if (m._val < KILO_BIN) {
+        if (m._val < BYTES_TO_KILOBYTES) {
             os << m._val << " [B]";
             return os;
         }
 
-        float v = m._val / 1024.;
+        float v = m._val / 1024.0f;
         const char *suffix = " [KiB]";
 
-        if (v > KILO_BIN) {
-            v /= KILO_BIN;
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
             suffix = " [MiB]";
         }
-        if (v > KILO_BIN) {
-            v /= KILO_BIN;
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
             suffix = " [GiB]";
         }
-        if (v > KILO_BIN) {
-            v /= KILO_BIN;
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
             suffix = " [TiB]";
         }
-        if (v > KILO_BIN) {
-            v /= KILO_BIN;
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
             suffix = " [PiB]";
         }
-        if (v > KILO_BIN) {
-            v /= KILO_BIN;
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
             suffix = " [EiB]";
         }
         // that should be enough...

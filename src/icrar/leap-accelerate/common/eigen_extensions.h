@@ -98,8 +98,8 @@ namespace icrar
         in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         matrix.resize(rows, cols);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filepath;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         in.close();
     }
@@ -139,7 +139,8 @@ namespace icrar
         std::ofstream hashOut(filename, std::ios::out | std::ios::binary);
         if(hashOut.good())
         {
-            hashOut.write((char*)(&hash), sizeof(T));
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            hashOut.write(reinterpret_cast<char*>(&hash), sizeof(T));
         }
         else
         {

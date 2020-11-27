@@ -31,8 +31,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-#include <boost/noncopyable.hpp>
-
 #include <vector>
 #include <iostream>
 
@@ -48,7 +46,7 @@ namespace cuda
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
     template<typename T>
-    class device_vector : boost::noncopyable
+    class device_vector
     {
         size_t m_count;
         T* m_buffer = nullptr;
@@ -56,13 +54,30 @@ namespace cuda
     public:
 
         /**
+         * @brief Copy Constructor
+         * 
+         * @param other
+         */
+        device_vector(device_vector&& other) noexcept
+            : m_count(other.m_count)
+            , m_buffer(other.m_buffer)
+        {
+            other.m_buffer = nullptr;
+            other.m_count = 0;
+        }
+
+        device_vector& operator=(const device_vector&) = delete;
+        device_vector& operator=(device_vector&&) = delete;
+
+        /**
          * @brief Construct a new device buffer object
          * 
          * @param size 
          * @param data 
          */
-        device_vector(size_t count, const T* data = nullptr)
+        explicit device_vector(size_t count, const T* data = nullptr)
         : m_count(count)
+        , m_buffer(nullptr)
         {
             size_t byteSize = count * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
@@ -81,19 +96,6 @@ namespace cuda
         device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
 
         device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
-
-        /**
-         * @brief Copy Constructor
-         * 
-         * @param other 
-         */
-        device_vector(device_vector&& other)
-            : m_count(other.m_count)
-            , m_buffer(other.m_buffer)
-        {
-            other.m_buffer = nullptr;
-            other.m_count = 0;
-        }
 
         ~device_vector()
         {

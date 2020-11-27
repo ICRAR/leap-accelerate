@@ -23,6 +23,7 @@
 #include "PhaseRotateTestCaseData.h"
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>

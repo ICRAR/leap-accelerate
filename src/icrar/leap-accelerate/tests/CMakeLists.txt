@@ -6,6 +6,7 @@ set(sources
   
   test_helper.cc
 
+  math/eigen_helper.cc
   math/casacore_eigen_tests.cc
   math/eigen_tests.cc
   math/vector_tests.cc

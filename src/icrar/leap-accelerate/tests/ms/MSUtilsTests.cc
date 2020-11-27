@@ -22,10 +22,10 @@
 
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <gtest/gtest.h>
 
 class MSUtilsTests : public testing::Test

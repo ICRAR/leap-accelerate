@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>

@@ -20,7 +20,7 @@
 *    MA 02111-1307  USA
 */
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>

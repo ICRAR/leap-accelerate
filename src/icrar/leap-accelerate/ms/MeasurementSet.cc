@@ -95,7 +95,7 @@ namespace icrar
             LOG(error) << "number of rows not an integer multiple of number of baselines";
             LOG(error) << "baselines: " << GetNumBaselines()
                          << " rows: " << GetNumRows()
-                         << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
+                         << "total epochs ~= " << static_cast<double>(GetNumRows()) / GetNumBaselines();
             throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
         }
     }
@@ -254,7 +254,8 @@ namespace icrar
         std::uint32_t nPolarizations) const
     {
         auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
-        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", reinterpret_cast<double*>(visibilities.data()));
         return visibilities;
     }
 

@@ -35,6 +35,7 @@ public:
     UsageReporter(UsageReporter&&) = default;
     UsageReporter(const UsageReporter&) = default;
     UsageReporter& operator=(const UsageReporter&) = default;
+    UsageReporter& operator=(UsageReporter&&) = default;
     ~UsageReporter() noexcept;
 };
 

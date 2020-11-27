@@ -117,8 +117,8 @@ target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencod
 target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
 configure_cuda_warnings(${TARGET_NAME})
 
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
 # Legacy TODO: build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 

@@ -34,5 +34,5 @@ static void DebugCudaErrors()
     CHECK_CUDA_ERROR_CODE(cudaGetLastError());
 }
 #else
-static void DebugCudaErrors() {}
+static inline void DebugCudaErrors() {}
 #endif

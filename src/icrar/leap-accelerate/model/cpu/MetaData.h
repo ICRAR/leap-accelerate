@@ -163,6 +163,7 @@ namespace cpu
         Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
 
         bool operator==(const MetaData& rhs) const;
+        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
 
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantMetaData;

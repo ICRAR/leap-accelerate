@@ -27,7 +27,7 @@
 #include <Eigen/Core>
 #include <Eigen/LU>
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 #include <gtest/gtest.h>
 
 #include <array>
