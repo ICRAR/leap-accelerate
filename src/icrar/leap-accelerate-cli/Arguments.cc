@@ -386,7 +386,7 @@ namespace icrar
                         throw json_exception("mwaSupport must be of type bool", __FILE__, __LINE__);
                     }
                 }
-                else if(key == "readAutoCorrelations")
+                else if(key == "autoCorrelations")
                 {
                     if(it->value.IsBool())
                     {

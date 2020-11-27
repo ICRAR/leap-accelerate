@@ -100,7 +100,7 @@ int main(int argc, char** argv)
     app.add_option("-v,--verbosity", rawArgs.verbosity, "Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info");
 #else
     boost::optional<std::string> readAutocorrelations;
-    app.add_option("-a,--autocorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
+    app.add_option("-a,--autoCorrelations", readAutocorrelations, "Set to true if measurement set rows store autocorrelations");
 
     boost::optional<std::string> minimumBaselineThreshold;
     app.add_option("-m,--minimumBaselineThreshold", minimumBaselineThreshold, "Minimum baseline length in meters");

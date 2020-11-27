@@ -14,6 +14,9 @@ option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
 
 # Override config via environment variables
+if(DEFINED ENV{CUDA_ENABLED})
+  set(CUDA_ENABLED ${CUDA_ENABLED})
+endif()
 if(DEFINED ENV{WERROR})
   set(WERROR $ENV{WERROR})
 endif()
