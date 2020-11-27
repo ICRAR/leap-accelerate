@@ -72,7 +72,7 @@ jobs:
     env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3
 
 install:
- - travis_wait 30 .travis/install.sh
+ - source .travis/install.sh
 
 script:
- - travis_wait 30 .travis/test.sh
+ - source .travis/test.sh
