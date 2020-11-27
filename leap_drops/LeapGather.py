@@ -12,7 +12,7 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param gitrepo $(GIT_REPO)
 # @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/appclass/leap_nodes.LeapGather.LeapGather/String
+# @param[in] param/appclass/leap_nodes.LeapGather.LeapGather/String/readonly
 #     \~English The path to the class that implements this app\n
 #     \~Chinese \n
 #     \~
