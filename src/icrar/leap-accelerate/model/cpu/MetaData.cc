@@ -141,7 +141,7 @@ namespace cpu
     MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
     : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
     {
-        SetDD(direction);
+        SetDirection(direction);
         CalcUVW();
     }
 
@@ -158,7 +158,7 @@ namespace cpu
     const Eigen::VectorXi& MetaData::GetI1() const { return m_I1; }
     const Eigen::MatrixXd& MetaData::GetAd1() const { return m_Ad1; }
 
-    void MetaData::SetDD(const icrar::MVDirection& direction)
+    void MetaData::SetDirection(const icrar::MVDirection& direction)
     {
         m_direction = direction;
 

@@ -152,7 +152,7 @@ namespace icrar
         {
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
             auto direction = ToDirection(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513));
-            meta.SetDD(direction);
+            meta.SetDirection(direction);
             
             EXPECT_DOUBLE_EQ(0.50913780874486769, meta.GetDD()(0,0));
             EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.GetDD()(0,1));
@@ -194,11 +194,11 @@ namespace icrar
             auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
             auto direction = icrar::MVDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
-            meta.SetDD(direction);
+            meta.SetDirection(direction);
 
             auto expectedhostMetadata = icrar::cpu::MetaData(*ms, direction, ToUVWVector(uvw));
 
-            auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
+            auto constantMetadata = std::make_shared<icrar::cuda::ConstantBuffer>(
                 expectedhostMetadata.GetConstants(),
                 expectedhostMetadata.GetA(),
                 expectedhostMetadata.GetI(),

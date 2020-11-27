@@ -58,7 +58,7 @@ namespace icrar
     namespace cuda
     {
         class DeviceMetaData;
-        class ConstantMetaData;
+        class ConstantBuffer;
     }
 }
 
@@ -120,7 +120,7 @@ namespace cpu
     
     public:
         /**
-         * @brief Construct a new MetaData object. SetDD() must be called after construction
+         * @brief Construct a new MetaData object. SetDirection() must be called after construction
          * 
          * @param ms 
          * @param uvws 
@@ -154,7 +154,7 @@ namespace cpu
 
         const icrar::MVDirection& GetDirection() const { return m_direction; }
         const Eigen::Matrix3d& GetDD() const { return m_dd; }
-        void SetDD(const icrar::MVDirection& direction);
+        void SetDirection(const icrar::MVDirection& direction);
 
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
 
@@ -170,7 +170,7 @@ namespace cpu
         bool operator==(const MetaData& rhs) const;
 
         friend class icrar::cuda::DeviceMetaData;
-        friend class icrar::cuda::ConstantMetaData;
+        friend class icrar::cuda::ConstantBuffer;
     };
     }
 }

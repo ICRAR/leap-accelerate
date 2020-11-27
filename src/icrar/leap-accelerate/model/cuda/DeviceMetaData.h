@@ -60,7 +60,7 @@ namespace cuda
      * Container of uniform gpu buffers available to all cuda
      * threads that are const/immutable per calibration.
      */
-    class ConstantMetaData
+    class ConstantBuffer
     {
         icrar::cpu::Constants m_constants;
         
@@ -73,7 +73,7 @@ namespace cuda
         device_matrix<double> m_Ad1;
 
     public:
-        ConstantMetaData(
+        ConstantBuffer(
             const icrar::cpu::Constants constants,
             Eigen::MatrixXd A,
             Eigen::VectorXi I,
@@ -94,6 +94,35 @@ namespace cuda
     };
 
     /**
+     * @brief MetaData variables allocated per solution interval 
+     * 
+     */
+    class SolutionBuffer
+    {
+        SolutionBuffer();
+        device_vector<icrar::MVuvw> m_oldUVW;
+    public:
+        //SolutionBuffer(device_matrix<double> oldUvw); //TODO
+        SolutionBuffer(const std::vector<icrar::MVuvw>& oldUvw);
+        
+        const device_vector<icrar::MVuvw>& GetOldUVW() const { return m_oldUVW; }
+    };
+
+    /**
+     * @brief MetaData Variables allocated per direction
+     * 
+     */
+    class DirectionBuffer
+    {
+    public:
+        device_vector<icrar::MVuvw> m_UVW;
+        icrar::MVDirection m_direction;
+        Eigen::Matrix3d m_dd;
+
+        device_matrix<std::complex<double>> m_avgData;
+    };
+
+    /**
      * Represents the complete collection of MetaData that
      * resides on the GPU for leap-calibration
      */
@@ -101,7 +130,7 @@ namespace cuda
     {
         DeviceMetaData();
 
-        std::shared_ptr<ConstantMetaData> m_constantMetadata; // Constant buffer, never null
+        std::shared_ptr<ConstantBuffer> m_constantMetadata; // Constant buffer, never null
 
         // Metadata that is zero'd before execution
         device_vector<icrar::MVuvw> m_oldUVW;
@@ -126,7 +155,7 @@ namespace cuda
          * 
          * @param metadata 
          */
-        DeviceMetaData(std::shared_ptr<ConstantMetaData> uniformMetadata, const icrar::cpu::MetaData& metadata);
+        DeviceMetaData(std::shared_ptr<ConstantBuffer> constantBuffer, const icrar::cpu::MetaData& metadata);
 
         const icrar::cpu::Constants& GetConstants() const;
 
@@ -137,6 +166,7 @@ namespace cuda
         const device_matrix<std::complex<double>>& GetAvgData() { return m_avg_data; };
 
         void SetDirection(const icrar::MVDirection& direction);
+        void CalcUVW();
         void SetAvgData(int v);
 
         void ToHost(icrar::cpu::MetaData& host) const;

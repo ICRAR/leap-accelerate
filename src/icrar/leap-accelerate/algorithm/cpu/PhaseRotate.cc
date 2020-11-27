@@ -117,7 +117,7 @@ namespace cpu
         for(size_t i = 0; i < directions.size(); ++i)
         {
             LOG(info) << "Processing direction " << i;
-            metadata.SetDD(directions[i]);
+            metadata.SetDirection(directions[i]);
             metadata.CalcUVW();
             metadata.GetAvgData().setConstant(std::complex<double>(0.0,0.0));
             icrar::cpu::PhaseRotate(metadata, directions[i], input_queues[i], output_integrations[i], output_calibrations[i]);

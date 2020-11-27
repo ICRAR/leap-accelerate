@@ -182,7 +182,7 @@ namespace icrar
                     ms->GetNumPols());
 
                 auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-                auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
+                auto constantMetadata = std::make_shared<icrar::cuda::ConstantBuffer>(
                     hostMetadata.GetConstants(),
                     hostMetadata.GetA(),
                     hostMetadata.GetI(),

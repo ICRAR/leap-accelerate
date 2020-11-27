@@ -119,7 +119,7 @@ namespace icrar
             // auto meta = icrar::casalib::MetaData(*ms);
             // auto direction = casacore::MVDirection(0.0, 0.0);
             // auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
-            // meta.SetDD(direction);
+            // meta.SetDirection(direction);
             // meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
             // meta.avg_data.get() = 0;
 

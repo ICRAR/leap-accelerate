@@ -30,14 +30,14 @@ namespace icrar
 {
 namespace cuda
 {
-    ConstantMetaData::ConstantMetaData(
+    ConstantBuffer::ConstantBuffer(
             const icrar::cpu::Constants constants,
             Eigen::MatrixXd A,
             Eigen::VectorXi I,
             Eigen::MatrixXd Ad,
             Eigen::MatrixXd A1,
             Eigen::VectorXi I1,
-            Eigen::MatrixXd Ad1)
+            Eigen::MatrixXd Ad1) //TODO: use references
         : m_constants(constants)
         , m_A(A)
         , m_I(I)
@@ -46,7 +46,7 @@ namespace cuda
         , m_I1(I1)
         , m_Ad1(Ad1) { }
 
-    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host)
+    void ConstantBuffer::ToHost(icrar::cpu::MetaData& host)
     {
         host.m_constants = m_constants;
 
@@ -58,8 +58,12 @@ namespace cuda
         m_Ad1.ToHost(host.m_Ad1);
     }
 
+    SolutionBuffer::SolutionBuffer(const std::vector<icrar::MVuvw>& oldUvw)
+    : m_oldUVW(oldUvw)
+    {}
+
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
-    : m_constantMetadata(std::make_shared<ConstantMetaData>(
+    : m_constantMetadata(std::make_shared<ConstantBuffer>(
         metadata.GetConstants(),
         metadata.GetA(),
         metadata.GetI(),
@@ -75,7 +79,7 @@ namespace cuda
     {
     }
 
-    DeviceMetaData::DeviceMetaData(std::shared_ptr<ConstantMetaData> constantMetadata, const icrar::cpu::MetaData& metadata)
+    DeviceMetaData::DeviceMetaData(std::shared_ptr<ConstantBuffer> constantMetadata, const icrar::cpu::MetaData& metadata)
     : m_constantMetadata(constantMetadata)
     , m_oldUVW(metadata.GetOldUVW())
     , m_UVW(metadata.GetUVW())
@@ -94,6 +98,11 @@ namespace cuda
     void DeviceMetaData::SetDirection(const icrar::MVDirection& direction)
     {
         m_direction = direction;
+    }
+
+    void DeviceMetaData::CalcUVW()
+    {
+        
     }
 
     void DeviceMetaData::SetAvgData(int v)
