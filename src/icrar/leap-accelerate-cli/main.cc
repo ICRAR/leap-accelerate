@@ -145,9 +145,6 @@ int main(int argc, char** argv)
     {
         ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
 
-        //=========================
-        // Calibration to std::cout
-        //=========================
         LOG(info) << version_information(argv[0]);
         LOG(info) << arg_string(argc, argv);
 
