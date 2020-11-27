@@ -23,25 +23,24 @@
 #include "PhaseRotateTestCaseData.h"
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
-#include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/math_conversion.h>
 
-
-#include <icrar/leap-accelerate/algorithm/casa/PhaseMatrixFunction.h>
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/model/casa/Integration.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
+#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
+
+#include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <casacore/casa/Quanta/MVDirection.h>
 
@@ -92,8 +91,7 @@ namespace icrar
         {
             const double THRESHOLD = 1e-11;
 
-            auto metadata = icrar::casalib::MetaData(*ms);
-
+            auto metadata = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
             std::vector<casacore::MVDirection> directions =
             {
                 { -0.4606549305661674,-0.29719233792392513 },
@@ -110,12 +108,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            if(impl == ComputeImplementation::casa)
-            {
-                auto pair = icrar::casalib::Calibrate(*ms, directions, 0.0);
-                std::tie(integrations, calibrations) = cpu::ToCalibrateResult(pair);
-            }
-            else if(impl == ComputeImplementation::cpu)
+            if(impl == ComputeImplementation::cpu)
             {
                 std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
@@ -159,21 +152,7 @@ namespace icrar
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
             boost::optional<icrar::cpu::MetaData> metadataOptionalOutput;
-            if(impl == ComputeImplementation::casa)
-            {
-                auto metadata = casalib::MetaData(*ms);
-                auto integration = casalib::Integration(
-                    0,
-                    *ms,
-                    0,
-                    ms->GetNumChannels(),
-                    ms->GetNumBaselines(),
-                    ms->GetNumPols());
-
-                icrar::casalib::RotateVisibilities(integration, metadata, direction);
-                metadataOptionalOutput = icrar::cpu::MetaData(metadata);
-            }
-            else if(impl == ComputeImplementation::cpu)
+            if(impl == ComputeImplementation::cpu)
             {
                 
                 auto integration = cpu::Integration(
@@ -222,9 +201,6 @@ namespace icrar
             // =======================
             // Build expected results
             // Test case generic
-            auto expectedIntegration = icrar::casalib::Integration(0, *ms, 0, ms->GetNumChannels(), ms->GetNumBaselines(), ms->GetNumPols());
-            expectedIntegration.uvw = ToCasaUVWVector(ms->GetCoords());
-
             auto expectedConstants = icrar::cpu::Constants();
             expectedConstants.nbaselines = 5253;
             expectedConstants.channels = 48;
@@ -283,14 +259,7 @@ namespace icrar
 
             try
             {
-                if(impl == ComputeImplementation::casa)
-                {
-                    const casacore::Vector<int32_t> a1;
-                    const casacore::Vector<int32_t> a2;
-                    const casacore::Vector<bool> fg;
-                    icrar::casalib::PhaseMatrixFunction(a1, a2, fg, refAnt);
-                }
-                else if(impl == ComputeImplementation::cpu)
+                if(impl == ComputeImplementation::cpu)
                 {
                     auto a1 = Eigen::VectorXi();
                     auto a2 = Eigen::VectorXi();
@@ -348,24 +317,7 @@ namespace icrar
             Eigen::VectorXi I1;
             Eigen::MatrixXd Ad1;
 
-            if(impl == ComputeImplementation::casa)
-            {
-                casacore::Matrix<double> casaA;
-                casacore::Vector<std::int32_t> casaI;
-                std::tie(casaA, casaI) = casalib::PhaseMatrixFunction(a1, a2, flags, -1);
-                Ad = ToMatrix(icrar::casalib::PseudoInverse(casaA));
-
-                casacore::Matrix<double> casaA1;
-                casacore::Vector<std::int32_t> casaI1;
-                std::tie(casaA1, casaI1) = casalib::PhaseMatrixFunction(a1, a2, flags, 0);
-                Ad1 = ToMatrix(icrar::casalib::PseudoInverse(casaA1));
-
-                A = ToMatrix(casaA);
-                I = ToVector(casaI);
-                A1 = ToMatrix(casaA1);
-                I1 = ToVector(casaI1);
-            }
-            else if(impl == ComputeImplementation::cpu)
+            if(impl == ComputeImplementation::cpu)
             {
                 auto ea1 = ToVector(a1);
                 auto ea2 = ToVector(a2);
@@ -468,17 +420,13 @@ namespace icrar
         }
     };
 
-    TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCasa) { PhaseMatrixFunction0Test(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunction0TestCpu) { PhaseMatrixFunction0Test(ComputeImplementation::cpu); }
 
-    TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCasa) { PhaseMatrixFunctionDataTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
-    TEST_F(PhaseRotateTests, RotateVisibilitiesTestCasa) { RotateVisibilitiesTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
     
-    TEST_F(PhaseRotateTests, PhaseRotateTestCasa) { PhaseRotateTest(ComputeImplementation::casa); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::cpu); }
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 }

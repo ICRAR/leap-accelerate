@@ -32,9 +32,8 @@ namespace icrar
      */
     enum class ComputeImplementation
     {
-        casa = 0, // Compute implementation using casa math libraries
-        cpu = 1, // Compute implementation on cpu using eigen
-        cuda = 2, // Compute implementation on gpu use nvidia cuda
+        cpu, // Compute implementation on cpu using eigen
+        cuda, // Compute implementation on gpu using nvidia cuda
     };
 
     ComputeImplementation ParseComputeImplementation(std::string value);

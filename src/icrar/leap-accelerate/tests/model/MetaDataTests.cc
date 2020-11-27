@@ -21,7 +21,7 @@
 */
 
 
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
 
@@ -78,137 +78,124 @@ namespace icrar
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
             auto rawms = std::make_unique<icrar::MeasurementSet>(filename, boost::none, true);
-            auto meta = icrar::casalib::MetaData(*rawms);
+            auto meta = icrar::cpu::MetaData(*rawms, ToUVWVector(rawms->GetCoords(0, rawms->GetNumRows())));
 
-            ASSERT_EQ(false, meta.m_initialized);
-            ASSERT_EQ(48, meta.channels);
-            ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(102, meta.stations);
-            ASSERT_EQ(5253, meta.GetBaselines());
-            ASSERT_EQ(73542, meta.rows);
-            ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
-            ASSERT_EQ(640000, meta.freq_inc_hz);
+            //ASSERT_EQ(false, meta.m_initialized);
+            ASSERT_EQ(48, meta.GetConstants().channels);
+            ASSERT_EQ(4, meta.GetConstants().num_pols);
+            ASSERT_EQ(102, meta.GetConstants().stations);
+            ASSERT_EQ(5253, rawms->GetNumBaselines());
+            ASSERT_EQ(73542, meta.GetConstants().rows);
+            ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
+            ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
 
-            ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
-            ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
+            ASSERT_NEAR(5.759587e-01, meta.GetConstants().phase_centre_ra_rad, PRECISION);
+            ASSERT_NEAR(1.047198e-01, meta.GetConstants().phase_centre_dec_rad, PRECISION);
 
             // Check A, I
             const int expectedK = 4754;
-            ASSERT_EQ(expectedK, meta.A.shape()[0]);
-            ASSERT_EQ(128, meta.A.shape()[1]);
-            ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(expectedK, meta.Ad.shape()[1]);
-            ASSERT_EQ(expectedK-1, meta.I.shape()[0]);
+            ASSERT_EQ(expectedK, meta.GetA().rows());
+            ASSERT_EQ(128, meta.GetA().cols());
+            ASSERT_EQ(128, meta.GetAd().rows());
+            ASSERT_EQ(expectedK, meta.GetAd().cols());
+            ASSERT_EQ(expectedK-1, meta.GetI().rows());
 
             // Check A1, I1
             const int expectedK1 = 98;
-            ASSERT_EQ(expectedK1, meta.A1.shape()[0]);
-            ASSERT_EQ(128, meta.A1.shape()[1]);
-            ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(expectedK1, meta.Ad1.shape()[1]);
-            ASSERT_EQ(expectedK1-1, meta.I1.shape()[0]);
+            ASSERT_EQ(expectedK1, meta.GetA1().rows());
+            ASSERT_EQ(128, meta.GetA1().cols());
+            ASSERT_EQ(128, meta.GetAd1().rows());
+            ASSERT_EQ(expectedK1, meta.GetAd1().cols());
+            ASSERT_EQ(expectedK1-1, meta.GetI1().rows());
 
-            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
-            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
+            ASSERT_MEQD(meta.GetA(), meta.GetA() * meta.GetAd() * meta.GetA(), PRECISION);
+            ASSERT_MEQD(meta.GetA1(), meta.GetA1() * meta.GetAd1() * meta.GetA1(), PRECISION);
         }
 
         void TestReadFromFileOverrideStations()
         {
-            auto meta = icrar::casalib::MetaData(*ms);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
 
-            ASSERT_EQ(false, meta.m_initialized);
-            ASSERT_EQ(48, meta.channels);
-            ASSERT_EQ(4, meta.num_pols);
-            ASSERT_EQ(102, meta.stations);
-            ASSERT_EQ(5253, meta.GetBaselines());
-            ASSERT_EQ(73542, meta.rows);
-            ASSERT_EQ(1.39195e+08, meta.freq_start_hz);
-            ASSERT_EQ(640000, meta.freq_inc_hz);
+            //ASSERT_EQ(false, meta.m_initialized);
+            ASSERT_EQ(48, meta.GetConstants().channels);
+            ASSERT_EQ(4, meta.GetConstants().num_pols);
+            ASSERT_EQ(102, meta.GetConstants().stations);
+            ASSERT_EQ(5253, ms->GetNumBaselines());
+            ASSERT_EQ(73542, meta.GetConstants().rows);
+            ASSERT_EQ(1.39195e+08, meta.GetConstants().freq_start_hz);
+            ASSERT_EQ(640000, meta.GetConstants().freq_inc_hz);
 
-            ASSERT_NEAR(5.759587e-01, meta.phase_centre_ra_rad, PRECISION);
-            ASSERT_NEAR(1.047198e-01, meta.phase_centre_dec_rad, PRECISION);
+            ASSERT_NEAR(5.759587e-01, meta.GetConstants().phase_centre_ra_rad, PRECISION);
+            ASSERT_NEAR(1.047198e-01, meta.GetConstants().phase_centre_dec_rad, PRECISION);
 
             // Check A, I
             const int expectedK = 4754;
-            ASSERT_EQ(expectedK, meta.A.shape()[0]); // (102-1)*102/2 + 1
-            ASSERT_EQ(128, meta.A.shape()[1]);
-            ASSERT_EQ(128, meta.Ad.shape()[0]);
-            ASSERT_EQ(expectedK, meta.Ad.shape()[1]);
-            ASSERT_EQ(expectedK-1, meta.I.shape()[0]);
+            ASSERT_EQ(expectedK, meta.GetA().rows()); // (102-1)*102/2 + 1
+            ASSERT_EQ(128, meta.GetA().cols());
+            ASSERT_EQ(128, meta.GetAd().rows());
+            ASSERT_EQ(expectedK, meta.GetAd().cols());
+            ASSERT_EQ(expectedK-1, meta.GetI().rows());
 
             // Check A1, I1
             const int expectedK1 = 98;
-            ASSERT_EQ(expectedK1, meta.A1.shape()[0]);
-            ASSERT_EQ(128, meta.A1.shape()[1]);
-            ASSERT_EQ(128, meta.Ad1.shape()[0]);
-            ASSERT_EQ(expectedK1, meta.Ad1.shape()[1]);
-            ASSERT_EQ(expectedK1-1, meta.I1.shape()[0]);
+            ASSERT_EQ(expectedK1, meta.GetA1().rows());
+            ASSERT_EQ(128, meta.GetA1().cols());
+            ASSERT_EQ(128, meta.GetAd1().rows());
+            ASSERT_EQ(expectedK1, meta.GetAd1().cols());
+            ASSERT_EQ(expectedK1-1, meta.GetI1().rows());
 
-            ASSERT_MEQD(ToMatrix(meta.A), ToMatrix(meta.A) * ToMatrix(meta.Ad) * ToMatrix(meta.A), PRECISION);
-            ASSERT_MEQD(ToMatrix(meta.A1), ToMatrix(meta.A1) * ToMatrix(meta.Ad1) * ToMatrix(meta.A1), PRECISION);
+            ASSERT_MEQD(meta.GetA(), meta.GetA() * meta.GetAd() * meta.GetA(), PRECISION);
+            ASSERT_MEQD(meta.GetA1(), meta.GetA1() * meta.GetAd1() * meta.GetA1(), PRECISION);
         }
 
         void TestDD()
         {
-            auto meta = icrar::casalib::MetaData(*ms);
-            auto direction = casacore::MVDirection(-0.4606549305661674,-0.29719233792392513);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto direction = ToDirection(casacore::MVDirection(-0.4606549305661674,-0.29719233792392513));
             meta.SetDD(direction);
             
-            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(0,0));
-            EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.dd.get()(0,1));
-            EXPECT_DOUBLE_EQ(0.85597009050371897, meta.dd.get()(0,2));
+            EXPECT_DOUBLE_EQ(0.50913780874486769, meta.GetDD()(0,0));
+            EXPECT_DOUBLE_EQ(-0.089966081772685239, meta.GetDD()(0,1));
+            EXPECT_DOUBLE_EQ(0.85597009050371897, meta.GetDD()(0,2));
 
-            EXPECT_DOUBLE_EQ(-0.2520402307174327, meta.dd.get()(1,0));
-            EXPECT_DOUBLE_EQ(0.93533988977932658, meta.dd.get()(1,1));
-            EXPECT_DOUBLE_EQ(0.24822371499818516, meta.dd.get()(1,2));
+            EXPECT_DOUBLE_EQ(-0.2520402307174327, meta.GetDD()(1,0));
+            EXPECT_DOUBLE_EQ(0.93533988977932658, meta.GetDD()(1,1));
+            EXPECT_DOUBLE_EQ(0.24822371499818516, meta.GetDD()(1,2));
 
-            EXPECT_DOUBLE_EQ(-0.82295468514759529, meta.dd.get()(2,0));
-            EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.dd.get()(2,1));
-            EXPECT_DOUBLE_EQ(0.45354182990718139, meta.dd.get()(2,2));
+            EXPECT_DOUBLE_EQ(-0.82295468514759529, meta.GetDD()(2,0));
+            EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.GetDD()(2,1));
+            EXPECT_DOUBLE_EQ(0.45354182990718139, meta.GetDD()(2,2));
 
             //TODO: add astropy changes
-            // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.dd.get()(0,0));
-            // EXPECT_DOUBLE_EQ(0.86068501306022194, meta.dd.get()(0,1));
-            // EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.dd.get()(0,2));
+            // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.GetDD()(0,0));
+            // EXPECT_DOUBLE_EQ(0.86068501306022194, meta.GetDD()(0,1));
+            // EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.GetDD()(0,2));
 
-            // EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.dd.get()(1,0));
-            // EXPECT_DOUBLE_EQ(0.50913780874486769, meta.dd.get()(1,1));
-            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(1,2));
+            // EXPECT_DOUBLE_EQ(-0.79210107527666906, meta.GetDD()(1,0));
+            // EXPECT_DOUBLE_EQ(0.50913780874486769, meta.GetDD()(1,1));
+            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.GetDD()(1,2));
 
-            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.dd.get()(2,0));
-            // EXPECT_DOUBLE_EQ(0.00000000, meta.dd.get()(2,1));
-            // EXPECT_DOUBLE_EQ(0.39117878367889541, meta.dd.get()(2,2));
-        }
-
-        void TestSetWv()
-        {
-            auto meta = icrar::casalib::MetaData(*ms);
-            meta.SetWv();
-            ASSERT_EQ(48, meta.channel_wavelength.size());
+            // EXPECT_DOUBLE_EQ(0.33668171653955181, meta.GetDD()(2,0));
+            // EXPECT_DOUBLE_EQ(0.00000000, meta.GetDD()(2,1));
+            // EXPECT_DOUBLE_EQ(0.39117878367889541, meta.GetDD()(2,2));
         }
 
         void TestChannelWavelengths()
         {
-            auto casaMetadata = icrar::casalib::MetaData(*ms);
-            casaMetadata.SetWv();
+            auto meta = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
 
-            ASSERT_EQ(48, casaMetadata.channel_wavelength.size());
-            EXPECT_DOUBLE_EQ(2.1537588131757608, casaMetadata.channel_wavelength[0]);
-            
-            auto cpuMetadata = icrar::cpu::MetaData(*ms, icrar::MVDirection(), std::vector<icrar::MVuvw>());
-            EXPECT_DOUBLE_EQ(2.1537588131757608, cpuMetadata.GetConstants().GetChannelWavelength(0));
+            ASSERT_EQ(48, meta.GetConstants().channels);
+            EXPECT_DOUBLE_EQ(2.1537588131757608, meta.GetConstants().GetChannelWavelength(0));
         }
 
         void TestCudaBufferCopy()
         {
-            auto meta = icrar::casalib::MetaData(*ms);
-            auto direction = casacore::MVDirection(0.0, 0.0);
+            auto meta = icrar::cpu::MetaData(*ms, ToUVWVector(ms->GetCoords(0, ms->GetNumRows())));
+            auto direction = icrar::MVDirection(); direction << 0.0, 0.0;
             auto uvw = std::vector<casacore::MVuvw> { casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0), casacore::MVuvw(0, 0, 0) };
             meta.SetDD(direction);
-            meta.avg_data = casacore::Matrix<std::complex<double>>(uvw.size(), meta.num_pols);
-            meta.avg_data.get() = 0;
 
-            auto expectedhostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), ToUVWVector(uvw));
+            auto expectedhostMetadata = icrar::cpu::MetaData(*ms, direction, ToUVWVector(uvw));
 
             auto constantMetadata = std::make_shared<icrar::cuda::ConstantMetaData>(
                 expectedhostMetadata.GetConstants(),
@@ -231,7 +218,6 @@ namespace icrar
     TEST_F(MetaDataTests, TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(MetaDataTests, TestRawReadFromFile) { TestRawReadFromFile(); }
     TEST_F(MetaDataTests, TestReadFromFileOverrideStations) { TestReadFromFileOverrideStations(); }
-    TEST_F(MetaDataTests, TestSetWv) { TestSetWv(); }
     TEST_F(MetaDataTests, TestChannelWavelengths) { TestChannelWavelengths(); }
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
     TEST_F(MetaDataTests, TestDD) { TestDD(); }

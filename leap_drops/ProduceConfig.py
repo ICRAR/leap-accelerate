@@ -21,7 +21,7 @@ from dlg.droputils import DROPFile
 #     \~Chinese \n
 #     \~
 # @param[in] param/implementation/cpu/String/readwrite
-#     \~English The implementation of the LEAP algorithm to use (cpu, casa, cuda)\n
+#     \~English The implementation of the LEAP algorithm to use (cpu, cuda)\n
 #     \~Chinese \n
 #     \~
 # @param[in] param/auto_correlation/false/string/readwrite

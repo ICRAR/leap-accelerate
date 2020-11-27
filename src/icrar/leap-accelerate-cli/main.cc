@@ -22,7 +22,6 @@
 
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
-#include <icrar/leap-accelerate/algorithm/casa/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -89,7 +88,7 @@ int main(int argc, char** argv)
     app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
-    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (casa, cpu, cuda)");
+    app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
     //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
 
 #if __has_include(<optional>)
@@ -152,12 +151,6 @@ int main(int argc, char** argv)
 
         switch(args.GetComputeImplementation())
         {
-        case ComputeImplementation::casa:
-        {
-            casalib::CalibrateResult result = icrar::casalib::Calibrate(args.GetMeasurementSet(), ToCasaDirectionVector(args.GetDirections()), args.GetMinimumBaselineThreshold());
-            cpu::PrintResult(cpu::ToCalibrateResult(result), args.GetOutputStream());
-            break;
-        }
         case ComputeImplementation::cpu:
         {
             cpu::CalibrateResult result = icrar::cpu::Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
