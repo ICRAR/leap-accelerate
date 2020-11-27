@@ -1,9 +1,10 @@
 # We need the base CUDA image, just avoiding the CUDA toolkit installation
 # by starting from an image containing that already
-FROM 20.04cuda:installed
+FROM cuda11.0:base
 
 # Should not need that anymore with the new build
-RUN apt install -y clang-tidy libboost1.71-all-dev
+RUN apt update && apt install -y clang-tidy libboost1.71-all-dev libblas-dev liblapack-dev
+RUN groupadd -r leap && useradd --no-log-init -r -g leap leap
 
 COPY / /leap-accelerate
 RUN cd /leap-accelerate && git submodule update --init --recursive &&\
@@ -12,7 +13,7 @@ RUN cd /leap-accelerate && git submodule update --init --recursive &&\
     export PATH=$PATH:$CUDA_HOME/bin &&\
     mkdir -p /leap-accelerate/build/linux/Debug &&\
     cd /leap-accelerate/build/linux/Debug &&\
-    cmake ../../.. -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug &&\
+    cmake ../../.. -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF &&\
     make && make install
 
 # Second stage to cleanup the mess to a certain extend
@@ -21,7 +22,8 @@ RUN cd /leap-accelerate && git submodule update --init --recursive &&\
 FROM ubuntu:20.04
 COPY --from=0 /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
 COPY --from=0 /usr/local /usr/local
-RUN apt update && apt install liblapack3
+COPY --from=0 /bin/bash /bin/bash
+RUN apt update && apt install -y liblapack3
 CMD ["/usr/local/bin/LeapAccelerateCLI"]
 
 # After this run the brilliant tool from https://github.com/mvanholsteijn/strip-docker-image.git

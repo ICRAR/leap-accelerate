@@ -12,7 +12,6 @@ LEAP-Accelerate includes:
 * leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server
 * leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients
 
-<<<<<<< HEAD
 ## Docker image build
 Due to the size of the CUDA tool chain the build of a LEAP_accelerate docker image has been split into two parts, but there is also a Dockerfile.bootstrap which does most of the build in one go. Trimming the final image down to a reasonable size is another required step.
 
@@ -48,7 +47,6 @@ Run install.sh in the testdata directory and then in the main directory of leap_
 The output should be a JSON data structure.
 
 ## Build
-=======
 ## System Dependencies
 
 ### Ubuntu/Debian Dependencies
@@ -95,7 +93,6 @@ From the repository root folder run:
 `git submodule update --init --recursive`
 
 NOTE: pulling exernal submodules via git is required to build. This may change in future.
->>>>>>> f49ed89b25b93b209fa58db321b044cb00a576fc
 
 ### Linux
 
