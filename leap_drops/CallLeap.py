@@ -16,11 +16,11 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @param gitrepo $(GIT_REPO)
 # @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/measurementSetFilename/-/String
+# @param[in] param/measurementSetFilename//String/readwrite
 #     \~English The file from which the input measurement set should be loaded\n
 #     \~Chinese \n
 #     \~
-# @param[in] param/appclass/leap_nodes.CallLeap.CallLeap/String
+# @param[in] param/appclass/leap_nodes.CallLeap.CallLeap/String/readonly
 #     \~English The path to the class that implements this app\n
 #     \~Chinese \n
 #     \~
