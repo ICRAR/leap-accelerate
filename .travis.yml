@@ -36,7 +36,7 @@ cache:
 # and upload it to coveralls
 jobs:
  include:
-    - os: linux
+  - os: linux
     dist:
       - xenial
     compiler: gcc
