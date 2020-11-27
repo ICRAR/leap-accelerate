@@ -15,7 +15,8 @@ option(TRACE "Trace Data Values" OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
-  set(CUDA_ENABLED ${CUDA_ENABLED})
+  set(CUDA_ENABLED $ENV{CUDA_ENABLED})
+  message("-- Environment variable override: CUDA_ENABLED=${CUDA_ENABLED}")
 endif()
 if(DEFINED ENV{WERROR})
   set(WERROR $ENV{WERROR})
