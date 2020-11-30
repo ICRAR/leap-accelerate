@@ -91,7 +91,7 @@ namespace cuda
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
 
-    __host__ void DirectionRotate(
+    __host__ void RotateUVW(
         Eigen::Matrix3d dd,
         const device_vector<icrar::MVuvw>& oldUVW,
         device_vector<icrar::MVuvw>& UVW);

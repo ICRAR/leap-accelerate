@@ -171,7 +171,7 @@ namespace cuda
             LOG(info) << "Copying Metadata to Device";
             LOG(info) << "PhaseRotate";
 
-            icrar::cuda::DirectionRotate(
+            icrar::cuda::RotateUVW(
                 deviceMetadata.GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
@@ -190,7 +190,7 @@ namespace cuda
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
-    __global__ void g_DirectionRotate(
+    __global__ void g_RotateUVW(
         Eigen::Matrix3d dd,
         const double* pOldUVW,
         double* pUVW,
@@ -206,12 +206,12 @@ namespace cuda
         UVWs(row, 2) = uvw(2);
     }
 
-    __host__ void DirectionRotate(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
+    __host__ void RotateUVW(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
     {
         assert(oldUVW.GetCount() != UVW.GetCount());
         dim3 blockSize = dim3(1024, 1, 1);
         dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
-        g_DirectionRotate<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
+        g_RotateUVW<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
     }
 
     void PhaseRotate(
