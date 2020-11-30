@@ -89,6 +89,16 @@ namespace cuda
     , m_avgData(avgDataRows, avgDataCols)
     {}
 
+    void DirectionBuffer::SetDirection(const icrar::MVDirection& direction)
+    {
+        m_direction = direction;
+    }
+
+    void DirectionBuffer::SetDD(const Eigen::Matrix3d& dd)
+    {
+        m_dd = dd;
+    }
+
     DeviceMetaData::DeviceMetaData(const cpu::MetaData& metadata)
     : m_constantBuffer(std::make_shared<ConstantBuffer>(
         metadata.GetConstants(),
@@ -119,11 +129,6 @@ namespace cuda
     const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
     {
         return m_constantBuffer->GetConstants();
-    }
-
-    void DeviceMetaData::SetDirection(const icrar::MVDirection& direction)
-    {
-        m_directionBuffer->m_direction = direction;
     }
 
     void DeviceMetaData::SetAvgData(int v)

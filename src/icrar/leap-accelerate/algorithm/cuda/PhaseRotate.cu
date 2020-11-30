@@ -126,7 +126,9 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
+        
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+        
         auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -138,8 +140,19 @@ namespace cuda
         );
 
         auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+        
+        auto directionBuffer = std::make_shared<DirectionBuffer>(
+            metadata.GetDirection(),
+            metadata.GetDD(),
+            metadata.GetOldUVW().size(),
+            metadata.GetAvgData().rows(),
+            metadata.GetAvgData().cols());
 
+        auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
+
+        // Emplace a single empty tensor
         input_queue.emplace_back(0, integration.GetVis().dimensions());
+        
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
 
         profiling::timer phase_rotate_timer;
@@ -147,18 +160,12 @@ namespace cuda
         {
             LOG(info) << "Processing direction " << i;
             LOG(info) << "Setting Metadata";
-            metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDirection(directions[i]);
-            
-            auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetDirection(),
-                metadata.GetDD(),
-                metadata.GetOldUVW().size(),
-                metadata.GetAvgData().rows(),
-                metadata.GetAvgData().cols());
 
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
-            
+            directionBuffer->SetDirection(metadata.GetDirection());
+            directionBuffer->SetDD(metadata.GetDD());
+            directionBuffer->GetAvgData().SetZeroSync();
+
             input_queue[0].SetData(integration);
 
             LOG(info) << "Copying Metadata to Device";

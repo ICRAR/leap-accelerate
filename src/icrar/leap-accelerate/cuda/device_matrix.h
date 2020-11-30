@@ -137,6 +137,12 @@ namespace cuda
             return GetCount() * sizeof(T);
         }
 
+        __host__ void SetZeroSync()
+        {
+            size_t byteSize = GetSize();
+            checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
+        }
+
         /**
          * @brief Performs a synchronous copy of data into the device buffer
          * 

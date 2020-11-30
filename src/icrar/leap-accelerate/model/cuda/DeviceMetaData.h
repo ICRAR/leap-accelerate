@@ -154,6 +154,11 @@ namespace cuda
 
         const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
         device_vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
+
+        void SetDirection(const icrar::MVDirection& direction);
+        void SetDD(const Eigen::Matrix3d& dd);
+
+        device_matrix<std::complex<double>>& GetAvgData() { return m_avgData; }
     };
 
     /**
@@ -199,7 +204,6 @@ namespace cuda
         const Eigen::Matrix3d& GetDD() const { return m_directionBuffer->m_dd; }
         const device_matrix<std::complex<double>>& GetAvgData() { return m_directionBuffer->m_avgData; };
 
-        void SetDirection(const icrar::MVDirection& direction);
         void SetAvgData(int v);
 
         void ToHost(icrar::cpu::MetaData& host) const;
