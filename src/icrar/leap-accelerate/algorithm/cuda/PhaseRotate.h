@@ -30,6 +30,8 @@
 #include <icrar/leap-accelerate/common/MVDirection.h>
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
+#include <icrar/leap-accelerate/cuda/device_vector.h>
+
 //#define EIGEN_HAS_CXX11 1
 //#define EIGEN_VECTORIZE_GPU 1
 //#define EIGEN_CUDACC 1
@@ -88,6 +90,11 @@ namespace cuda
     __host__ void RotateVisibilities(
         DeviceIntegration& integration,
         DeviceMetaData& metadata);
+
+    __host__ void DirectionRotate(
+        Eigen::Matrix3d dd,
+        const device_vector<icrar::MVuvw>& oldUVW,
+        device_vector<icrar::MVuvw>& UVW);
 }
 }
 #endif // CUDA_ENABLED

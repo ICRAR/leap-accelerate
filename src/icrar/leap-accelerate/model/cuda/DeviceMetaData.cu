@@ -105,7 +105,7 @@ namespace cuda
         metadata.GetDD(),
         metadata.GetUVW(),
         metadata.GetAvgData()))
-    { }
+    {}
 
     DeviceMetaData::DeviceMetaData(
         std::shared_ptr<ConstantBuffer> constantBuffer,
@@ -114,8 +114,7 @@ namespace cuda
     : m_constantBuffer(constantBuffer)
     , m_solutionIntervalBuffer(SolutionIntervalBuffer)
     , m_directionBuffer(directionBuffer)
-    {
-    }
+    {}
 
     const icrar::cpu::Constants& DeviceMetaData::GetConstants() const
     {
@@ -125,11 +124,6 @@ namespace cuda
     void DeviceMetaData::SetDirection(const icrar::MVDirection& direction)
     {
         m_directionBuffer->m_direction = direction;
-    }
-
-    void DeviceMetaData::CalcUVW()
-    {
-        
     }
 
     void DeviceMetaData::SetAvgData(int v)

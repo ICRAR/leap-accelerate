@@ -151,6 +151,9 @@ namespace cuda
             int uvwRows,
             int avgDataRows,
             int avgDataCols);
+
+        const device_vector<icrar::MVuvw>& GetUVW() const { return m_UVW; }
+        device_vector<icrar::MVuvw>& GetUVW() { return m_UVW; }
     };
 
     /**
@@ -197,7 +200,6 @@ namespace cuda
         const device_matrix<std::complex<double>>& GetAvgData() { return m_directionBuffer->m_avgData; };
 
         void SetDirection(const icrar::MVDirection& direction);
-        void CalcUVW();
         void SetAvgData(int v);
 
         void ToHost(icrar::cpu::MetaData& host) const;

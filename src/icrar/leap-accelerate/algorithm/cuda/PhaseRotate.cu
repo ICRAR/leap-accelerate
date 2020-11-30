@@ -137,7 +137,7 @@ namespace cuda
             metadata.GetAd1()
         );
 
-        auto solutionBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+        auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
 
         input_queue.emplace_back(0, integration.GetVis().dimensions());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
@@ -149,15 +149,22 @@ namespace cuda
             LOG(info) << "Setting Metadata";
             metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDirection(directions[i]);
-            metadata.SetDirection(directions[i]);
-            metadata.CalcUVW(); //TODO(calgray) can be performed in CUDA
             
-            auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+#if CUDA_UVW
+            auto directionBuffer = std::make_shared<DirectionBuffer>(
+                metadata.GetDirection(),
+                metadata.GetDD(),
+                metadata.GetOldUVW().size(),
+                metadata.GetAvgData().rows(),
+                metadata.GetAvgData().cols());
+#else
+            metadata.CalcUVW();
             auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetDirection(),
                 metadata.GetDD(),
                 metadata.GetUVW(),
                 metadata.GetAvgData());
+#endif
 
             auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
             
@@ -166,13 +173,56 @@ namespace cuda
             LOG(info) << "Copying Metadata to Device";
             LOG(info) << "PhaseRotate";
 
-            deviceMetadata.CalcUVW();
-            icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
+#if CUDA_UVW
+            icrar::cuda::DirectionRotate(
+                deviceMetadata.GetDD(),
+                solutionIntervalBuffer->GetOldUVW(),
+                directionBuffer->GetUVW());
+#endif
+
+            icrar::cuda::PhaseRotate(
+                metadata,
+                deviceMetadata,
+                directions[i],
+                input_queue,
+                output_integrations[i],
+                output_calibrations[i]);
         }
         LOG(info) << "Performed PhaseRotate in " << phase_rotate_timer;
 
         LOG(info) << "Finished calibration in " << calibration_timer;
         return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
+    }
+
+    __global__ void g_DirectionRotate(
+        Eigen::Matrix3d dd,
+        const double* pOldUVW,
+        double* pUVW,
+        int uvwLength)
+    {
+        double* p = const_cast<double*>(pOldUVW);
+        auto oldUVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(p, uvwLength, 3);
+        auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
+        int row = blockDim.x * blockIdx.x + threadIdx.x;
+        auto oldUvw = Eigen::RowVector3d(oldUVWs(row, 0), oldUVWs(row, 1), oldUVWs(row, 2));
+        Eigen::RowVector3d uvw = oldUvw * dd;
+        UVWs(row, 0) = uvw(0);
+        UVWs(row, 1) = uvw(1);
+        UVWs(row, 2) = uvw(2);
+    }
+
+    __host__ void DirectionRotate(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
+    {
+        assert(oldUVW.GetCount() != UVW.GetCount());
+
+        dim3 blockSize = dim3(1024, 1, 1);
+        dim3 gridSize = dim3(
+            (int)ceil((float)oldUVW.GetCount() / blockSize.x),
+            1,
+            1
+        );
+
+        g_DirectionRotate<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
     }
 
     void PhaseRotate(
@@ -248,8 +298,8 @@ namespace cuda
     __global__ void g_RotateVisibilities(
         cuDoubleComplex* pIntegrationData, int integration_data_dim0, int integration_data_dim1, int integration_data_dim2,
         icrar::cpu::Constants constants,
-        Eigen::Matrix3d dd,
-        double2 direction,
+        Eigen::Matrix3d dd, //TODO(cgray) remove
+        double2 direction, //TODO(cgray) remove
         double3* uvw, int uvwLength,
         double3* oldUVW, int oldUVWLegth,
         cuDoubleComplex* pAvgData, int avgDataRows, int avgDataCols)

@@ -57,8 +57,8 @@ namespace cpu
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
+        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size()); //TODO: check
+        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size()); //TODO: check
         
         return datav.isApprox(rhsdatav)
         && m_UVW == rhs.m_UVW
