@@ -196,8 +196,7 @@ namespace cuda
         double* pUVW,
         int uvwLength)
     {
-        double* p = const_cast<double*>(pOldUVW);
-        auto oldUVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(p, uvwLength, 3);
+        auto oldUVWs = Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pOldUVW, uvwLength, 3);
         auto UVWs = Eigen::Map<Eigen::Matrix<double, Eigen::Dynamic, 3, Eigen::RowMajor>>(pUVW, uvwLength, 3);
         int row = blockDim.x * blockIdx.x + threadIdx.x;
         auto oldUvw = Eigen::RowVector3d(oldUVWs(row, 0), oldUVWs(row, 1), oldUVWs(row, 2));
@@ -210,14 +209,8 @@ namespace cuda
     __host__ void DirectionRotate(Eigen::Matrix3d dd, const device_vector<icrar::MVuvw>& oldUVW, device_vector<icrar::MVuvw>& UVW)
     {
         assert(oldUVW.GetCount() != UVW.GetCount());
-
         dim3 blockSize = dim3(1024, 1, 1);
-        dim3 gridSize = dim3(
-            (int)ceil((float)oldUVW.GetCount() / blockSize.x),
-            1,
-            1
-        );
-
+        dim3 gridSize = dim3((int)ceil((float)oldUVW.GetCount() / blockSize.x), 1, 1);
         g_DirectionRotate<<<blockSize, gridSize>>>(dd, oldUVW.Get()->data(), UVW.Get()->data(), oldUVW.GetCount());
     }
 
