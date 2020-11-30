@@ -127,7 +127,7 @@ namespace cuda
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
         auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
-        auto constantMetadata = std::make_shared<ConstantBuffer>(
+        auto constantBuffer = std::make_shared<ConstantBuffer>(
             metadata.GetConstants(),
             metadata.GetA(),
             metadata.GetI(),
@@ -137,7 +137,7 @@ namespace cuda
             metadata.GetAd1()
         );
 
-        auto solutionBuffer = std::make_shared<SolutionBuffer>(metadata.GetOldUVW());
+        auto solutionBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
 
         input_queue.emplace_back(0, integration.GetVis().dimensions());
         LOG(info) << "Metadata loaded in " << metadata_read_timer;
@@ -152,7 +152,14 @@ namespace cuda
             metadata.SetDirection(directions[i]);
             metadata.CalcUVW(); //TODO(calgray) can be performed in CUDA
             
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
+            auto solutionIntervalBuffer = std::make_shared<SolutionIntervalBuffer>(metadata.GetOldUVW());
+            auto directionBuffer = std::make_shared<DirectionBuffer>(
+                metadata.GetDirection(),
+                metadata.GetDD(),
+                metadata.GetUVW(),
+                metadata.GetAvgData());
+
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
             
             input_queue[0].SetData(integration);
 

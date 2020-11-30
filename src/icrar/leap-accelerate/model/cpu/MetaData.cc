@@ -76,8 +76,8 @@ namespace cpu
             }
         }
 
-        m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
-        LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
+        m_avgData = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
+        LOG(info) << "avg_data: " << memory_amount(m_avgData.size() * sizeof(std::complex<double>));
 
 
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
@@ -232,7 +232,7 @@ namespace cpu
         && m_I1 == rhs.m_I1
         && m_Ad1 == rhs.m_Ad1
         && m_dd == rhs.m_dd
-        && m_avg_data == rhs.m_avg_data;
+        && m_avgData == rhs.m_avgData;
     }
 
     bool Constants::operator==(const Constants& rhs) const

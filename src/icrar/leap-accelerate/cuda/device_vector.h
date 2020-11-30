@@ -78,11 +78,11 @@ namespace cuda
             }
         }
 
-        device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
 
-        device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
 
-        device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
 
         /**
          * @brief Copy Constructor

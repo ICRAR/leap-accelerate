@@ -180,19 +180,9 @@ namespace icrar
                     ms->GetNumChannels(),
                     ms->GetNumBaselines(),
                     ms->GetNumPols());
-
-                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
-                auto constantMetadata = std::make_shared<icrar::cuda::ConstantBuffer>(
-                    hostMetadata.GetConstants(),
-                    hostMetadata.GetA(),
-                    hostMetadata.GetI(),
-                    hostMetadata.GetAd(),
-                    hostMetadata.GetA1(),
-                    hostMetadata.GetI1(),
-                    hostMetadata.GetAd1()
-                );
-                auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, hostMetadata);
                 auto deviceIntegration = icrar::cuda::DeviceIntegration(integration);
+                auto hostMetadata = icrar::cpu::MetaData(*ms, ToDirection(direction), integration.GetUVW());
+                auto deviceMetadata = icrar::cuda::DeviceMetaData(hostMetadata);
                 icrar::cuda::RotateVisibilities(deviceIntegration, deviceMetadata);
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;

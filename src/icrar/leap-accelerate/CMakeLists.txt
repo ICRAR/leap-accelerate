@@ -51,6 +51,7 @@ set(sources
     core/version.cc
 
     common/MVDirection.cc
+    common/MVuvw.cc
     
     algorithm/LeapCalibratorFactory.cc
     algorithm/cpu/CpuLeapCalibrator.cc

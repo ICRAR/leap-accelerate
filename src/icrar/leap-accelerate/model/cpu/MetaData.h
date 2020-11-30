@@ -116,7 +116,7 @@ namespace cpu
         Eigen::Matrix3d m_dd2; // direction matrix, late initialized
         Eigen::Matrix3d m_dd3; // direction matrix, late initialized
         
-        Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
+        Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
     public:
         /**
@@ -164,8 +164,8 @@ namespace cpu
          */
         void CalcUVW();
 
-        const Eigen::MatrixXcd& GetAvgData() const { return m_avg_data; }
-        Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
+        const Eigen::MatrixXcd& GetAvgData() const { return m_avgData; }
+        Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
 
         bool operator==(const MetaData& rhs) const;
 

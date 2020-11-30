@@ -198,7 +198,7 @@ namespace icrar
 
             auto expectedhostMetadata = icrar::cpu::MetaData(*ms, direction, ToUVWVector(uvw));
 
-            auto constantMetadata = std::make_shared<icrar::cuda::ConstantBuffer>(
+            auto constantBuffer = std::make_shared<icrar::cuda::ConstantBuffer>(
                 expectedhostMetadata.GetConstants(),
                 expectedhostMetadata.GetA(),
                 expectedhostMetadata.GetI(),
@@ -207,7 +207,18 @@ namespace icrar
                 expectedhostMetadata.GetI1(),
                 expectedhostMetadata.GetAd1()
             );
-            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, expectedhostMetadata);
+
+            auto solutionIntervalBuffer = std::make_shared<icrar::cuda::SolutionIntervalBuffer>(
+                expectedhostMetadata.GetOldUVW()
+            );
+            auto directionBuffer = std::make_shared<icrar::cuda::DirectionBuffer>(
+                expectedhostMetadata.GetDirection(),
+                expectedhostMetadata.GetDD(),
+                expectedhostMetadata.GetUVW(),
+                expectedhostMetadata.GetAvgData()
+            );
+
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
 
             // copy from device back to host
             icrar::cpu::MetaData hostMetadata = deviceMetadata.ToHost();
