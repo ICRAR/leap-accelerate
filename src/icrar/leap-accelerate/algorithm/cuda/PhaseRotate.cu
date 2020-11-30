@@ -150,21 +150,12 @@ namespace cuda
             metadata.GetAvgData().setConstant(std::complex<double>(0.0, 0.0));
             metadata.SetDirection(directions[i]);
             
-#if CUDA_UVW
             auto directionBuffer = std::make_shared<DirectionBuffer>(
                 metadata.GetDirection(),
                 metadata.GetDD(),
                 metadata.GetOldUVW().size(),
                 metadata.GetAvgData().rows(),
                 metadata.GetAvgData().cols());
-#else
-            metadata.CalcUVW();
-            auto directionBuffer = std::make_shared<DirectionBuffer>(
-                metadata.GetDirection(),
-                metadata.GetDD(),
-                metadata.GetUVW(),
-                metadata.GetAvgData());
-#endif
 
             auto deviceMetadata = icrar::cuda::DeviceMetaData(constantBuffer, solutionIntervalBuffer, directionBuffer);
             
@@ -173,12 +164,10 @@ namespace cuda
             LOG(info) << "Copying Metadata to Device";
             LOG(info) << "PhaseRotate";
 
-#if CUDA_UVW
             icrar::cuda::DirectionRotate(
                 deviceMetadata.GetDD(),
                 solutionIntervalBuffer->GetOldUVW(),
                 directionBuffer->GetUVW());
-#endif
 
             icrar::cuda::PhaseRotate(
                 metadata,
