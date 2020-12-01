@@ -36,7 +36,7 @@ std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
     for (auto it : v)
     {
         os << it; 
-        if (it != *v.rbegin()) 
+        if (it != (*v.rbegin())) 
             os << ", "; 
     } 
     os << "}\n"; 

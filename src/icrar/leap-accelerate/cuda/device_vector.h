@@ -31,6 +31,8 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
+#include <boost/noncopyable.hpp>
+
 #include <vector>
 #include <iostream>
 
@@ -46,7 +48,7 @@ namespace cuda
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
     template<typename T>
-    class device_vector
+    class device_vector : boost::noncopyable
     {
         size_t m_count;
         T* m_buffer = nullptr;
@@ -66,8 +68,7 @@ namespace cuda
             other.m_count = 0;
         }
 
-        device_vector& operator=(const device_vector&) = delete;
-        device_vector& operator=(device_vector&&) = delete;
+        device_vector& operator=(device_vector&&) = default;
 
         /**
          * @brief Construct a new device buffer object
@@ -91,11 +92,11 @@ namespace cuda
             }
         }
 
-        device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
 
-        device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
 
-        device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
 
         ~device_vector()
         {

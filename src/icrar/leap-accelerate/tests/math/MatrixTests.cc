@@ -30,13 +30,10 @@
 #include <iostream>
 #include <array>
 
-class eigen_tests : public testing::Test
+class MatrixTests : public testing::Test
 {
 public:
-    eigen_tests()
-    {
-
-    }
+    MatrixTests() = default;
 
     void SetUp() override
     {
@@ -52,7 +49,7 @@ public:
 
     }
 
-    void test_matrix_size()
+    void TestMatrixSize()
     {
         Eigen::Matrix<double, 1, 3> m13;
         ASSERT_EQ(3 * 8, sizeof(m13));
@@ -68,12 +65,12 @@ public:
         //ASSERT_EQ(9 * 8, sizeof(m33d));
     }
 
-    void test_matrix_eigen()
+    void TestMatrixEigen()
     {
         Eigen::Matrix<double, 3, 3> matrix;
     }
 
-    void test_matrix_multiply()
+    void TestMatrixMultiply()
     {
         Eigen::Matrix<double, 3, 3> m1, m2, m3;
         m1 << 1, 0, 0, 0, 1, 0, 0, 0, 1;
@@ -87,7 +84,7 @@ public:
         ASSERT_EQ(expected, m3);
     }
 
-    void test_matrix_pretty()
+    void TestMatrixPretty()
     {
         auto mat = Eigen::MatrixXd(5,5);
         mat <<
@@ -112,7 +109,7 @@ public:
     }
 };
 
-TEST_F(eigen_tests, test_matrix_size) { test_matrix_size(); }
-TEST_F(eigen_tests, test_matrix_eigen) { test_matrix_eigen(); }
-TEST_F(eigen_tests, test_matrix_multiply) { test_matrix_multiply(); }
-TEST_F(eigen_tests, test_matrix_pretty) { test_matrix_pretty(); }
+TEST_F(MatrixTests, TestMatrixSize) { TestMatrixSize(); }
+TEST_F(MatrixTests, TestMatrixEigen) { TestMatrixEigen(); }
+TEST_F(MatrixTests, TestMatrixMultiply) { TestMatrixMultiply(); }
+TEST_F(MatrixTests, TestMatrixPretty) { TestMatrixPretty(); }

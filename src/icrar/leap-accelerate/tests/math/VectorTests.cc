@@ -30,10 +30,10 @@
 #include <array>
 #include <vector>
 
-class vector_tests : public testing::Test
+class VectorTests : public testing::Test
 {
 public:
-    vector_tests()
+    VectorTests()
     {
 
     }
@@ -164,21 +164,21 @@ public:
     }
 };
 
-TEST_F(vector_tests, test_cpu_array_add0) { test_array_add<1>(false); }
-TEST_F(vector_tests, test_cpu_array_add3) { test_array_add<1000>(false); }
-TEST_F(vector_tests, test_cpu_vector_add0) { test_vector_add(1, false); }
-TEST_F(vector_tests, test_cpu_vector_add4) { test_vector_add(10000, false); }
-TEST_F(vector_tests, test_cpu_vector_add6) { test_vector_add(1000000, false); }
+TEST_F(VectorTests, test_cpu_array_add0) { test_array_add<1>(false); }
+TEST_F(VectorTests, test_cpu_array_add3) { test_array_add<1000>(false); }
+TEST_F(VectorTests, test_cpu_vector_add0) { test_vector_add(1, false); }
+TEST_F(VectorTests, test_cpu_vector_add4) { test_vector_add(10000, false); }
+TEST_F(VectorTests, test_cpu_vector_add6) { test_vector_add(1000000, false); }
 
-TEST_F(vector_tests, test_gpu_array_add0) { test_array_add<1>(true); }
-TEST_F(vector_tests, test_gpu_array_add3) { test_array_add<1000>(true); }
-TEST_F(vector_tests, test_gpu_vector_add0) { test_vector_add(1, true); }
-TEST_F(vector_tests, test_gpu_vector_add4) { test_vector_add(10000, true); }
-TEST_F(vector_tests, test_gpu_vector_add6) { test_vector_add(1000000, true); }
+TEST_F(VectorTests, test_gpu_array_add0) { test_array_add<1>(true); }
+TEST_F(VectorTests, test_gpu_array_add3) { test_array_add<1000>(true); }
+TEST_F(VectorTests, test_gpu_vector_add0) { test_vector_add(1, true); }
+TEST_F(VectorTests, test_gpu_vector_add4) { test_vector_add(10000, true); }
+TEST_F(VectorTests, test_gpu_vector_add6) { test_vector_add(1000000, true); }
 
-TEST_F(vector_tests, test_cpu_device_vector_add) { test_device_vector_add(1, false); }
-TEST_F(vector_tests, test_gpu_device_vector_add) { test_device_vector_add(1, true); }
+TEST_F(VectorTests, test_cpu_device_vector_add) { test_device_vector_add(1, false); }
+TEST_F(VectorTests, test_gpu_device_vector_add) { test_device_vector_add(1, true); }
 
-TEST_F(vector_tests, test_cpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, false); }
-TEST_F(vector_tests, test_gpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, true); }
+TEST_F(VectorTests, test_cpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, false); }
+TEST_F(VectorTests, test_gpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, true); }
 

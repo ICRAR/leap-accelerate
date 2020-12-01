@@ -34,10 +34,10 @@
 #include <iostream>
 #include <array>
 
-class casacore_eigen_tests : public testing::Test
+class CasacoreMatrixTests : public testing::Test
 {
 public:
-    casacore_eigen_tests()
+    CasacoreMatrixTests()
     {
 
     }
@@ -178,9 +178,9 @@ public:
     }
 };
 
-TEST_F(casacore_eigen_tests, test_column_major) { test_column_major(); }
-TEST_F(casacore_eigen_tests, test_matrix_casa) { test_matrix_casa(); }
-TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
-TEST_F(casacore_eigen_tests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
+TEST_F(CasacoreMatrixTests, test_column_major) { test_column_major(); }
+TEST_F(CasacoreMatrixTests, test_matrix_casa) { test_matrix_casa(); }
+TEST_F(CasacoreMatrixTests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
+TEST_F(CasacoreMatrixTests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
 
-TEST_F(casacore_eigen_tests, test_uvw_to_icrar) { test_uvw_to_icrar(); }
+TEST_F(CasacoreMatrixTests, test_uvw_to_icrar) { test_uvw_to_icrar(); }

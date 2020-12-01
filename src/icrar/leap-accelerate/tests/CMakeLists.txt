@@ -7,9 +7,9 @@ set(sources
   test_helper.cc
 
   math/eigen_helper.cc
-  math/casacore_eigen_tests.cc
-  math/eigen_tests.cc
-  math/vector_tests.cc
+  math/CasacoreMatrixTests.cc
+  math/MatrixTests.cc
+  math/VectorTests.cc
   math/matrix_tests.cc
   math/linear_math_tests.cc
 
@@ -22,9 +22,9 @@ set(sources
 )
 
 set(cuda_sources
-  math/cuda/cuda_vector_tests.cu
-  math/cuda/cuda_matrix_tests.cu
-  math/cuda/cuda_vector_eigen_tests.cu
+  math/cuda/CudaVectorTests.cu
+  math/cuda/CudaMatrixTests.cu
+  math/cuda/CudaMatrixEigenTests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest

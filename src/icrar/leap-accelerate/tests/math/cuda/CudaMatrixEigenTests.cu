@@ -32,10 +32,10 @@
 #include <stdio.h>
 #include <array>
 
-class cuda_vector_eigen_tests : public testing::Test
+class CudaMatrixEigenTests : public testing::Test
 {
 public:
-    cuda_vector_eigen_tests()
+    CudaMatrixEigenTests()
     {
 
     }
@@ -72,4 +72,4 @@ public:
     }
 };
 
-TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }
+TEST_F(CudaMatrixEigenTests, test_gpu_vector_add0) { test_vector_add(); }

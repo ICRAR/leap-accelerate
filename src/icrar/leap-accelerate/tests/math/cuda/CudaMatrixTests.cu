@@ -31,10 +31,10 @@
 #include <stdio.h>
 #include <array>
 
-class cuda_matrix_tests : public testing::Test
+class CudaMatrixTests : public testing::Test
 {
 public:
-    cuda_matrix_tests()
+    CudaMatrixTests()
     {
 
     }
@@ -165,8 +165,8 @@ public:
     }
 };
 
-TEST_F(cuda_matrix_tests, test_matrix_add) { test_matrix_add<double>(); }
-TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply_33) { test_matrix_matrix_multiply_33<double>(); }
-TEST_F(cuda_matrix_tests, test_matrix_matrix_multiply_32) { test_matrix_matrix_multiply_32<double>(); }
-TEST_F(cuda_matrix_tests, test_matrix_vector_multiply_33) { test_matrix_vector_multiply_33<double>(); }
-TEST_F(cuda_matrix_tests, test_scalear_matrix_multiply) { test_scalear_matrix_multiply<double>(); }
+TEST_F(CudaMatrixTests, test_matrix_add) { test_matrix_add<double>(); }
+TEST_F(CudaMatrixTests, test_matrix_matrix_multiply_33) { test_matrix_matrix_multiply_33<double>(); }
+TEST_F(CudaMatrixTests, test_matrix_matrix_multiply_32) { test_matrix_matrix_multiply_32<double>(); }
+TEST_F(CudaMatrixTests, test_matrix_vector_multiply_33) { test_matrix_vector_multiply_33<double>(); }
+TEST_F(CudaMatrixTests, test_scalear_matrix_multiply) { test_scalear_matrix_multiply<double>(); }

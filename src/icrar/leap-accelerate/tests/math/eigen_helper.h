@@ -29,28 +29,28 @@
 #include <gtest/gtest.h>
 
 //complex double
-void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //matrix equal int
-void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //matrix equal double
-void assert_near_matrix_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_matrix_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
+void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //matrix equal complex double
-void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //vector equal int
-void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 //vector equal double
-void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
-void assert_near_vector_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
+void assert_near_vector_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 template<typename T>
-void assert_near_tensor(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_tensor(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.dimensions(), actual.dimensions());
     ASSERT_EQ(expected.dimension(0), actual.dimension(0));

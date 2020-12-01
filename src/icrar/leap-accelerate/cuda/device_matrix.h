@@ -51,6 +51,28 @@ namespace cuda
         T* m_buffer;
 
     public:
+        /**
+         * @brief Move Constructor
+         * 
+         * @param other 
+         */
+        device_matrix(device_matrix&& other) noexcept 
+            : m_rows(other.m_rows)
+            , m_cols(other.m_cols)
+            , m_buffer(other.m_buffer)
+        {
+            other.m_buffer = nullptr;
+            other.m_rows = 0;
+            other.m_cols = 0;
+        }
+
+        /**
+         * @brief Move Assignment Operator
+         * 
+         * @param other 
+         * @return device_matrix& 
+         */
+        device_matrix& operator=(device_matrix&& other) = default;
 
         /**
          * @brief Construct a new device buffer object
@@ -76,27 +98,12 @@ namespace cuda
             }
         }
 
-        device_matrix(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> data)
+        explicit device_matrix(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> data)
         : device_matrix(data.rows(), data.cols(), data.data()) {}
 
         template<int Rows, int Cols>
-        device_matrix(Eigen::Matrix<T, Rows, Cols> data)
+        explicit device_matrix(Eigen::Matrix<T, Rows, Cols> data)
         : device_matrix(Rows, Cols, data.data()) {}
-
-        /**
-         * @brief Copy Constructor
-         * 
-         * @param other 
-         */
-        device_matrix(device_matrix&& other)
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
-        {
-            other.m_buffer = nullptr;
-            other.m_rows = 0;
-            other.m_cols = 0;
-        }
 
         ~device_matrix()
         {

@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/common/stream_extensions.h>
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 
-void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     std::cerr << std::setprecision(15);
     if(std::abs(expected.real() - actual.real()) > tolerance || std::abs(expected.imag() - actual.imag()) > tolerance)
@@ -39,7 +39,7 @@ void assert_near_cd(const std::complex<double>& expected, const std::complex<dou
 }
 
 template<typename T>
-void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::Matrix<T, -1, -1>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -64,17 +64,17 @@ void assert_near_matrix(const Eigen::Matrix<T, -1, -1>& expected, const Eigen::M
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_matrix_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_matrix<int>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_near_matrix_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_matrix_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_matrix<double>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -99,13 +99,13 @@ void assert_near_matrix3_d(const Eigen::Matrix3d& expected, const Eigen::Matrix3
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_matrix_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_matrix<std::complex<double>>(expected, actual, tolerance, ln, rn, file, line);
 }
 
 template<typename T>
-void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Matrix<T, -1, 1>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.rows(), actual.rows());
     ASSERT_EQ(expected.cols(), actual.cols());
@@ -127,18 +127,18 @@ void assert_near_vector(const Eigen::Matrix<T, -1, 1>& expected, const Eigen::Ma
     ASSERT_TRUE(actual.isApprox(expected, tolerance));
 }
 
-void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_vector_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_vector<int>(expected, actual, tolerance, ln, rn, file, line);
 }
 
-void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_vector_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_vector<double>(expected, actual, tolerance, ln, rn, file, line);
 }
 
 template<typename T>
-void assert_near_vector(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_vector(const std::vector<T>& expected, const std::vector<T>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     ASSERT_EQ(expected.size(), actual.size());
     if(!icrar::isApprox(expected, actual, tolerance))
@@ -159,7 +159,7 @@ void assert_near_vector(const std::vector<T>& expected, const std::vector<T>& ac
     ASSERT_TRUE(icrar::isApprox(expected, actual, tolerance));
 }
 
-void assert_near_vector_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
+void assert_near_vector_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     assert_near_vector<double>(expected, actual, tolerance, ln, rn, file, line);
 }

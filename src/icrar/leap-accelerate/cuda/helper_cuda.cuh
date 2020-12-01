@@ -36,7 +36,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <string.h>
+#include <cstring>
 
 #ifndef EXIT_WAIVED
 #define EXIT_WAIVED 2
