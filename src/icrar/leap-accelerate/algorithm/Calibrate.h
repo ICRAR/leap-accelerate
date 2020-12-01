@@ -20,8 +20,10 @@
  * MA 02111 - 1307  USA
  */
 
+#pragma once
+
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/algorithm/gpu/PhaseRotate.h>
+#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -30,35 +32,20 @@ namespace icrar
 {
     class MeasurementSet;
 
-    namespace cpu
-    {
-        class Integration;
-        class IntegrationResult;
-        class CalibrationResult;
-    }
-
-    Calibrate(
+        /**
+         * @brief Performs Leap calibration using a specialized implementation.
+         * 
+         * @param impl selects the calibration implementation
+         * @param ms the mesurement set containing all input measurements
+         * @param directions the directions to calibrate for
+         * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
+         * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
+         * @return CalibrateResult the calibrationn result
+         */
+    cpu::CalibrateResult Calibrate(
         ComputeImplementation impl,
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
         double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
-    {
-        if(impl == ComputeImplementation::cpu)
-        {
-            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-        }
-        else if(impl == ComputeImplementation::cuda)
-        {
-#ifdef CUDA_ENABLED
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-#else
-            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
-#endif
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
-        }
-    }
+        bool isFileSystemCacheEnabled);
 }

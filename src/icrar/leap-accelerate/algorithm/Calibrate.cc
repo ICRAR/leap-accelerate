@@ -20,20 +20,34 @@
  * MA 02111 - 1307  USA
  */
 
-#ifdef CUDA_ENABLED
+#include "Calibrate.h"
 
-#include "CudaLeapCalibrator.h"
-#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 namespace icrar
 {
-    cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
+    cpu::CalibrateResult Calibrate(
+        ComputeImplementation impl,
         const icrar::MeasurementSet& ms,
-        const std::vector<MVDirection>& directions,
+        const std::vector<icrar::MVDirection>& directions,
         double minimumBaselineThreshold,
         bool isFileSystemCacheEnabled)
+    {
+        if(impl == ComputeImplementation::cpu)
         {
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
         }
-} // namespace icrar
+        else if(impl == ComputeImplementation::cuda)
+        {
+#ifdef CUDA_ENABLED
+            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+#else
+            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
 #endif
+        }
+        else
+        {
+            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
+        }
+    }
+}

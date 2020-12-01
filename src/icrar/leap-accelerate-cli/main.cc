@@ -23,8 +23,7 @@
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -148,8 +147,12 @@ int main(int argc, char** argv)
         LOG(info) << version_information(argv[0]);
         LOG(info) << arg_string(argc, argv);
 
-        auto calibrator = LeapCalibratorFactory().Create(args.GetComputeImplementation());
-        auto result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+        auto result = Calibrate(
+            args.GetComputeImplementation(),
+            args.GetMeasurementSet(),
+            args.GetDirections(),
+            args.GetMinimumBaselineThreshold(),
+            args.IsFileSystemCacheEnabled());
         cpu::PrintResult(result, args.GetOutputStream());
     }
     catch(const std::exception& e)
