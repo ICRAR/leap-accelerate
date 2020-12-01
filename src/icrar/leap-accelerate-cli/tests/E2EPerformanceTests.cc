@@ -24,17 +24,9 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/model/cpu/Integration.h>
-
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -92,20 +84,7 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            if(impl == ComputeImplementation::cpu)
-            {
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else if(impl == ComputeImplementation::cuda)
-            {
-#ifdef CUDA_ENABLED
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-#endif
-            }
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
+            auto output = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
         }
     };
 
