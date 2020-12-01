@@ -24,7 +24,7 @@ from dlg.droputils import DROPFile
 #     \~English The implementation of the LEAP algorithm to use (cpu, cuda)\n
 #     \~Chinese \n
 #     \~
-# @param[in] param/auto_correlation/false/string/readwrite
+# @param[in] param/auto_correlation/false/String/readwrite
 #     \~English Enable auto correlation in the LEAP algorithm\n
 #     \~Chinese \n
 #     \~
