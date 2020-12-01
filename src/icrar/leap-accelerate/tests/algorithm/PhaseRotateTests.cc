@@ -112,12 +112,12 @@ namespace icrar
             {
                 std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
             }
+#ifdef CUDA_ENABLED
             else if(impl == ComputeImplementation::cuda)
             {
-#ifdef CUDA_ENABLED
                 std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-#endif // CUDA_ENABLED
             }
+#endif // CUDA_ENABLED
             else
             {
                 throw std::invalid_argument("impl");

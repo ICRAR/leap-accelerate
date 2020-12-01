@@ -120,7 +120,7 @@ endif()
 
 if(CUDA_ENABLED)
 # Request that the target be built with -std=c++14
-  # As this is a public compile feature anything that links to the target
+# As this is a public compile feature anything that links to the target
 # will also build with -std=c++14
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
   target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)

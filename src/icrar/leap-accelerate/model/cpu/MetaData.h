@@ -22,7 +22,7 @@
 
 #pragma once
 
-#if __has_include(<cuda_runtime.h>)
+#if CUDA_ENABLED
 #include <cuda_runtime.h>
 #else
 #define __host__
