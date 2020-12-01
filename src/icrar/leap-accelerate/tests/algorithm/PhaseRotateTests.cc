@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -108,20 +110,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            if(impl == ComputeImplementation::cpu)
-            {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-#ifdef CUDA_ENABLED
-            else if(impl == ComputeImplementation::cuda)
-            {
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-#endif // CUDA_ENABLED
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
+            std::tie(integrations, calibrations) = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
 
             auto expected = GetExpectedCalibration();
 
