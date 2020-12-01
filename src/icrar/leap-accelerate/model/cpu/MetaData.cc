@@ -171,28 +171,29 @@ namespace cpu
         double ang2 = polar_direction(0) - m_constants.phase_centre_ra_rad;
         double ang3 = -pi / 2.0 + polar_direction(1);
 
-        m_dd1 = Eigen::Matrix3d();
-        m_dd1 <<
+        auto dd1 = Eigen::Matrix3d();
+        dd1 <<
         1,              0,               0,
         0, std::cos(ang1), -std::sin(ang1),
         0, std::sin(ang1),  std::cos(ang1);
 
-        m_dd2 = Eigen::Matrix3d();
-        m_dd2 <<
+        auto dd2 = Eigen::Matrix3d();
+        dd2 <<
          std::cos(ang2), std::sin(ang2), 0,
         -std::sin(ang2), std::cos(ang2), 0,
                       0,              0, 1;
 
-        m_dd3 <<
+        auto dd3 = Eigen::Matrix3d();
+        dd3 <<
         1,              0,               0,
         0, std::cos(ang3), -std::sin(ang3),
         0, std::sin(ang3),  std::cos(ang3);
 
 
-        m_dd = m_dd3 * m_dd2 * m_dd1;
-        LOG(trace) << "dd3: " << pretty_matrix(m_dd3);
-        LOG(trace) << "dd2: " << pretty_matrix(m_dd2);
-        LOG(trace) << "dd1: " << pretty_matrix(m_dd1);
+        m_dd = dd3 * dd2 * dd1;
+        LOG(trace) << "dd3: " << pretty_matrix(dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(dd1);
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
 
         // TODO(calgray) Alternatively calc only the three vec
