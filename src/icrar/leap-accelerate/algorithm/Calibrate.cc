@@ -20,23 +20,34 @@
  * MA 02111 - 1307  USA
  */
 
-#pragma once
+#include "Calibrate.h"
 
-#include <icrar/leap-accelerate/core/compute_implementation.h>
-#include <boost/noncopyable.hpp>
-#include <memory>
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 namespace icrar
 {
-    class ILeapCalibrator;
-
-    /**
-     * @brief Interface for Leap Calibration implementations
-     * 
-     */
-    class LeapCalibratorFactory : boost::noncopyable
+    cpu::CalibrateResult Calibrate(
+        ComputeImplementation impl,
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold,
+        bool isFileSystemCacheEnabled)
     {
-    public:
-        std::unique_ptr<ILeapCalibrator> Create(ComputeImplementation impl) const;
-    };
-} // namespace icrar
+        if(impl == ComputeImplementation::cpu)
+        {
+            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+        }
+        else if(impl == ComputeImplementation::cuda)
+        {
+#ifdef CUDA_ENABLED
+            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+#else
+            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
+#endif
+        }
+        else
+        {
+            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
+        }
+    }
+}

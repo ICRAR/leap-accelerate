@@ -56,7 +56,7 @@ namespace cpu
     class MetaData;
 
     /**
-     * @copydoc ILeapEngine::ILeapCalibrator
+     * @copydoc Calibrate
      * Calibrates by performing phase rotation for each direction in @p directions
      * by splitting uvws into integration batches.
      */

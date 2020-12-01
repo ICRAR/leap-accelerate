@@ -52,10 +52,7 @@ set(sources
 
     common/MVDirection.cc
     
-    algorithm/LeapCalibratorFactory.cc
-    algorithm/cpu/CpuLeapCalibrator.cc
-    algorithm/cuda/CudaLeapCalibrator.cc
-
+    algorithm/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )

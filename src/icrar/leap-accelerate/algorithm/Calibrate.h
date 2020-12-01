@@ -20,20 +20,32 @@
  * MA 02111 - 1307  USA
  */
 
-#ifdef CUDA_ENABLED
+#pragma once
 
-#include "CudaLeapCalibrator.h"
+#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
+
+#include <icrar/leap-accelerate/core/compute_implementation.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 
 namespace icrar
 {
-    cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
+    class MeasurementSet;
+
+        /**
+         * @brief Performs Leap calibration using a specialized implementation.
+         * 
+         * @param impl selects the calibration implementation
+         * @param ms the mesurement set containing all input measurements
+         * @param directions the directions to calibrate for
+         * @param minimumBaselineThreshold the minimum baseline length to use in calibrations
+         * @param isFileSystemCacheEnabled enable to use the filesystem to cache data between calibration calls
+         * @return CalibrateResult the calibrationn result
+         */
+    cpu::CalibrateResult Calibrate(
+        ComputeImplementation impl,
         const icrar::MeasurementSet& ms,
-        const std::vector<MVDirection>& directions,
+        const std::vector<icrar::MVDirection>& directions,
         double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
-        {
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-        }
-} // namespace icrar
-#endif
+        bool isFileSystemCacheEnabled);
+}
