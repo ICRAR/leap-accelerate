@@ -69,5 +69,5 @@ namespace cpu
     {
         return m_uvw;
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

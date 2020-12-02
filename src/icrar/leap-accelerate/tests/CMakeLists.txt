@@ -10,8 +10,8 @@ set(sources
   math/CasacoreMatrixTests.cc
   math/MatrixTests.cc
   math/VectorTests.cc
-  math/matrix_tests.cc
-  math/linear_math_tests.cc
+  math/MatrixTests.cc
+  math/MathConversionTests.cc
 
   ms/MSUtilsTests.cc
 

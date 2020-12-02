@@ -64,4 +64,4 @@ namespace icrar
         }
         return false;
     }
-}
+} // namespace icrar

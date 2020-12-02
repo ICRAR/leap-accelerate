@@ -90,4 +90,4 @@ namespace icrar
     {
         return vector_map(value, ToCasaDirection);
     }
-}
+} // namespace icrar

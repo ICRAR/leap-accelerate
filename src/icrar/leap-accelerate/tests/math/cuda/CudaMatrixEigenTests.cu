@@ -35,10 +35,7 @@
 class CudaMatrixEigenTests : public testing::Test
 {
 public:
-    CudaMatrixEigenTests()
-    {
-
-    }
+    CudaMatrixEigenTests() = default;
 
     void SetUp() override
     {

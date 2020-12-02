@@ -70,7 +70,7 @@ namespace cuda
             other.m_count = 0;
         }
 
-        device_vector& operator=(device_vector&&) = default;
+        device_vector& operator=(device_vector&& other) noexcept = default;
 
         /**
          * @brief Construct a new device buffer object

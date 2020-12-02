@@ -77,5 +77,5 @@ namespace log
         }
         return false;
     }
-}
-}
+} // namespace log
+} // namespace icrar

@@ -119,8 +119,8 @@ namespace cuda
 
     cpu::MetaData DeviceMetaData::ToHost() const
     {
-        //TODO: tidy up using a constructor for now
-        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
+        //TODO(calgray): tidy up using a constructor for now
+        //TODO(calgray): casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
         m_UVW.ToHost(uvwTemp);
         cpu::MetaData result = cpu::MetaData();

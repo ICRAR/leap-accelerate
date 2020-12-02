@@ -10,10 +10,11 @@ Checks:
     -cppcoreguidelines-avoid-magic-numbers,
     -google-build-using-namespace,
     -google-runtime-references,
-    -google-readability-namespace-comments,
-    -modernize-use-trailing-return-type'
+    -modernize-use-trailing-return-type,
+    -performance-move-const-arg,
+    -cppcoreguidelines-owning-memory' # TODO(calgray): GTEST limitation
 WarningsAsErrors: ''
-HeaderFilterRegex: ''
+HeaderFilterRegex: "*.cuh"
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
 CheckOptions:
@@ -62,7 +63,9 @@ CheckOptions:
   - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions
     value:           '0'
   - key:             cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
-    value:           '0'
+    value:           '1'
+  - key:             cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted
+    value:           '1'
   - key:             google-build-namespaces.HeaderFileExtensions
     value:           ',h,hh,hpp,hxx'
   - key:             google-global-names-in-headers.HeaderFileExtensions

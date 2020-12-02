@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
-void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
+void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
 // NOLINTNEXTLINE(ppcoreguidelines-macro-usage)
 #define ASSERT_MDEQ(expected, actual, tolerance) assert_near_metadata(expected, actual, #expected, #actual, __FILE__, __LINE__)

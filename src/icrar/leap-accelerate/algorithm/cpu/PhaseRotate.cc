@@ -176,7 +176,7 @@ namespace cpu
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
-            int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
+            int md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
 
             double shiftFactor = two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 

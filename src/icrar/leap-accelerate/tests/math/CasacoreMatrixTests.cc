@@ -37,10 +37,7 @@
 class CasacoreMatrixTests : public testing::Test
 {
 public:
-    CasacoreMatrixTests()
-    {
-
-    }
+    CasacoreMatrixTests() = default;
 
     void SetUp() override
     {
@@ -52,7 +49,7 @@ public:
 
     }
 
-    void test_column_major()
+    void TestColumnMajor()
     {
         int nrows = 4;
         int ncolumns = 2;
@@ -89,7 +86,7 @@ public:
         ASSERT_EQ(7.0, m(3,1));
     }
 
-    void test_matrix_casa()
+    void TestMatrixCasa()
     {
         casacore::Matrix<double> m(5,5);
         ASSERT_EQ(25, m.size());
@@ -107,7 +104,7 @@ public:
         }
     }
 
-    void test_matrix_casa_to_eigen()
+    void TestMatrixCasaToEigen()
     {
         casacore::Matrix<double> m(5,5);
         double inc = 0.0;
@@ -142,7 +139,7 @@ public:
         }
     }
 
-    void test_matrix_casa_to_eigen_dynamic()
+    void TestMatrixCasaToEigenDynamic()
     {
         //Convert to dynamic eigen matrix and back
         auto shape = casacore::IPosition(std::vector<int>{5,5});
@@ -167,7 +164,7 @@ public:
         }
     }
 
-    void test_uvw_to_icrar()
+    void TestUvwToIcrar()
     {
         casacore::MVuvw casa = casacore::MVuvw(1,2,3);
         icrar::MVuvw uvw = icrar::ToUVW(casa);
@@ -178,9 +175,8 @@ public:
     }
 };
 
-TEST_F(CasacoreMatrixTests, test_column_major) { test_column_major(); }
-TEST_F(CasacoreMatrixTests, test_matrix_casa) { test_matrix_casa(); }
-TEST_F(CasacoreMatrixTests, test_matrix_casa_to_eigen) { test_matrix_casa_to_eigen(); }
-TEST_F(CasacoreMatrixTests, test_matrix_casa_to_eigen_dynamic) { test_matrix_casa_to_eigen_dynamic(); }
-
-TEST_F(CasacoreMatrixTests, test_uvw_to_icrar) { test_uvw_to_icrar(); }
+TEST_F(CasacoreMatrixTests, TestColumnMajor) { TestColumnMajor(); }
+TEST_F(CasacoreMatrixTests, TestMatrixCasa) { TestMatrixCasa(); }
+TEST_F(CasacoreMatrixTests, TestMatrixCasaToEigen) { TestMatrixCasaToEigen(); }
+TEST_F(CasacoreMatrixTests, TestMatrixCasaToEigenDynamic) { TestMatrixCasaToEigenDynamic(); }
+TEST_F(CasacoreMatrixTests, TestUvwToIcrar) { TestUvwToIcrar(); }

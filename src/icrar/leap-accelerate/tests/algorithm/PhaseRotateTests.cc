@@ -69,14 +69,9 @@ namespace icrar
 
     protected:
 
-        PhaseRotateTests() {
+        PhaseRotateTests()  = default;
 
-        }
-
-        ~PhaseRotateTests() override
-        {
-
-        }
+        ~PhaseRotateTests() override = default;
 
         void SetUp() override
         {
@@ -283,7 +278,7 @@ namespace icrar
             }
 
             const int aSize = epochRows;
-            auto epochIndices = casacore::Slice(0, aSize); //TODO assuming epoch indices are sorted
+            auto epochIndices = casacore::Slice(0, aSize); //TODO(calgray): assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
@@ -353,13 +348,13 @@ namespace icrar
             // Ad
             ASSERT_DOUBLE_EQ(aCols, Ad.rows());
             ASSERT_DOUBLE_EQ(aRows, Ad.cols());
-            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO(calgray): emergent
             // //...
-            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO(calgray): emergent
 
             ASSERT_EQ(Ad.cols(), I.size() + 1);
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
@@ -393,7 +388,7 @@ namespace icrar
             //Ad1
             ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
             ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
-            //TODO: Ad1 not identical to LEAP-Cal
+
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
@@ -421,4 +416,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 #endif
-}
+} // namespace icrar

@@ -33,24 +33,18 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/noncopyable.hpp>
 #include <vector>
 
 namespace icrar
 {
-    class IntegrationTests : public ::testing::Test
+    class IntegrationTests : public ::testing::Test, boost::noncopyable
     {
-        const double PRECISION = 0.0001;
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-        IntegrationTests() {
-
-        }
-
-        ~IntegrationTests() override
-        {
-
-        }
+        IntegrationTests() = default;
+        ~IntegrationTests() override = default;
 
         void SetUp() override
         {
@@ -145,4 +139,4 @@ namespace icrar
     TEST_F(IntegrationTests, DISABLED_TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(IntegrationTests, TestReadFromFile) { TestReadFromFile(); }
     TEST_F(IntegrationTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
-}
+} // namespace icrar

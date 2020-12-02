@@ -45,14 +45,9 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-        MetaDataTests() {
+        MetaDataTests() = default;
 
-        }
-
-        ~MetaDataTests() override
-        {
-
-        }
+        ~MetaDataTests() override = default;
 
         void SetUp() override
         {
@@ -167,7 +162,7 @@ namespace icrar
             EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.GetDD()(2,1));
             EXPECT_DOUBLE_EQ(0.45354182990718139, meta.GetDD()(2,2));
 
-            //TODO: add astropy changes
+            //TODO(calgray): add astropy changes
             // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.GetDD()(0,0));
             // EXPECT_DOUBLE_EQ(0.86068501306022194, meta.GetDD()(0,1));
             // EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.GetDD()(0,2));
@@ -227,4 +222,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
 #endif
-}
+} // namespace icrar

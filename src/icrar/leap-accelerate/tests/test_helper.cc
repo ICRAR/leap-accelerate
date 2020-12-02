@@ -25,7 +25,7 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
-void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line)
+void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     if(expected != actual)
     {
@@ -58,7 +58,7 @@ void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu
     ASSERT_MEQ3D(expected.GetDD(), actual.GetDD(), THRESHOLD);
     ASSERT_MEQCD(expected.GetAvgData(), actual.GetAvgData(), THRESHOLD);
     
-    // TODO: ensure these copy correctly
+    // TODO(calgray): ensure these copy correctly
     //ASSERT_EQ(expected.direction, actual.direction);
     //ASSERT_EQ(expected.oldUVW, actual.oldUVW); 
     //ASSERT_EQ(expected.UVW, actual.UVW);

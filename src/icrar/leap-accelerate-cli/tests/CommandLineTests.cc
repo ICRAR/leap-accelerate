@@ -28,6 +28,8 @@
 
 #include <gtest/gtest.h>
 
+#include <boost/noncopyable.hpp>
+
 #include <cstdlib>
 
 using namespace std::literals::complex_literals;
@@ -38,11 +40,11 @@ namespace icrar
      * Test suite for executing leap-accelerate from the command line.
      * Note: only 
      */
-    class CommandLineTests : public ::testing::Test
+    class CommandLineTests : public ::testing::Test, boost::noncopyable
     {
-    protected:
         std::string m_binDir;
         std::string m_srcDir;
+    public:
 
         CommandLineTests() {
             m_binDir = PROJECT_BINARY_DIR;
@@ -149,4 +151,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(CommandLineTests, TestMultipleCuda) { TestMultipleCuda(); }
 #endif
-}
+} // namespace icrar

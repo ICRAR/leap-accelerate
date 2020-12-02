@@ -40,5 +40,5 @@ namespace cpu
     void add(const Eigen::VectorXd& a, const Eigen::VectorXd& b, Eigen::VectorXd& c) { c = a + b; }
     void add(const Eigen::VectorXf& a, const Eigen::VectorXf& b, Eigen::VectorXf& c) { c = a + b; }
     void add(const Eigen::VectorXi& a, const Eigen::VectorXi& b, Eigen::VectorXi& c) { c = a + b; }
-}
-}
+} // namespace cpu
+} // namespace icrar

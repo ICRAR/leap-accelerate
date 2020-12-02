@@ -83,13 +83,13 @@ int main(int argc, char** argv)
     CLIArguments rawArgs;
 
     app.add_option("-c,--config", rawArgs.configFilePath, "Configuration file relative path");
-    //TODO: app.add_option("-i,--input-type", rawArgs.source, "Input source type");
+    //TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-f,--filepath", rawArgs.filePath, "Measurement set file path");
     app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
-    //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    //TODO: app.add_option("v,--solutionInterval");
+    //TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
+    //TODO(calgray): app.add_option("v,--solutionInterval");
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
 
 #if __has_include(<optional>)

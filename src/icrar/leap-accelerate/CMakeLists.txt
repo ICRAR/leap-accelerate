@@ -136,7 +136,7 @@ if(CUDA_ENABLED)
 endif()
 target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
 target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
-# Legacy TODO: build support for xenial
+# Legacy TODO(calgray): build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)

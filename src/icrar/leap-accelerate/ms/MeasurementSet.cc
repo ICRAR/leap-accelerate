@@ -269,4 +269,4 @@ namespace icrar
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
         return antennas; 
     }
-}
+} // namespace icrar

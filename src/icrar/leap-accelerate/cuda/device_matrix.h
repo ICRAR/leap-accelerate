@@ -74,7 +74,7 @@ namespace cuda
          * @param other 
          * @return device_matrix& 
          */
-        device_matrix& operator=(device_matrix&& other) = default;
+        device_matrix& operator=(device_matrix&& other) noexcept = default;
 
         /**
          * @brief Construct a new device buffer object

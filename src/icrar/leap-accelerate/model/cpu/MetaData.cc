@@ -83,7 +83,7 @@ namespace cpu
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
         //select the first epoch only
-        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
@@ -217,7 +217,7 @@ namespace cpu
         m_UVW.reserve(m_oldUVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.push_back(m_oldUVW[n] * m_dd);
+            m_UVW.emplace_back(m_oldUVW[n] * m_dd);
         }
     }
 
@@ -250,5 +250,5 @@ namespace cpu
         && dlm_ra == rhs.dlm_ra
         && dlm_dec == rhs.dlm_dec;
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

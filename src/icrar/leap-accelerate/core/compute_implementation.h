@@ -42,4 +42,4 @@ namespace icrar
      * @return true if value was converted succesfully, false otherwise
      */
     bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out);
-}
+} // namespace icrar
