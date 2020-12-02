@@ -54,14 +54,9 @@ namespace icrar
 namespace cpu
 {
     class MetaData;
-    
-    using CalibrateResult = std::pair<
-        std::vector<std::vector<IntegrationResult>>,
-        std::vector<std::vector<CalibrationResult>>
-    >;
 
     /**
-     * @copydoc ILeapEngine::ILeapCalibrator
+     * @copydoc Calibrate
      * Calibrates by performing phase rotation for each direction in @p directions
      * by splitting uvws into integration batches.
      */

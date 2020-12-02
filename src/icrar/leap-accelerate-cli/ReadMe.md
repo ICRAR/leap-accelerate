@@ -18,7 +18,7 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 * --useFileSystemCache (true, false) - Whether filesystem caching is used between system calls
 
-* --autocorrelations (true, false) - True if measurement set rows store autocorrelations
+* --autoCorrelations (true, false) - True if measurement set rows store autocorrelations
 
 * --minimumBaselineThreshold (0.0 - inf) - Minimum antenna baeline length in meters
 
@@ -44,7 +44,7 @@ outputFilePath: string?
 
 computeImplementation: string?
 
-readAutoCorrelations: boolean?
+autoCorrelations: boolean?
 
 useFileSystemCache: bool?
 

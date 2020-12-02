@@ -24,6 +24,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
@@ -41,7 +42,6 @@
 
 #include <boost/math/constants/constants.hpp>
 #include <boost/optional.hpp>
-
 
 #include <istream>
 #include <iostream>

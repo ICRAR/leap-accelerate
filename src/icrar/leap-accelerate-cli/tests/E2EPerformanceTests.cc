@@ -24,17 +24,9 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-
-#include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
-#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
-#include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
-
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
-#include <icrar/leap-accelerate/math/cuda/vector.h>
-#include <icrar/leap-accelerate/model/cpu/Integration.h>
-
 #include <icrar/leap-accelerate/core/compute_implementation.h>
 
 #include <casacore/casa/Quanta/MVDirection.h>
@@ -92,26 +84,19 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            if(impl == ComputeImplementation::cpu)
-            {
-                auto output = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else if(impl == ComputeImplementation::cuda)
-            {
-                auto result = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
+            auto output = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
         }
     };
 
     // These measurements have flagged data removed and complete data for each timestep
     TEST_F(E2EPerformanceTests, MWACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/mwa/1197638568-split.ms", 102, true); }
+#ifdef CUDA_ENABLED
     TEST_F(E2EPerformanceTests, MWACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/mwa/1197638568-split.ms", 102, true); }
-    
+#endif
+
     // These measurements are clean and use a single timestep
     TEST_F(E2EPerformanceTests, SKACleanTestCpu) { MultiDirectionTest(ComputeImplementation::cpu, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+#ifdef CUDA_ENABLED
     TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
+#endif
 }

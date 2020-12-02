@@ -53,10 +53,12 @@ public:
     {
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
             ASSERT_EQ(1, deviceCount);
+#endif
         }
 
         std::array<int, n> a;
@@ -68,7 +70,9 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             icrar::cuda::add(n, a.data(), b.data(), c.data());
+#endif
         }
         else
         {
@@ -88,7 +92,9 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             icrar::cuda::add(a, b, c);
+#endif
         }
         else
         {
@@ -107,11 +113,13 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(c);
             icrar::cuda::add(d_a, d_b, d_c);
             d_c.ToHost(c);
+#endif
         }
         else
         {
@@ -130,6 +138,7 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(out);
@@ -144,6 +153,7 @@ public:
                 n2 = n3;
             }
             n3->ToHost(out);
+#endif
         }
         else
         {
@@ -169,16 +179,15 @@ TEST_F(VectorTests, test_cpu_array_add3) { test_array_add<1000>(false); }
 TEST_F(VectorTests, test_cpu_vector_add0) { test_vector_add(1, false); }
 TEST_F(VectorTests, test_cpu_vector_add4) { test_vector_add(10000, false); }
 TEST_F(VectorTests, test_cpu_vector_add6) { test_vector_add(1000000, false); }
+TEST_F(VectorTests, test_cpu_device_vector_add) { test_device_vector_add(1, false); }
+TEST_F(VectorTests, test_cpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, false); }
 
+#if CUDA_ENABLED
 TEST_F(VectorTests, test_gpu_array_add0) { test_array_add<1>(true); }
 TEST_F(VectorTests, test_gpu_array_add3) { test_array_add<1000>(true); }
 TEST_F(VectorTests, test_gpu_vector_add0) { test_vector_add(1, true); }
 TEST_F(VectorTests, test_gpu_vector_add4) { test_vector_add(10000, true); }
 TEST_F(VectorTests, test_gpu_vector_add6) { test_vector_add(1000000, true); }
-
-TEST_F(VectorTests, test_cpu_device_vector_add) { test_device_vector_add(1, false); }
 TEST_F(VectorTests, test_gpu_device_vector_add) { test_device_vector_add(1, true); }
-
-TEST_F(VectorTests, test_cpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, false); }
 TEST_F(VectorTests, test_gpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, true); }
-
+#endif

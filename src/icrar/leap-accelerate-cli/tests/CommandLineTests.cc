@@ -145,5 +145,8 @@ namespace icrar
     TEST_F(CommandLineTests, TestSimpleRun) { TestSimpleRun(); }
     TEST_F(CommandLineTests, TestMultipleCasa) { TestMultipleCasa(); }
     TEST_F(CommandLineTests, TestMultipleCpu) { TestMultipleCpu(); }
+
+#ifdef CUDA_ENABLED
     TEST_F(CommandLineTests, TestMultipleCuda) { TestMultipleCuda(); }
+#endif
 }

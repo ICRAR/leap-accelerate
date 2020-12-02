@@ -22,6 +22,8 @@
 
 #pragma once
 
+#ifdef CUDA_ENABLED
+
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 
@@ -172,3 +174,5 @@ namespace cuda
     };
 }
 }
+
+#endif //CUDA_ENABLED

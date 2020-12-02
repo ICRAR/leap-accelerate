@@ -20,6 +20,10 @@
 *    MA 02111-1307  USA
 */
 
+#pragma once
+
+#ifdef CUDA_ENABLED
+
 /**
  * @brief Gets the number of available Cuda Devices
  * 
@@ -31,3 +35,5 @@ int GetCudaDeviceCount();
  * @brief Prints running cuda device info to the output log.
  */
 void printCudaVersion();
+
+#endif // CUDA_ENABLED

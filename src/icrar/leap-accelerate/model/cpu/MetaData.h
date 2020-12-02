@@ -22,7 +22,16 @@
 
 #pragma once
 
+#if CUDA_ENABLED
 #include <cuda_runtime.h>
+#else
+#ifndef __host__
+#define __host__
+#endif // __host__
+#ifndef __device__
+#define __device__
+#endif // __device__
+#endif // CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
@@ -78,7 +87,7 @@ namespace cpu
         double dlm_ra;
         double dlm_dec;
 
-        __device__ __host__ double GetChannelWavelength(int i) const
+        __host__ __device__ double GetChannelWavelength(int i) const
         {
             return constants::speed_of_light / (freq_start_hz + i * freq_inc_hz);
         }
