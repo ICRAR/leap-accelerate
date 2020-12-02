@@ -25,6 +25,8 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -108,18 +110,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            if(impl == ComputeImplementation::cpu)
-            {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else if(impl == ComputeImplementation::cuda)
-            {
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
+            std::tie(integrations, calibrations) = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
 
             auto expected = GetExpectedCalibration();
 
@@ -168,6 +159,7 @@ namespace icrar
 
                 metadataOptionalOutput = hostMetadata;
             }
+#ifdef CUDA_ENABLED
             if(impl == ComputeImplementation::cuda)
             {
                 auto integration = icrar::cpu::Integration(
@@ -194,6 +186,7 @@ namespace icrar
                 deviceMetadata.ToHost(hostMetadata);
                 metadataOptionalOutput = hostMetadata;
             }
+#endif // CUDA_ENABLED
 
             ASSERT_TRUE(metadataOptionalOutput.is_initialized());
             icrar::cpu::MetaData& metadataOutput = metadataOptionalOutput.get();
@@ -425,8 +418,12 @@ namespace icrar
     TEST_F(PhaseRotateTests, PhaseMatrixFunctionDataTestCpu) { PhaseMatrixFunctionDataTest(ComputeImplementation::cpu); }
 
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCpu) { RotateVisibilitiesTest(ComputeImplementation::cpu); }
+#ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, RotateVisibilitiesTestCuda) { RotateVisibilitiesTest(ComputeImplementation::cuda); }
-    
+#endif
+
     TEST_F(PhaseRotateTests, PhaseRotateTestCpu) { PhaseRotateTest(ComputeImplementation::cpu); }
+#ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
+#endif
 }

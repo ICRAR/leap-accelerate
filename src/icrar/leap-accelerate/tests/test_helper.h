@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
 #include <Eigen/Core>

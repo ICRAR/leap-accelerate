@@ -36,28 +36,28 @@ sudo apt-get update
 sudo apt-get install -y casacore-dev
 
 # CUDA 9.0
-wget http://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
-sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
-sudo apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub
-sudo apt-get update
-sudo apt-get install -y cuda
+if ! [[ $CUDA_ENABLED == "OFF" ]]
+then
+    wget -nv http://developer.nvidia.com/compute/cuda/9.0/Prod/local_installers/cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
+    sudo dpkg -i cuda-repo-ubuntu1604-9-0-local_9.0.176-1_amd64-deb
+    sudo apt-key add /var/cuda-repo-9-0-local/7fa2af80.pub
+    sudo apt-get update
+    sudo apt-get install -y cuda
 
-export CUDA_HOME=/usr/local/cuda
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
-export PATH=$PATH:$CUDA_HOME/bin
+    export CUDA_HOME=/usr/local/cuda
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64
+    export PATH=$PATH:$CUDA_HOME/bin
+fi
 
 # Set Compiler Config
 sudo update-alternatives --remove-all gcc
-sudo update-alternatives --remove-all g++
-
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 10
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 20
-
-sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 10
-sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
-
 sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
 sudo update-alternatives --set cc /usr/bin/gcc
 
+sudo update-alternatives --remove-all g++
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 10
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 20
 sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
 sudo update-alternatives --set c++ /usr/bin/g++
