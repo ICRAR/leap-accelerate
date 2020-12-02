@@ -42,19 +42,12 @@ namespace icrar
      */
     class CommandLineTests : public ::testing::Test, boost::noncopyable
     {
-        std::string m_binDir;
-        std::string m_srcDir;
+        std::string m_binDir = PROJECT_BINARY_DIR;
+        std::string m_srcDir = PROJECT_SOURCE_DIR;
     public:
 
-        CommandLineTests() {
-            m_binDir = PROJECT_BINARY_DIR;
-            m_srcDir = PROJECT_SOURCE_DIR;
-        }
-
-        ~CommandLineTests() override
-        {
-
-        }
+        CommandLineTests() = default;
+        ~CommandLineTests() override = default;
 
         void TestHelp()
         {

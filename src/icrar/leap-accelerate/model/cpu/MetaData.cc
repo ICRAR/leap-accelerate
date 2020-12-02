@@ -46,6 +46,7 @@ namespace cpu
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
 
+        m_constants = {};
         m_constants.nbaselines = ms.GetNumBaselines();
 
         m_constants.channels = 0;

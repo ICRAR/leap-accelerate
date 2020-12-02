@@ -200,8 +200,8 @@ public:
 
         auto bdc = Eigen::BDCSVD<Eigen::MatrixXd>(m1, Eigen::ComputeFullU | Eigen::ComputeFullV);
 
-        const auto u = bdc.matrixU();
-        const auto v = bdc.matrixV();
+        const auto& u = bdc.matrixU();
+        const auto& v = bdc.matrixV();
 
         ASSERT_EQ(m1.rows(), u.rows());
         ASSERT_EQ(m1.rows(), u.cols());

@@ -69,7 +69,7 @@ namespace icrar
 
         void TestParseDirectionsException(const std::string& input)
         {
-            ASSERT_THROW(icrar::ParseDirections(input), icrar::exception);
+            ASSERT_THROW(icrar::ParseDirections(input), icrar::exception); // NOLINT(cppcoreguidelines-avoid-goto)
         }
 
     };

@@ -95,6 +95,7 @@ namespace icrar
     , m_readAutocorrelations(false)
     , m_mwaSupport(false)
     , m_useFileSystemCache(false)
+    , m_verbosity(icrar::log::Verbosity::trace)
     {
         // Initialize default arguments first
         ApplyArguments(GetDefaultArguments());

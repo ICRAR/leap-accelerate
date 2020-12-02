@@ -53,7 +53,7 @@ std::string arg_string(int argc, char** argv)
     std::stringstream ss;
     for(int i = 0; i < argc; i++)
     {
-        ss << argv[i] << " ";
+        ss << argv[i] << " "; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
     return ss.str();
 }
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
     {
         ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
 
-        LOG(info) << version_information(argv[0]);
+        LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         LOG(info) << arg_string(argc, argv);
 
         auto result = Calibrate(
