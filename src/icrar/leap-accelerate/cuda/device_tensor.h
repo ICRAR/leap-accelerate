@@ -84,11 +84,24 @@ namespace cuda
             , m_sizeDim2(other.m_sizeDim2)
             , m_buffer(other.m_buffer)
         {
-            other.m_buffer = nullptr;
             other.m_sizeDim0 = 0;
             other.m_sizeDim1 = 0;
             other.m_sizeDim2 = 0;
+            other.m_buffer = nullptr;
         }
+
+        device_tensor3& operator=(device_tensor3&& other) noexcept
+        {
+            m_sizeDim0 = other.m_sizeDim0;
+            m_sizeDim1 = other.m_sizeDim1;
+            m_sizeDim2 = other.m_sizeDim2;
+            m_buffer = other.m_buffer;
+            other.m_sizeDim0 = 0;
+            other.m_sizeDim1 = 0;
+            other.m_sizeDim2 = 0;
+            other.m_buffer = nullptr;
+        }
+
 
         ~device_tensor3()
         {

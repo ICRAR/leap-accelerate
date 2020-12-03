@@ -120,7 +120,7 @@ namespace detail {
     inline
     std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
     {
-		constexpr uint32_t KILO = 1000;
+        constexpr uint32_t KILO = 1000;
         constexpr int SECONDS_PER_MINUTE = 60;
         constexpr int MINUTES_PER_HOUR = 60;
         constexpr int HOURS_PER_DAY = 24;

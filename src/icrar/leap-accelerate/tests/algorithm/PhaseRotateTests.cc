@@ -68,11 +68,6 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-
-        PhaseRotateTests()  = default;
-
-        ~PhaseRotateTests() override = default;
-
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
@@ -82,7 +77,7 @@ namespace icrar
 
         void TearDown() override
         {
-            
+            cudaDeviceReset();
         }
 
         void PhaseRotateTest(ComputeImplementation impl)
@@ -128,7 +123,7 @@ namespace icrar
         void RotateVisibilitiesTest(ComputeImplementation impl)
         {
             using namespace std::complex_literals;
-            const double THRESHOLD = 0.01;
+            const double THRESHOLD = 0.0001;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
@@ -399,7 +394,6 @@ namespace icrar
             
             ASSERT_EQ(Ad1.cols(), I1.size() + 1);
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
-
         }
     };
 

@@ -46,7 +46,7 @@ namespace icrar
 
         void TearDown() override
         {
-
+            cudaDeviceReset();
         }
 
         template<typename T>
@@ -166,5 +166,5 @@ namespace icrar
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply) { TestMatrixMatrixMultiply<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixMatrixMultiply32) { TestMatrixMatrixMultiply32<double>(); }
     TEST_F(CudaMatrixTests, TestMatrixVectorMultiply33) { TestMatrixVectorMultiply33<double>(); }
-    TEST_F(CudaMatrixTests, TestScalearMatrixMultiply_DISABLED) { TestScalearMatrixMultiply<double>(); }
+    TEST_F(CudaMatrixTests, DISABLED_TestScalearMatrixMultiply) { TestScalearMatrixMultiply<double>(); }
 } // namespace icrar

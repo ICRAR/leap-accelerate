@@ -35,11 +35,6 @@
 class CudaVectorTests : public testing::Test
 {
 public:
-    CudaVectorTests()
-    {
-
-    }
-
     void SetUp() override
     {
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
@@ -50,7 +45,7 @@ public:
 
     void TearDown() override
     {
-
+        cudaDeviceReset();
     }
 
     template<typename T>

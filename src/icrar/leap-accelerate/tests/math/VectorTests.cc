@@ -33,8 +33,6 @@
 class VectorTests : public testing::Test
 {
 public:
-    VectorTests() = default;
-
     void SetUp() override
     {
 
@@ -42,7 +40,7 @@ public:
 
     void TearDown() override
     {
-
+        cudaDeviceReset();
     }
 
     template<unsigned int n>

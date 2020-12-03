@@ -99,7 +99,7 @@ namespace cuda
      */
     class DeviceMetaData
     {
-        DeviceMetaData();
+        DeviceMetaData() = delete;
 
         std::shared_ptr<ConstantMetaData> m_constantMetadata; // Constant buffer, never null
 
@@ -111,6 +111,9 @@ namespace cuda
         device_matrix<std::complex<double>> m_avg_data;
 
     public:
+        DeviceMetaData(DeviceMetaData&& other) noexcept = default;
+        DeviceMetaData& operator=(DeviceMetaData&& other) noexcept = default;
+
         /**
          * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
          * all device buffers

@@ -57,11 +57,6 @@ namespace cuda
 
     public:
 
-        /**
-         * @brief Copy Constructor
-         * 
-         * @param other
-         */
         device_vector(device_vector&& other) noexcept
             : m_count(other.m_count)
             , m_buffer(other.m_buffer)
@@ -70,7 +65,13 @@ namespace cuda
             other.m_count = 0;
         }
 
-        device_vector& operator=(device_vector&& other) noexcept = default;
+        device_vector& operator=(device_vector&& other) noexcept
+        {
+            m_count = other.m_count;
+            m_buffer = other.m_buffer;
+            other.m_count = 0;
+            other.m_buffer = nullptr;
+        }
 
         /**
          * @brief Construct a new device buffer object
@@ -94,11 +95,11 @@ namespace cuda
             }
         }
 
-        explicit device_vector(std::vector<T> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(const std::vector<T>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(Eigen::Matrix<T, Eigen::Dynamic, 1> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(const Eigen::Matrix<T, Eigen::Dynamic, 1>& data) : device_vector(data.size(), data.data()) {}
 
-        explicit device_vector(Eigen::Matrix<T, 1, Eigen::Dynamic> data) : device_vector(data.size(), data.data()) {}
+        explicit device_vector(const Eigen::Matrix<T, 1, Eigen::Dynamic>& data) : device_vector(data.size(), data.data()) {}
 
         ~device_vector()
         {
