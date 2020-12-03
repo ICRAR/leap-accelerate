@@ -86,7 +86,9 @@ jobs:
     dist:
       - focal
     compiler: gcc
-    install:
+    before_install:
+      - source .travis/before_install_focal.sh
+    script:
       - source .travis/lint.sh
     addons:
      apt:
