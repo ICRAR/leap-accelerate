@@ -45,7 +45,9 @@ public:
 
     void TearDown() override
     {
+#if CUDA_ENABLED
         checkCudaErrors(cudaDeviceReset());
+#endif
     }
 
     template<unsigned int n>
