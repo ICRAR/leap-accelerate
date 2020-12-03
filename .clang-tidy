@@ -12,8 +12,24 @@ Checks:
     -google-runtime-references,
     -modernize-use-trailing-return-type,
     -performance-move-const-arg,
-    -cppcoreguidelines-owning-memory' # TODO(calgray): GTEST limitation
-WarningsAsErrors: ''
+    -cppcoreguidelines-owning-memory, 
+    -cppcoreguidelines-narrowing-conversions' 
+WarningsAsErrors:
+   'clang-diagnostic-*,
+    clang-analyzer-*,
+    cppcoreguidelines-*,
+    performance-*,
+    readibility-*,
+    modernize-*,
+    misc-*,
+    google-*,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -google-build-using-namespace,
+    -google-runtime-references,
+    -modernize-use-trailing-return-type,
+    -performance-move-const-arg,
+    -cppcoreguidelines-owning-memory, # TODO(calgray): GTEST limitation
+    -cppcoreguidelines-narrowing-conversions' # TODO(calgray): Resolve metadata later
 HeaderFilterRegex: "*.cuh"
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
