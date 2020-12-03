@@ -27,6 +27,11 @@
 
 #include <gtest/gtest.h>
 
+#if CUDA_ENABLED
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
+#endif
+
 #include <array>
 #include <vector>
 
@@ -40,7 +45,7 @@ public:
 
     void TearDown() override
     {
-        cudaDeviceReset();
+        checkCudaErrors(cudaDeviceReset());
     }
 
     template<unsigned int n>

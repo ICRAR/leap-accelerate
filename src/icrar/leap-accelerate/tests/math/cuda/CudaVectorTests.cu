@@ -45,7 +45,7 @@ public:
 
     void TearDown() override
     {
-        cudaDeviceReset();
+        checkCudaErrors(cudaDeviceReset());
     }
 
     template<typename T>

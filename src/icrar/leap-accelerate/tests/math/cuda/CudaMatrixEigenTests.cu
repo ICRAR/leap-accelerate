@@ -45,7 +45,7 @@ public:
 
     void TearDown() override
     {
-        cudaDeviceReset();
+        checkCudaErrors(cudaDeviceReset());
     }
 
     void test_vector_add()

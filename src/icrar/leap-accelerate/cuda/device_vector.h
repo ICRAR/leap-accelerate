@@ -53,10 +53,9 @@ namespace cuda
     class device_vector : boost::noncopyable
     {
         size_t m_count;
-        T* m_buffer = nullptr;
+        T* m_buffer = nullptr; // Pointer to cuda owned memory
 
     public:
-
         device_vector(device_vector&& other) noexcept
             : m_count(other.m_count)
             , m_buffer(other.m_buffer)

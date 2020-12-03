@@ -49,6 +49,11 @@
 
 #include <gtest/gtest.h>
 
+#if CUDA_ENABLED
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
+#endif
+
 #include <boost/log/trivial.hpp>
 
 #include <vector>
@@ -77,7 +82,9 @@ namespace icrar
 
         void TearDown() override
         {
-            cudaDeviceReset();
+#if CUDA_ENABLED
+            checkCudaErrors(cudaDeviceReset());
+#endif
         }
 
         void PhaseRotateTest(ComputeImplementation impl)
