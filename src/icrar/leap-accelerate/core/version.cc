@@ -26,9 +26,10 @@
  * Stores the version information of leap-accelerate
  */
 
-#include <string>
-
+#include "version.h"
 #include "icrar/leap-accelerate/config.h"
+
+#include <string>
 
 namespace icrar
 {

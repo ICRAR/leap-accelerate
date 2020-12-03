@@ -60,13 +60,16 @@ namespace cuda
         {
             size_t byteSize = GetByteSize();
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
+            //cudaMalloc3D();
             if (data != nullptr)
             {
                 checkCudaErrors(cudaMemcpyAsync(m_buffer, data, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+                //cudaMemcpy3DAsync();
             }
             else
             {
                 checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
+                //cudaMemcpy3DAsync();
             }
         }
 
@@ -138,16 +141,31 @@ namespace cuda
             return res;
         }
 
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetCount() const
         {
             return m_sizeDim0 * m_sizeDim1 * m_sizeDim2;
         }
 
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetSize() const
         {
             return GetCount();
         }
 
+        /**
+         * @brief Gets the total number of bytes in the memory buffer 
+         * 
+         * @return __host__ 
+         */
         __host__ __device__ size_t GetByteSize() const
         {
             return GetCount() * sizeof(T);

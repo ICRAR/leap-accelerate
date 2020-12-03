@@ -99,13 +99,16 @@ namespace cuda
         {
             size_t byteSize = rows * cols * sizeof(T);
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
+            //cudaMallocPitch();
             if (data != nullptr)
             {
                 checkCudaErrors(cudaMemcpyAsync(m_buffer, data, byteSize, cudaMemcpyKind::cudaMemcpyHostToDevice));
+                //cudaMemcpy2DAsync();
             }
             else
             {
                 checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
+                //cudaMemset2DAsync();  
             }
         }
 
