@@ -35,8 +35,6 @@ class MSUtilsTests : public testing::Test
     casacore::MeasurementSet ms;
 
 public:
-    MSUtilsTests() = default;
-
     void SetUp() override
     {
         // TODO(calgray): use 1197638568-split.ms

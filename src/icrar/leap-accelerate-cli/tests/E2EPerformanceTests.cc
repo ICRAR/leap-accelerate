@@ -46,11 +46,6 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-
-        E2EPerformanceTests() = default;
-
-        ~E2EPerformanceTests() override = default;
-
         void SetUp() override
         {
 

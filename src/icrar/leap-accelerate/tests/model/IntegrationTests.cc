@@ -33,19 +33,15 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/noncopyable.hpp>
 #include <vector>
 
 namespace icrar
 {
-    class IntegrationTests : public ::testing::Test, boost::noncopyable
+    class IntegrationTests : public ::testing::Test
     {
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-        IntegrationTests() = default;
-        ~IntegrationTests() override = default;
-
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";

@@ -36,21 +36,15 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/noncopyable.hpp>
-
 #include <vector>
 
 using namespace std::literals::complex_literals;
 
 namespace icrar
 {
-    class JSONHelperTests : public ::testing::Test, boost::noncopyable
+    class JSONHelperTests : public ::testing::Test
     {
     protected:
-
-        JSONHelperTests() = default;
-        ~JSONHelperTests() override = default;
-
         void SetUp() override
         {
 

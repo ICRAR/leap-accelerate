@@ -28,8 +28,6 @@
 
 #include <gtest/gtest.h>
 
-#include <boost/noncopyable.hpp>
-
 #include <cstdlib>
 
 using namespace std::literals::complex_literals;
@@ -40,15 +38,12 @@ namespace icrar
      * Test suite for executing leap-accelerate from the command line.
      * Note: only 
      */
-    class CommandLineTests : public ::testing::Test, boost::noncopyable
+    class CommandLineTests : public ::testing::Test
     {
         std::string m_binDir = PROJECT_BINARY_DIR;
         std::string m_srcDir = PROJECT_SOURCE_DIR;
-    public:
-
-        CommandLineTests() = default;
-        ~CommandLineTests() override = default;
-
+    
+    protected:
         void TestHelp()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
