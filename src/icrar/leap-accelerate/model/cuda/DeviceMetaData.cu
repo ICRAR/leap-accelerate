@@ -31,13 +31,13 @@ namespace icrar
 namespace cuda
 {
     ConstantMetaData::ConstantMetaData(
-            const icrar::cpu::Constants constants,
-            Eigen::MatrixXd A,
-            Eigen::VectorXi I,
-            Eigen::MatrixXd Ad,
-            Eigen::MatrixXd A1,
-            Eigen::VectorXi I1,
-            Eigen::MatrixXd Ad1)
+            const icrar::cpu::Constants& constants,
+            const Eigen::MatrixXd& A,
+            const Eigen::VectorXi& I,
+            const Eigen::MatrixXd& Ad,
+            const Eigen::MatrixXd& A1,
+            const Eigen::VectorXi& I1,
+            const Eigen::MatrixXd& Ad1)
         : m_constants(constants)
         , m_A(A)
         , m_I(I)
