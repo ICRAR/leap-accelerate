@@ -51,35 +51,38 @@ set(sources
 
     common/MVDirection.cc
     
-    algorithm/Calibrate.cc
+    algorithm/LeapCalibratorFactory.cc
+    algorithm/cpu/CpuLeapCalibrator.cc
+    
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
-)
-
-set(cuda_headers
+    )
+    
+    set(cuda_headers
     cuda/cuda_info.h
     cuda/helper_cuda.cuh
     cuda/helper_string.cuh
-
+    
     math/cuda/vector.h
     math/cuda/vector.cuh
     math/cuda/matrix.h
     math/cuda/matrix.cuh
     math/cuda/matrix_multiply.cuh
     math/cuda/matrix_transpose.cuh
-
+    
     algorithm/cuda/PhaseRotate.h
-)
-
-set(cuda_sources
+    )
+    
+    set(cuda_sources
     cuda/cuda_info.cu
     math/cuda/vector.cu
     math/cuda/matrix.cu
-
+    
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
     algorithm/cuda/PhaseRotate.cu
-)
+    algorithm/cuda/CudaLeapCalibrator.cu
+    )
 
 # Libraries
 option(CASA_ENABLED "Casa Enabled" TRUE)

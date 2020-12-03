@@ -20,34 +20,36 @@
  * MA 02111 - 1307  USA
  */
 
-#include "Calibrate.h"
+#include "CudaLeapCalibrator.h"
+#include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+#include <icrar/leap-accelerate/exception/exception.h>
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
 
 namespace icrar
 {
-    cpu::CalibrateResult Calibrate(
-        ComputeImplementation impl,
-        const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
+    CudaLeapCalibrator::CudaLeapCalibrator()
     {
-        if(impl == ComputeImplementation::cpu)
+        int deviceCount = 0;
+        checkCudaErrors(cudaGetDeviceCount(&deviceCount));
+        if(deviceCount < 1)
         {
-            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-        }
-        else if(impl == ComputeImplementation::cuda)
-        {
-#ifdef CUDA_ENABLED
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-#else
-            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
-#endif
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
+            throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
     }
+
+    CudaLeapCalibrator::~CudaLeapCalibrator()
+    {
+        checkCudaErrors(cudaDeviceReset());
+    }
+
+    cpu::CalibrateResult CudaLeapCalibrator::Calibrate(
+        const icrar::MeasurementSet& ms,
+        const std::vector<MVDirection>& directions,
+        double minimumBaselineThreshold,
+        bool isFileSystemCacheEnabled)
+        {
+            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+        }
 } // namespace icrar

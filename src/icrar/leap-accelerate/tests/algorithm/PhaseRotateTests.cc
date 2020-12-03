@@ -27,7 +27,8 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/algorithm/Calibrate.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -102,7 +103,7 @@ namespace icrar
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            std::tie(integrations, calibrations) = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
+            std::tie(integrations, calibrations) = LeapCalibratorFactory().Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
 
             auto expected = GetExpectedCalibration();
 

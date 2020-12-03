@@ -65,9 +65,8 @@ namespace cuda
     class DeviceIntegration;
 
     /**
-     * @copydoc Calibrate
-     * Calibrates by performing phase rotation for each direction in @p directions
-     * by splitting uvws into integration batches.
+     * @brief 
+     * 
      */
     cpu::CalibrateResult Calibrate(
         const MeasurementSet& ms,

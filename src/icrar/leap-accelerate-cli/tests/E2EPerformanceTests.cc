@@ -24,7 +24,8 @@
 #include <icrar/leap-accelerate/tests/test_helper.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/algorithm/Calibrate.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/cuda/cuda_info.h>
 #include <icrar/leap-accelerate/core/compute_implementation.h>
@@ -74,7 +75,7 @@ namespace icrar
                 casacore::MVDirection(-0.1512764129166089,-0.21161026349648748)
             };
 
-            auto output = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
+            auto output = LeapCalibratorFactory().Create(impl)->Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
         }
     };
 
