@@ -29,12 +29,11 @@ WarningsAsErrors:
     misc-*,
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
-    -cppcoreguidelines-narrowing-conversions'
     -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
     -modernize-use-trailing-return-type,
-    -performance-move-const-arg,
+    -performance-move-const-arg'
 HeaderFilterRegex: "*.cuh"
 AnalyzeTemporaryDtors: false
 FormatStyle:     none

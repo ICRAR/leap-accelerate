@@ -72,12 +72,12 @@ namespace cpu
 {
     struct Constants
     {
-        int nbaselines; //the total number station pairs (excluding self cycles) 
+        uint32_t nbaselines; //the total number station pairs (excluding self cycles) 
 
-        int channels; // The number of channels of the current observation
-        int num_pols; // The number of polarizations used by the current observation
-        int stations; // The number of stations used by the current observation
-        int rows;
+        uint32_t channels; // The number of channels of the current observation
+        uint32_t num_pols; // The number of polarizations used by the current observation
+        uint32_t stations; // The number of stations used by the current observation
+        uint32_t rows;
 
         double freq_start_hz; // The frequency of the first channel, in Hz
         double freq_inc_hz; // The frequency incrmeent between channels, in Hz
