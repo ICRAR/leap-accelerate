@@ -30,6 +30,8 @@ fail() {
 	exit 1
 }
 
+cd ${TRAVIS_BUILD_DIR}
+mkdir build
 cd ${TRAVIS_BUILD_DIR}/build
 
 # Run linters

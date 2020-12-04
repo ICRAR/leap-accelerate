@@ -36,7 +36,7 @@ sudo update-alternatives --set g++ $CXX
 
 cd ${TRAVIS_BUILD_DIR}
 mkdir build
-cd build
+cd ${TRAVIS_BUILD_DIR}/build
 
 #Debug Build Configuration
 CMAKE_OPTIONS="$CMAKE_OPTIONS -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME}"
