@@ -1,3 +1,10 @@
+# TODO(calgray):
+# -cppcoreguidelines-avoid-magic-numbers does not ignore test constants
+# -cppcoreguidelines-owning-memory is a GTEST limitation
+# -google-build-using-namespace not ideal with modern namespaces like boost::literals
+# -performance-move-const-arg does not affect performance
+# -google-runtime-references references in interfaces are more concise than raw pointers
+# -modernize-use-trailing-return-type is not commonly upheld
 Checks:
    'clang-diagnostic-*,
     clang-analyzer-*,
@@ -9,9 +16,9 @@ Checks:
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-owning-memory,
-    -modernize-use-trailing-return-type,
     -google-build-using-namespace,
-    -google-runtime-references,'
+    -google-runtime-references,
+    -modernize-use-trailing-return-type'
 WarningsAsErrors:
    'clang-diagnostic-*,
     clang-analyzer-*,
@@ -22,12 +29,12 @@ WarningsAsErrors:
     misc-*,
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-narrowing-conversions'
+    -cppcoreguidelines-owning-memory,
     -google-build-using-namespace,
     -google-runtime-references,
     -modernize-use-trailing-return-type,
     -performance-move-const-arg,
-    -cppcoreguidelines-owning-memory, # TODO(calgray): GTEST limitation
-    -cppcoreguidelines-narrowing-conversions' # TODO(calgray): Resolve metadata later
 HeaderFilterRegex: "*.cuh"
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
