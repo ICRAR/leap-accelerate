@@ -88,6 +88,8 @@ jobs:
     compiler: gcc
     before_install:
       - source .travis/before_install_focal.sh
+    install:
+      - echo 'skip install..'
     script:
       - source .travis/lint.sh
     addons:
