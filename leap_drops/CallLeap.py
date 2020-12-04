@@ -67,7 +67,13 @@ class CallLeap(BarrierAppDROP):
         config = self._readConfig(self.inputs[0])
 
         # build command line
-        commandLine = ['LeapAccelerateCLI', '-f', self.measurementSetFilename, '-s', str(config['numStations']), '-d', str(config['directions']), '-a', str(config['autoCorrelation'])]
+        commandLine = [
+            'LeapAccelerateCLI',
+            '-f', self.measurementSetFilename,
+            '-s', str(config['numStations']),
+            '-d', str(config['directions']),
+            '-a', str(config['autoCorrelation'])
+        ]
 
         if self.DEBUG:
             time.sleep(random.uniform(5,10))

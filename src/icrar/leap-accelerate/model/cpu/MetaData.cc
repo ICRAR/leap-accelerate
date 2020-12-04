@@ -40,13 +40,13 @@ namespace icrar
 namespace cpu
 {
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
-    : m_minimumBaselineThreshold(minimumBaselineThreshold)
+    : m_constants({})
+    , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
         auto msmc = ms.GetMSMainColumns();
 
-        m_constants = {};
         m_constants.nbaselines = ms.GetNumBaselines();
 
         m_constants.channels = 0;
