@@ -66,7 +66,6 @@ endif()
 
 # Load Modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
 # Seperate lint target
 include(lint)

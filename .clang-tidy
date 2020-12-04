@@ -8,12 +8,10 @@ Checks:
     misc-*,
     google-*,
     -cppcoreguidelines-avoid-magic-numbers,
-    -google-build-using-namespace,
-    -google-runtime-references,
+    -cppcoreguidelines-owning-memory,
     -modernize-use-trailing-return-type,
-    -performance-move-const-arg,
-    -cppcoreguidelines-owning-memory, 
-    -cppcoreguidelines-narrowing-conversions' 
+    -google-build-using-namespace,
+    -google-runtime-references,'
 WarningsAsErrors:
    'clang-diagnostic-*,
     clang-analyzer-*,

@@ -94,7 +94,7 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-9, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.71-all-dev, clang-tidy, clang-tools]
-    env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3 CMAKE_RUN_CLANG_TIDY=ON
+    env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3
 
 install:
  - source .travis/install.sh
