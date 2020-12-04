@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Travis CI test script
+# Travis CI install script
 #
 # ICRAR - International Centre for Radio Astronomy Research
 # (c) UWA - The University of Western Australia, 2018
@@ -26,14 +26,10 @@
 #
 
 fail() {
-	echo -e "$@" 1>&2
+	echo $1 1>&2
 	exit 1
 }
 
-# TravisCI is unable to run cuda
-export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
-
-# Run unit tests
 cd ${TRAVIS_BUILD_DIR}/build
-ctest --verbose || fail "unit tests failed"
+make all -j VERBOSE=1 || fail "make failed"
 cd ..
