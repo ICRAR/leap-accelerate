@@ -89,7 +89,7 @@ jobs:
     before_install:
       - source .travis/before_install_focal.sh
     script:
-      - echo "skipping testing..."
+      - source .travis/lint.sh
     addons:
      apt:
       sources: ubuntu-toolchain-r-test
