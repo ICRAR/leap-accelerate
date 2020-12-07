@@ -31,5 +31,5 @@ fail() {
 }
 
 cd ${TRAVIS_BUILD_DIR}/build
-make all -j VERBOSE=1 || fail "make failed"
+make all -j || fail "make failed"
 cd ..

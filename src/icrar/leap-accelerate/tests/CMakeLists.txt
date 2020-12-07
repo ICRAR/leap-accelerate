@@ -36,12 +36,12 @@ add_executable(${TEST_TARGET_NAME}
   ${sources}
 )
 
-#if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-#  target_precompile_headers(${TEST_TARGET_NAME}
-#    PRIVATE
-#      [[pch.h]]
-#  )
-#endif()
+if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
+  target_precompile_headers(${TEST_TARGET_NAME}
+    PRIVATE
+    [[pch.h]]
+  )
+endif()
 
 # CUDA Options
 target_compile_options(${TEST_TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)

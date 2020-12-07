@@ -35,5 +35,5 @@ export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
 
 # Run unit tests
 cd ${TRAVIS_BUILD_DIR}/build
-ctest --verbose || fail "unit tests failed"
+ctest --output-on-failure || fail "unit tests failed"
 cd ..

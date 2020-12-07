@@ -111,7 +111,7 @@ Testing provided via googletest. To test using CTest use the following command i
 
 for verbose output use:
 
-`ctest --verbose`
+`ctest --verbose` or `ctest --output-on-failure`
 
 To test using the google test runner, the test binaries can be executed directly using the following commands:
 
