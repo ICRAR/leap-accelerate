@@ -108,10 +108,10 @@ endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 # TODO(calgray): clang-tidy tries to analyze pch systems headers
-  target_precompile_headers(${TARGET_NAME}
-    PRIVATE
-    [[pch.h]]
-  )
+#  target_precompile_headers(${TARGET_NAME}
+#    PRIVATE
+#    [[pch.h]]
+#  )
 endif()
 
 
