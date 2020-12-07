@@ -14,6 +14,21 @@ LEAP-Accelerate includes:
 
 ## System Dependencies
 
+### Recommended Versions Compatibility
+
+* g++ 9.3.0
+* cuda 10.1
+* boost 1.71.0
+* casacore 3.1.2
+
+### Minimum Versions Compatibility
+
+* g++ 6.3.0
+* cuda 9.0
+* boost 1.63.0
+* cmake 3.15.1
+* casacore 3.1.2
+
 ### Ubuntu/Debian Dependencies
 
 20.04 LTS
@@ -35,21 +50,6 @@ or
 * https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
 * sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
 * https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
-
-### Recommended Versions Compatibility
-
-* g++ 9.3.0
-* cuda 10.1
-* boost 1.71.0
-* casacore 3.1.2
-
-### Minimum Versions Compatibility
-
-* g++ 6.3.0
-* cuda 9.0
-* boost 1.63.0
-* cmake 3.15.1
-* casacore 3.1.2
 
 ## Compiling from Source
 
@@ -111,7 +111,7 @@ Testing provided via googletest. To test using CTest use the following command i
 
 for verbose output use:
 
-`ctest --verbose`
+`ctest --verbose` or `ctest --output-on-failure`
 
 To test using the google test runner, the test binaries can be executed directly using the following commands:
 

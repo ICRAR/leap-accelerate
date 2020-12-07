@@ -52,5 +52,5 @@ namespace casalib
     casacore::Matrix<double> SVDPseudoInverse(
         const casacore::Matrix<double>& a,
         double epsilon = std::numeric_limits<Eigen::MatrixXd::Scalar>::epsilon());
-}
-}
+} // namespace casalib
+} // namespace icrar

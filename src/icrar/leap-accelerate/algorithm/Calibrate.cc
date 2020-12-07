@@ -50,4 +50,4 @@ namespace icrar
             throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
         }
     }
-}
+} // namespace icrar

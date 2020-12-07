@@ -46,16 +46,6 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-
-        E2EPerformanceTests() {
-
-        }
-
-        ~E2EPerformanceTests() override
-        {
-
-        }
-
         void SetUp() override
         {
 
@@ -66,7 +56,7 @@ namespace icrar
             
         }
 
-        void MultiDirectionTest(ComputeImplementation impl, std::string msname, boost::optional<int> stations_override, bool readAutocorrelations)
+        void MultiDirectionTest(ComputeImplementation impl, const std::string& msname, boost::optional<int> stations_override, bool readAutocorrelations)
         {
             std::string filepath = std::string(TEST_DATA_DIR) + msname;
             ms = std::make_unique<icrar::MeasurementSet>(filepath, stations_override, readAutocorrelations);
@@ -99,4 +89,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(E2EPerformanceTests, SKACleanTestCuda) { MultiDirectionTest(ComputeImplementation::cuda, "/ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.ms", boost::none, true); }
 #endif
-}
+} // namespace icrar

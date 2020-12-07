@@ -63,8 +63,8 @@ namespace icrar
     {
         class DeviceMetaData;
         class ConstantMetaData;
-    }
-}
+    } // namespace cuda
+} // namespace icrar
 
 namespace icrar
 {
@@ -95,9 +95,13 @@ namespace cpu
         bool operator==(const Constants& rhs) const;
     };
 
+    /**
+     * @brief container of phaserotation constants and variables
+     * 
+     */
     class MetaData
     {
-        MetaData() {}
+        MetaData() = default;
 
         Constants m_constants;
         double m_minimumBaselineThreshold;
@@ -116,9 +120,6 @@ namespace cpu
         icrar::MVDirection m_direction; // calibration direction, late initialized
 
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd1; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd2; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd3; // direction matrix, late initialized
         
         Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
     
@@ -172,9 +173,10 @@ namespace cpu
         Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
 
         bool operator==(const MetaData& rhs) const;
+        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
 
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantMetaData;
     };
-    }
-}
+} // namespace cpu
+} // namespace icrar

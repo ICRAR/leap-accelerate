@@ -54,11 +54,43 @@ namespace cuda
 
     public:
         /**
-         * @brief Construct a new device buffer object
+         * @brief Move Constructor
          * 
-         * @param rows 
-         * @param cols
-         * @param data 
+         * @param other 
+         */
+        device_matrix(device_matrix&& other) noexcept 
+            : m_rows(other.m_rows)
+            , m_cols(other.m_cols)
+            , m_buffer(other.m_buffer)
+        {
+            other.m_rows = 0;
+            other.m_cols = 0;
+            other.m_buffer = nullptr;
+        }
+
+        /**
+         * @brief Move Assignment Operator
+         * 
+         * @param other 
+         * @return device_matrix& 
+         */
+        device_matrix& operator=(device_matrix&& other) noexcept
+        {
+            m_rows = other.m_rows;
+            m_cols = other.m_cols;
+            m_buffer = other.m_buffer;
+            other.m_rows = 0;
+            other.m_cols = 0;
+            other.m_buffer = nullptr;
+        }
+
+        /**
+         * @brief Construct a new device matrix object of fixed size
+         * and initialized asyncronously if data is provided
+         * 
+         * @param rows number of rows
+         * @param cols number of columns
+         * @param data constigous column major data of size rows*cols*sizeof(T)
          */
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)
@@ -77,27 +109,12 @@ namespace cuda
             }
         }
 
-        device_matrix(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> data)
+        explicit device_matrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& data)
         : device_matrix(data.rows(), data.cols(), data.data()) {}
 
         template<int Rows, int Cols>
-        device_matrix(Eigen::Matrix<T, Rows, Cols> data)
+        explicit device_matrix(const Eigen::Matrix<T, Rows, Cols>& data)
         : device_matrix(Rows, Cols, data.data()) {}
-
-        /**
-         * @brief Copy Constructor
-         * 
-         * @param other 
-         */
-        device_matrix(device_matrix&& other)
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
-        {
-            other.m_buffer = nullptr;
-            other.m_rows = 0;
-            other.m_cols = 0;
-        }
 
         ~device_matrix()
         {

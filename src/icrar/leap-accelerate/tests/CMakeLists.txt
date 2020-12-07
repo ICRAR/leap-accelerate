@@ -6,11 +6,12 @@ set(sources
   
   test_helper.cc
 
-  math/casacore_eigen_tests.cc
-  math/eigen_tests.cc
-  math/vector_tests.cc
-  math/matrix_tests.cc
-  math/linear_math_tests.cc
+  math/eigen_helper.cc
+  math/CasacoreMatrixTests.cc
+  math/MatrixTests.cc
+  math/VectorTests.cc
+  math/MatrixTests.cc
+  math/MathConversionTests.cc
 
   ms/MSUtilsTests.cc
 
@@ -21,9 +22,9 @@ set(sources
 )
 
 set(cuda_sources
-  math/cuda/cuda_vector_tests.cu
-  math/cuda/cuda_matrix_tests.cu
-  math/cuda/cuda_vector_eigen_tests.cu
+  math/cuda/CudaVectorTests.cu
+  math/cuda/CudaMatrixTests.cu
+  math/cuda/CudaMatrixEigenTests.cu
 )
 
 # Only CUDA 10+ is capable of compiling gtest
@@ -36,10 +37,11 @@ add_executable(${TEST_TARGET_NAME}
 )
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TEST_TARGET_NAME}
-    PRIVATE
-      [[pch.h]]
-  )
+# TODO(calgray): clang-tidy tries to analyze pch systems headers
+#  target_precompile_headers(${TEST_TARGET_NAME}
+#    PRIVATE
+#    [[pch.h]]
+#  )
 endif()
 
 # CUDA Options

@@ -71,16 +71,16 @@ namespace icrar
         matrix.reference(column_range);
         for (unsigned int i = 0; i < num_baselines; ++i)
         {
-            uu[i] = matrix(0, i);
-            vv[i] = matrix(1, i);
-            ww[i] = matrix(2, i);
+            uu[i] = matrix(0, i); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            vv[i] = matrix(1, i); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+            ww[i] = matrix(2, i); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         }
     }
 
     //See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
     template<typename T>
     void ms_read_vis(
-        casacore::MeasurementSet& ms,
+        const casacore::MeasurementSet& ms,
         unsigned int start_baseline,
         unsigned int start_channel,
         unsigned int num_channels,
@@ -129,7 +129,7 @@ namespace icrar
 
         // Copy the visibility data into the supplied array,
         // swapping baseline and channel dimensions.
-        const float* in = (const float*)column_range.data();
+        auto in = reinterpret_cast<const float*>(column_range.data()); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         for (unsigned int c = 0; c < num_channels; ++c)
         {
             for (unsigned int b = 0; b < num_baselines; ++b)
@@ -138,10 +138,10 @@ namespace icrar
                 {
                     unsigned int i = (num_pols * (b * num_channels + c) + p) << 1;
                     unsigned int j = (num_pols * (c * num_baselines + b) + p) << 1;
-                    vis[j]     = static_cast<T>(in[i]);
-                    vis[j + 1] = static_cast<T>(in[i + 1]);
+                    vis[j]     = static_cast<T>(in[i]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+                    vis[j + 1] = static_cast<T>(in[i + 1]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
                 }
             }
         }
     }
-}
+} // namespace icrar

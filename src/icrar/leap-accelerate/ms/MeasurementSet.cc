@@ -23,15 +23,13 @@
 #include "MeasurementSet.h"
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-
 #include <cstddef>
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
+    MeasurementSet::MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
     : m_measurementSet(std::make_unique<casacore::MeasurementSet>(filepath))
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
@@ -71,8 +69,8 @@ namespace icrar
             LOG(error) << "stations: " << GetNumStations();
         }
 
-        //Baselines
-        //Validate number of baselines in first epoch
+        // Baselines
+        // Validate number of baselines in first epoch
         casacore::Vector<double> time = m_msmc->time().getColumn();
         auto epoch = time[0];
         auto epochRows = std::count(time.begin(), time.end(), epoch);
@@ -92,12 +90,12 @@ namespace icrar
             throw icrar::file_exception(GetFilepath().get_value_or("unknown"), ss.str(), __FILE__, __LINE__);
         }
 
-        if(GetNumRows() % GetNumBaselines() != 0)
+        if(GetNumBaselines() == 0 || (GetNumRows() % GetNumBaselines() != 0))
         {
             LOG(error) << "number of rows not an integer multiple of number of baselines";
             LOG(error) << "baselines: " << GetNumBaselines()
                          << " rows: " << GetNumRows()
-                         << "total epochs ~= " << (double)GetNumRows() / GetNumBaselines();
+                         << "total epochs ~= " << static_cast<double>(GetNumRows()) / GetNumBaselines();
             throw exception("number of rows not an integer multiple of baselines", __FILE__, __LINE__);
         }
     }
@@ -131,15 +129,15 @@ namespace icrar
 
     unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
     {
-        //TODO: cache value
+        //TODO(calgray): cache value
         if(useAutocorrelations)
         {
-            const size_t num_stations = (size_t)GetNumStations();
+            const auto num_stations = GetNumStations();
             return num_stations * (num_stations + 1) / 2;
         }
         else
         {
-            const size_t num_stations = (size_t)GetNumStations();
+            const auto num_stations = GetNumStations();
             return num_stations * (num_stations - 1) / 2;
         }
     }
@@ -158,7 +156,7 @@ namespace icrar
 
     Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
     {
-        // TODO: may want to consider using logical OR over for each channel and polarization.
+        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
 
         // Selects the flags of the first epoch
@@ -190,7 +188,8 @@ namespace icrar
             auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
             casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
 
-            //TODO: uv is of size baselines * timesteps
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
+            //  in later timesteps
             for(unsigned int i = 0; i < nBaselines; i++)
             {
                 if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
@@ -255,7 +254,8 @@ namespace icrar
         std::uint32_t nPolarizations) const
     {
         auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
-        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", (double*)visibilities.data());
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", reinterpret_cast<double*>(visibilities.data()));
         return visibilities;
     }
 
@@ -269,4 +269,4 @@ namespace icrar
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
         return antennas; 
     }
-}
+} // namespace icrar

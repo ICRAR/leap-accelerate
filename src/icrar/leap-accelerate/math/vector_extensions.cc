@@ -21,7 +21,7 @@
  * MA 02111 - 1307  USA
  */
 
-#include "math.h"
+#include "vector_extensions.h"
 
 namespace icrar
 {
@@ -44,4 +44,4 @@ namespace icrar
         tmp(1) = std::asin(xyz(2));
         return tmp;
     }
-}
+} // namespace icrar

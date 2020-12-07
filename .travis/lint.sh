@@ -30,10 +30,6 @@ fail() {
 	exit 1
 }
 
-# TravisCI is unable to run cuda
-export GTEST_FILTER="-*Cuda*:*cuda*:*gpu*"
-
-# Run unit tests
 cd ${TRAVIS_BUILD_DIR}/build
-ctest --output-on-failure || fail "unit tests failed"
+make lint || fail "linting failed"
 cd ..

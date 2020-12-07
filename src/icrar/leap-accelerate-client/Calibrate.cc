@@ -45,7 +45,7 @@ namespace icrar
         std::string ms_filename;
         try
         {
-            char len;
+            char len = 0;
             reader.read(&len, 2);
             std::vector<char> tmpString = std::vector<char>(len);
             reader.read(tmpString.data(), len);
@@ -59,7 +59,7 @@ namespace icrar
         LeapHandleRemoteMS(ms_filename);
     }
 
-    void LeapHandleRemoteMS(std::string /*ms_filename*/)
+    void LeapHandleRemoteMS(const std::string& /*ms_filename*/)
     {
         throw std::runtime_error("not implemented");
         //MeasurementSet ms = MeasurementSet(ms_filename);
@@ -67,9 +67,9 @@ namespace icrar
     }
 
     void ClientLeapRemoteCalibration(
-        std::string /*host*/,
-        short /*port*/,
-        std::string /*ms_path*/,
+        const std::string& /*host*/,
+        int16_t /*port*/,
+        const std::string& /*ms_path*/,
         const std::vector<MVDirection>& /*directions*/,
         boost::optional<int> /*overrideStations*/,
         int /*solutionInterval=3600*/)
@@ -100,4 +100,4 @@ namespace icrar
         //icrar::Integration integration;
         //icrar::casalib::RotateVisibilities(integration, metadata, direction);
     }
-}
+} // namespace icrar

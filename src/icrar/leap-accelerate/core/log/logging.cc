@@ -40,7 +40,6 @@ namespace icrar
 {
 namespace log
 {
-
     ::boost::log::trivial::severity_level logging_level;
 
     /**
@@ -76,5 +75,5 @@ namespace log
             return s["Severity"].extract<boost::log::trivial::severity_level>() >= logging_level;
         });
     }
-}
-}
+} // namespace log
+} // namespace icrar

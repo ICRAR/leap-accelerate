@@ -29,6 +29,14 @@
 #include <set>
 #include <map>
 
+/**
+ * @brief Prints a set of streamable values
+ * 
+ * @tparam T streamable type 
+ * @param os output stream
+ * @param v set
+ * @return std::ostream& 
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
 {
@@ -36,7 +44,7 @@ std::ostream& operator<<(std::ostream& os, const std::set<T>& v)
     for (auto it : v)
     {
         os << it; 
-        if (it != *v.rbegin()) 
+        if (it != v->rbegin())
             os << ", "; 
     } 
     os << "}\n"; 

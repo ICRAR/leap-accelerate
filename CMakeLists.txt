@@ -12,6 +12,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 option(CUDA_ENABLED "Build with cuda support" OFF)
 option(WERROR "Warnings as Errors" OFF)
 option(TRACE "Trace Data Values" OFF)
+option(CMAKE_RUN_CLANG_TIDY "Run clang-tidy with the compiler." OFF)
 
 # Override config via environment variables
 if(DEFINED ENV{CUDA_ENABLED})
@@ -20,10 +21,35 @@ if(DEFINED ENV{CUDA_ENABLED})
 endif()
 if(DEFINED ENV{WERROR})
   set(WERROR $ENV{WERROR})
+  message("-- Environment variable override: WERROR=${WERROR}")
 endif()
 if(DEFINED ENV{TRACE})
   set(TRACE $ENV{TRACE})
+  message("-- Environment variable override: TRACE=${TRACE}")
 endif()
+if(DEFINED ENV{CMAKE_RUN_CLANG_TIDY})
+  set(CMAKE_RUN_CLANG_TIDY $ENV{CMAKE_RUN_CLANG_TIDY})
+  message("-- Environment variable override: CMAKE_RUN_CLANG_TIDY=${CMAKE_RUN_CLANG_TIDY}")
+endif()
+
+# Enable Linting with build
+if(CMAKE_RUN_CLANG_TIDY)
+  if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "CMake_RUN_CLANG_TIDY requires an out-of-source build!")
+  endif()
+  find_program(CLANG_TIDY_COMMAND NAMES clang-tidy)
+  if(NOT CLANG_TIDY_COMMAND)
+    message(WARNING "CMake_RUN_CLANG_TIDY is ON but clang-tidy is not found!")
+    set(CMAKE_CXX_CLANG_TIDY "" CACHE STRING "" FORCE)
+  else()
+    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND}")
+  endif()
+  file(SHA1 ${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy clang_tidy_sha1)
+  set(CLANG_TIDY_DEFINITIONS "CLANG_TIDY_SHA1=${clang_tidy_sha1}")
+  unset(clang_tidy_sha1)
+endif()
+configure_file(.clang-tidy .clang-tidy COPYONLY)
+
 
 # Project configuration, specifying version, languages,
 # and the C++ standard to use for the whole project
@@ -31,7 +57,7 @@ project(${SOLUTION_NAME} LANGUAGES CXX VERSION ${SOLUTION_VERSION})
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra") # TODO(calgray) -Wconversion
   if(WERROR)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
   endif()
@@ -41,11 +67,14 @@ if(TRACE)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DTRACE")
 endif()
 
-add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
-
+# Load Modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/external/cmake-modules)
 
+# Seperate lint target
+include(lint)
+
+# Testing
+add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/testdata")
 include(CTest)
 
 # Gather External Projects
@@ -147,7 +176,7 @@ set(PC_RapidJSON_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/external/rapidjson-1.1.0/inc
 find_package(RapidJSON REQUIRED)
 
 # Local Targets
-include(lint)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_subdirectory(src/icrar/leap-accelerate)
 add_subdirectory(src/icrar/leap-accelerate-client)
 add_subdirectory(src/icrar/leap-accelerate-server)

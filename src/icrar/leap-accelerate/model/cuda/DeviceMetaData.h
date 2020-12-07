@@ -74,13 +74,13 @@ namespace cuda
 
     public:
         ConstantMetaData(
-            const icrar::cpu::Constants constants,
-            Eigen::MatrixXd A,
-            Eigen::VectorXi I,
-            Eigen::MatrixXd Ad,
-            Eigen::MatrixXd A1,
-            Eigen::VectorXi I1,
-            Eigen::MatrixXd Ad1);
+            const icrar::cpu::Constants& constants,
+            const Eigen::MatrixXd& A,
+            const Eigen::VectorXi& I,
+            const Eigen::MatrixXd& Ad,
+            const Eigen::MatrixXd& A1,
+            const Eigen::VectorXi& I1,
+            const Eigen::MatrixXd& Ad1);
 
         const icrar::cpu::Constants& GetConstants() const { return m_constants; }
         const device_matrix<double>& GetA() const { return m_A; } 
@@ -90,7 +90,7 @@ namespace cuda
         const device_vector<int>& GetI1() const { return m_I1; }
         const device_matrix<double>& GetAd1() const { return m_Ad1; }
 
-        void ToHost(icrar::cpu::MetaData& host);
+        void ToHost(icrar::cpu::MetaData& host) const;
     };
 
     /**
@@ -99,7 +99,7 @@ namespace cuda
      */
     class DeviceMetaData
     {
-        DeviceMetaData();
+        DeviceMetaData() = delete;
 
         std::shared_ptr<ConstantMetaData> m_constantMetadata; // Constant buffer, never null
 
@@ -111,6 +111,9 @@ namespace cuda
         device_matrix<std::complex<double>> m_avg_data;
 
     public:
+        DeviceMetaData(DeviceMetaData&& other) noexcept = default;
+        DeviceMetaData& operator=(DeviceMetaData&& other) noexcept = default;
+
         /**
          * @brief Construct a new Device MetaData object from the equivalent object on CPU memory. This copies to
          * all device buffers

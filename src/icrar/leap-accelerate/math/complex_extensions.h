@@ -41,6 +41,6 @@ namespace icrar
     template<typename T>
     bool isApprox(const std::complex<T>& lhs, const std::complex<T>& rhs, T threshold)
     {
-        return std::abs(lhs - rhs) < threshold);
+        return std::abs(lhs - rhs) < threshold;
     }
 } // namespace icrar

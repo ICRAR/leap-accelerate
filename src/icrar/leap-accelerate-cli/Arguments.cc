@@ -54,14 +54,14 @@ namespace icrar
     }
 
     Arguments::Arguments(CLIArguments&& args)
-        : source(std::move(args.source))
+        : source(args.source)
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
-        , minimumBaselineThreshold(std::move(args.minimumBaselineThreshold))
-        , readAutocorrelations(std::move(args.readAutocorrelations))
-        , mwaSupport(std::move(args.mwaSupport))
-        , useFileSystemCache(std::move(args.useFileSystemCache))
+        , minimumBaselineThreshold(args.minimumBaselineThreshold)
+        , readAutocorrelations(args.readAutocorrelations)
+        , mwaSupport(args.mwaSupport)
+        , useFileSystemCache(args.useFileSystemCache)
     {
         if(args.stations.is_initialized())
         {
@@ -89,6 +89,13 @@ namespace icrar
     }
 
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
+    : m_source(InputType::FILENAME)
+    , m_computeImplementation(ComputeImplementation::cpu)
+    , m_minimumBaselineThreshold(0)
+    , m_readAutocorrelations(false)
+    , m_mwaSupport(false)
+    , m_useFileSystemCache(false)
+    , m_verbosity(icrar::log::Verbosity::trace)
     {
         // Initialize default arguments first
         ApplyArguments(GetDefaultArguments());
@@ -125,10 +132,10 @@ namespace icrar
             }
             break;
         case InputType::APACHE_ARROW:
-            throw new std::runtime_error("only stream in and file input are currently supported");
+            throw std::runtime_error("only stream in and file input are currently supported");
             break;
         default:
-            throw new std::invalid_argument("only stream in and file input are currently supported");
+            throw std::invalid_argument("only stream in and file input are currently supported");
             break;
         }
 
@@ -429,4 +436,4 @@ namespace icrar
             }
         }
     }
-}
+} // namespace icrar

@@ -46,6 +46,11 @@
 
 namespace icrar
 {
+    /**
+     * @brief MeasurementSet abstraction layer around a casacore MeasurementSet. This 
+     * class additionally stores calculated (or user specificed) variables calculated from
+     * the underlying measurement set for fast access.
+     */
     class MeasurementSet
     {
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
@@ -57,9 +62,8 @@ namespace icrar
         int m_stations;
         bool m_readAutocorrelations;
 
-
     public:
-        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
+        MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         
@@ -106,8 +110,18 @@ namespace icrar
          */
         unsigned int GetNumPols() const;
 
+        /**
+         * @brief Gets the number of channels in the measurement set
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumChannels() const;
 
+        /**
+         * @brief Gets the number of rows in the measurement set (non-flagged baselines * timesteps).
+         * 
+         * @return unsigned int
+         */
         unsigned int GetNumRows() const;
 
         /**
@@ -188,4 +202,4 @@ namespace icrar
         std::set<int32_t> CalculateUniqueAntennas() const;
 
     };
-}
+} // namespace icrar

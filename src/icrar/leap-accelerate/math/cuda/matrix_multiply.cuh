@@ -215,7 +215,7 @@ namespace cuda
             throw std::runtime_error("matrix dimensions invalid");
         }
 
-        c = a * b; //TODO: Use CuBLAS
+        c = a * b; //TODO(calgray): Use CuBLAS
         //h_multiply_vector(a.rows(), a.cols(), a.data(), b.data(), c.data());
     }
 

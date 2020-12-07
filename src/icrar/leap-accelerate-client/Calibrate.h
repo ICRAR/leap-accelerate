@@ -39,7 +39,7 @@ namespace icrar
     }
 
     void ServerLeapHandleRemoteMS(std::istream& reader, std::ostream& writer);
-    void LeapHandleRemoteMS(std::string ms_filename);
+    void LeapHandleRemoteMS(const std::string& ms_filename);
     void LeapRemoteCalibration(const std::vector<casacore::MVDirection>& directions);
 
     /**

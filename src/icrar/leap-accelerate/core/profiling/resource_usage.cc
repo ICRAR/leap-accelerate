@@ -33,43 +33,48 @@ namespace icrar
 {
 namespace profiling
 {
+    static profiling::timer walltime_timer;
 
-static profiling::timer walltime_timer;
-
-static usec_t to_usecs(const struct timeval &t)
-{
-    return t.tv_sec * 1000000 + t.tv_usec;
-}
-
-/// Returns the maximum Resident Storage Size of this process
-/// (i.e., the maximum amountof memory used).
-ResourceUsage get_resource_usage()
-{
-    struct rusage ru;
-    int err = getrusage(RUSAGE_SELF, &ru);
-    if (err != 0) {
-        throw exception("Couldn't get resource usage", __FILE__, __LINE__);
+    static usec_t to_usecs(const struct timeval &t)
+    {
+        constexpr int SECONDS_TO_MICROSECONDS = 1000000;
+        return t.tv_sec * SECONDS_TO_MICROSECONDS + t.tv_usec;
     }
-    auto walltime = std::chrono::duration_cast<std::chrono::microseconds>(
-        walltime_timer.get()).count();
-    return {to_usecs(ru.ru_utime), to_usecs(ru.ru_stime), usec_t(walltime),
-            std::size_t(ru.ru_maxrss * 1024)};
-}
 
-template <typename CharT>
-std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os,
-    const ResourceUsage &ru)
-{
-    os << "Times: "
-       << "user: " << us_time(ru.utime) << ", "
-       << "system: " << us_time(ru.stime) << ", "
-       << "walltime: " << us_time(ru.wtime) << "; "
-       << "peak RSS: " << memory_amount(ru.peak_rss);
-    return os;
-}
+    /// Returns the maximum Resident Storage Size of this process
+    /// (i.e., the maximum amountof memory used).
+    ResourceUsage get_resource_usage()
+    {
+        constexpr int KILOBYTES_TO_BYTES = 1024;
+        struct rusage ru; //NOLINT(cppcoreguidelines-pro-type-member-init)
+        int err = getrusage(RUSAGE_SELF, &ru);
+        if (err != 0) {
+            throw exception("Couldn't get resource usage", __FILE__, __LINE__);
+        }
+        auto walltime = std::chrono::duration_cast<std::chrono::microseconds>(
+            walltime_timer.get()).count();
+        return
+        {
+            to_usecs(ru.ru_utime),
+            to_usecs(ru.ru_stime),
+            usec_t(walltime),
+            std::size_t(ru.ru_maxrss * KILOBYTES_TO_BYTES) // NOLINT(cppcoreguidelines-pro-type-union-access)
+        };
+    }
 
-template std::basic_ostream<char> &operator<<<char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
-template std::basic_ostream<wchar_t> &operator<<<wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
+    template <typename CharT>
+    std::basic_ostream<CharT> &operator<<(std::basic_ostream<CharT> &os, const ResourceUsage &ru)
+    {
+        os << "Times: "
+        << "user: " << us_time(ru.utime) << ", "
+        << "system: " << us_time(ru.stime) << ", "
+        << "walltime: " << us_time(ru.wtime) << "; "
+        << "peak RSS: " << memory_amount(ru.peak_rss);
+        return os;
+    }
+
+    template std::basic_ostream<char> &operator<<<char>(std::basic_ostream<char> &os, const ResourceUsage &ru);
+    template std::basic_ostream<wchar_t> &operator<<<wchar_t>(std::basic_ostream<wchar_t> &os, const ResourceUsage &ru);
 
 } // namespace profiling
 } // namespace icrar

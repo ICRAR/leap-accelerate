@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -22,27 +23,24 @@
 
 #pragma once
 
-#include <Eigen/Core>
-
-#include <rapidjson/document.h>
-#include <vector>
-#include <rapidjson/document.h>
-
-namespace icrar
+/**
+ * @brief Computes the complex exponent of a complex value
+ * 
+ * @param z complex value
+ * @return e ^ ( @p z )
+ */
+__device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
 {
-    using MVDirection = Eigen::RowVector3d;
+    // see https://forums.decuCexpveloper.nvidia.com/t/complex-number-exponential-function/24696/2
+    double resx = 0.0;
+    double resy = 0.0;
+    double zx = cuCreal(z);
+    double zy = cuCimag(z);
 
-    /**
-     * @brief Parses a json string to a collection of MVDirections
-     * 
-     * @param json 
-     * @return std::vector<icrar::MVDirection> 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const std::string& json);
-
-    /**
-     * @brief Parses a json object to a collection of MVDirections
-     * 
-     */
-    std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
-} // namespace icrar
+    sincos(zy, &resy, &resx);
+    
+    double t = exp(zx);
+    resx *= t;
+    resy *= t;
+    return make_cuDoubleComplex(resx, resy);
+}

@@ -36,7 +36,7 @@ sudo update-alternatives --set g++ $CXX
 
 cd ${TRAVIS_BUILD_DIR}
 mkdir build
-cd build
+cd ${TRAVIS_BUILD_DIR}/build
 
 #Debug Build Configuration
 CMAKE_OPTIONS="$CMAKE_OPTIONS -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME}"
@@ -44,5 +44,4 @@ CMAKE_OPTIONS="$CMAKE_OPTIONS -DGSL_ROOT_DIR=${GSL_ROOT_DIR}"
 CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG} -O1"
 CMAKE_OPTIONS="$CMAKE_OPTIONS -DCMAKE_BUILD_TYPE=RelWithDebInfo"
 cmake .. ${CMAKE_OPTIONS} || fail "cmake failed"
-make all -j2 VERBOSE=1 || fail "make failed"
 cd ..
