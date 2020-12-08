@@ -84,11 +84,24 @@ namespace cuda
             , m_sizeDim2(other.m_sizeDim2)
             , m_buffer(other.m_buffer)
         {
-            other.m_buffer = nullptr;
             other.m_sizeDim0 = 0;
             other.m_sizeDim1 = 0;
             other.m_sizeDim2 = 0;
+            other.m_buffer = nullptr;
         }
+
+        device_tensor3& operator=(device_tensor3&& other) noexcept
+        {
+            m_sizeDim0 = other.m_sizeDim0;
+            m_sizeDim1 = other.m_sizeDim1;
+            m_sizeDim2 = other.m_sizeDim2;
+            m_buffer = other.m_buffer;
+            other.m_sizeDim0 = 0;
+            other.m_sizeDim1 = 0;
+            other.m_sizeDim2 = 0;
+            other.m_buffer = nullptr;
+        }
+
 
         ~device_tensor3()
         {
@@ -113,7 +126,7 @@ namespace cuda
             if(dim == 0) return m_sizeDim0;
             if(dim == 1) return m_sizeDim1;
             if(dim == 2) return m_sizeDim2;
-            return 0; //TODO: not a great interface
+            return 0; //TODO(calgray): not a great interface
         }
 
         __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions()

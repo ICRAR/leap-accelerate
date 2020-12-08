@@ -73,5 +73,5 @@ namespace cpu
     {
         return SVDPseudoInverse(a);
     }
-}
-}
+}// namespace cpu
+}// namespace icrar

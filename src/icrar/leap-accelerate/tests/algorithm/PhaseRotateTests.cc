@@ -23,8 +23,11 @@
 #include "PhaseRotateTestCaseData.h"
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
+
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseRotate.h>
 #include <icrar/leap-accelerate/algorithm/cuda/PhaseRotate.h>
 
@@ -46,6 +49,11 @@
 
 #include <gtest/gtest.h>
 
+#if CUDA_ENABLED
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
+#endif
+
 #include <boost/log/trivial.hpp>
 
 #include <vector>
@@ -65,16 +73,6 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-
-        PhaseRotateTests() {
-
-        }
-
-        ~PhaseRotateTests() override
-        {
-
-        }
-
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
@@ -84,7 +82,9 @@ namespace icrar
 
         void TearDown() override
         {
-            
+#if CUDA_ENABLED
+            checkCudaErrors(cudaDeviceReset());
+#endif
         }
 
         void PhaseRotateTest(ComputeImplementation impl)
@@ -96,32 +96,13 @@ namespace icrar
             {
                 { -0.4606549305661674,-0.29719233792392513 },
                 { -0.753231018062671,-0.44387635324622354 },
-                //{ -0.6207547100721282,-0.2539086572881469 },
-                //{ -0.41958660604621867,-0.03677626900108552 },
-                //{ -0.41108685258900596,-0.08638012622791202 },
-                //{ -0.7782459495668798,-0.4887860989684432 },
-                //{ -0.17001324965728973,-0.28595644149463484 },
-                //{ -0.7129444556035118,-0.365286407171852 },
-                //{ -0.1512764129166089,-0.21161026349648748 }
-
+                { -0.4606549305661674,-0.29719233792392513 },
+                { -0.753231018062671,-0.44387635324622354 },
             };
 
             std::vector<std::vector<cpu::IntegrationResult>> integrations;
             std::vector<std::vector<cpu::CalibrationResult>> calibrations;
-            if(impl == ComputeImplementation::cpu)
-            {
-                std::tie(integrations, calibrations) = cpu::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-            }
-            else if(impl == ComputeImplementation::cuda)
-            {
-#ifdef CUDA_ENABLED
-                std::tie(integrations, calibrations) = cuda::Calibrate(*ms, ToDirectionVector(directions), 0.0, false);
-#endif // CUDA_ENABLED
-            }
-            else
-            {
-                throw std::invalid_argument("impl");
-            }
+            std::tie(integrations, calibrations) = Calibrate(impl, *ms, ToDirectionVector(directions), 0.0, false);
 
             auto expected = GetExpectedCalibration();
 
@@ -149,7 +130,7 @@ namespace icrar
         void RotateVisibilitiesTest(ComputeImplementation impl)
         {
             using namespace std::complex_literals;
-            const double THRESHOLD = 0.01;
+            const double THRESHOLD = 0.0001;
             
             auto direction = casacore::MVDirection(-0.4606549305661674, -0.29719233792392513);
 
@@ -289,7 +270,7 @@ namespace icrar
             }
 
             const int aSize = epochRows;
-            auto epochIndices = casacore::Slice(0, aSize); //TODO assuming epoch indices are sorted
+            auto epochIndices = casacore::Slice(0, aSize); //TODO(calgray): assuming epoch indices are sorted
 
             casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumn()(epochIndices); 
             casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumn()(epochIndices);
@@ -359,13 +340,13 @@ namespace icrar
             // Ad
             ASSERT_DOUBLE_EQ(aCols, Ad.rows());
             ASSERT_DOUBLE_EQ(aRows, Ad.cols());
-            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(2.62531368e-15, Ad(0,0), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(2.04033520e-15, Ad(0,1), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(3.25648083e-16, Ad(0,2), TOLERANCE); // TODO(calgray): emergent
             // //...
-            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO: emergent
-            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO: emergent
+            // EXPECT_NEAR(-1.02040816e-02, Ad(127,95), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(-0.020408163265312793, Ad(127,96), TOLERANCE); // TODO(calgray): emergent
+            // EXPECT_NEAR(-8.9737257304377696e-16, Ad(127,97), TOLERANCE); // TODO(calgray): emergent
 
             ASSERT_EQ(Ad.cols(), I.size() + 1);
             ASSERT_MEQD(A, A * Ad * A, TOLERANCE);
@@ -399,7 +380,7 @@ namespace icrar
             //Ad1
             ASSERT_DOUBLE_EQ(a1Rows, Ad1.cols());
             ASSERT_DOUBLE_EQ(a1Cols, Ad1.rows());
-            //TODO: Ad1 not identical to LEAP-Cal
+
             // EXPECT_DOUBLE_EQ(-9.8130778667735933e-18, Ad1(0,0)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(6.3742385976163974e-17, Ad1(0,1)); // TODO: emergent
             // EXPECT_DOUBLE_EQ(3.68124219034074e-19, Ad1(0,2)); // TODO: emergent
@@ -410,7 +391,6 @@ namespace icrar
             
             ASSERT_EQ(Ad1.cols(), I1.size() + 1);
             ASSERT_MEQD(A1, A1 * Ad1 * A1, TOLERANCE);
-
         }
     };
 
@@ -427,4 +407,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(PhaseRotateTests, PhaseRotateTestCuda) { PhaseRotateTest(ComputeImplementation::cuda); }
 #endif
-}
+} // namespace icrar

@@ -98,8 +98,8 @@ namespace icrar
         in.read(reinterpret_cast<char*>(&rows), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(&cols), sizeof(typename Matrix::Index)); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
         matrix.resize(rows, cols);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         LOG(info) << "Reading " << memory_amount(rows * cols * sizeof(typename Matrix::Scalar)) << " from " << filepath;
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         in.read(reinterpret_cast<char*>(matrix.data()), rows * cols * sizeof(typename Matrix::Scalar) );
         in.close();
     }
@@ -117,11 +117,12 @@ namespace icrar
         std::ifstream hashIn(filename, std::ios::in | std::ios::binary);
         if(hashIn.good())
         {
-            hashIn.read((char*)(&hash), sizeof(T));
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            hashIn.read(reinterpret_cast<char*>(&hash), sizeof(T));
         }
         else
         {
-            throw icrar::file_exception("could not read file", filename, __FILE__, __LINE__);
+            throw icrar::file_exception("could not read hash from file", filename, __FILE__, __LINE__);
         }
     }
 
@@ -138,7 +139,8 @@ namespace icrar
         std::ofstream hashOut(filename, std::ios::out | std::ios::binary);
         if(hashOut.good())
         {
-            hashOut.write((char*)(&hash), sizeof(T));
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+            hashOut.write(reinterpret_cast<char*>(&hash), sizeof(T));
         }
         else
         {
@@ -162,7 +164,7 @@ namespace icrar
     template<typename In, typename Out, typename Lambda>
     void ProcessCache(size_t hash,
         const In& in, Out& out,
-        std::string hashFile, std::string cacheFile,
+        const std::string& hashFile, const std::string& cacheFile,
         Lambda transform)
     {
         bool cacheRead = false;

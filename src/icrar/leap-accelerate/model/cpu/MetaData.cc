@@ -25,7 +25,7 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -40,7 +40,8 @@ namespace icrar
 namespace cpu
 {
     MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
-    : m_minimumBaselineThreshold(minimumBaselineThreshold)
+    : m_constants({})
+    , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -83,7 +84,7 @@ namespace cpu
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
         //select the first epoch only
-        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
         
@@ -171,28 +172,29 @@ namespace cpu
         double ang2 = polar_direction(0) - m_constants.phase_centre_ra_rad;
         double ang3 = -pi / 2.0 + polar_direction(1);
 
-        m_dd1 = Eigen::Matrix3d();
-        m_dd1 <<
+        auto dd1 = Eigen::Matrix3d();
+        dd1 <<
         1,              0,               0,
         0, std::cos(ang1), -std::sin(ang1),
         0, std::sin(ang1),  std::cos(ang1);
 
-        m_dd2 = Eigen::Matrix3d();
-        m_dd2 <<
+        auto dd2 = Eigen::Matrix3d();
+        dd2 <<
          std::cos(ang2), std::sin(ang2), 0,
         -std::sin(ang2), std::cos(ang2), 0,
                       0,              0, 1;
 
-        m_dd3 <<
+        auto dd3 = Eigen::Matrix3d();
+        dd3 <<
         1,              0,               0,
         0, std::cos(ang3), -std::sin(ang3),
         0, std::sin(ang3),  std::cos(ang3);
 
 
-        m_dd = m_dd3 * m_dd2 * m_dd1;
-        LOG(trace) << "dd3: " << pretty_matrix(m_dd3);
-        LOG(trace) << "dd2: " << pretty_matrix(m_dd2);
-        LOG(trace) << "dd1: " << pretty_matrix(m_dd1);
+        m_dd = dd3 * dd2 * dd1;
+        LOG(trace) << "dd3: " << pretty_matrix(dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(dd1);
         LOG(trace) << "dd: " << pretty_matrix(m_dd);
 
         // TODO(calgray) Alternatively calc only the three vec
@@ -216,7 +218,7 @@ namespace cpu
         m_UVW.reserve(m_oldUVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.push_back(m_oldUVW[n] * m_dd);
+            m_UVW.emplace_back(m_oldUVW[n] * m_dd);
         }
     }
 
@@ -249,5 +251,5 @@ namespace cpu
         && dlm_ra == rhs.dlm_ra
         && dlm_dec == rhs.dlm_dec;
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

@@ -40,20 +40,10 @@ namespace icrar
      */
     class CommandLineTests : public ::testing::Test
     {
+        std::string m_binDir = PROJECT_BINARY_DIR;
+        std::string m_srcDir = PROJECT_SOURCE_DIR;
+    
     protected:
-        std::string m_binDir;
-        std::string m_srcDir;
-
-        CommandLineTests() {
-            m_binDir = PROJECT_BINARY_DIR;
-            m_srcDir = PROJECT_SOURCE_DIR;
-        }
-
-        ~CommandLineTests() override
-        {
-
-        }
-
         void TestHelp()
         {
             std::string command = m_binDir + "LeapAccelerateCLI";
@@ -149,4 +139,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(CommandLineTests, TestMultipleCuda) { TestMultipleCuda(); }
 #endif
-}
+} // namespace icrar

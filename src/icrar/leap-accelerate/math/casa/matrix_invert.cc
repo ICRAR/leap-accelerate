@@ -38,5 +38,5 @@ namespace casalib
     {
         return ConvertMatrix(cpu::SVDPseudoInverse(ToMatrix(a), epsilon));
     }
-}
-}
+} // namespace casalib
+} // namespace icrar

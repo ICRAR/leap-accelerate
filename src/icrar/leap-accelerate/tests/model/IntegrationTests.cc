@@ -20,7 +20,7 @@
 *    MA 02111-1307  USA
 */
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
@@ -29,7 +29,7 @@
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
 
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <gtest/gtest.h>
 
@@ -39,19 +39,9 @@ namespace icrar
 {
     class IntegrationTests : public ::testing::Test
     {
-        const double PRECISION = 0.0001;
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-        IntegrationTests() {
-
-        }
-
-        ~IntegrationTests() override
-        {
-
-        }
-
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
@@ -145,4 +135,4 @@ namespace icrar
     TEST_F(IntegrationTests, DISABLED_TestMeasurementSet) { TestMeasurementSet(); }
     TEST_F(IntegrationTests, TestReadFromFile) { TestReadFromFile(); }
     TEST_F(IntegrationTests, DISABLED_TestCudaBufferCopy) { TestCudaBufferCopy(); }
-}
+} // namespace icrar

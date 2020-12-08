@@ -1,4 +1,3 @@
-
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -21,27 +20,34 @@
  * MA 02111 - 1307  USA
  */
 
-#include "math.h"
+#include "Calibrate.h"
+
+#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 
 namespace icrar
 {
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a)
+    cpu::CalibrateResult Calibrate(
+        ComputeImplementation impl,
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVDirection>& directions,
+        double minimumBaselineThreshold,
+        bool isFileSystemCacheEnabled)
     {
-        return a.unaryExpr([](std::complex<double> v){ return std::arg(v); });
-    }
-
-    Eigen::Vector2d ToPolar(const MVDirection& xyz)
-    {
-        auto tmp = Eigen::Vector2d();
-        if (xyz(0) != 0 || xyz(1) != 0)
+        if(impl == ComputeImplementation::cpu)
         {
-            tmp(0) = std::atan2(xyz(1),xyz(0));
+            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+        }
+        else if(impl == ComputeImplementation::cuda)
+        {
+#ifdef CUDA_ENABLED
+            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
+#else
+            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
+#endif
         }
         else
         {
-            tmp(0) = 0.0;
+            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
         }
-        tmp(1) = std::asin(xyz(2));
-        return tmp;
     }
-}
+} // namespace icrar

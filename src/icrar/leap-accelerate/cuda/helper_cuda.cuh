@@ -33,10 +33,10 @@
 
 #include "helper_string.cuh"
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #ifndef EXIT_WAIVED
 #define EXIT_WAIVED 2
@@ -578,8 +578,7 @@ static const char *_cudaGetErrorEnum(NppStatus error) {
 #endif
 
 template <typename T>
-void check(T result, char const *const func, const char *const file,
-           int const line) {
+void check(T result, char const *const func, const char *const file, int const line) {
   if (result) {
     fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\" \n", file, line,
             static_cast<unsigned int>(result), _cudaGetErrorEnum(result), func);
@@ -590,10 +589,10 @@ void check(T result, char const *const func, const char *const file,
 #ifdef __DRIVER_TYPES_H__
 // This will output the proper CUDA error strings in the event
 // that a CUDA host call returns an error
-#define checkCudaErrors(val) check((val), #val, __FILE__, __LINE__)
+#define checkCudaErrors(val) check((val), #val, __FILE__, __LINE__) // NOLINT(cppcoreguidelines-macro-usage)
 
 // This will output the proper error string when calling cudaGetLastError
-#define getLastCudaError(msg) __getLastCudaError(msg, __FILE__, __LINE__)
+#define getLastCudaError(msg) __getLastCudaError(msg, __FILE__, __LINE__) // NOLINT(cppcoreguidelines-macro-usage)
 
 inline void __getLastCudaError(const char *errorMessage, const char *file,
                                const int line) {

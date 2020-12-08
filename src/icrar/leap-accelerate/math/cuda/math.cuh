@@ -1,3 +1,4 @@
+
 /**
  * ICRAR - International Centre for Radio Astronomy Research
  * (c) UWA - The University of Western Australia
@@ -22,18 +23,24 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
-#include <boost/noncopyable.hpp>
-#include <vector>
-
-namespace icrar
+/**
+ * @brief Computes the complex exponent of a complex value
+ * 
+ * @param z complex value
+ * @return e ^ ( @p z )
+ */
+__device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
 {
-    class CpuLeapCalibrator : public ILeapCalibrator
-    {
-        virtual cpu::CalibrateResult Calibrate(
-            const icrar::MeasurementSet& ms,
-            const std::vector<MVDirection>& directions,
-            double minimumBaselineThreshold,
-            bool isFileSystemCacheEnabled) override;
-    };
-} // namespace icrar
+    // see https://forums.decuCexpveloper.nvidia.com/t/complex-number-exponential-function/24696/2
+    double resx = 0.0;
+    double resy = 0.0;
+    double zx = cuCreal(z);
+    double zy = cuCimag(z);
+
+    sincos(zy, &resy, &resx);
+    
+    double t = exp(zx);
+    resx *= t;
+    resy *= t;
+    return make_cuDoubleComplex(resx, resy);
+}

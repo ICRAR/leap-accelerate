@@ -25,12 +25,13 @@
 
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceIntegration.h>
 
+#include <icrar/leap-accelerate/math/cuda/math.cuh>
 #include <icrar/leap-accelerate/math/cuda/matrix.h>
 #include <icrar/leap-accelerate/math/cuda/vector.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
@@ -262,22 +263,6 @@ namespace cuda
         deltaPhaseColumn.conservativeResize(deltaPhaseColumn.size() + 1);
         deltaPhaseColumn(deltaPhaseColumn.size() - 1) = 0;
         output_calibrations.emplace_back(direction, (metadata.GetAd() * deltaPhaseColumn) + cal1);
-    }
-
-    __device__ __forceinline__ cuDoubleComplex cuCexp(cuDoubleComplex z)
-    {
-        // see https://forums.decuCexpveloper.nvidia.com/t/complex-number-exponential-function/24696/2
-        double resx = 0.0;
-        double resy = 0.0;
-        double zx = cuCreal(z);
-        double zy = cuCimag(z);
-
-        sincos(zy, &resy, &resx);
-        
-        double t = exp(zx);
-        resx *= t;
-        resy *= t;
-        return make_cuDoubleComplex(resx, resy);
     }
 
     /**

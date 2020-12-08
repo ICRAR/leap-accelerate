@@ -82,5 +82,5 @@ namespace cpu
 
         return std::make_pair(std::move(A), std::move(I));
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

@@ -22,7 +22,7 @@ set(private_headers
 
     math/casacore_helper.h
     math/math_conversion.h
-    math/math.h
+    math/vector_extensions.h
 )
 set(sources
     ${git_revision_cc}
@@ -36,9 +36,8 @@ set(sources
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/math.cc
+    math/vector_extensions.cc
     math/math_conversion.cc
-    math/casa/vector.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc
     math/cpu/vector.cc
@@ -53,10 +52,7 @@ set(sources
     common/MVDirection.cc
     common/MVuvw.cc
     
-    algorithm/LeapCalibratorFactory.cc
-    algorithm/cpu/CpuLeapCalibrator.cc
-    algorithm/cuda/CudaLeapCalibrator.cc
-
+    algorithm/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )
@@ -112,17 +108,18 @@ add_library(
 endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TARGET_NAME}
-    PRIVATE
-      [[pch.h]]
-  )
+# TODO(calgray): clang-tidy tries to analyze pch systems headers
+#  target_precompile_headers(${TARGET_NAME}
+#    PRIVATE
+#    [[pch.h]]
+#  )
 endif()
 
 
 if(CUDA_ENABLED)
-# Request that the target be built with -std=c++14
+  # Request that the target be built with -std=c++14
   # As this is a public compile feature anything that links to the target
-# will also build with -std=c++14
+  # will also build with -std=c++14
   target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
   target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
 
@@ -138,10 +135,9 @@ if(CUDA_ENABLED)
   target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
   configure_cuda_warnings(${TARGET_NAME})
 endif()
-
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-# Legacy TODO: build support for xenial
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
+# Legacy TODO(calgray): build support for xenial
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)

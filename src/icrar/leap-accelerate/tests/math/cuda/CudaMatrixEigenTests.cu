@@ -32,14 +32,9 @@
 #include <stdio.h>
 #include <array>
 
-class cuda_vector_eigen_tests : public testing::Test
+class CudaMatrixEigenTests : public testing::Test
 {
 public:
-    cuda_vector_eigen_tests()
-    {
-
-    }
-
     void SetUp() override
     {
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
@@ -50,7 +45,7 @@ public:
 
     void TearDown() override
     {
-
+        checkCudaErrors(cudaDeviceReset());
     }
 
     void test_vector_add()
@@ -72,4 +67,4 @@ public:
     }
 };
 
-TEST_F(cuda_vector_eigen_tests, test_gpu_vector_add0) { test_vector_add(); }
+TEST_F(CudaMatrixEigenTests, test_gpu_vector_add0) { test_vector_add(); }

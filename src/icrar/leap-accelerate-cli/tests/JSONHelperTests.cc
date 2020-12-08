@@ -44,18 +44,7 @@ namespace icrar
 {
     class JSONHelperTests : public ::testing::Test
     {
-
     protected:
-
-        JSONHelperTests() {
-
-        }
-
-        ~JSONHelperTests() override
-        {
-
-        }
-
         void SetUp() override
         {
 
@@ -66,15 +55,15 @@ namespace icrar
             
         }
 
-        void TestParseDirections(const std::string input, const std::vector<icrar::MVDirection>& expected)
+        void TestParseDirections(const std::string& input, const std::vector<icrar::MVDirection>& expected)
         {
             auto actual = icrar::ParseDirections(input);
             ASSERT_EQ(actual, expected);
         }
 
-        void TestParseDirectionsException(const std::string input)
+        void TestParseDirectionsException(const std::string& input)
         {
-            ASSERT_THROW(icrar::ParseDirections(input), icrar::exception);
+            ASSERT_THROW(icrar::ParseDirections(input), icrar::exception); // NOLINT(cppcoreguidelines-avoid-goto)
         }
 
     };
@@ -111,4 +100,4 @@ namespace icrar
                 ToDirection(casacore::MVDirection(4.0,4.0)),
             });
     }
-}
+} // namespace icrar

@@ -23,8 +23,7 @@
 #include <icrar/leap-accelerate-cli/Arguments.h>
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
-#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
-#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/Calibrate.h>
 
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
@@ -54,7 +53,7 @@ std::string arg_string(int argc, char** argv)
     std::stringstream ss;
     for(int i = 0; i < argc; i++)
     {
-        ss << argv[i] << " ";
+        ss << argv[i] << " "; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     }
     return ss.str();
 }
@@ -84,13 +83,13 @@ int main(int argc, char** argv)
     CLIArguments rawArgs;
 
     app.add_option("-c,--config", rawArgs.configFilePath, "Configuration file relative path");
-    //TODO: app.add_option("-i,--input-type", rawArgs.source, "Input source type");
+    //TODO(calgray): app.add_option("-i,--input-type", rawArgs.source, "Input source type");
     app.add_option("-f,--filepath", rawArgs.filePath, "Measurement set file path");
     app.add_option("-o,--output", rawArgs.outputFilePath, "Calibration output file path");
     app.add_option("-d,--directions", rawArgs.directions, "Direction calibrations");
     app.add_option("-s,--stations", rawArgs.stations, "Override number of stations to use in the specified measurement set");
-    //TODO: app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
-    //TODO: app.add_option("v,--solutionInterval");
+    //TODO(calgray): app.add_option("-m,--mwa-support", rawArgs.mwaSupport, "MWA data support by negating baselines");
+    //TODO(calgray): app.add_option("v,--solutionInterval");
     app.add_option("-i,--implementation", rawArgs.computeImplementation, "Compute implementation type (cpu, cuda)");
 
 #if __has_include(<optional>)
@@ -145,11 +144,15 @@ int main(int argc, char** argv)
     {
         ArgumentsValidated args = { Arguments(std::move(rawArgs)) };
 
-        LOG(info) << version_information(argv[0]);
+        LOG(info) << version_information(argv[0]); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         LOG(info) << arg_string(argc, argv);
 
-        auto calibrator = LeapCalibratorFactory().Create(args.GetComputeImplementation());
-        cpu::CalibrateResult result = calibrator->Calibrate(args.GetMeasurementSet(), args.GetDirections(), args.GetMinimumBaselineThreshold(), args.IsFileSystemCacheEnabled());
+        auto result = Calibrate(
+            args.GetComputeImplementation(),
+            args.GetMeasurementSet(),
+            args.GetDirections(),
+            args.GetMinimumBaselineThreshold(),
+            args.IsFileSystemCacheEnabled());
         cpu::PrintResult(result, args.GetOutputStream());
     }
     catch(const std::exception& e)

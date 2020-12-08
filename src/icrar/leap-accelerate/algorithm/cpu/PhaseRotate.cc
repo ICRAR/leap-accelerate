@@ -28,7 +28,7 @@
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/cpu/vector.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
@@ -176,7 +176,7 @@ namespace cpu
         // loop over smeared baselines
         for(size_t baseline = 0; baseline < integration.GetBaselines(); ++baseline)
         {
-            int md_baseline = baseline % metadata.GetConstants().nbaselines; //metadata baseline
+            int md_baseline = static_cast<int>(baseline % static_cast<size_t>(metadata.GetConstants().nbaselines)); // metadata baseline
 
             double shiftFactor = two_pi<double>() * (metadata.GetUVW()[baseline](2) - metadata.GetOldUVW()[baseline](2));
 

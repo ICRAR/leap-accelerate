@@ -32,14 +32,9 @@
 #include <stdio.h>
 #include <array>
 
-class cuda_vector_tests : public testing::Test
+class CudaVectorTests : public testing::Test
 {
 public:
-    cuda_vector_tests()
-    {
-
-    }
-
     void SetUp() override
     {
         // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
@@ -50,7 +45,7 @@ public:
 
     void TearDown() override
     {
-
+        checkCudaErrors(cudaDeviceReset());
     }
 
     template<typename T>
@@ -118,15 +113,15 @@ public:
     }
 };
 
-TEST_F(cuda_vector_tests, test_device_vector) { test_device_vector<double>(); }
+TEST_F(CudaVectorTests, test_device_vector) { test_device_vector<double>(); }
 
-TEST_F(cuda_vector_tests, test_gpu_array_add0) { test_array_add<1>(); }
-TEST_F(cuda_vector_tests, test_gpu_array_add3) { test_array_add<1000>(); }
+TEST_F(CudaVectorTests, test_gpu_array_add0) { test_array_add<1>(); }
+TEST_F(CudaVectorTests, test_gpu_array_add3) { test_array_add<1000>(); }
 
-TEST_F(cuda_vector_tests, test_gpu_vector_add0) { test_vector_add<double>(1); }
-TEST_F(cuda_vector_tests, test_gpu_vector_add4) { test_vector_add<double>(10000); }
-TEST_F(cuda_vector_tests, test_gpu_vector_add6) { test_vector_add<double>(1000000); }
+TEST_F(CudaVectorTests, test_gpu_vector_add0) { test_vector_add<double>(1); }
+TEST_F(CudaVectorTests, test_gpu_vector_add4) { test_vector_add<double>(10000); }
+TEST_F(CudaVectorTests, test_gpu_vector_add6) { test_vector_add<double>(1000000); }
 
-TEST_F(cuda_vector_tests, test_gpu_device_vector_add0) { test_device_vector_add<double>(1); }
-TEST_F(cuda_vector_tests, test_gpu_device_vector_add4) { test_device_vector_add<double>(10000); }
+TEST_F(CudaVectorTests, test_gpu_device_vector_add0) { test_device_vector_add<double>(1); }
+TEST_F(CudaVectorTests, test_gpu_device_vector_add4) { test_device_vector_add<double>(10000); }
 

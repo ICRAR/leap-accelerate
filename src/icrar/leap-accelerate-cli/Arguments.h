@@ -187,4 +187,4 @@ namespace icrar
          */
         void ParseConfig(const std::string& configFilepath, Arguments& args);
     };
-}
+} // namespace icrar

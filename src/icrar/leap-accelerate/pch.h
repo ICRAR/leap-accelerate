@@ -38,8 +38,6 @@
 #include <Eigen/SVD>
 #include <unsupported/Eigen/CXX11/Tensor>
 
-#include <cuda_runtime.h>
-
 #include <utility>
 #include <sstream>
 #include <iostream>

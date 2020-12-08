@@ -46,7 +46,7 @@ namespace cpu
     {
         for(size_t i = 0; i < n; i++)
         {
-            y[i] = x1[i] + x2[i];
+            y[i] = x1[i] + x2[i]; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
         }
     }
 

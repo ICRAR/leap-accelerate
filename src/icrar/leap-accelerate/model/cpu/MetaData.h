@@ -22,12 +22,16 @@
 
 #pragma once
 
-#if __has_include(<cuda_runtime.h>)
+#if CUDA_ENABLED
 #include <cuda_runtime.h>
 #else
+#ifndef __host__
 #define __host__
+#endif // __host__
+#ifndef __device__
 #define __device__
-#endif
+#endif // __device__
+#endif // CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
@@ -59,8 +63,8 @@ namespace icrar
     {
         class DeviceMetaData;
         class ConstantBuffer;
-    }
-}
+    } // namespace cuda
+} // namespace icrar
 
 namespace icrar
 {
@@ -91,9 +95,13 @@ namespace cpu
         bool operator==(const Constants& rhs) const;
     };
 
+    /**
+     * @brief container of phaserotation constants and variables
+     * 
+     */
     class MetaData
     {
-        MetaData() {}
+        MetaData() = default;
 
         Constants m_constants;
         double m_minimumBaselineThreshold;
@@ -112,9 +120,6 @@ namespace cpu
         icrar::MVDirection m_direction; // calibration direction, late initialized
 
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd1; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd2; // direction matrix, late initialized
-        Eigen::Matrix3d m_dd3; // direction matrix, late initialized
         
         Eigen::MatrixXcd m_avgData; // matrix of size (baselines, polarizations), late initialized
     
@@ -168,9 +173,10 @@ namespace cpu
         Eigen::MatrixXcd& GetAvgData() { return m_avgData; }
 
         bool operator==(const MetaData& rhs) const;
+        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
 
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantBuffer;
     };
-    }
-}
+} // namespace cpu
+} // namespace icrar

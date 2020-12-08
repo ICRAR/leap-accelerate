@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/tests/test_helper.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/ms/MeasurementSets/MSColumns.h>
@@ -44,15 +45,6 @@ namespace icrar
         std::unique_ptr<icrar::MeasurementSet> ms;
 
     protected:
-        MetaDataTests() {
-
-        }
-
-        ~MetaDataTests() override
-        {
-
-        }
-
         void SetUp() override
         {
             std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-split.ms";
@@ -166,7 +158,7 @@ namespace icrar
             EXPECT_DOUBLE_EQ(-0.34211897743046571, meta.GetDD()(2,1));
             EXPECT_DOUBLE_EQ(0.45354182990718139, meta.GetDD()(2,2));
 
-            //TODO: add astropy changes
+            //TODO(calgray): add astropy changes
             // EXPECT_DOUBLE_EQ(0.46856701307821974, meta.GetDD()(0,0));
             // EXPECT_DOUBLE_EQ(0.86068501306022194, meta.GetDD()(0,1));
             // EXPECT_DOUBLE_EQ(-0.19916390874975543, meta.GetDD()(0,2));
@@ -237,4 +229,4 @@ namespace icrar
 #ifdef CUDA_ENABLED
     TEST_F(MetaDataTests, TestCudaBufferCopy) { TestCudaBufferCopy(); }
 #endif
-}
+} // namespace icrar
