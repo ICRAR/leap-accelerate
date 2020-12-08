@@ -108,11 +108,11 @@ namespace icrar
 
             auto a = MatrixXT(2,2);
             a << 1, 2,
-                3, 4;
+                 3, 4;
 
             auto b = MatrixXT(2,3);
             b << 5, 6, 7,
-                8, 9, 10;
+                 8, 9, 10;
 
             auto c = MatrixXT(2,3);
 
@@ -143,8 +143,8 @@ namespace icrar
 
             auto a = MatrixXT(3,3);
             a << 1, 2, 3,
-                4, 5, 6,
-                7, 8, 9;
+                 4, 5, 6,
+                 7, 8, 9;
 
             auto b = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1);
             auto c = Eigen::Matrix<T, Eigen::Dynamic, 1>(3, 1); 

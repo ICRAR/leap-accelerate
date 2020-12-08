@@ -20,30 +20,26 @@
  * MA 02111 - 1307  USA
  */
 
-#include "LeapCalibratorFactory.h"
-#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
-#include <icrar/leap-accelerate/exception/exception.h>
+#pragma once
+
+#include <cusolverDn.h>
+#include <Eigen/Dense>
 
 namespace icrar
 {
-    std::unique_ptr<ILeapCalibrator> LeapCalibratorFactory::Create(ComputeImplementation impl) const
-    {
-        if(impl == ComputeImplementation::cpu)
-        {
-            return std::make_unique<CpuLeapCalibrator>();
-        }
-        else if(impl == ComputeImplementation::cuda)
-        {
-#ifdef CUDA_ENABLED
-            return std::make_unique<cuda::CudaLeapCalibrator>();
-#else
-            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
-#endif
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
-        }
-    }
+namespace cuda
+{
+    /**
+     * @brief 
+     * 
+     * @param ctx 
+     * @param a 
+     * @param jobtype 'A' or 'S' 
+     * @return Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> 
+     */
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> PseudoInverse(
+        cusolverDnHandle_t ctx,
+        const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
+        const signed char jobtype = 'S');
+} // namespace cuda
 } // namespace icrar

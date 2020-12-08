@@ -26,8 +26,6 @@
 
 namespace icrar
 {
-    CpuLeapCalibrator::~CpuLeapCalibrator() {}
-
     cpu::CalibrateResult CpuLeapCalibrator::Calibrate(
         const icrar::MeasurementSet& ms,
         const std::vector<MVDirection>& directions,

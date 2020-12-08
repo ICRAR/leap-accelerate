@@ -77,6 +77,7 @@ set(sources
     cuda/cuda_info.cu
     math/cuda/vector.cu
     math/cuda/matrix.cu
+    math/cuda/matrix_invert.cu
     
     model/cuda/DeviceMetaData.cu
     model/cuda/DeviceIntegration.cu
@@ -111,10 +112,10 @@ endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
 # TODO(calgray): clang-tidy tries to analyze pch systems headers
-#  target_precompile_headers(${TARGET_NAME}
-#    PRIVATE
-#      [[pch.h]]
-#  )
+ target_precompile_headers(${TARGET_NAME}
+   PRIVATE
+     [[pch.h]]
+ )
 endif()
 
 
@@ -143,8 +144,9 @@ target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include
 include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
 target_link_libraries(${TARGET_NAME} Threads::Threads)
-
-#target_link_libraries(${TARGET_NAME} CUDA)
+target_link_libraries(${TARGET_NAME} ${CUDA_LIBRARIES})
+target_link_libraries(${TARGET_NAME} ${CUDA_cusolver_LIBRARY})
+target_link_libraries(${TARGET_NAME} cublasLt)
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)

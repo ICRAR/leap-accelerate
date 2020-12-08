@@ -28,6 +28,7 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
+#include <icrar/leap-accelerate/math/cuda/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
@@ -39,7 +40,12 @@ namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
+    MetaData::MetaData(
+        const icrar::MeasurementSet& ms,
+        const std::vector<icrar::MVuvw>& uvws,
+        cusolverDnHandle_t cusolverContext,
+        double minimumBaselineThreshold,
+        bool useCache)
     : m_constants({})
     , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
@@ -80,7 +86,6 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
-
         auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
 
         //select the first epoch only
@@ -97,16 +102,22 @@ namespace cpu
         std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, -1);
         trace_matrix(m_A, "A");
 
-
         auto invertA1 = [](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A1";
             return icrar::cpu::PseudoInverse(a);
         };
-        auto invertA = [](const Eigen::MatrixXd& a)
+        auto invertA = [&](const Eigen::MatrixXd& a)
         {
             LOG(info) << "Inverting PhaseMatrix A";
-            return icrar::cpu::PseudoInverse(a);
+            if(cusolverContext != nullptr)
+            {
+                return icrar::cuda::PseudoInverse(cusolverContext, a);
+            }
+            else
+            {
+                return icrar::cpu::PseudoInverse(a);
+            }
         };
 
         m_Ad1 = invertA1(m_A1);
@@ -116,7 +127,7 @@ namespace cpu
             ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
                 matrix_hash<Eigen::MatrixXd>()(m_A),
                 m_A, m_Ad,
-                "A.hash", "Ad.cache",
+                "A.hash", "A.cache",
                 invertA);
         }
         else
@@ -140,7 +151,7 @@ namespace cpu
     }
 
     MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
-    : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
+    : MetaData(ms, uvws, nullptr, minimumBaselineThreshold, useCache)
     {
         SetDD(direction);
         CalcUVW();

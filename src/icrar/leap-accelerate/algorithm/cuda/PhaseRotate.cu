@@ -73,7 +73,8 @@ namespace cuda
         const icrar::MeasurementSet& ms,
         const std::vector<icrar::MVDirection>& directions,
         double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
+        bool isFileSystemCacheEnabled,
+        cusolverDnHandle_t cusolverContext)
     {
         LOG(info) << "Starting Calibration using cuda";
         LOG(info)
@@ -127,7 +128,7 @@ namespace cuda
 
         profiling::timer metadata_read_timer;
         LOG(info) << "Loading MetaData";
-        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), minimumBaselineThreshold, isFileSystemCacheEnabled);
+        auto metadata = icrar::cpu::MetaData(ms, integration.GetUVW(), cusolverContext, minimumBaselineThreshold, isFileSystemCacheEnabled);
         auto constantMetadata = std::make_shared<ConstantMetaData>(
             metadata.GetConstants(),
             metadata.GetA(),
@@ -152,7 +153,7 @@ namespace cuda
             input_queue[0].SetData(integration);
 
             LOG(info) << "Copying Metadata to Device";
-            icrar::cuda::DeviceMetaData deviceMetadata(constantMetadata, metadata);
+            auto deviceMetadata = icrar::cuda::DeviceMetaData(constantMetadata, metadata);
             LOG(info) << "PhaseRotate";
             icrar::cuda::PhaseRotate(metadata, deviceMetadata, directions[i], input_queue, output_integrations[i], output_calibrations[i]);
         }
@@ -175,7 +176,7 @@ namespace cuda
             LOG(info) << "Rotating integration " << integration.GetIntegrationNumber();
             icrar::cuda::RotateVisibilities(integration, deviceMetadata);
 
-            //TODO: currently unused
+            //TODO(calgray): for debugging, currently unused
             output_integrations.emplace_back(
                 integration.GetIntegrationNumber(),
                 direction,
@@ -293,7 +294,7 @@ namespace cuda
             1
         );
 
-        //TODO: store polar form in advance
+        //TODO(calgray): store polar form in advance
         const auto polar_direction = icrar::ToPolar(metadata.GetDirection());
         g_RotateVisibilities<<<gridSize, blockSize>>>(
             (cuDoubleComplex*)integration.GetVis().Get(), integration.GetVis().GetDimensionSize(0), integration.GetVis().GetDimensionSize(1), integration.GetVis().GetDimensionSize(2),

@@ -31,7 +31,7 @@
 #ifndef COMMON_HELPER_CUDA_H_
 #define COMMON_HELPER_CUDA_H_
 
-#include "helper_string.cuh"
+#include <icrar/leap-accelerate/cuda/helper_string.cuh>
 
 #include <cstdint>
 #include <cstdio>

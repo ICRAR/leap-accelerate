@@ -26,8 +26,6 @@
 #include "device_launch_parameters.h"
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
 
-#include <casacore/casa/Arrays/Array.h>
-
 #include <Eigen/Core>
 
 #include <array>

@@ -20,30 +20,32 @@
  * MA 02111 - 1307  USA
  */
 
-#include "LeapCalibratorFactory.h"
-#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
-#include <icrar/leap-accelerate/algorithm/cuda/CudaLeapCalibrator.h>
+#pragma once
+
+// TODO(calgray): cusolver must be included before helper_cuda
+#include <cusolver_common.h>
+#include <cusolverDn.h>
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+
 #include <icrar/leap-accelerate/exception/exception.h>
+
+#include <string>
 
 namespace icrar
 {
-    std::unique_ptr<ILeapCalibrator> LeapCalibratorFactory::Create(ComputeImplementation impl) const
+namespace cuda
+{
+    inline void cusolveSafeCall(cusolverStatus_t err, const char* func, const char* file, const int line)
     {
-        if(impl == ComputeImplementation::cpu)
+        if(CUSOLVER_STATUS_SUCCESS != err)
         {
-            return std::make_unique<CpuLeapCalibrator>();
-        }
-        else if(impl == ComputeImplementation::cuda)
-        {
-#ifdef CUDA_ENABLED
-            return std::make_unique<cuda::CudaLeapCalibrator>();
-#else
-            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
-#endif
-        }
-        else
-        {
-            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
+            _cudaGetErrorEnum(err);
+            //cudaDeviceReset();
+            assert(0);
+            throw icrar::exception("CUSOLVE error in file '%s', line %d\n %s\nerror %d: %s\nterminating!\n", file, line);
         }
     }
+} // namespace cuda
 } // namespace icrar
+
+//#define cusolveSafeCall(val) ::icrar::cuda::_cusolveSafeCall((val), #val, __FILE__, __LINE__) // NOLINT(cppcoreguidelines-macro-usage)

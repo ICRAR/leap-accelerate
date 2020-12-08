@@ -25,12 +25,20 @@
 
 #include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
 #include <boost/noncopyable.hpp>
+
+#include <cusolverDn.h>
+#include <cublasLt.h>
+
 #include <vector>
 
 namespace icrar
 {
+namespace cuda
+{
     class CudaLeapCalibrator : public ILeapCalibrator
     {
+        cublasLtHandle_t m_cublasLtCtx = nullptr;
+        cusolverDnHandle_t m_cusolverDnCtx = nullptr; 
     public:
         CudaLeapCalibrator();
         ~CudaLeapCalibrator() override;
@@ -41,5 +49,6 @@ namespace icrar
             double minimumBaselineThreshold,
             bool isFileSystemCacheEnabled) override;
     };
+} // namespace cuda
 } // namespace icrar
 #endif

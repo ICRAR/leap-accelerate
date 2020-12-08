@@ -25,9 +25,15 @@
 
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <icrar/leap-accelerate/cuda/cusolver_utils.h>
+
 #include <cuda_runtime.h>
+#include <cusolverDn.h>
+#include <cublasLt.h>
 
 namespace icrar
+{
+namespace cuda
 {
     CudaLeapCalibrator::CudaLeapCalibrator()
     {
@@ -37,10 +43,15 @@ namespace icrar
         {
             throw icrar::exception("CUDA error: no devices supporting CUDA.", __FILE__, __LINE__);
         }
+
+        checkCudaErrors(cublasLtCreate(&m_cublasLtCtx));
+        checkCudaErrors(cusolverDnCreate(&m_cusolverDnCtx));
     }
 
     CudaLeapCalibrator::~CudaLeapCalibrator()
     {
+        checkCudaErrors(cusolverDnDestroy(m_cusolverDnCtx));
+        checkCudaErrors(cublasLtDestroy(m_cublasLtCtx));
         checkCudaErrors(cudaDeviceReset());
     }
 
@@ -49,7 +60,8 @@ namespace icrar
         const std::vector<MVDirection>& directions,
         double minimumBaselineThreshold,
         bool isFileSystemCacheEnabled)
-        {
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-        }
+    {
+        return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled, m_cusolverDnCtx);
+    }
+} // namespace cuda
 } // namespace icrar

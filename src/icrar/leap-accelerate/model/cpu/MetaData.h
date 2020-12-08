@@ -50,6 +50,8 @@
 
 #include <boost/optional.hpp>
 
+#include <cusolverDn.h>
+
 #include <iostream>
 #include <string>
 #include <memory>
@@ -132,7 +134,7 @@ namespace cpu
          * @param minimumBaselineThreshold
          * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, cusolverDnHandle_t cusolverContext = nullptr, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object

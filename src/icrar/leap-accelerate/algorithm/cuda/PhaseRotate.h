@@ -39,6 +39,8 @@
 #include <casacore/casa/Arrays/Vector.h>
 #include <casacore/casa/Arrays/Matrix.h>
 
+#include <cusolverDn.h>
+
 #include <vector>
 
 namespace icrar
@@ -72,7 +74,8 @@ namespace cuda
         const MeasurementSet& ms,
         const std::vector<MVDirection>& directions,
         double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled);
+        bool isFileSystemCacheEnabled,
+        cusolverDnHandle_t cusolverContext);
 
     /**
      * Performs only visibilities rotation on the GPU

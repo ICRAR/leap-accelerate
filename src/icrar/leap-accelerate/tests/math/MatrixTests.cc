@@ -149,6 +149,67 @@ public:
         0.2, -0.3, 0;
         
         ASSERT_MEQD(m1d, expected_m1d, TOLERANCE);
+        ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1d * m1, TOLERANCE);
+    }
+
+    void TestPseudoInverse23()
+    {
+        auto m1 = Eigen::MatrixXd(2, 3);
+        m1 <<
+        1, 3, 5,
+        2, 4, 6;
+
+        auto m1d = icrar::cpu::PseudoInverse(m1);
+
+        auto expected_m1d = Eigen::MatrixXd(3, 2);
+        expected_m1d <<
+        -1.33333, 1.08333,
+        -0.333333, 0.333333,
+        0.666667, -0.416667;
+
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2),  m1 * m1d, TOLERANCE);
+    }
+
+    void TestPseudoInverse32()
+    {
+        auto m1 = Eigen::MatrixXd(3, 2);
+        m1 <<
+        1, 2,
+        3, 4,
+        5, 6;
+
+        auto m1d = icrar::cpu::PseudoInverse(m1);
+
+        auto expected_m1d = Eigen::MatrixXd(2, 3);
+        expected_m1d <<
+        -1.33333, -0.333333,  0.666667,
+         1.08333,  0.333333, -0.416667;
+
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2), m1d * m1, TOLERANCE);
+    }
+
+    void TestSVDPseudoInverse32Degenerate()
+    {
+        auto m1 = Eigen::MatrixXd(3, 2);
+        m1 <<
+        0.5, 0.5,
+        -1, -1,
+        -0.5, -0.5;
+
+        auto m1d = icrar::cpu::SVDPseudoInverse(m1);
+
+        auto expected_m1d = Eigen::MatrixXd(2, 3);
+        expected_m1d <<
+        0.166667, -0.333333, -0.166667,
+        0.166667, -0.333333, -0.166667;
+
+        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
+        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+        //ASSERT_MEQD(Eigen::MatrixXd::Identity(2,2),  m1d * m1, TOLERANCE);
     }
 
     void TestPseudoInverse33()
@@ -168,25 +229,7 @@ public:
         0.2, -0.3, 0;
         
         ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
-    }
-
-    void TestPseudoInverse32()
-    {
-        auto m1 = Eigen::MatrixXd(3, 2);
-        m1 <<
-        0.5, 0.5,
-        -1, -1,
-        -0.5, -0.5;
-
-        auto m1d = icrar::cpu::PseudoInverse(m1);
-
-        auto expected_m1d = Eigen::MatrixXd(2, 3);
-        expected_m1d <<
-        0.166667, -0.333333, -0.166667,
-        0.166667, -0.333333, -0.166667;
-
-        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
-        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
+        ASSERT_MEQD(Eigen::MatrixXd::Identity(3,3), m1d * m1, TOLERANCE);
     }
 
     void TestSVD42()
@@ -207,25 +250,6 @@ public:
         ASSERT_EQ(m1.rows(), u.cols());
         ASSERT_EQ(m1.cols(), v.rows());
         ASSERT_EQ(m1.cols(), v.cols());
-    }
-
-    void TestSVDPseudoInverse32Degenerate()
-    {
-        auto m1 = Eigen::MatrixXd(3, 2);
-        m1 <<
-        0.5, 0.5,
-        -1, -1,
-        -0.5, -0.5;
-
-        auto m1d = icrar::cpu::SVDPseudoInverse(m1);
-
-        auto expected_m1d = Eigen::MatrixXd(2, 3);
-        expected_m1d <<
-        0.166667, -0.333333, -0.166667,
-        0.166667, -0.333333, -0.166667;
-
-        ASSERT_MEQD(expected_m1d, m1d, TOLERANCE);
-        ASSERT_MEQD(m1, m1 * m1d * m1, TOLERANCE);
     }
 
     void TestPseudoInverse42()
@@ -254,9 +278,10 @@ TEST_F(MatrixTests, TestMatrixSize) { TestMatrixSize(); }
 TEST_F(MatrixTests, TestMatrixEigen) { TestMatrixEigen(); }
 TEST_F(MatrixTests, TestMatrixMultiply) { TestMatrixMultiply(); }
 TEST_F(MatrixTests, TestMatrixPretty) { TestMatrixPretty(); }
-
 TEST_F(MatrixTests, TestTranspose) { TestTranspose(); }
+
 TEST_F(MatrixTests, TestSquareInvert) { TestSquareInvert(); }
+TEST_F(MatrixTests, TestPseudoInverse23) { TestPseudoInverse23(); }
 TEST_F(MatrixTests, TestPseudoInverse33) { TestPseudoInverse33(); }
 TEST_F(MatrixTests, TestPseudoInverse32) { TestPseudoInverse32(); }
 TEST_F(MatrixTests, TestSVD42) { TestSVD42(); }

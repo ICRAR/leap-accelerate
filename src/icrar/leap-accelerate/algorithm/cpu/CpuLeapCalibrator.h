@@ -31,7 +31,7 @@ namespace icrar
     class CpuLeapCalibrator : public ILeapCalibrator
     {
     public:
-        ~CpuLeapCalibrator() override; 
+        ~CpuLeapCalibrator() override = default;
 
         virtual cpu::CalibrateResult Calibrate(
             const icrar::MeasurementSet& ms,
