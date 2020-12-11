@@ -50,5 +50,5 @@ namespace log
      * @return true if value was converted succesfully, false otherwise.
      */
     bool TryParseVerbosity(const std::string& value, Verbosity& out);
-}
-}
+} // namespace log
+} // namespace icrar

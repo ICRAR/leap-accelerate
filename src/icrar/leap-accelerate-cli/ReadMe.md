@@ -14,13 +14,17 @@ leap-accelerate-cli is a command line interface to performing leap calibration.
 
 * --stations - Overrides number of stations to use in the specified measurement set
 
-* --implementation (casa, cpu, cuda) - compute implementation type
+* --implementation (cpu, cuda) - compute implementation type
 
-* --autocorrelations (true, false) - True if measurement set rows store autocorrelations
+* --useFileSystemCache (true, false) - Whether filesystem caching is used between system calls
+
+* --autoCorrelations (true, false) - True if measurement set rows store autocorrelations
+
+* --minimumBaselineThreshold (0.0 - inf) - Minimum antenna baeline length in meters
 
 * --verbosity (true, false) - Verbosity (0=fatal, 1=error, 2=warn, 3=info, 4=debug, 5=trace), defaults to info
 
-* (unsupported)--mwa-support (true, false) - negates baseline readings 
+* (unsupported)--mwa-support (true, false) - negates baseline readings
 
 ## Logging
 
@@ -38,9 +42,13 @@ filePath: string
 
 outputFilePath: string?
 
-readAutoCorrelations: boolean?
-
 computeImplementation: string?
+
+autoCorrelations: boolean?
+
+useFileSystemCache: bool?
+
+minimumBaselineThreshold: double?
 
 directions: [[number]]
 

@@ -40,11 +40,14 @@ namespace cpu
      * @param a2 indexes of 2nd antenna of each baselines
      * @param refAnt the reference antenna (0, 1), -1 
      * @param map 
-     * @return std::pair<Matrixd, Matrixi> 
+     * @return std::pair<Matrixd, Matrixi>
+     * for refAnt=-1: first matrix is of size [baselines,stations] and seconds of size[baselines,1]
+     * for refAnt>-1: first matrix is of size [stations,stations] and seconds of size[stations,1]
      */
     std::pair<Eigen::MatrixXd, Eigen::VectorXi> PhaseMatrixFunction(
         const Eigen::VectorXi& a1,
         const Eigen::VectorXi& a2,
+        const Eigen::Matrix<bool, Eigen::Dynamic, 1>& fg,
         int refAnt=-1);
 }
-} 
+}

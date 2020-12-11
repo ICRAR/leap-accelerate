@@ -21,6 +21,7 @@
  */
 
 #include <icrar/leap-accelerate/core/log/Verbosity.h>
+#include <icrar/leap-accelerate/exception/exception.h>
 #include <algorithm>
 
 namespace icrar
@@ -32,7 +33,7 @@ namespace log
         Verbosity e;
         if(!TryParseVerbosity(value, e))
         {
-            throw std::invalid_argument("value");
+            throw invalid_argument_exception(value, "value", __FILE__, __LINE__);
         }
         return e;
     }
@@ -76,5 +77,5 @@ namespace log
         }
         return false;
     }
-}
-}
+} // namespace log
+} // namespace icrar

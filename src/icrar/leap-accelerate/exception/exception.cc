@@ -25,7 +25,7 @@
 
 namespace icrar
 {
-    exception::exception(std::string msg, std::string file, int line)
+    exception::exception(const std::string& msg, const std::string& file, int line)
     {
         std::stringstream ss;
         ss << file << ":" << line << " " << msg << std::endl;
@@ -37,9 +37,7 @@ namespace icrar
         return m_message.c_str();
     }
 
-    not_implemented_exception::not_implemented_exception(std::string file, int line)
+    not_implemented_exception::not_implemented_exception(const std::string& file, int line)
     : exception("not implemented", file, line)
     {}
-}
-
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
+} // namespace icrar

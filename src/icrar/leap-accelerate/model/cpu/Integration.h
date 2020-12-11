@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include <icrar/leap-accelerate/model/casa/Integration.h>
-
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
@@ -65,29 +63,17 @@ namespace cpu
     {
         int m_integrationNumber;
 
-        union
-        {
-            std::array<size_t, 4> parameters; // index, 0, channels, baselines
-            struct
-            {
-                size_t index; // row index
-                size_t x; // number of rows
-                size_t channels; // channels
-                size_t baselines; // baselines
-            };
-        };
+        size_t index; // row index
+        size_t x; // number of rows
+        size_t channels; // channels
+        size_t baselines; // baselines
 
         std::vector<MVuvw> m_uvw; //uvw is an array uvw[3][nbl] //Eigen::MatrixX3d
         Eigen::Tensor<std::complex<double>, 3> m_data; //[npol][nbl][nch]
 
     public:
-        /**
-         * @brief Construct a new Integration object from the equivalent casalib object
-         */
-        Integration(const icrar::casalib::Integration& integration);
-        
         Integration(
-            unsigned int integrationNumber,
+            int integrationNumber,
             const icrar::MeasurementSet& ms,
             unsigned int index,
             unsigned int channels,

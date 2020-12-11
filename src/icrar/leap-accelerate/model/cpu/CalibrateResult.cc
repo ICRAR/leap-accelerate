@@ -22,7 +22,7 @@
 
 #include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/common/vector_extensions.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/prettywriter.h>
@@ -33,54 +33,16 @@ namespace cpu
 {
     void CalibrationResult::Serialize(std::ostream& os) const
     {
-        os.precision(15);
+        constexpr uint32_t PRECISION = 15;
+        os.precision(PRECISION);
         os.setf(std::ios::fixed);
 
         rapidjson::StringBuffer s;
 
-        //TODO: could also support PrettyWriter
+        //TODO(calgray): could also support PrettyWriter
         rapidjson::Writer<rapidjson::StringBuffer> writer(s);
         CreateJsonStrFormat(writer);
         os << s.GetString() << std::endl;
-    }
-
-    CalibrateResult ToCalibrateResult(casalib::CalibrateResult& result)
-    {
-        auto output_integrations = std::vector<std::vector<IntegrationResult>>();
-        auto output_calibrations = std::vector<std::vector<CalibrationResult>>();
-
-        for(auto& queues : result.first)
-        {
-            int index = output_integrations.size();
-            output_integrations.push_back(std::vector<IntegrationResult>());
-            while(!queues.empty())
-            {
-                auto& integrationResult = queues.front();
-                output_integrations[index].emplace_back(
-                    ToDirection(integrationResult.GetDirection()),
-                    integrationResult.GetIntegrationNumber(),
-                    integrationResult.GetData()
-                );
-                queues.pop();
-            }
-        }
-
-        for(auto& queues : result.second)
-        {
-            int index = output_calibrations.size();
-            output_calibrations.push_back(std::vector<CalibrationResult>());
-            while(!queues.empty())
-            {
-                auto& calibrationResult = queues.front();
-                output_calibrations[index].emplace_back(
-                    ToDirection(calibrationResult.GetDirection()),
-                    calibrationResult.GetData()
-                );
-                queues.pop();
-            }
-        }
-
-        return std::make_pair(std::move(output_integrations), std::move(output_calibrations));
     }
 
     void PrintResult(const CalibrateResult& result, std::ostream& out)
@@ -93,5 +55,5 @@ namespace cpu
             }
         }
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

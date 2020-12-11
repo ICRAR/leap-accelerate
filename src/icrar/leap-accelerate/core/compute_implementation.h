@@ -26,17 +26,20 @@
 
 namespace icrar
 {
+    /**
+     * @brief Specifier for the compute implementation of a LeapCalibrator
+     * 
+     */
     enum class ComputeImplementation
     {
-        casa = 0, // Compute implementation using casa math libraries
-        cpu = 1, // Compute implementation on cpu using eigen
-        cuda = 2, // Compute implementation on gpu use nvidia cuda
+        cpu, // Compute implementation on cpu using eigen
+        cuda, // Compute implementation on gpu using nvidia cuda
     };
 
-    ComputeImplementation ParseComputeImplementation(std::string value);
+    ComputeImplementation ParseComputeImplementation(const std::string& value);
 
     /**
      * @return true if value was converted succesfully, false otherwise
      */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out);
-}
+    bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out);
+} // namespace icrar

@@ -22,83 +22,10 @@
 
 #pragma once
 
+#include <icrar/leap-accelerate/model/cpu/MetaData.h>
 #include <icrar/leap-accelerate/model/cuda/DeviceMetaData.h>
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <unsupported/Eigen/CXX11/Tensor>
-#include <icrar/leap-accelerate/common/Tensor3X.h>
+void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line);
 
-#include <gtest/gtest.h>
-
-//complex double
-void assert_near_cd(const std::complex<double>& expected, const std::complex<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-//matrix equal int
-void assert_matrix_near_i(const Eigen::MatrixXi& expected, const Eigen::MatrixXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-//matrix equal double
-void assert_matrix_near_d(const Eigen::MatrixXd& expected, const Eigen::MatrixXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-void assert_meq3d(const Eigen::Matrix3d& expected, const Eigen::Matrix3d& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-//matrix equal complex double
-void assert_matrix_near_cd(const Eigen::MatrixXcd& expected, const Eigen::MatrixXcd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-//vector equal int
-void assert_vector_near_i(const Eigen::VectorXi& expected, const Eigen::VectorXi& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-//vector equal double
-void assert_vector_near_d(const Eigen::VectorXd& expected, const Eigen::VectorXd& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-void assert_vector_near_d(const std::vector<double>& expected, const std::vector<double>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-template<typename T>
-void assert_teq(const Eigen::Tensor<T, 3>& expected, const Eigen::Tensor<T, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line)
-{
-    ASSERT_EQ(expected.dimensions(), actual.dimensions());
-    ASSERT_EQ(expected.dimension(0), actual.dimension(0));
-    ASSERT_EQ(expected.dimension(1), actual.dimension(1));
-    ASSERT_EQ(expected.dimension(2), actual.dimension(2));
-    if(!icrar::isApprox(actual, expected, tolerance))
-    {
-        std::cerr << ln << " != " << rn << "\n";
-        std::cerr << file << ":" << line << " Tensor elements differ at:\n";
-        
-        for(int x = 0; x < actual.dimension(0); ++x)
-        {
-            for(int y = 0; y < actual.dimension(1); ++y)
-            {
-                for(int z = 0; z < actual.dimension(2); ++z)
-                {
-                    if(abs(expected(x, y, z) - actual(x, y, z)) > tolerance)
-                    {
-                        std::cerr << "expected(" << x << ", " << y << ", " << z << ") == " << expected(x, y, z) << "\n";
-                        std::cerr << "actual(" << x << ", " << y << ", " << z << ") == " << actual(x, y, z) << "\n";
-                    }
-                }
-            }
-        }
-        std::cerr << std::endl;
-    }
-    ASSERT_TRUE(icrar::isApprox(actual, expected, tolerance));
-}
-
-//tensor equal double
-//void assert_teqd(const Eigen::Tensor<double, 3>& expected, const Eigen::Tensor<double, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-//void assert_teqcd(const Eigen::Tensor<std::complex<double>, 3>& expected, const Eigen::Tensor<std::complex<double>, 3>& actual, double tolerance, std::string ln, std::string rn, std::string file, int line);
-
-void assert_metadata_eq(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, std::string ln, std::string rn, std::string file, int line);
-
-#define ASSERT_EQCD(expected, actual, tolerance) assert_near_cd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-
-#define ASSERT_MEQI(expected, actual, tolerance) assert_matrix_near_i(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQD(expected, actual, tolerance) assert_matrix_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQ3D(expected, actual, tolerance) assert_matrix_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_MEQCD(expected, actual, tolerance) assert_matrix_near_cd(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-
-#define ASSERT_VEQI(expected, actual, tolerance) assert_vector_near_i(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-#define ASSERT_VEQD(expected, actual, tolerance) assert_vector_near_d(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-
-#define ASSERT_TEQ(expected, actual, tolerance) assert_teq(expected, actual, tolerance, #expected, #actual, __FILE__, __LINE__)
-
-#define ASSERT_MDEQ(expected, actual, tolerance) assert_metadata_eq(expected, actual, #expected, #actual, __FILE__, __LINE__)
+// NOLINTNEXTLINE(ppcoreguidelines-macro-usage)
+#define ASSERT_MDEQ(expected, actual, tolerance) assert_near_metadata(expected, actual, #expected, #actual, __FILE__, __LINE__)

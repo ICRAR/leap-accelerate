@@ -25,61 +25,23 @@
 
 #include <icrar/leap-accelerate/algorithm/cpu/PhaseMatrixFunction.h>
 
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
+#include <icrar/leap-accelerate/math/cpu/matrix_invert.h>
 #include <icrar/leap-accelerate/exception/exception.h>
 #include <icrar/leap-accelerate/common/eigen_extensions.h>
 #include <icrar/leap-accelerate/core/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
+#include <boost/math/constants/constants.hpp>
+
 namespace icrar
 {
 namespace cpu
 {
-    MetaData::MetaData(const casalib::MetaData& metadata)
-    {
-        m_constants.nbaselines = metadata.GetBaselines();
-        m_constants.channels = metadata.channels;
-        m_constants.num_pols = metadata.num_pols;
-        m_constants.stations = metadata.stations;
-        m_constants.rows = metadata.rows;
-        m_constants.freq_start_hz = metadata.freq_start_hz;
-        m_constants.freq_inc_hz = metadata.freq_inc_hz;
-        m_constants.phase_centre_ra_rad = metadata.phase_centre_ra_rad;
-        m_constants.phase_centre_dec_rad = metadata.phase_centre_dec_rad;
-        m_constants.dlm_ra = metadata.dlm_ra;
-        m_constants.dlm_dec = metadata.dlm_dec;
-
-        m_oldUVW = ToUVWVector(metadata.oldUVW);
-
-        m_A = ToMatrix(metadata.A);
-        m_I = ToMatrix<int>(metadata.I);
-        m_Ad = ToMatrix(metadata.Ad);
-
-        m_A1 = ToMatrix(metadata.A1);
-        m_I1 = ToMatrix<int>(metadata.I1);
-        m_Ad1 = ToMatrix(metadata.Ad1);
-
-        if(metadata.dd.is_initialized())
-        {
-            m_dd = ToMatrix<double, 3, 3>(metadata.dd.value());
-        }
-        else
-        {
-            throw std::runtime_error("dd: metadata not initialized, use alternative constructor");
-        }
-
-        if(metadata.avg_data.is_initialized())
-        {
-            m_avg_data = ToMatrix(metadata.avg_data.value());
-        }
-        else
-        {
-            throw std::runtime_error("avg_data: metadata not initialized, use alternative constructor");
-        }
-    }
-
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
+    : m_constants({})
+    , m_minimumBaselineThreshold(minimumBaselineThreshold)
     {
         auto pms = ms.GetMS();
         auto msc = ms.GetMSColumns();
@@ -118,57 +80,67 @@ namespace cpu
         m_avg_data = Eigen::MatrixXcd::Zero(ms.GetNumBaselines(), ms.GetNumPols());
         LOG(info) << "avg_data: " << memory_amount(m_avg_data.size() * sizeof(std::complex<double>));
 
+
+        auto flaggedBaselines = ms.GetFilteredBaselines(m_minimumBaselineThreshold);
+
         //select the first epoch only
-        casacore::Vector<double> time = msmc->time().getColumn();
-        double epoch = time[0];
-        int epochRows = 0;
-        for(size_t i = 0; i < time.size(); i++)
-        {
-            if(time[i] == epoch) epochRows++;
-        }
-        auto epochIndices = casacore::Slice(0, epochRows, 1); //TODO assuming epoch indices are sorted
+        auto epochIndices = casacore::Slice(0, ms.GetNumBaselines(), 1); //TODO(calgray): assuming epoch indices are sorted
         casacore::Vector<std::int32_t> a1 = msmc->antenna1().getColumnRange(epochIndices);
         casacore::Vector<std::int32_t> a2 = msmc->antenna2().getColumnRange(epochIndices);
-
-        // if(a1.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-        // if(a2.size() != m_constants.nbaselines)
-        // {
-        //     throw std::runtime_error("incorrect antenna size");
-        // }
-
+        
         LOG(info) << "Calculating PhaseMatrix A1";
-        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), 0);
+        std::tie(m_A1, m_I1) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, 0);
         trace_matrix(m_A1, "A1");
+        trace_matrix(m_I1, "I1");
 
         LOG(info) << "Calculating PhaseMatrix A";
-        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), -1);
+        std::tie(m_A, m_I) = icrar::cpu::PhaseMatrixFunction(ToVector(a1), ToVector(a2), flaggedBaselines, -1);
         trace_matrix(m_A, "A");
 
-        LOG(info) << "Inverting PhaseMatrix A1";
-        m_Ad1 = icrar::cpu::PseudoInverse(m_A1);
-        trace_matrix(m_Ad1, "Ad1");
 
-        LOG(info) << "Inverting PhaseMatrix A";
-        m_Ad = icrar::cpu::PseudoInverse(m_A);
+        auto invertA1 = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A1";
+            return icrar::cpu::PseudoInverse(a);
+        };
+        auto invertA = [](const Eigen::MatrixXd& a)
+        {
+            LOG(info) << "Inverting PhaseMatrix A";
+            return icrar::cpu::PseudoInverse(a);
+        };
+
+        m_Ad1 = invertA1(m_A1);
+        if(useCache)
+        {
+            //cache Ad with A hash
+            ProcessCache<Eigen::MatrixXd, Eigen::MatrixXd>(
+                matrix_hash<Eigen::MatrixXd>()(m_A),
+                m_A, m_Ad,
+                "A.hash", "Ad.cache",
+                invertA);
+        }
+        else
+        {
+            m_Ad = invertA(m_A);
+        }
+
+        trace_matrix(m_Ad1, "Ad1");
         trace_matrix(m_Ad, "Ad");
 
-        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
+        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A.cols(), m_A.cols()), 0.001))
         {
-            LOG(warning) << "m_Ad is degenerate";
+            LOG(warning) << "Ad is degenerate";
         }
-        if(!(m_Ad * m_A).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
+        if(!(m_Ad1 * m_A1).isApprox(Eigen::MatrixXd::Identity(m_A1.cols(), m_A1.cols()), 0.001))
         {
-            LOG(warning) << "m_Ad1 is degenerate";
+            LOG(warning) << "Ad1 is degenerate";
         }
 
         SetOldUVW(uvws);
     }
 
-    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws)
-    : MetaData(ms, uvws)
+    MetaData::MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold, bool useCache)
+    : MetaData(ms, uvws, minimumBaselineThreshold, useCache)
     {
         SetDD(direction);
         CalcUVW();
@@ -189,24 +161,49 @@ namespace cpu
 
     void MetaData::SetDD(const icrar::MVDirection& direction)
     {
-        this->m_direction = direction;
+        m_direction = direction;
 
         Eigen::Vector2d polar_direction = icrar::ToPolar(direction); 
         m_constants.dlm_ra = polar_direction(0) - m_constants.phase_centre_ra_rad;
         m_constants.dlm_dec = polar_direction(1) - m_constants.phase_centre_dec_rad;
-
-        m_dd = Eigen::Matrix3d();
-        m_dd(0,0) = std::cos(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(0,1) = -std::sin(m_constants.dlm_ra);
-        m_dd(0,2) = std::cos(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
         
-        m_dd(1,0) = std::sin(m_constants.dlm_ra) * std::cos(m_constants.dlm_dec);
-        m_dd(1,1) = std::cos(m_constants.dlm_ra);
-        m_dd(1,2) = std::sin(m_constants.dlm_ra) * std::sin(m_constants.dlm_dec);
+        constexpr double pi = boost::math::constants::pi<double>();
+        double ang1 = pi / 2.0 - m_constants.phase_centre_dec_rad;
+        double ang2 = polar_direction(0) - m_constants.phase_centre_ra_rad;
+        double ang3 = -pi / 2.0 + polar_direction(1);
 
-        m_dd(2,0) = -std::sin(m_constants.dlm_dec);
-        m_dd(2,1) = 0;
-        m_dd(2,2) = std::cos(m_constants.dlm_dec);
+        auto dd1 = Eigen::Matrix3d();
+        dd1 <<
+        1,              0,               0,
+        0, std::cos(ang1), -std::sin(ang1),
+        0, std::sin(ang1),  std::cos(ang1);
+
+        auto dd2 = Eigen::Matrix3d();
+        dd2 <<
+         std::cos(ang2), std::sin(ang2), 0,
+        -std::sin(ang2), std::cos(ang2), 0,
+                      0,              0, 1;
+
+        auto dd3 = Eigen::Matrix3d();
+        dd3 <<
+        1,              0,               0,
+        0, std::cos(ang3), -std::sin(ang3),
+        0, std::sin(ang3),  std::cos(ang3);
+
+
+        m_dd = dd3 * dd2 * dd1;
+        LOG(trace) << "dd3: " << pretty_matrix(dd3);
+        LOG(trace) << "dd2: " << pretty_matrix(dd2);
+        LOG(trace) << "dd1: " << pretty_matrix(dd1);
+        LOG(trace) << "dd: " << pretty_matrix(m_dd);
+
+        // TODO(calgray) Alternatively calc only the three vec
+        // m_lmn = Eigen::Vector3d();
+        // m_lmn(0) = std::cos(polar_direction(1)) * std::sin(-m_constants.dlm_ra);
+        // m_lmn(1) = std::sin(polar_direction(1)) * std::cos(m_constants.phase_centre_ra_rad) - std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::sin(-m_constants.dlm_ra);
+        // m_lmn(2) = std::sin(polar_direction(1)) * std::sin(m_constants.phase_centre_dec_rad) + std::cos(polar_direction(1)) * std::cos(m_constants.phase_centre_dec_rad) * std::cos(-m_constants.dlm_ra);
+        // // m_lmn(0)*m_lmn(0) + m_lmn(1)*m_lmn(1) + m_lmn(2)*m_lmn(2) = 1
+        // m_lmn(2) = m_lmn(2) - 1;
     }
 
     void MetaData::SetOldUVW(const std::vector<icrar::MVuvw>& uvw)
@@ -221,7 +218,7 @@ namespace cpu
         m_UVW.reserve(m_oldUVW.size());
         for(size_t n = 0; n < size; n++)
         {
-            m_UVW.push_back(m_oldUVW[n] * m_dd);
+            m_UVW.emplace_back(m_oldUVW[n] * m_dd);
         }
     }
 
@@ -254,5 +251,5 @@ namespace cpu
         && dlm_ra == rhs.dlm_ra
         && dlm_dec == rhs.dlm_dec;
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

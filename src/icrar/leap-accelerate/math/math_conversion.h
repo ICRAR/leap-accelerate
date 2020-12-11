@@ -71,11 +71,11 @@ namespace icrar
     template<typename T>
     casacore::Matrix<T> ConvertMatrix(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& value)
     {
-        return casacore::Matrix<T>(casacore::IPosition(2, (int)value.rows(), (int)value.cols()), value.data());
+        return casacore::Matrix<T>(casacore::IPosition(2, value.rows(), value.cols()), value.data());
     }
 
     template<typename T>
-    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Array<T> value)
+    Eigen::Matrix<T, Eigen::Dynamic, 1> ToVector(casacore::Vector<T> value)
     {
         auto output = Eigen::Matrix<T, Eigen::Dynamic, 1>(value.size());
         std::copy(value.begin(), value.end(), output.reshaped().begin());
@@ -129,4 +129,4 @@ namespace icrar
 
     casacore::MVDirection ToCasaDirection(const icrar::MVDirection& value);
     std::vector<casacore::MVDirection> ToCasaDirectionVector(const std::vector<icrar::MVDirection>& value);
-}
+} // namespace icrar

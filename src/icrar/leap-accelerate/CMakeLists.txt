@@ -17,15 +17,12 @@ set(public_headers
     
     model/visibility.h
     model/band_data.h
-    model/casa/MetaData.h
-
-    algorithm/casa/PhaseRotate.h
 )
 set(private_headers
 
     math/casacore_helper.h
     math/math_conversion.h
-    math/math.h
+    math/vector_extensions.h
 )
 set(sources
     ${git_revision_cc}
@@ -35,16 +32,12 @@ set(sources
     ms/utils.cc
     ms/MeasurementSet.cc
 
-    model/casa/Integration.cc
-    model/casa/MetaData.cc
-
     model/cpu/Integration.cc
     model/cpu/MetaData.cc
     model/cpu/CalibrateResult.cc
     
-    math/math.cc
+    math/vector_extensions.cc
     math/math_conversion.cc
-    math/casa/vector.cc
     math/casa/matrix.cc
     math/casa/matrix_invert.cc
     math/cpu/vector.cc
@@ -58,8 +51,7 @@ set(sources
 
     common/MVDirection.cc
     
-    algorithm/casa/PhaseMatrixFunction.cc
-    algorithm/casa/PhaseRotate.cc
+    algorithm/Calibrate.cc
     algorithm/cpu/PhaseMatrixFunction.cc
     algorithm/cpu/PhaseRotate.cc
 )
@@ -81,12 +73,11 @@ set(cuda_headers
 
 set(cuda_sources
     cuda/cuda_info.cu
-    model/cuda/DeviceMetaData.cu
-    model/cuda/DeviceIntegration.cu
-
     math/cuda/vector.cu
     math/cuda/matrix.cu
 
+    model/cuda/DeviceMetaData.cu
+    model/cuda/DeviceIntegration.cu
     algorithm/cuda/PhaseRotate.cu
 )
 
@@ -94,6 +85,10 @@ set(cuda_sources
 option(CASA_ENABLED "Casa Enabled" TRUE)
 option(GSL_ENABLED "GSL Enabled" OFF)
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+if(CUDA_ENABLED)
 add_library(
   ${TARGET_NAME} STATIC
     ${sources}
@@ -102,37 +97,51 @@ add_library(
     ${public_headers}
     ${cuda_headers}
 )
+else()
+add_library(
+  ${TARGET_NAME} STATIC
+    ${sources}
+    ${private_headers}
+    ${public_headers}
+)
+endif()
 
 if(${CMAKE_VERSION} VERSION_GREATER "3.16.0")
-  target_precompile_headers(${TARGET_NAME}
-    PRIVATE
-      [[pch.h]]
-  )
+# TODO(calgray): clang-tidy tries to analyze pch systems headers
+#  target_precompile_headers(${TARGET_NAME}
+#    PRIVATE
+#    [[pch.h]]
+#  )
 endif()
 
 
-# Request that the target be built with -std=c++11
-# As this is a public compile feature anything that links to the target
-# will also build with -std=c++11
-target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
+if(CUDA_ENABLED)
+  # Request that the target be built with -std=c++14
+  # As this is a public compile feature anything that links to the target
+  # will also build with -std=c++14
+  target_compile_features(${TARGET_NAME} PUBLIC cxx_std_14)
+  target_compile_definitions(${TARGET_NAME} PUBLIC CUDA_ENABLED)
 
-# We need to explicitly state that we need all CUDA files in the target
-# library to be built with -dc as the member functions could be called by
-# other libraries and executables
-set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 11)
-#set(CUDA_PROPAGATE_HOST_FLAGS ON)
-#set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-#set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
-target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
-target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
-configure_cuda_warnings(${TARGET_NAME})
+  # We need to explicitly state that we need all CUDA files in the target
+  # library to be built with -dc as the member functions could be called by
+  # other libraries and executables
+  set_target_properties(${TARGET_NAME} PROPERTIES CUDA_STANDARD 14)
+  
+  #set(CUDA_PROPAGATE_HOST_FLAGS ON)
+  #set_target_properties(${TARGET_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+  #set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE ON)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-gencode arch=compute_60,code=sm_60>)
+  target_compile_options(${TARGET_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcudafe --display_error_number>)
+  configure_cuda_warnings(${TARGET_NAME})
+endif()
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include")
+target_include_directories(${TARGET_NAME} SYSTEM PUBLIC "/usr/local/cuda/include/crt")
+# Legacy TODO(calgray): build support for xenial
+include_directories(${CMAKE_SOURCE_DIR}/external/rapidjson-1.1.0/include)
 
+target_link_libraries(${TARGET_NAME} Threads::Threads)
 
 #target_link_libraries(${TARGET_NAME} CUDA)
-
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include")
-target_include_directories(${TARGET_NAME} PUBLIC "/usr/local/cuda/include/crt")
-
 target_link_libraries(${TARGET_NAME} ${Boost_LIBRARIES})
 target_link_libraries(${TARGET_NAME} Eigen3::Eigen)
 target_link_libraries(${TARGET_NAME} RapidJSON::RapidJSON)

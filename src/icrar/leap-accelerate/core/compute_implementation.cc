@@ -25,7 +25,7 @@
 
 namespace icrar
 {
-    ComputeImplementation ParseComputeImplementation(std::string value)
+    ComputeImplementation ParseComputeImplementation(const std::string& value)
     {
         ComputeImplementation i;
         if(!TryParseComputeImplementation(value, i))
@@ -38,16 +38,17 @@ namespace icrar
     /**
      * @return true if value was converted succesfully, false otherwise
      */
-    bool TryParseComputeImplementation(std::string value, ComputeImplementation& out)
+    bool TryParseComputeImplementation(const std::string& value, ComputeImplementation& out)
     {
         if(value == "casa")
         {
-            out = ComputeImplementation::casa;
+            LOG(warning) << "argument 'casa' deprecated, use 'cpu' instead";
+            out = ComputeImplementation::cpu;
             return true;
         }
         else if(value == "eigen")
         {
-            LOG(info) << "argument 'eigen' deprecated, use 'cpu' instead";
+            LOG(warning) << "argument 'eigen' deprecated, use 'cpu' instead";
             out = ComputeImplementation::cpu;
             return true;
         }
@@ -63,4 +64,4 @@ namespace icrar
         }
         return false;
     }
-}
+} // namespace icrar

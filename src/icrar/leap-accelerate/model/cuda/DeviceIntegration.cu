@@ -21,7 +21,7 @@
  */
 
 #include "DeviceIntegration.h"
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 #include <icrar/leap-accelerate/model/cpu/Integration.h>
 
@@ -30,7 +30,7 @@ namespace icrar
 namespace cuda
 {
     DeviceIntegration::DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape)
-    : m_integrationNumber(-1)
+    : m_integrationNumber(integrationNumber)
     , m_visibilities(shape[0], shape[1], shape[2])
     , index(0)
     , x(0)

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/core/log/logging.h>
 
 #include <casacore/ms/MeasurementSets.h>
 #include <casacore/casa/Arrays/Matrix.h>
@@ -35,11 +36,10 @@
 #include <Eigen/SVD>
 #include <unsupported/Eigen/CXX11/Tensor>
 
-#include <cuda_runtime.h>
-
 #include <utility>
 #include <sstream>
 #include <iostream>
 #include <vector>
 #include <array>
 #include <set>
+#include <string>

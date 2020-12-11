@@ -26,6 +26,7 @@
 
 #include <rapidjson/document.h>
 #include <vector>
+#include <rapidjson/document.h>
 
 namespace icrar
 {
@@ -44,4 +45,4 @@ namespace icrar
      * 
      */
     std::vector<icrar::MVDirection> ParseDirections(const rapidjson::Value& doc);
-}
+} // namespace icrar

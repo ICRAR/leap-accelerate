@@ -22,10 +22,10 @@
 
 #include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/common/stream_extensions.h>
+#include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
 #include <unsupported/Eigen/CXX11/Tensor>
 
-#include <icrar/leap-accelerate/tests/test_helper.h>
 #include <gtest/gtest.h>
 
 class MSUtilsTests : public testing::Test
@@ -35,15 +35,11 @@ class MSUtilsTests : public testing::Test
     casacore::MeasurementSet ms;
 
 public:
-    MSUtilsTests()
-    {
-
-    }
-
     void SetUp() override
     {
-            std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
-            ms = casacore::MeasurementSet(filename);
+        // TODO(calgray): use 1197638568-split.ms
+        std::string filename = std::string(TEST_DATA_DIR) + "/mwa/1197638568-32.ms";
+        ms = casacore::MeasurementSet(filename);
     }
 
     void TearDown() override
@@ -51,7 +47,7 @@ public:
 
     }
 
-    void test_read_coords()
+    void TestReadRecords()
     {
         unsigned int start_row = 0;
         unsigned int num_baselines = 196;
@@ -77,7 +73,7 @@ public:
     }
 
     template<typename T>
-    void test_read_vis()
+    void TestReadVis()
     {
         using namespace std::complex_literals;
         unsigned int start_row = 0;
@@ -104,7 +100,7 @@ public:
             num_baselines,
             num_pols,
             "DATA",
-            (T*)visibilities.data());
+            reinterpret_cast<T*>(visibilities.data())); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
         ASSERT_EQ(num_pols, visibilities.dimension(0));
         ASSERT_EQ(num_baselines, visibilities.dimension(1));
@@ -118,7 +114,7 @@ public:
         ASSERT_EQCD(-10.9083280563354 + 11.3552942276001i, visibilities(2,1,0), TOLERANCE);
         ASSERT_EQCD(-28.7867774963379 + 20.7210712432861i, visibilities(3,1,0), TOLERANCE); 
 
-        //TODO: Column major reading
+        //TODO(calgray): Column major reading
         //ASSERT_TEQ(GetExpectedVis(), visibilities, TOLERANCE);
     }
 
@@ -246,5 +242,5 @@ private:
     }
 };
 
-TEST_F(MSUtilsTests, test_read_coords) { test_read_coords(); }
-TEST_F(MSUtilsTests, test_read_vis) { test_read_vis<float>(); }
+TEST_F(MSUtilsTests, TestReadRecords) { TestReadRecords(); }
+TEST_F(MSUtilsTests, TestReadVis) { TestReadVis<float>(); }

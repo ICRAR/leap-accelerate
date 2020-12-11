@@ -21,7 +21,7 @@
  */
 
 #include "DeviceMetaData.h"
-#include <icrar/leap-accelerate/math/math.h>
+#include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/math/casacore_helper.h>
 
 #include <icrar/leap-accelerate/exception/exception.h>
@@ -31,13 +31,13 @@ namespace icrar
 namespace cuda
 {
     ConstantMetaData::ConstantMetaData(
-            const icrar::cpu::Constants constants,
-            Eigen::MatrixXd A,
-            Eigen::VectorXi I,
-            Eigen::MatrixXd Ad,
-            Eigen::MatrixXd A1,
-            Eigen::VectorXi I1,
-            Eigen::MatrixXd Ad1)
+            const icrar::cpu::Constants& constants,
+            const Eigen::MatrixXd& A,
+            const Eigen::VectorXi& I,
+            const Eigen::MatrixXd& Ad,
+            const Eigen::MatrixXd& A1,
+            const Eigen::VectorXi& I1,
+            const Eigen::MatrixXd& Ad1)
         : m_constants(constants)
         , m_A(A)
         , m_I(I)
@@ -46,7 +46,7 @@ namespace cuda
         , m_I1(I1)
         , m_Ad1(Ad1) { }
 
-    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host)
+    void ConstantMetaData::ToHost(icrar::cpu::MetaData& host) const
     {
         host.m_constants = m_constants;
 
@@ -119,8 +119,8 @@ namespace cuda
 
     cpu::MetaData DeviceMetaData::ToHost() const
     {
-        //TODO: tidy up using a constructor for now
-        //TODO: casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
+        //TODO(calgray): tidy up using a constructor for now
+        //TODO(calgray): casacore::MVuvw and casacore::MVDirection not safe to copy to cuda
         std::vector<icrar::MVuvw> uvwTemp;
         m_UVW.ToHost(uvwTemp);
         cpu::MetaData result = cpu::MetaData();

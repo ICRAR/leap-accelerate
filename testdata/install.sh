@@ -21,13 +21,14 @@
 # MA 02111-1307  USA
 #
 
-[ ! -d mwa ] && mkdir mwa
-wget "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" -O ./mwa/1197638568-32.tar.gz
-tar -C ./ -xvf ./mwa/1197638568-32.tar.gz
+download_and_extract() {
+    directory=`dirname "$2"`
+    [ -d "$directory" ] || mkdir "$directory"
+    echo "Downloading and extracting $2"
+    wget -nv "$1" -O "$2"
+    tar -C "$directory" -xf "$2"
+}
 
-wget "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" -O ./mwa/1197638568-split.tar.gz
-tar -C ./ -xvf ./mwa/1197638568-split.tar.gz
-
-[ ! -d ska ] && mkdir ska
-wget "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" -O ./ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
-tar -C ./ -xvf ./ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz
+download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/Eb65Nqy66hUE2tO/download" mwa/1197638568-split.tar.gz
+download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/YoYdODmk9iVS5Sq/download" mwa/1197638568-32.tar.gz
+download_and_extract "https://cloudstor.aarnet.edu.au/plus/s/qtIV1HqXfKsQVAu/download" ska/SKA_LOW_SIM_short_EoR0_ionosphere_off_GLEAM.0001.tar.gz

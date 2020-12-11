@@ -33,6 +33,7 @@
 #include <functional>
 #include <algorithm>
 #include <complex>
+#include <type_traits>
 
 namespace icrar
 {

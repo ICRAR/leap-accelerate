@@ -33,19 +33,8 @@ namespace icrar
 {
 namespace cpu
 {
-    Integration::Integration(const icrar::casalib::Integration& integration)
-    : m_integrationNumber(integration.integration_number)
-    , index(integration.index)
-    , x(integration.x)
-    , channels(integration.channels)
-    , baselines(integration.baselines)
-    , m_uvw(ToUVWVector(integration.uvw))
-    {
-        m_data = Eigen::Tensor<std::complex<double>, 3>(integration.data);
-    }
-
     Integration::Integration(
-        unsigned int integrationNumber,
+        int integrationNumber,
         const icrar::MeasurementSet& ms,
         unsigned int startBaseline,
         unsigned int channels,
@@ -80,5 +69,5 @@ namespace cpu
     {
         return m_uvw;
     }
-}
-}
+} // namespace cpu
+} // namespace icrar

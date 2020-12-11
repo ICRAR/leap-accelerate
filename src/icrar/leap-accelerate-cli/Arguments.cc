@@ -45,19 +45,23 @@ namespace icrar
         args.stations = boost::none;
         args.directions = boost::none;
         args.computeImplementation = std::string("cpu");
-        args.mwaSupport = false;
         args.readAutocorrelations = true;
+        args.minimumBaselineThreshold = 0.0;
+        args.mwaSupport = false;
+        args.useFileSystemCache = true;
         args.verbosity = static_cast<int>(log::DEFAULT_VERBOSITY);
         return args;
     }
 
     Arguments::Arguments(CLIArguments&& args)
-        : source(std::move(args.source))
+        : source(args.source)
         , filePath(std::move(args.filePath))
         , configFilePath(std::move(args.configFilePath))
         , outputFilePath(std::move(args.outputFilePath))
-        , mwaSupport(std::move(args.mwaSupport))
-        , readAutocorrelations(std::move(args.readAutocorrelations))
+        , minimumBaselineThreshold(args.minimumBaselineThreshold)
+        , readAutocorrelations(args.readAutocorrelations)
+        , mwaSupport(args.mwaSupport)
+        , useFileSystemCache(args.useFileSystemCache)
     {
         if(args.stations.is_initialized())
         {
@@ -85,6 +89,13 @@ namespace icrar
     }
 
     ArgumentsValidated::ArgumentsValidated(Arguments&& cliArgs)
+    : m_source(InputType::FILENAME)
+    , m_computeImplementation(ComputeImplementation::cpu)
+    , m_minimumBaselineThreshold(0)
+    , m_readAutocorrelations(false)
+    , m_mwaSupport(false)
+    , m_useFileSystemCache(false)
+    , m_verbosity(icrar::log::Verbosity::trace)
     {
         // Initialize default arguments first
         ApplyArguments(GetDefaultArguments());
@@ -101,6 +112,7 @@ namespace icrar
         Validate();
 
         // Load resources
+        icrar::log::Initialize(GetVerbosity());
         switch (m_source)
         {
         case InputType::STREAM:
@@ -120,10 +132,10 @@ namespace icrar
             }
             break;
         case InputType::APACHE_ARROW:
-            throw new std::runtime_error("only stream in and file input are currently supported");
+            throw std::runtime_error("only stream in and file input are currently supported");
             break;
         default:
-            throw new std::invalid_argument("only stream in and file input are currently supported");
+            throw std::invalid_argument("only stream in and file input are currently supported");
             break;
         }
 
@@ -183,14 +195,24 @@ namespace icrar
             m_computeImplementation = std::move(args.computeImplementation.get());
         }
 
-        if(args.mwaSupport.is_initialized())
+        if(args.minimumBaselineThreshold.is_initialized())
         {
-            m_mwaSupport = std::move(args.mwaSupport.get());
+            m_minimumBaselineThreshold = std::move(args.minimumBaselineThreshold.get());
         }
         
         if(args.readAutocorrelations.is_initialized())
         {
             m_readAutocorrelations = std::move(args.readAutocorrelations.get());
+        }
+
+        if(args.mwaSupport.is_initialized())
+        {
+            m_mwaSupport = std::move(args.mwaSupport.get());
+        }
+
+        if(args.useFileSystemCache.is_initialized())
+        {
+            m_useFileSystemCache = std::move(args.useFileSystemCache.get());
         }
 
         if(args.verbosity.is_initialized())
@@ -228,7 +250,7 @@ namespace icrar
         return *m_measurementSet;
     }
 
-    std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections()
+    const std::vector<icrar::MVDirection>& ArgumentsValidated::GetDirections() const
     {
         return m_directions;
     }
@@ -236,6 +258,16 @@ namespace icrar
     ComputeImplementation ArgumentsValidated::GetComputeImplementation() const
     {
         return m_computeImplementation;
+    }
+
+    double ArgumentsValidated::GetMinimumBaselineThreshold() const
+    {
+        return m_minimumBaselineThreshold;
+    }
+	
+	bool ArgumentsValidated::IsFileSystemCacheEnabled() const
+    {
+        return m_useFileSystemCache;
     }
 
     icrar::log::Verbosity ArgumentsValidated::GetVerbosity() const
@@ -328,6 +360,28 @@ namespace icrar
                         throw json_exception("invalid compute implementation string", __FILE__, __LINE__);
                     }
                 }
+                else if(key == "minimumBaselineThreshold")
+                {
+                    if(it->value.IsDouble())
+                    {
+                        args.minimumBaselineThreshold = it->value.GetDouble();
+                    }
+                    else
+                    {
+                        throw json_exception("minimumBaselineThreshold must be of type double", __FILE__, __LINE__);
+                    }
+                }
+                else if(key == "useFileSystemCache")
+                {
+                    if(it->value.IsBool())
+                    {
+                        args.useFileSystemCache = it->value.GetBool();
+                    }
+                    else
+                    {
+                        throw json_exception("useFileSystemCache must be of type bool", __FILE__, __LINE__);
+                    }
+                }
                 else if(key == "mwaSupport")
                 {
                     if(it->value.IsBool())
@@ -339,7 +393,7 @@ namespace icrar
                         throw json_exception("mwaSupport must be of type bool", __FILE__, __LINE__);
                     }
                 }
-                else if(key == "readAutoCorrelations")
+                else if(key == "autoCorrelations")
                 {
                     if(it->value.IsBool())
                     {
@@ -382,4 +436,4 @@ namespace icrar
             }
         }
     }
-}
+} // namespace icrar

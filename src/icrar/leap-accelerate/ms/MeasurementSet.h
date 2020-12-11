@@ -46,6 +46,11 @@
 
 namespace icrar
 {
+    /**
+     * @brief MeasurementSet abstraction layer around a casacore MeasurementSet. This 
+     * class additionally stores calculated (or user specificed) variables calculated from
+     * the underlying measurement set for fast access.
+     */
     class MeasurementSet
     {
         std::unique_ptr<casacore::MeasurementSet> m_measurementSet;
@@ -53,14 +58,12 @@ namespace icrar
         std::unique_ptr<casacore::MSColumns> m_msc;
 
         boost::optional<std::string> m_filepath;
+        std::set<std::int32_t> m_antennas;
         int m_stations;
         bool m_readAutocorrelations;
 
-
     public:
-        MeasurementSet(std::string filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        MeasurementSet(const casacore::MeasurementSet& ms, boost::optional<int> overrideNStations, bool readAutocorrelations);
-        //MeasurementSet(std::istream& stream, boost::optional<int> overrideNStations);
+        MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations);
 
         boost::optional<std::string> GetFilepath() const { return m_filepath; }
         
@@ -95,7 +98,7 @@ namespace icrar
         /**
          * @brief Get the number of baselines in the measurement set including autocorrelations (e.g. (0,0), (1,1), (2,2))
          * and including stations not recording rows.
-         * @note TODO: baselines is always n*(n-1) / 2 and without autocorrelations
+         * @note TODO: baselines should always be n*(n-1) / 2 and without autocorrelations
          * @return unsigned int 
          */
         unsigned int GetNumBaselines() const;
@@ -107,9 +110,66 @@ namespace icrar
          */
         unsigned int GetNumPols() const;
 
+        /**
+         * @brief Gets the number of channels in the measurement set
+         * 
+         * @return unsigned int 
+         */
         unsigned int GetNumChannels() const;
 
+        /**
+         * @brief Gets the number of rows in the measurement set (non-flagged baselines * timesteps).
+         * 
+         * @return unsigned int
+         */
         unsigned int GetNumRows() const;
+
+        /**
+         * @brief Gets a vector of size nBaselines with a true value at the index of flagged baselines.
+         * Checks for flagged data on the first channel and polarization.
+         * 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetFlaggedBaselines() const;
+
+        /**
+         * @brief Get the number of baselines that are flagged by the measurement set
+         * 
+         * @return unsigned int 
+         */
+        unsigned int GetNumFlaggedBaselines() const;
+
+        /**
+         * @brief Gets a flag vector of short baselines
+         * 
+         * @param minimumBaselineThreshold 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetShortBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Get the number of baselines that below the @p minimumBaselineThreshold
+         * 
+         * @param minimumBaselineThreshold 
+         * @return unsigned int 
+         */
+        unsigned int GetNumShortBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Gets flag vector of filtered baselines that are either flagged or short
+         * 
+         * @param minimumBaselineThreshold 
+         * @return Eigen::Matrix<bool, -1, 1> 
+         */
+        Eigen::Matrix<bool, -1, 1> GetFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
+
+        /**
+         * @brief Gets the number of baselines filtered by measurementset flagging and short baselines
+         * 
+         * @param minimumBaselineThreshold 
+         * @return unsigned int 
+         */
+        unsigned int GetNumFilteredBaselines(double minimumBaselineThreshold = 0.0) const;
 
         //std::vector<casacore::MVuvw> MeasurementSet::GetCoordsCasa(unsigned int start_row) const;
         Eigen::MatrixX3d GetCoords() const;
@@ -124,11 +184,22 @@ namespace icrar
         Eigen::Tensor<std::complex<double>, 3> GetVis() const;
 
     private:
+
+        void Validate() const;
+
         /**
          * @brief Get the number of baselines in the measurement set (e.g. (0,0), (1,1), (2,2))
          * 
          * @return unsigned int 
          */
         unsigned int GetNumBaselines(bool useAutocorrelations) const;
+
+        /**
+         * @brief Calculates the set of unique antenna indices.
+         * 
+         * @return unsigned int 
+         */
+        std::set<int32_t> CalculateUniqueAntennas() const;
+
     };
-}
+} // namespace icrar

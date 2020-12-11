@@ -25,4 +25,4 @@
 namespace icrar
 {
     using MVuvw = Eigen::RowVector3d;
-}
+} // namespace icrar

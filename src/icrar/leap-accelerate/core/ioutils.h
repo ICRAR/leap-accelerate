@@ -37,117 +37,125 @@ namespace icrar
 
 namespace detail {
 
-	template <int N, typename T>
-	struct _fixed {
-		T _val;
-	};
+    template <int N, typename T>
+    struct _fixed {
+        T _val;
+    };
 
-	template <typename T, int N, typename VT>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, detail::_fixed<N, VT> v)
-	{
-		os << std::setprecision(N) << std::fixed << v._val;
-		return os;
-	}
+    template <typename T, int N, typename VT>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, detail::_fixed<N, VT> v)
+    {
+        os << std::setprecision(N) << std::fixed << v._val;
+        return os;
+    }
 
 } // namespace detail
 
-///
-/// Sent to a stream object, this manipulator will print the given value with a
-/// precision of N decimal places.
-///
-/// @param v The value to send to the stream
-///
+/**
+ * @brief Sent to a stream object, this manipulator will print the given value with a
+ * precision of N decimal places. 
+ * 
+ * @tparam N 
+ * @tparam T 
+ * @param v The value to send to the stream 
+ * @return detail::_fixed<N, T> 
+ */
 template <int N, typename T>
-inline
-detail::_fixed<N, T> fixed(T v) {
-	return {v};
+inline detail::_fixed<N, T> fixed(T v) {
+    return {v};
 }
 
 namespace detail {
 
-	struct _memory_amount {
-		std::size_t _val;
-	};
+    struct _memory_amount {
+        std::size_t _val;
+    };
 
-	struct _microseconds_amount {
-		std::chrono::microseconds::rep _val;
-	};
+    struct _microseconds_amount {
+        std::chrono::microseconds::rep _val;
+    };
 
-	template <typename T>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
-	{
+    template <typename T>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_memory_amount &m)
+    {
+		constexpr uint32_t BYTES_TO_KILOBYTES = 1024;
 
-		if (m._val < 1024) {
-			os << m._val << " [B]";
-			return os;
-		}
+        if (m._val < BYTES_TO_KILOBYTES) {
+            os << m._val << " [B]";
+            return os;
+        }
 
-		float v = m._val / 1024.;
-		const char *suffix = " [KiB]";
+        float v = m._val / 1024.0f;
+        const char *suffix = " [KiB]";
 
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [MiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [GiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [TiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [PiB]";
-		}
-		if (v > 1024) {
-			v /= 1024;
-			suffix = " [EiB]";
-		}
-		// that should be enough...
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
+            suffix = " [MiB]";
+        }
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
+            suffix = " [GiB]";
+        }
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
+            suffix = " [TiB]";
+        }
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
+            suffix = " [PiB]";
+        }
+        if (v > BYTES_TO_KILOBYTES) {
+            v /= BYTES_TO_KILOBYTES;
+            suffix = " [EiB]";
+        }
+        // that should be enough...
 
-		os << fixed<3>(v) << suffix;
-		return os;
-	}
+        os << fixed<3>(v) << suffix;
+        return os;
+    }
 
-	template <typename T>
-	inline
-	std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
-	{
-		auto time = t._val;
-		if (time < 1000) {
-			os << time << " [us]";
-			return os;
-		}
+    template <typename T>
+    inline
+    std::basic_ostream<T> &operator<<(std::basic_ostream<T> &os, const detail::_microseconds_amount &t)
+    {
+        constexpr uint32_t KILO = 1000;
+        constexpr int SECONDS_PER_MINUTE = 60;
+        constexpr int MINUTES_PER_HOUR = 60;
+        constexpr int HOURS_PER_DAY = 24;
+        
+        auto time = t._val;
+        if (time < KILO) {
+            os << time << " [us]";
+            return os;
+        }
 
-		time /= 1000;
-		if (time < 1000) {
-			os << time << " [ms]";
-			return os;
-		}
+        time /= KILO;
+        if (time < KILO) {
+            os << time << " [ms]";
+            return os;
+        }
 
-		float ftime = time / 1000.f;
-		const char *prefix = " [s]";
-		if (ftime > 60) {
-			ftime /= 60;
-			prefix = " [min]";
-			if (ftime > 60) {
-				ftime /= 60;
-				prefix = " [h]";
-				if (ftime > 24) {
-					ftime /= 24;
-					prefix = " [d]";
-				}
-			}
-		}
-		// that should be enough...
+        float ftime = time / static_cast<float>(KILO);
+        const char *prefix = " [s]";
+        if (ftime > SECONDS_PER_MINUTE) {
+            ftime /= SECONDS_PER_MINUTE;
+            prefix = " [min]";
+            if (ftime > MINUTES_PER_HOUR) {
+                ftime /= MINUTES_PER_HOUR;
+                prefix = " [h]";
+                if (ftime > HOURS_PER_DAY) {
+                    ftime /= HOURS_PER_DAY;
+                    prefix = " [d]";
+                }
+            }
+        }
+        // that should be enough...
 
-		os << fixed<3>(ftime) << prefix;
-		return os;
-	}
+        os << fixed<3>(ftime) << prefix;
+        return os;
+    }
 
 } // namespace detail
 
@@ -159,7 +167,7 @@ namespace detail {
 ///
 inline
 detail::_memory_amount memory_amount(std::size_t amount) {
-	return {amount};
+    return {amount};
 }
 
 ///
@@ -170,7 +178,7 @@ detail::_memory_amount memory_amount(std::size_t amount) {
 ///
 inline
 detail::_microseconds_amount us_time(std::chrono::microseconds::rep amount) {
-	return {amount};
+    return {amount};
 }
 
 }  // namespace icrar

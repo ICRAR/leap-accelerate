@@ -27,17 +27,17 @@
 
 #include <gtest/gtest.h>
 
+#if CUDA_ENABLED
+#include <icrar/leap-accelerate/cuda/helper_cuda.cuh>
+#include <cuda_runtime.h>
+#endif
+
 #include <array>
 #include <vector>
 
-class vector_tests : public testing::Test
+class VectorTests : public testing::Test
 {
 public:
-    vector_tests()
-    {
-
-    }
-
     void SetUp() override
     {
 
@@ -45,42 +45,48 @@ public:
 
     void TearDown() override
     {
-
+#if CUDA_ENABLED
+        checkCudaErrors(cudaDeviceReset());
+#endif
     }
 
     template<unsigned int n>
-    void test_array_add(bool useCuda)
+    void TestCpuArrayAdd(bool useCuda)
     {
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             // See this page: https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__DEVICE.html
             int deviceCount = 0;
             checkCudaErrors(cudaGetDeviceCount(&deviceCount));
             ASSERT_EQ(1, deviceCount);
+#endif
         }
 
-        std::array<int, n> a;
-        std::array<int, n> b;
-        std::array<int, n> c;
+        std::array<int, n> a = {};
+        std::array<int, n> b = {};
+        std::array<int, n> c = {};
 
         a.fill(6);
         b.fill(10);
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             icrar::cuda::add(n, a.data(), b.data(), c.data());
+#endif
         }
         else
         {
             icrar::cpu::add(n, a.data(), b.data(), c.data());
         }
 
-        std::array<int, n> expected;
+        std::array<int, n> expected = {};
         expected.fill(16);
         ASSERT_EQ(c, expected);
     }
 
-    void test_vector_add(const int n, bool useCuda)
+    void TestVectorAdd(const int n, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
@@ -88,7 +94,9 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             icrar::cuda::add(a, b, c);
+#endif
         }
         else
         {
@@ -99,7 +107,7 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_device_vector_add(const int n, bool useCuda)
+    void TestDeviceVectorAdd(const int n, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 6);
         std::vector<int> b = std::vector<int>(n, 10);
@@ -107,11 +115,13 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(c);
             icrar::cuda::add(d_a, d_b, d_c);
             d_c.ToHost(c);
+#endif
         }
         else
         {
@@ -122,7 +132,7 @@ public:
         ASSERT_EQ(c, expected);
     }
 
-    void test_device_vector_fibonacci(const int n, const int k, bool useCuda)
+    void TestDeviceVectorFibonacci(const int n, const int k, bool useCuda)
     {
         std::vector<int> a = std::vector<int>(n, 1);
         std::vector<int> b = std::vector<int>(n, 1);
@@ -130,6 +140,7 @@ public:
 
         if(useCuda)
         {
+#ifdef CUDA_ENABLED
             auto d_a = icrar::cuda::device_vector<int>(a);
             auto d_b = icrar::cuda::device_vector<int>(b);
             auto d_c = icrar::cuda::device_vector<int>(out);
@@ -144,6 +155,7 @@ public:
                 n2 = n3;
             }
             n3->ToHost(out);
+#endif
         }
         else
         {
@@ -164,21 +176,20 @@ public:
     }
 };
 
-TEST_F(vector_tests, test_cpu_array_add0) { test_array_add<1>(false); }
-TEST_F(vector_tests, test_cpu_array_add3) { test_array_add<1000>(false); }
-TEST_F(vector_tests, test_cpu_vector_add0) { test_vector_add(1, false); }
-TEST_F(vector_tests, test_cpu_vector_add4) { test_vector_add(10000, false); }
-TEST_F(vector_tests, test_cpu_vector_add6) { test_vector_add(1000000, false); }
+TEST_F(VectorTests, TestCpuArrayAdd0) { TestCpuArrayAdd<1>(false); }
+TEST_F(VectorTests, TestCpuArrayAdd3) { TestCpuArrayAdd<1000>(false); }
+TEST_F(VectorTests, TestCpuVectorAdd3) { TestVectorAdd(1, false); }
+TEST_F(VectorTests, TestCpuVectorAdd4) { TestVectorAdd(10000, false); }
+TEST_F(VectorTests, TestCpuVectorAdd6) { TestVectorAdd(1000000, false); }
+TEST_F(VectorTests, TestCpuDeviceVectorAdd) { TestDeviceVectorAdd(1, false); }
+TEST_F(VectorTests, TestCpuDeviceVectorFibonacci) { TestDeviceVectorFibonacci(100000, 20, false); }
 
-TEST_F(vector_tests, test_gpu_array_add0) { test_array_add<1>(true); }
-TEST_F(vector_tests, test_gpu_array_add3) { test_array_add<1000>(true); }
-TEST_F(vector_tests, test_gpu_vector_add0) { test_vector_add(1, true); }
-TEST_F(vector_tests, test_gpu_vector_add4) { test_vector_add(10000, true); }
-TEST_F(vector_tests, test_gpu_vector_add6) { test_vector_add(1000000, true); }
-
-TEST_F(vector_tests, test_cpu_device_vector_add) { test_device_vector_add(1, false); }
-TEST_F(vector_tests, test_gpu_device_vector_add) { test_device_vector_add(1, true); }
-
-TEST_F(vector_tests, test_cpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, false); }
-TEST_F(vector_tests, test_gpu_device_vector_fibonacci) { test_device_vector_fibonacci(100000, 20, true); }
-
+#if CUDA_ENABLED
+TEST_F(VectorTests, TestGpuArrayAdd0) { TestCpuArrayAdd<1>(true); }
+TEST_F(VectorTests, TestGpuArrayAdd3) { TestCpuArrayAdd<1000>(true); }
+TEST_F(VectorTests, TestGpuVectorAdd3) { TestVectorAdd(1, true); }
+TEST_F(VectorTests, TestGpuVectorAdd4) { TestVectorAdd(10000, true); }
+TEST_F(VectorTests, TestGpuVectorAdd6) { TestVectorAdd(1000000, true); }
+TEST_F(VectorTests, TestGpuDeviceVectorAdd) { TestDeviceVectorAdd(1, true); }
+TEST_F(VectorTests, TestGpuDeviceVectorFibonacci) { TestDeviceVectorFibonacci(100000, 20, true); }
+#endif

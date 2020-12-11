@@ -22,13 +22,20 @@
 
 #pragma once
 
-#include "cuda_runtime.h"
+#if CUDA_ENABLED
+#include <cuda_runtime.h>
+#else
+#ifndef __host__
+#define __host__
+#endif // __host__
+#ifndef __device__
+#define __device__
+#endif // __device__
+#endif // CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/MVuvw.h>
 #include <icrar/leap-accelerate/common/MVDirection.h>
-
 #include <icrar/leap-accelerate/common/constants.h>
-#include <icrar/leap-accelerate/model/casa/MetaData.h>
 
 #include <icrar/leap-accelerate/cuda/device_vector.h>
 #include <icrar/leap-accelerate/cuda/device_matrix.h>
@@ -51,12 +58,13 @@
 
 namespace icrar
 {
-namespace cuda
-{
-    class DeviceMetaData;
-    class ConstantMetaData;
-}
-}
+    class MeasurementSet;
+    namespace cuda
+    {
+        class DeviceMetaData;
+        class ConstantMetaData;
+    } // namespace cuda
+} // namespace icrar
 
 namespace icrar
 {
@@ -79,20 +87,25 @@ namespace cpu
         double dlm_ra;
         double dlm_dec;
 
-        __device__ __host__ double GetChannelWavelength(int i) const
+        __host__ __device__ double GetChannelWavelength(int i) const
         {
-            return speed_of_light / (freq_start_hz + i * freq_inc_hz);
+            return constants::speed_of_light / (freq_start_hz + i * freq_inc_hz);
         }
 
         bool operator==(const Constants& rhs) const;
     };
 
+    /**
+     * @brief container of phaserotation constants and variables
+     * 
+     */
     class MetaData
     {
-        MetaData() {}
+        MetaData() = default;
 
         Constants m_constants;
-        
+        double m_minimumBaselineThreshold;
+
         Eigen::MatrixXd m_A;
         Eigen::VectorXi m_I; // The flagged indexes of A
         Eigen::MatrixXd m_Ad; // The pseudo-inverse of m_A
@@ -105,7 +118,9 @@ namespace cpu
         std::vector<icrar::MVuvw> m_UVW; // late initialized
     
         icrar::MVDirection m_direction; // calibration direction, late initialized
+
         Eigen::Matrix3d m_dd; // direction matrix, late initialized
+        
         Eigen::MatrixXcd m_avg_data; // matrix of size (baselines, polarizations), late initialized
     
     public:
@@ -114,24 +129,20 @@ namespace cpu
          * 
          * @param ms 
          * @param uvws 
+         * @param minimumBaselineThreshold
+         * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws);
+        MetaData(const icrar::MeasurementSet& ms, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         /**
          * @brief Construct a new MetaData object
          * 
          * @param ms 
-         * @param direction 
          * @param uvws 
+         * @param minimumBaselineThreshold
+         * @param useCache
          */
-        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws);
-        
-        /**
-         * @brief Constructs a MetaData object from an equivalent casa MetaData object
-         * 
-         * @param metadata 
-         */
-        MetaData(const casalib::MetaData& metadata);
+        MetaData(const icrar::MeasurementSet& ms, const icrar::MVDirection& direction, const std::vector<icrar::MVuvw>& uvws, double minimumBaselineThreshold = 0.0, bool useCache = true);
 
         const Constants& GetConstants() const;
 
@@ -153,8 +164,8 @@ namespace cpu
         void SetOldUVW(const std::vector<icrar::MVuvw>& uvws);
 
         /**
-         * @brief Updates the rotated UVW vector member
-         * preconditions - DD is set, oldUVW is set
+         * @brief Updates the rotated UVW vector using the DD matrix
+         * @pre DD is set, oldUVW is set
          */
         void CalcUVW();
 
@@ -162,9 +173,10 @@ namespace cpu
         Eigen::MatrixXcd& GetAvgData() { return m_avg_data; }
 
         bool operator==(const MetaData& rhs) const;
+        bool operator!=(const MetaData& rhs) const { return !(*this == rhs); }
 
         friend class icrar::cuda::DeviceMetaData;
         friend class icrar::cuda::ConstantMetaData;
     };
-    }
-}
+} // namespace cpu
+} // namespace icrar

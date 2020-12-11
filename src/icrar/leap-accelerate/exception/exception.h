@@ -28,36 +28,59 @@
 
 namespace icrar
 {
+    /**
+     * @brief Generic exception with source tracing
+     * 
+     */
     class exception : public std::exception
     {
         std::string m_message;
 
     public:
-        exception(std::string msg, std::string file, int line);
+        /**
+         * @brief Constructs a new exception object
+         * 
+         * @param msg exception reason
+         * @param file exception file location
+         * @param line exception line location
+         */
+        exception(const std::string& msg, const std::string& file, int line);
 
-        virtual const char* what() const noexcept override;
+        const char* what() const noexcept override;
     };
 
+    /**
+     * @brief Exception raised when an invalid argument is passed into a function
+     * 
+     */
     class invalid_argument_exception : public icrar::exception
     {
     public:
-        invalid_argument_exception(std::string msg, std::string arg, std::string file, int line)
+        invalid_argument_exception(const std::string& msg, const std::string& arg, const std::string& file, int line)
         : exception(arg + " invalid argument exception: " + msg, file, line)
         { }
     };
 
+    /**
+     * @brief Exception raised when a file system operation fails
+     * 
+     */
     class file_exception : public icrar::exception
     {
     public:
-        file_exception(std::string msg, std::string filename, std::string file, int line)
+        file_exception(const std::string& msg, const std::string& filename, const std::string& file, int line)
         : exception(filename + " file exception: " + msg, file, line)
         { }
     };
 
+    /**
+     * @brief Exception raised when parsing invalid json
+     * 
+     */
     class json_exception : public icrar::exception
     {
     public:
-        json_exception(std::string msg, std::string file, int line)
+        json_exception(const std::string& msg, const std::string& file, int line)
         : exception("json exception: " + msg, file, line)
         { }
     };
@@ -65,8 +88,6 @@ namespace icrar
     class not_implemented_exception : public icrar::exception
     {
     public:
-        not_implemented_exception(std::string file, int line);
+        not_implemented_exception(const std::string& file, int line);
     };
-}
-
-#define THROW_NOT_IMPLEMENTED() throw icrar::not_implemented_exception(__FILE__, __LINE__)
+} // namespace icrar

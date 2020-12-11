@@ -28,17 +28,17 @@ namespace icrar
 {
 namespace cpu
 {
-    void add(size_t n, const double* a, const double* b, double* c) { add(n, a, b, c); }
-    void add(size_t n, const float* a, const float* b, float* c) { add(n, a, b, c); }
-    void add(size_t n, const int* a, const int* b, int* c) { add(n, a, b, c); }
+    void add(size_t n, const double* a, const double* b, double* c) { add<double>(n, a, b, c); }
+    void add(size_t n, const float* a, const float* b, float* c) { add<float>(n, a, b, c); }
+    void add(size_t n, const int* a, const int* b, int* c) { add<int>(n, a, b, c); }
 
-    void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c) { add(a, b, c); }
-    void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { add(a, b, c); }
-    void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { add(a, b, c); }
+    void add(const std::vector<double>& a, const std::vector<double>& b, std::vector<double>& c) { add<double>(a, b, c); }
+    void add(const std::vector<float>& a, const std::vector<float>& b, std::vector<float>& c) { add<float>(a, b, c); }
+    void add(const std::vector<int>& a, const std::vector<int>& b, std::vector<int>& c) { add<int>(a, b, c); }
 
     void add(const Eigen::VectorXcd& a, const Eigen::VectorXcd& b, Eigen::VectorXcd& c) { c = a + b; }
     void add(const Eigen::VectorXd& a, const Eigen::VectorXd& b, Eigen::VectorXd& c) { c = a + b; }
     void add(const Eigen::VectorXf& a, const Eigen::VectorXf& b, Eigen::VectorXf& c) { c = a + b; }
     void add(const Eigen::VectorXi& a, const Eigen::VectorXi& b, Eigen::VectorXi& c) { c = a + b; }
-}
-}
+} // namespace cpu
+} // namespace icrar

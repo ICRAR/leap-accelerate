@@ -36,7 +36,7 @@ namespace icrar
         auto dimsEqual = [&]() { return lhs.dimensions() == rhs.dimensions(); };
         auto dataEqual = [&]()
         {
-            // TODO: optimize, try
+            // TODO(calgray): optimize, try
             // return std::inner_product(lhs.data(), lhs.data() + lhs.size(), rhs.data(), true, std::logical_and<bool>, [&tolerance](auto e1, auto e2) {
             //     return std::abs(e1 - e2) > tolerance;
             // });
@@ -59,4 +59,4 @@ namespace icrar
 
         return dimsEqual() && dataEqual();
     }
-}
+} // namespace icrar

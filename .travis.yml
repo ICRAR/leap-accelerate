@@ -41,6 +41,19 @@ jobs:
       - xenial
     compiler: gcc
     before_install:
+      # We "source" it because it exports variables
+      - source .travis/before_install_xenial.sh
+    addons:
+     apt:
+      sources: ubuntu-toolchain-r-test
+      packages: [g++-6, doxygen, libgsl-dev, rapidjson-dev, libboost1.58-all-dev]
+    env: CC=/usr/bin/gcc-6 CXX=/usr/bin/g++-6 CUDA_ENABLED=OFF PYTHON=python3
+  - os: linux
+    dist:
+      - xenial
+    compiler: gcc
+    before_install:
+      # We "source" it because it exports variables
       - source .travis/before_install_xenial.sh
     addons:
      apt:
@@ -68,11 +81,11 @@ jobs:
      apt:
       sources: ubuntu-toolchain-r-test
       packages: [g++-9, doxygen, casacore-dev, rapidjson-dev, libgsl-dev, libboost1.71-all-dev]
-    env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3
+    env: CC=/usr/bin/gcc-9 CXX=/usr/bin/g++-9 CUDA=11 PYTHON=python3 CMAKE_RUN_CLANG_TIDY=ON
 
-# We "source" it because it exports variables
 install:
- - source .travis/install.sh
+  - source .travis/configure.sh
+  - source .travis/build.sh
 
 script:
- - source .travis/test.sh
+  - source .travis/test.sh
