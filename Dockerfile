@@ -35,6 +35,8 @@ CMD ["/usr/local/bin/LeapAccelerateCLI"]
 # as a basic test run the image against the testdata:
 # cd <leap_source_dir>/testdata
 # ./install.sh    # first install the testdata (just once)
+# docker run -ti --rm -v /var/dlg_home/testdata:/var/dlg_home/testdata icrar/leap_cli:0.7.0 \
+#           /bin/bash -c '/usr/local/bin/LeapAccelerateCLI -c /var/dlg_home/testdata/config_test.json'
 # docker run -v "$(pwd)":/testdata icrar/leap_cli:initial LeapAccelerateCLI \
 #           -f /testdata/1197638568-split.ms -s 126 -i eigen \
 #           -d "[[-0.4606549305661674,-0.29719233792392513],[-0.753231018062671,-0.44387635324622354]]"

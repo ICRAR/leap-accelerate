@@ -5,7 +5,8 @@ import math
 from dlg.droputils import DROPFile
 from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
-    dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
+    dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input, \
+    dlg_bool_param
 from dlg.droputils import DROPFile
 
 
@@ -26,6 +27,10 @@ from dlg.droputils import DROPFile
 #     \~
 # @param[in] param/auto_correlation/false/String/readwrite
 #     \~English Enable auto correlation in the LEAP algorithm\n
+#     \~Chinese \n
+#     \~
+# @param[in] param/max_directions/false/Integer/readwrite
+#     \~English Maximum number of directions per LEAP instance\n
 #     \~Chinese \n
 #     \~
 # @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String/readonly
@@ -52,7 +57,8 @@ class ProduceConfig(BarrierAppDROP):
     # read component parameters
     numStations = dlg_int_param('number of stations', 1)
     implementation = dlg_string_param('implementation', 'cpu')
-    autoCorrelation = dlg_string_param('auto correlation', 'false')
+    autoCorrelation = dlg_bool_param('auto correlation', False)
+    maxDirections = dlg_int_param('max directions', 1)
 
 
     def initialize(self, **kwargs):
@@ -69,6 +75,7 @@ class ProduceConfig(BarrierAppDROP):
 
         # determine number of directions per instance
         numDirectionsPerInstance = float(len(directions)) / float(len(self.outputs))
+        numDirectionsPerInstance = min(numDirectionsPerInstance, self.maxDirections)
 
         startDirectionIndex = 0
         endDirectionIndex = 0
@@ -87,6 +94,8 @@ class ProduceConfig(BarrierAppDROP):
             config = json.dumps(configJSON)
 
             # write config to output
+            if type(config) is str:
+                config = config.encode()
             self.outputs[i].write(config)
 
             # continue from here in the next iteration
@@ -101,6 +110,8 @@ class ProduceConfig(BarrierAppDROP):
         #       inDrop to a string and pass that to csv.reader()
         with DROPFile(inDrop) as f:
             file_data = f.read()
+            if type(file_data) is bytes:
+                file_data=file_data.decode('utf-8')
             csvreader = csv.reader(file_data.split('\n'))
             for row in csvreader:
                 # skip rows with incorrect number of values
@@ -116,8 +127,8 @@ class ProduceConfig(BarrierAppDROP):
 
     def _createConfig(self, numStations, directions, implementation, autoCorrelation):
         return {
-            'numStations': numStations,
+            'stations': numStations,
             'directions': directions,
-            'implementation': implementation,
-            'autoCorrelation': autoCorrelation
+            'computeImplementation': implementation,
+            'readAutoCorrelations': autoCorrelation
         }
