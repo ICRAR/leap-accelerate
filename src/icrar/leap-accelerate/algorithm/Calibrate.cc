@@ -1,53 +1,61 @@
-/**
- * ICRAR - International Centre for Radio Astronomy Research
- * (c) UWA - The University of Western Australia
- * Copyright by UWA(in the framework of the ICRAR)
- * All rights reserved
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
- */
 
 #include "Calibrate.h"
 
-#include <icrar/leap-accelerate/model/cpu/CalibrateResult.h>
+
+#include <icrar/leap-accelerate/model/cpu/calibration/CalibrationCollection.h>
+#include <icrar/leap-accelerate/algorithm/ILeapCalibrator.h>
+#include <icrar/leap-accelerate/algorithm/LeapCalibratorFactory.h>
+#include <icrar/leap-accelerate/algorithm/cpu/CpuLeapCalibrator.h>
+
+#include <icrar/leap-accelerate/ms/MeasurementSet.h>
+#include <icrar/leap-accelerate/math/math_conversion.h>
+#include <icrar/leap-accelerate/common/config/Arguments.h>
 
 namespace icrar
 {
-    cpu::CalibrateResult Calibrate(
-        ComputeImplementation impl,
-        const icrar::MeasurementSet& ms,
-        const std::vector<icrar::MVDirection>& directions,
-        double minimumBaselineThreshold,
-        bool isFileSystemCacheEnabled)
+    void RunCalibration(const Arguments& args)
     {
-        if(impl == ComputeImplementation::cpu)
+        if(IsImmediateMode(args.GetStreamOutType()))
         {
-            return cpu::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-        }
-        else if(impl == ComputeImplementation::cuda)
-        {
-#ifdef CUDA_ENABLED
-            return cuda::Calibrate(ms, directions, minimumBaselineThreshold, isFileSystemCacheEnabled);
-#else
-            throw invalid_argument_exception("cuda build option not enabled", "impl", __FILE__, __LINE__);
-#endif
+            auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+
+            auto outputCallback = [&](const cpu::Calibration& cal)
+            {
+                cal.Serialize(*args.CreateOutputStream(cal.GetStartEpoch()));
+            };
+
+            calibrator->Calibrate(
+                outputCallback,
+                args.GetMeasurementSet(),
+                args.GetDirections(),
+                args.GetSolutionInterval(),
+                args.GetMinimumBaselineThreshold(),
+                args.ComputeCal1(),
+                args.GetReferenceAntenna(),
+                args.GetComputeOptions());
         }
         else
         {
-            throw invalid_argument_exception("invalid argument", "impl", __FILE__, __LINE__);
+            auto calibrator = LeapCalibratorFactory::Create(args.GetComputeImplementation());
+
+            std::vector<cpu::Calibration> calibrations;
+            auto outputCallback = [&](const cpu::Calibration& cal)
+            {
+                calibrations.push_back(cal);
+            };
+            
+            calibrator->Calibrate(
+                outputCallback,
+                args.GetMeasurementSet(),
+                args.GetDirections(),
+                args.GetSolutionInterval(),
+                args.GetMinimumBaselineThreshold(),
+                args.ComputeCal1(),
+                args.GetReferenceAntenna(),
+                args.GetComputeOptions());
+            
+            auto calibrationCollection = cpu::CalibrationCollection(std::move(calibrations));
+            calibrationCollection.Serialize(*args.CreateOutputStream());
         }
     }
 } // namespace icrar

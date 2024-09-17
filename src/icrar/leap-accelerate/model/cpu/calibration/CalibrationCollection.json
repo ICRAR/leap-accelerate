@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "CalibrationCollection",
+    "definitions": {},
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "epoch": {
+                "type": "object",
+                "properties": {
+                    "start": { "type": "number" },
+                    "end": { "type": "number" }
+                },
+                "required": [ "start", "end" ]
+            },
+            "calibration": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "direction": {
+                            "type": "array",
+                            "items": { "type": "number" }
+                        },
+                        "antennaPhases": {
+                            "type": "array",
+                            "items": { "type": "number" }
+                        }
+                    },
+                    "required": [ "direction", "antennaPhases" ]
+                }
+            }
+        },
+        "required": [ "epoch", "calibration" ],
+        "uniqueItems": true
+    }
+}

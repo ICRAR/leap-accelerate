@@ -1,61 +1,61 @@
 /**
-*    ICRAR - International Centre for Radio Astronomy Research
-*    (c) UWA - The University of Western Australia
-*    Copyright by UWA (in the framework of the ICRAR)
-*    All rights reserved
-*
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*    Lesser General Public License for more details.
-*
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-*    MA 02111-1307  USA
-*/
+ * ICRAR - International Centre for Radio Astronomy Research
+ * (c) UWA - The University of Western Australia
+ * Copyright by UWA(in the framework of the ICRAR)
+ * All rights reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #include "MeasurementSet.h"
-#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
-#include <icrar/leap-accelerate/common/eigen_extensions.h>
+#include <icrar/leap-accelerate/math/cpu/eigen_extensions.h>
 #include <icrar/leap-accelerate/math/math_conversion.h>
+#include <boost/numeric/conversion/cast.hpp>
 #include <cstddef>
 
 namespace icrar
 {
-    MeasurementSet::MeasurementSet(const std::string& filepath, boost::optional<int> overrideNStations, bool readAutocorrelations)
+    MeasurementSet::MeasurementSet(const std::string& filepath)
     : m_measurementSet(std::make_unique<casacore::MeasurementSet>(filepath))
     , m_msmc(std::make_unique<casacore::MSMainColumns>(*m_measurementSet))
     , m_msc(std::make_unique<casacore::MSColumns>(*m_measurementSet))
     , m_filepath(filepath)
-    , m_readAutocorrelations(readAutocorrelations)
+    , m_readAutocorrelations()
     {
-        // Check and use unique antennas 
-        m_antennas = CalculateUniqueAntennas();
-
-        if(overrideNStations.is_initialized())
+        std::tie(m_antennas, m_readAutocorrelations) = CalculateUniqueAntennas();
+        if(m_antennas.size() != m_measurementSet->antenna().nrow())
         {
-            m_stations = overrideNStations.get();
-            LOG(warning) << "overriding number of stations will be removed in future releases";
-        }
-        else if(m_antennas.size() != m_measurementSet->antenna().nrow())
-        {
-            LOG(warning) << "ms antennas = " << m_measurementSet->antenna().nrow();
+            // The antenna column may have blank entries for flagged antennas
+            LOG(warning) << "total antennas = " << m_measurementSet->antenna().nrow();
             LOG(warning) << "unique antennas = " << m_antennas.size();
             LOG(warning) << "using unique antennas";
-            m_stations = m_antennas.size();
+
+            m_stations = boost::numeric_cast<int>(m_antennas.size());
         }
         else
         {
-            m_stations = m_measurementSet->antenna().nrow();
+            m_stations = boost::numeric_cast<int>(m_measurementSet->antenna().nrow());
         }
 
+        m_numBaselines = CalculateNumBaselines(m_readAutocorrelations);
+        m_numRows = boost::numeric_cast<uint32_t>(m_msmc->uvw().nrow());
+        m_numTimesteps = boost::numeric_cast<uint32_t>(m_numRows / m_numBaselines);
+        m_timeInterval = m_msmc->interval().get(0);
+        assert(m_measurementSet->polarization().nrow() > 0);
+        m_numPols = m_msc->polarization().numCorr().get(0);
         Validate();
     }
 
@@ -80,7 +80,7 @@ namespace icrar
             LOG(error) << "epoch rows does not match baselines";
             LOG(error) << "epoch rows: " << epochRows;
             LOG(error) << "baselines: " << GetNumBaselines();
-            throw exception("epoch size doesnt match number of baselines", __FILE__, __LINE__);
+            throw exception("visibilities at first epoch does not match number of baselines", __FILE__, __LINE__);
         }
 
         if(GetNumRows() < GetNumBaselines())
@@ -100,17 +100,58 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumRows() const
+    uint32_t MeasurementSet::GetNumRows() const
     {
-        return m_msmc->uvw().nrow();
+        return m_numRows;
     }
 
-    unsigned int MeasurementSet::GetNumStations() const
+    Eigen::VectorXi MeasurementSet::GetAntenna1() const
+    {
+        return ToVector(
+            m_msmc->antenna1().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
+    }
+
+    Eigen::VectorXi MeasurementSet::GetAntenna2() const
+    {
+        return ToVector(
+            m_msmc->antenna2().getColumn()(casacore::Slice(0,GetNumBaselines()))
+        );
+    }
+
+    uint32_t MeasurementSet::GetTotalAntennas() const
+    {
+        return boost::numeric_cast<uint32_t>(m_measurementSet->antenna().nrow());
+    }
+
+    uint32_t MeasurementSet::GetNumTimesteps() const
+    {
+        return m_numTimesteps;
+    }
+
+    double MeasurementSet::GetTimeInterval() const
+    {
+        return m_timeInterval;
+    }
+
+    std::vector<double> MeasurementSet::GetEpochs() const
+    {
+        casacore::Vector<double> time = m_msmc->time().getColumn();
+        uint32_t timesteps = GetNumTimesteps();
+        std::vector<double> result;
+        for(uint32_t i = 0; i < timesteps; ++i)
+        {
+            result.push_back(time[i * GetNumBaselines()]);
+        }
+        return result;
+    }
+
+    uint32_t MeasurementSet::GetNumStations() const
     {
         return m_stations;
     }
 
-    unsigned int MeasurementSet::GetNumPols() const
+    uint32_t MeasurementSet::GetNumPols() const
     {
         if(m_measurementSet->polarization().nrow() > 0)
         {
@@ -122,12 +163,12 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumBaselines() const
+    uint32_t MeasurementSet::GetNumBaselines() const
     {
-        return GetNumBaselines(m_readAutocorrelations);
+        return m_numBaselines;
     }
 
-    unsigned int MeasurementSet::GetNumBaselines(bool useAutocorrelations) const
+    uint32_t MeasurementSet::CalculateNumBaselines(bool useAutocorrelations) const
     {
         //TODO(calgray): cache value
         if(useAutocorrelations)
@@ -142,7 +183,7 @@ namespace icrar
         }
     }
 
-    unsigned int MeasurementSet::GetNumChannels() const
+    uint32_t MeasurementSet::GetNumChannels() const
     {
         if(m_msc->spectralWindow().nrow() > 0)
         {
@@ -154,47 +195,53 @@ namespace icrar
         }
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFlaggedBaselines() const
+    Eigen::VectorXb MeasurementSet::GetFlaggedBaselines() const
     {
-        // TODO(calgray): may want to consider using logical OR over for each channel and polarization.
         auto nBaselines = GetNumBaselines();
 
         // Selects the flags of the first epoch
         auto epochIndices = casacore::Slicer(casacore::Slice(0, nBaselines));
         
         // Selects only the flags of the first channel and polarization
-        auto flagSlice = casacore::Slicer(
-            casacore::IPosition(2, 0, 0),
-            casacore::IPosition(2, 1, 1),
-            casacore::IPosition(2, 1, 1));
-        casacore::Vector<bool> flags = m_msmc->flag().getColumnRange(epochIndices, flagSlice);
-        return ToVector(flags);
+        // TODO(calgray): may want to consider using logical OR over each channel and polarization
+        if(!m_msmc->flag().isNull() && m_msmc->flag().nrow() > 0 && m_msmc->flag().isDefined(0))
+        {
+            auto flags = m_msmc->flag().getColumnRange(epochIndices);
+            auto fshape = flags.shape();
+            Eigen::TensorMap<Eigen::Tensor<bool, 3>> flagsView(flags.data(), fshape[0], fshape[1], fshape[2]);
+            return ToVector<bool>(flagsView.all(std::array<int, 2>{0,1}));
+        }
+        else
+        {
+            LOG(warning) << "baseline flags not found";
+            return Eigen::VectorXb::Zero(nBaselines);
+        }
     }
 
-    unsigned int MeasurementSet::GetNumFlaggedBaselines() const
+    uint32_t MeasurementSet::GetNumFlaggedBaselines() const
     {
         auto flaggedBaselines = GetFlaggedBaselines();
-        return std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(flaggedBaselines.cbegin(), flaggedBaselines.cend(), true));
     }
 	
-	Eigen::Matrix<bool, -1, 1> MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
+	Eigen::VectorXb MeasurementSet::GetShortBaselines(double minimumBaselineThreshold) const
     {
         auto nBaselines = GetNumBaselines();
-        Eigen::Matrix<bool, -1, 1> baselineFlags = Eigen::Matrix<bool, -1, 1>::Zero(nBaselines); 
+        Eigen::VectorXb baselineFlags = Eigen::VectorXb::Zero(nBaselines); 
 
         // Filter short baselines
         if(minimumBaselineThreshold > 0.0)
         {
-            auto firstChannelSlicer = casacore::Slicer(casacore::Slice(0, 1));
-            casacore::Matrix<double> uv = m_msmc->uvw().getColumn(firstChannelSlicer);
+            auto baselineSlicer = casacore::Slicer(casacore::Slice(0, 3));
+            casacore::Matrix<double> uv = m_msmc->uvw().getColumn(baselineSlicer);
 
-            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if flags change
-            //  in later timesteps
-            for(unsigned int i = 0; i < nBaselines; i++)
+            // TODO(calgray): uv is of size baselines * timesteps, consider throwing a warning if
+            // short baselines change in later timesteps
+            for(uint32_t b = 0; b < nBaselines; b++)
             {
-                if(std::sqrt(uv(i, 0) * uv(i, 0) + uv(i, 1) * uv(i, 1)) < minimumBaselineThreshold)
+                if(std::sqrt(uv(0, b) * uv(0, b) + uv(1, b) * uv(1, b)) < minimumBaselineThreshold)
                 {
-                    baselineFlags(i) = true;
+                    baselineFlags(b) = true;
                 }
             }
         }
@@ -202,71 +249,213 @@ namespace icrar
         return baselineFlags;
     }
 
-    unsigned int MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumShortBaselines(double minimumBaselineThreshold) const
     {
         auto shortBaselines = GetShortBaselines(minimumBaselineThreshold);
-        return std::count(shortBaselines.cbegin(), shortBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(shortBaselines.cbegin(), shortBaselines.cend(), true));
     }
 
-    Eigen::Matrix<bool, -1, 1> MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
+    Eigen::VectorXb MeasurementSet::GetFilteredBaselines(double minimumBaselineThreshold) const
     {
-        Eigen::Matrix<bool, -1, 1> result = GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
-        return result;
+        return GetFlaggedBaselines() || GetShortBaselines(minimumBaselineThreshold);
     }
 
-    unsigned int MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
+    uint32_t MeasurementSet::GetNumFilteredBaselines(double minimumBaselineThreshold) const
     {
         auto filteredBaselines = GetFilteredBaselines(minimumBaselineThreshold);
-        return std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true);
+        return boost::numeric_cast<uint32_t>(std::count(filteredBaselines.cbegin(), filteredBaselines.cend(), true));
 	}
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords() const
+    Eigen::Tensor<double, 3> MeasurementSet::ReadCoords() const
     {
-        return GetCoords(0, GetNumBaselines());
+        return ReadCoords(0, 1);
     }
 
-    Eigen::MatrixX3d MeasurementSet::GetCoords(unsigned int start_row, unsigned int nBaselines) const
+    Eigen::Tensor<double, 3> MeasurementSet::ReadCoords(const Slice& timestepSlice) const
     {
-        Eigen::MatrixX3d matrix = Eigen::MatrixX3d::Zero(nBaselines, 3);
-        icrar::ms_read_coords(
-            *m_measurementSet,
-            start_row,
-            nBaselines,
-            matrix(Eigen::all, 0).data(),
-            matrix(Eigen::all, 1).data(),
-            matrix(Eigen::all, 2).data());
-        return matrix;
+        //assert(timestepSlice.GetInterval() == 1);
+        const auto timestepRange = timestepSlice.Evaluate(GetNumTimesteps());
+        return ReadCoords(timestepRange.GetStart(), timestepRange.GetEnd() - timestepRange.GetStart());
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis() const
+    Eigen::Tensor<double, 3> MeasurementSet::ReadCoords(uint32_t startTimestep, uint32_t intervalTimesteps) const
     {
-        auto num_channels = GetNumChannels();
-        auto num_baselines = GetNumBaselines();
-        auto num_pols = GetNumPols();
-        return GetVis(0, 0, num_channels, num_baselines, num_pols);
+        // See https://github.com/OxfordSKA/OSKAR/blob/f018c03bb34c16dcf8fb985b46b3e9dc1cf0812c/oskar/ms/src/oskar_ms_read.cpp
+        uint32_t num_baselines = GetNumBaselines();
+        uint32_t start_row = startTimestep * num_baselines;
+        uint32_t num_rows = intervalTimesteps * num_baselines;
+        uint32_t total_rows = GetNumRows();
+
+        if(start_row >= total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // reduce selection if selecting out of range
+        if(start_row + num_rows > total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row + num_rows << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        casacore::Slice slice(start_row, num_rows, 1);
+        return Eigen::TensorMap<Eigen::Tensor<double, 3>>(
+            m_msmc->uvw().getColumnRange(slice).data(),
+            3,
+            num_baselines,
+            intervalTimesteps);
     }
 
-    Eigen::Tensor<std::complex<double>, 3> MeasurementSet::GetVis(
-        std::uint32_t startBaseline,
-        std::uint32_t startChannel,
-        std::uint32_t nChannels,
-        std::uint32_t nBaselines,
-        std::uint32_t nPolarizations) const
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis() const
     {
-        auto visibilities = Eigen::Tensor<std::complex<double>, 3>(nPolarizations, nBaselines, nChannels);
-        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-        icrar::ms_read_vis(*m_measurementSet, startBaseline, startChannel, nChannels, nBaselines, nPolarizations, "DATA", reinterpret_cast<double*>(visibilities.data()));
-        return visibilities;
+        return ReadVis(0, 1);
     }
 
-    std::set<int32_t> MeasurementSet::CalculateUniqueAntennas() const
+
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
+        const Slice& timestepSlice,
+        const Slice& polarizationSlice) const
+    {
+        //assert(timestepSlice.GetInterval() == 1);
+        const auto timestepRange = timestepSlice.Evaluate(GetNumTimesteps());
+        return ReadVis(
+            timestepRange.GetStart(),
+            timestepRange.GetEnd() - timestepRange.GetStart(),
+            polarizationSlice
+        );
+    }
+
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
+        const Slice& polarizationSlice) const
+    {
+        int32_t nPolarizations = GetNumPols();
+        Range<int32_t> polarizationRange = polarizationSlice.Evaluate(nPolarizations);
+        return ReadVis(startTimestep, intervalTimesteps, polarizationRange, "DATA");
+    }
+
+    Eigen::Tensor<std::complex<double>, 4> MeasurementSet::ReadVis(
+        uint32_t startTimestep,
+        uint32_t intervalTimesteps,
+        Range<int32_t> polarizationRange,
+        const char* columnName) const
+    {
+        const uint32_t num_baselines = GetNumBaselines();
+        const uint32_t num_channels = GetNumChannels();
+        const unsigned int total_rows = GetNumRows();
+
+        //auto timestep_slice = Eigen::seq(startTimestep, startTimestep+intervalTimesteps, intervalTimesteps);
+        const unsigned int start_row = startTimestep * num_baselines;
+        const unsigned int rows = intervalTimesteps * num_baselines;
+        
+        auto pols_slice = polarizationRange.ToSeq();
+        const auto pol_length = boost::numeric_cast<unsigned int>(pols_slice.sizeObject());
+        const auto pol_stride = boost::numeric_cast<unsigned int>(pols_slice.incrObject());
+
+        if(!m_measurementSet->tableDesc().isColumn(columnName))
+        {
+            throw icrar::exception("ms column not found", __FILE__, __LINE__);
+        }
+
+        if(strcmp(columnName, "DATA") && strcmp(columnName, "CORRECTED_DATA") && strcmp(columnName, "MODEL_DATA"))
+        {
+            throw icrar::exception("expected a data column", __FILE__, __LINE__);
+        }
+
+        if (start_row >= total_rows)
+        {
+            std::stringstream ss;
+            ss << "ms out of range " << start_row << " >= " << total_rows; 
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // clamp num_baselines
+        if (start_row + rows > total_rows)
+        {
+            std::stringstream ss;
+            ss << "row selection [" << start_row << "," << start_row + rows << "] exceeds total range [" << 0 << "," << total_rows << "]";
+            throw icrar::exception(ss.str(), __FILE__, __LINE__);
+        }
+
+        // Create slicers for table DATA
+        // Slicer for table rows: array[baselines,timesteps]
+        casacore::IPosition start1(1, start_row);
+        casacore::IPosition length1(1, rows);
+        casacore::Slicer row_range(start1, length1);
+
+        // Slicer for row entries: matrix[polarizations,channels]
+        casacore::IPosition start2(2, 0, 0);
+        casacore::IPosition length2(2, pol_length, num_channels);
+        casacore::IPosition stride2(2, pol_stride, 1u);
+        casacore::Slicer array_section(start2, length2, stride2);
+
+        // Read the data
+        casacore::ArrayColumn<std::complex<float>> ac(*m_measurementSet, columnName);
+        casacore::Array<std::complex<float>> column_range = ac.getColumnRange(row_range, array_section);
+        Eigen::TensorMap<Eigen::Tensor<std::complex<float>, 4>> view(column_range.data(), pol_length, num_channels, num_baselines, intervalTimesteps);
+        return view.cast<std::complex<double>>();
+    }
+
+    std::set<int32_t> MeasurementSet::GetMissingAntennas() const
+    {
+        std::set<std::int32_t> antennas;
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(m_antennas.size()); i++)
+        {
+            if(m_antennas.find(i) == m_antennas.end())
+            {
+                antennas.insert(i);
+            }
+        }
+        return antennas;
+    }
+
+    std::set<int32_t> MeasurementSet::GetFlaggedAntennas() const
+    {
+        auto fg = GetFilteredBaselines();
+        int32_t totalStations = GetTotalAntennas();
+
+        // start with a set of all antennas flagged and unflag the ones 
+        // that contain unflagged baseline data
+        Eigen::VectorXi antennas = Eigen::VectorXi::Ones(totalStations);
+        for(uint32_t n = 0; n < GetNumBaselines(); n++)
+        {
+            if(!fg(n))
+            {
+                antennas(m_msmc->antenna1()(n)) = 0;
+                antennas(m_msmc->antenna2()(n)) = 0;
+            }
+        }
+        // see https://libigl.github.io/matlab-to-eigen.html
+        std::set<int32_t> indexes;
+        for(int32_t i = 0; i < boost::numeric_cast<int32_t>(antennas.size()); ++i)
+        {
+            if(antennas(i))
+            {
+                indexes.insert(i);
+            }
+        }
+        return indexes;
+    }
+
+    // template<typename InputInterator1, typename InputIterator2>
+    // bool HasMatches(InputInterator1 first1, InputInterator1 last1, InputInterator2 first2)
+    // {
+    // }
+
+    std::tuple<std::set<int32_t>, bool> MeasurementSet::CalculateUniqueAntennas() const
     {
         casacore::Vector<casacore::Int> a1 = m_msmc->antenna1().getColumn();
-        casacore::Vector<casacore::Int> a2 = m_msmc->antenna1().getColumn();
-        auto a1s = std::set<int32_t>(a1.cbegin(), a1.cend());
-        auto a2s = std::set<int32_t>(a2.cbegin(), a2.cend());
+        casacore::Vector<casacore::Int> a2 = m_msmc->antenna2().getColumn();
         std::set<std::int32_t> antennas;
         std::set_union(a1.cbegin(), a1.cend(), a2.cbegin(), a2.cend(), std::inserter(antennas, antennas.begin()));
-        return antennas; 
+
+        // TODO(cgray): it may only be necessary to check the first element of both iterators
+        bool autoCorrelations = std::mismatch(a1.cbegin(), a1.cend(), a2.cbegin(), [](int a, int b) { return a != b; }).first != a1.cend();
+        
+        return std::make_tuple(antennas, autoCorrelations);
     }
 } // namespace icrar

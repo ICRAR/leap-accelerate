@@ -9,21 +9,13 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @brief Leap Gather
 # @details A BarrierAppDrop that gathers output from multiple instances of the LeapAccelerateCLI application, sorts it, and outputs it
 # @par EAGLE_START
-# @param gitrepo $(GIT_REPO)
-# @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/appclass/leap_nodes.LeapGather.LeapGather/String/readonly
+# @param[in] aparam/appclass Application Class/leap_nodes.LeapGather.LeapGather/String/readonly/False//False/
 #     \~English The path to the class that implements this app\n
-#     \~Chinese \n
-#     \~
-# @param[in] port/Result
+# @param[in] port/Result Result/File/
 #     \~English The JSON output from an instance of LeapAccelerateCLI
-#     \~Chinese \n
-#     \~
-# @param[out] port/Result
+# @param[out] port/Result Result/File/
 #     \~English The combined output from many instances the LeapAccelerateCLI application (JSON)
-#     \~Chinese \n
-#     \~
 # @par EAGLE_END
 
 class LeapGather(BarrierAppDROP):

@@ -28,10 +28,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 // These are CUDA Helper functions for initialization and error checking
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 #ifndef COMMON_HELPER_CUDA_H_
 #define COMMON_HELPER_CUDA_H_
 
 #include "helper_string.cuh"
+
+#include <cublas_v2.h>
+
+#if CUBLAS_VER_MAJOR > 9
+#include <cublasLt.h>
+#endif
+
+#include <cusolverDn.h>
 
 #include <cstdint>
 #include <cstdio>
@@ -53,7 +64,7 @@ static const char *_cudaGetErrorEnum(cudaError_t error) {
 }
 #endif
 
-#ifdef CUDA_DRIVER_API
+#ifdef __cuda_cuda_h__
 // CUDA Driver API errors
 static const char *_cudaGetErrorEnum(CUresult error) {
   static char unknown[] = "<unknown>";
@@ -226,6 +237,34 @@ static const char *_cudaGetErrorEnum(cusolverStatus_t error) {
       return "CUSOLVER_STATUS_ZERO_PIVOT";
     case CUSOLVER_STATUS_INVALID_LICENSE:
       return "CUSOLVER_STATUS_INVALID_LICENSE";
+#if CUSOLVER_VER_MAJOR > 10 || (CUSOLVER_VER_MAJOR == 10 && CUSOLVER_VER_MINOR >= 6)
+    case CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED:
+      return "CUSOLVER_STATUS_IRS_PARAMS_NOT_INITIALIZED";
+    case CUSOLVER_STATUS_IRS_PARAMS_INVALID:
+      return "CUSOLVER_STATUS_IRS_PARAMS_INVALID";
+    case CUSOLVER_STATUS_IRS_PARAMS_INVALID_PREC:
+      return "CUSOLVER_STATUS_IRS_PARAMS_INVALID_PREC";
+    case CUSOLVER_STATUS_IRS_PARAMS_INVALID_REFINE:
+      return "CUSOLVER_STATUS_IRS_PARAMS_INVALID_REFINE";
+    case CUSOLVER_STATUS_IRS_PARAMS_INVALID_MAXITER:
+      return "CUSOLVER_STATUS_IRS_PARAMS_INVALID_MAXITER";
+    case CUSOLVER_STATUS_IRS_INTERNAL_ERROR:
+      return "CUSOLVER_STATUS_IRS_INTERNAL_ERROR";
+    case CUSOLVER_STATUS_IRS_NOT_SUPPORTED:
+      return "CUSOLVER_STATUS_IRS_NOT_SUPPORTED";
+    case CUSOLVER_STATUS_IRS_OUT_OF_RANGE:
+      return "CUSOLVER_STATUS_IRS_OUT_OF_RANGE";
+    case CUSOLVER_STATUS_IRS_NRHS_NOT_SUPPORTED_FOR_REFINE_GMRES:
+      return "CUSOLVER_STATUS_IRS_NRHS_NOT_SUPPORTED_FOR_REFINE_GMRES";
+    case CUSOLVER_STATUS_IRS_INFOS_NOT_INITIALIZED:
+      return "CUSOLVER_STATUS_IRS_INFOS_NOT_INITIALIZED";
+    case CUSOLVER_STATUS_IRS_INFOS_NOT_DESTROYED:
+      return "CUSOLVER_STATUS_IRS_INFOS_NOT_DESTROYED";
+    case CUSOLVER_STATUS_IRS_MATRIX_SINGULAR:
+      return "CUSOLVER_STATUS_IRS_MATRIX_SINGULAR";
+    case CUSOLVER_STATUS_INVALID_WORKSPACE:
+      return "CUSOLVER_STATUS_INVALID_WORKSPACE";
+#endif
   }
 
   return "<unknown>";

@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
@@ -25,9 +24,9 @@
 #ifdef CUDA_ENABLED
 
 #include <icrar/leap-accelerate/common/Tensor3X.h>
-#include <icrar/leap-accelerate/common/MVuvw.h>
-#include <icrar/leap-accelerate/common/MVDirection.h>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
 
+#include <icrar/leap-accelerate/model/cpu/MVuvw.h>
 #include <icrar/leap-accelerate/common/constants.h>
 
 #include <icrar/leap-accelerate/cuda/device_tensor.h>
@@ -64,26 +63,17 @@ namespace cuda
     class DeviceIntegration
     {
         int m_integrationNumber;
-        device_tensor3<std::complex<double>> m_visibilities; //[polarizations][baselines][channels]
 
-        union
-        {
-            std::array<size_t, 4> m_parameters;
-            struct
-            {
-                size_t index;
-                size_t x;
-                size_t channels;
-                size_t baselines;
-            };
-        };
+        device_tensor3<double> m_uvws; // [3][baselines][timesteps]
+        device_tensor4<std::complex<double>> m_visibilities; //[polarizations][channels][baselines][timesteps]
+        
     public:
         /**
          * @brief Construct a new Device Integration object where visibilities is a zero tensor of @shape 
          * 
          * @param shape 
          */
-        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> shape);
+        DeviceIntegration(int integrationNumber, Eigen::DSizes<Eigen::DenseIndex, 3> uvwShape, Eigen::DSizes<Eigen::DenseIndex, 4> visShape);
 
         /**
          * @brief Construct a new Device Integration object with a data syncronous copy
@@ -92,30 +82,40 @@ namespace cuda
          */
         DeviceIntegration(const icrar::cpu::Integration& integration);
 
-        int GetIntegrationNumber() const { return m_integrationNumber; }
-        size_t GetIndex() const { return index; }
-        //size_t GetX() const { return x; }
-        size_t GetChannels() const { return channels; }
-        size_t GetBaselines() const { return baselines; }
-        
-        const device_tensor3<std::complex<double>>& GetVis() const { return m_visibilities; }
-        device_tensor3<std::complex<double>>& GetVis() { return m_visibilities; }
+        /**
+         * @brief Set the Data object
+         * 
+         * @param integration 
+         */
+        __host__ void Set(const icrar::cpu::Integration& integration);
 
         /**
          * @brief Set the Data object
          * 
          * @param integration 
          */
-        void SetData(const icrar::cpu::Integration& integration);
+        __host__ void Set(const icrar::cuda::DeviceIntegration& integration);
+
+        int GetIntegrationNumber() const { return m_integrationNumber; }
+
+        size_t GetNumPolarizations() const { return m_visibilities.GetDimensionSize(0); }
+        size_t GetNumChannels() const { return m_visibilities.GetDimensionSize(1); }
+        size_t GetNumBaselines() const { return m_visibilities.GetDimensionSize(2); }
+        size_t GetNumTimesteps() const { return m_visibilities.GetDimensionSize(3); }
+
+        const device_tensor3<double>& GetUVW() const { return m_uvws; }
+
+        const device_tensor4<std::complex<double>>& GetVis() const { return m_visibilities; }
+        device_tensor4<std::complex<double>>& GetVis() { return m_visibilities; }
 
         /**
          * @brief Copies device data to a host object
          * 
          * @param host object with data on cpu memory
          */
-        void ToHost(cpu::Integration& host) const;
+        __host__ void ToHost(cpu::Integration& host) const;
     };
-}
-}
+} // namespace cuda
+} // namepace icrar
 
 #endif // CUDA_ENABLED

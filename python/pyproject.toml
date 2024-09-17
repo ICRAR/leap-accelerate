@@ -1,0 +1,59 @@
+[build-system]
+build-backend = "poetry.masonry.api"
+requires = ["poetry>=0.12", "setuptools", "wheel"]
+
+[tool.poetry]
+authors = [
+    "Callan Gray <callan.gray@icrar.org>"
+]
+description = "Leap Accelerate"
+license = "GPLv2"
+name = "leap"
+readme = "README.md"
+build = { script = "build.py", generate-setup-file = false }
+version = "0.13.0"
+packages = [{ include = "leap" }]
+include = [{ path = "leap/LeapAccelerate*" }]
+
+[tool.poetry.scripts]
+leap_cli = 'leap.cli.main:app'
+
+[tool.poetry.dependencies]
+python = "^3.9.0"
+numpy = ">=1.20.0"
+astropy = ">=5.3.0"
+xarray = ">=2023"
+python-casacore = ">=3.5.0"
+typer = "^0.9.0"
+matplotlib = "^3.8.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.1.0"
+pytest-asyncio = "^0.20.3"
+Flake8-pyproject = "^1.2.2"
+
+[tool.pylint.FORMAT]
+max-line-length = 99
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 99
+
+[tool.black]
+line-length = 99
+
+[tool.flake8]
+exclude = [
+    '.git',
+    '__pycache__',
+    '__init__.py',
+    '.mypy_cache',
+    '.pytest_cache',
+    '.feature',
+    '.json',
+    '.yaml',
+]
+ignore = ['F401', 'W503']
+max-line-length = 180

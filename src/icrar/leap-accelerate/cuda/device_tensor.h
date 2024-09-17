@@ -1,24 +1,23 @@
 /**
-*    ICRAR - International Centre for Radio Astronomy Research
-*    (c) UWA - The University of Western Australia
-*    Copyright by UWA (in the framework of the ICRAR)
-*    All rights reserved
-*
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*    Lesser General Public License for more details.
-*
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-*    MA 02111-1307  USA
-*/
+ * ICRAR - International Centre for Radio Astronomy Research
+ * (c) UWA - The University of Western Australia
+ * Copyright by UWA(in the framework of the ICRAR)
+ * All rights reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #pragma once
 
@@ -38,26 +37,24 @@ namespace icrar
 namespace cuda
 {
 /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device tensor buffer object that references a tensor in cuda device memory buffer for manipulation by
+     * the host.
      * 
-     * @tparam T 
+     * @tparam T the tensor data type
+     * @tparam NumDims number of tensor dimensions
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
-    template<typename T>
-    class device_tensor3
+    template<typename T, uint32_t NumDims>
+    class device_tensor
     {
-        size_t m_sizeDim0;
-        size_t m_sizeDim1;
-        size_t m_sizeDim2;
+        Eigen::DSizes<Eigen::DenseIndex, NumDims> m_sizeDim;
         T* m_buffer = nullptr;
 
     public:
-        device_tensor3(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, const T* data = nullptr)
-        : m_sizeDim0(sizeDim0)
-        , m_sizeDim1(sizeDim1)
-        , m_sizeDim2(sizeDim2)
+        device_tensor(Eigen::DSizes<Eigen::DenseIndex, NumDims> shape, const T* data = nullptr)
         {
+            m_sizeDim = shape;
             size_t byteSize = GetByteSize();
             checkCudaErrors(cudaMalloc((void**)&m_buffer, byteSize));
             if (data != nullptr)
@@ -70,85 +67,103 @@ namespace cuda
             }
         }
 
-        device_tensor3(const Eigen::Tensor<T, 3>& tensor)
-        : device_tensor3(tensor.dimension(0), tensor.dimension(1), tensor.dimension(2), tensor.data()) {}
+        device_tensor(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, const T* data = nullptr)
+        : device_tensor({sizeDim0, sizeDim1, sizeDim2}, data)
+        {
+            EIGEN_STATIC_ASSERT(NumDims == 3, YOU_MADE_A_PROGRAMMING_MISTAKE);
+        }
+        device_tensor(size_t sizeDim0, size_t sizeDim1, size_t sizeDim2, size_t sizeDim3, const T* data = nullptr)
+        : device_tensor({sizeDim0, sizeDim1, sizeDim2, sizeDim3}, data)
+        {
+            EIGEN_STATIC_ASSERT(NumDims == 4, YOU_MADE_A_PROGRAMMING_MISTAKE);
+        }
+
+        device_tensor(const Eigen::Tensor<T, NumDims>& tensor)
+        : device_tensor(tensor.dimensions(), tensor.data()) {}
 
         /**
          * @brief Copy Constructor
          * 
          * @param other 
          */
-        device_tensor3(device_tensor3&& other)
-            : m_sizeDim0(other.m_sizeDim0)
-            , m_sizeDim1(other.m_sizeDim1)
-            , m_sizeDim2(other.m_sizeDim2)
+        device_tensor(device_tensor&& other)
+            : m_sizeDim(other.m_sizeDim)
             , m_buffer(other.m_buffer)
         {
-            other.m_sizeDim0 = 0;
-            other.m_sizeDim1 = 0;
-            other.m_sizeDim2 = 0;
+            other.m_sizeDim = Eigen::DSizes<Eigen::DenseIndex, NumDims>();
             other.m_buffer = nullptr;
         }
 
-        device_tensor3& operator=(device_tensor3&& other) noexcept
+        device_tensor& operator=(device_tensor&& other) noexcept
         {
-            m_sizeDim0 = other.m_sizeDim0;
-            m_sizeDim1 = other.m_sizeDim1;
-            m_sizeDim2 = other.m_sizeDim2;
+            m_sizeDim = other.m_sizeDim;
             m_buffer = other.m_buffer;
-            other.m_sizeDim0 = 0;
-            other.m_sizeDim1 = 0;
-            other.m_sizeDim2 = 0;
+            other.m_sizeDim = Eigen::DSizes<Eigen::DenseIndex, NumDims>();
             other.m_buffer = nullptr;
+            return *this;
         }
 
-
-        ~device_tensor3()
+        ~device_tensor()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
-        __host__ __device__ T* Get()
-        {
-            return m_buffer;
-        }
-
-        __host__ __device__ const T* Get() const
+        /**
+         * @brief Gets the raw pointer to device buffer memory
+         * 
+         * @return T* 
+         */
+        __host__ T* Get()
         {
             return m_buffer;
         }
 
-        __host__ __device__ size_t GetDimensionSize(int dim) const
+        /**
+         * @brief Gets the raw pointer to device buffer memory
+         * 
+         * @return T const* 
+         */
+        __host__ const T* Get() const
         {
-            if(dim == 0) return m_sizeDim0;
-            if(dim == 1) return m_sizeDim1;
-            if(dim == 2) return m_sizeDim2;
-            return 0; //TODO(calgray): not a great interface
+            return m_buffer;
         }
 
-        __host__ __device__ Eigen::DSizes<Eigen::DenseIndex, 3> GetDimensions()
+        __host__ Eigen::DenseIndex GetDimensionSize(int dim) const
         {
-            auto res = Eigen::DSizes<Eigen::DenseIndex, 3>();
-            res[0] = m_sizeDim0;
-            res[1] = m_sizeDim1;
-            res[2] = m_sizeDim2;
-            return res;
+            return m_sizeDim[dim];
         }
 
-        __host__ __device__ size_t GetCount() const
+        __host__ Eigen::DSizes<Eigen::DenseIndex, NumDims> GetDimensions() const
         {
-            return m_sizeDim0 * m_sizeDim1 * m_sizeDim2;
+            return m_sizeDim;
         }
 
-        __host__ __device__ size_t GetSize() const
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
+        __host__ size_t GetCount() const
+        {
+            return m_sizeDim.TotalSize();
+        }
+
+        /**
+         * @brief Gets the total number of elements in the tensor
+         * 
+         * @return __host__ 
+         */
+        __host__ size_t GetSize() const
         {
             return GetCount();
         }
 
-        __host__ __device__ size_t GetByteSize() const
+        /**
+         * @brief Gets the total number of bytes in the memory buffer 
+         * 
+         * @return __host__ 
+         */
+        __host__ size_t GetByteSize() const
         {
             return GetCount() * sizeof(T);
         }
@@ -163,11 +178,13 @@ namespace cuda
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
-         * @brief Set the Data asyncronously
+         * @brief Set the Data asyncronously from host memory
          * 
          * @param data 
          * @return __host__ 
@@ -176,7 +193,12 @@ namespace cuda
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
+        }
+
+        __host__ void SetDataAsync(const device_tensor<T, NumDims>& data)
+        {
+            size_t bytes = GetByteSize();
+            cudaMemcpyAsync(m_buffer, data.Get(), bytes, cudaMemcpyKind::cudaMemcpyDeviceToDevice);
         }
 
         __host__ void ToHost(T* out) const
@@ -191,18 +213,23 @@ namespace cuda
             ToHost(out.data());
         }
 
-        __host__ void ToHost(Eigen::Tensor<T, 3>& out) const
+        __host__ void ToHost(Eigen::Tensor<T, NumDims>& out) const
         {
-            out.resize(GetDimensionSize(0), GetDimensionSize(1), GetDimensionSize(2));
+            out.resize(GetDimensions());
             ToHost(out.data());
         }
 
-        __host__ void ToHostASync(T* out) const
+        __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = GetByteSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
         }
     };
+
+    template<typename T>
+    using device_tensor3 = device_tensor<T, 3>;
+    template<typename T>
+    using device_tensor4 = device_tensor<T, 4>;
 }
 }
 

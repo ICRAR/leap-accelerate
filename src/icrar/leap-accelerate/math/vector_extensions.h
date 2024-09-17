@@ -4,31 +4,39 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #pragma once
 
-#include <icrar/leap-accelerate/common/MVDirection.h>
-#include <vector>
+#include <icrar/leap-accelerate/common/SphericalDirection.h>
+#include <numeric>
 #include <iostream>
 #include <vector>
 #include <functional>
 #include <type_traits>
 
+/**
+ * @brief Provides stream operator for std::vector as
+ * a json-like literal.
+ * 
+ * @tparam T streamable type
+ * @param os output stream
+ * @param v vector
+ * @return std::ostream& 
+ */
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
@@ -40,7 +48,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
         { 
             os << ", ";
         }
-    } 
+    }
     os << "}\n"; 
     return os;
 }
@@ -48,12 +56,13 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 namespace icrar
 {
     /**
-     * @brief returns a linear sequence of values from start at step
+     * @brief returns a linear sequence of values from start at step sized
+     * intervals to the stop value inclusive
      * 
-     * @tparam IntType 
-     * @param start 
-     * @param stop 
-     * @param step 
+     * @tparam IntType integer type
+     * @param start start index
+     * @param stop exclusive end inex
+     * @param step increment between generated elements
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -61,7 +70,7 @@ namespace icrar
     {
         if (step == IntType(0))
         {
-            throw std::invalid_argument("step for range must be non-zero");
+            throw std::invalid_argument("step must be non-zero");
         }
 
         std::vector<IntType> result;
@@ -76,11 +85,11 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief returns a linear sequence of values from start to stop
      * 
-     * @tparam IntType 
-     * @param start 
-     * @param stop 
+     * @tparam IntType integer type
+     * @param start start index
+     * @param stop exclusive end index
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -90,10 +99,10 @@ namespace icrar
     }
 
     /**
-     * @brief 
+     * @brief returns a linear sequence of values from 0 to stop
      * 
-     * @tparam IntType 
-     * @param stop 
+     * @tparam IntType integer type
+     * @param stop exclusive end index
      * @return std::vector<IntType> 
      */
     template <typename IntType>
@@ -102,29 +111,25 @@ namespace icrar
         return range(IntType(0), stop, IntType(1));
     }
 
-    Eigen::MatrixXd arg(const Eigen::Ref<const Eigen::MatrixXcd>& a);
-
     /**
-     * @brief Returns of true if all vector elements of @param lhs are within the threshold difference to @param rhs 
+     * @brief Returns true if all vector elements of @p lhs are within the
+     * tolerance threshold to @p rhs
      * 
-     * @tparam T 
-     * @param lhs 
-     * @param rhs 
-     * @param threshold 
-     * @return true 
-     * @return false 
+     * @tparam T numeric type
+     * @param lhs left hand side
+     * @param rhs  right hand side
+     * @param tolerance tolerance threshold
      */
     template<typename T>
-    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T threshold)
+    bool isApprox(const std::vector<T>& lhs, const std::vector<T>& rhs, T tolerance)
     {
         if(lhs.size() != rhs.size())
         {
             return false;
         }
-        
         for(size_t i = 0; i < lhs.size(); ++i)
         {
-            if(std::abs(lhs[i] - rhs[i]) >= threshold)
+            if(std::abs(lhs[i] - rhs[i]) >= tolerance)
             {
                 return false;
             }
@@ -133,30 +138,27 @@ namespace icrar
     }
 
     /**
-     * @brief Performs a std::transform on a newly allocated std::vector 
+     * @brief Performs a std::transform on a collection into a
+     * newly allocated std::vector
      * 
-     * @tparam T The input vector template type
-     * @tparam function of signature R(const T&)
-     * @param vector 
-     * @return std::vector<R> 
+     * @tparam Func function of signature return_type(const value_type&)
+     * @tparam Seq iterable collection of type value_type
+     * @param func transformation function
+     * @param seq iterable collection to transform
+     * @return std::vector<value_type>
      */
-    template<typename T, typename Op>
-    std::vector<std::result_of_t<Op(const T&)>> vector_map(const std::vector<T>& vector, Op lambda)
+    template <typename Func, typename Seq>
+    auto vector_map(Func func, const Seq& seq)
     {
-        using R = std::result_of_t<Op(const T&)>;
-        static_assert(std::is_assignable<std::function<R(const T&)>, Op>::value, "lambda argument must be a function of signature R(const T&)");
+        using value_type = typename Seq::value_type;
+        using return_type = std::result_of_t<Func(const value_type&)>;
+        static_assert(
+            std::is_assignable<std::function<return_type(const value_type&)>, Func>::value,
+            "func argument must have a functor of signature return_type(const value_type&)");
 
-        auto result = std::vector<R>();
-        result.reserve(vector.size());
-        std::transform(vector.cbegin(), vector.cend(), std::back_inserter(result), lambda);
+        std::vector<return_type> result;
+        result.reserve(seq.size());
+        std::transform(seq.cbegin(), seq.cend(), std::back_inserter(result), func);
         return result;
     }
-
-    /**
-     * @brief Converts a unit catersian direction to polar coordinates
-     * 
-     * @param cartesian 
-     * @return Eigen::Vector2d 
-     */
-    Eigen::Vector2d ToPolar(const MVDirection& xyz);
 } // namespace icrar

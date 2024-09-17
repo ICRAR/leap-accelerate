@@ -1,24 +1,23 @@
 /**
-*    ICRAR - International Centre for Radio Astronomy Research
-*    (c) UWA - The University of Western Australia
-*    Copyright by UWA (in the framework of the ICRAR)
-*    All rights reserved
-*
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*    Lesser General Public License for more details.
-*
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-*    MA 02111-1307  USA
-*/
+ * ICRAR - International Centre for Radio Astronomy Research
+ * (c) UWA - The University of Western Australia
+ * Copyright by UWA(in the framework of the ICRAR)
+ * All rights reserved
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #pragma once
 
@@ -39,9 +38,10 @@ namespace icrar
 namespace cuda
 {
     /**
-     * @brief A cuda device buffer object that represents a memory buffer on a cuda device.
+     * @brief A cuda device buffer object that represents a global memory buffer on a cuda device. Matrix size is fixed
+     * at construction and can only be resized using move semantics.
      * 
-     * @tparam T 
+     * @tparam T numeric type
      * @note See https://www.quantstart.com/articles/Matrix-Matrix-Multiplication-on-the-GPU-with-Nvidia-CUDA/
      * @note See https://forums.developer.nvidia.com/t/guide-cudamalloc3d-and-cudaarrays/23421
      */
@@ -54,14 +54,24 @@ namespace cuda
 
     public:
         /**
+         * @brief Default constructor
+         * 
+         */
+        device_matrix()
+        : m_rows(0)
+        , m_cols(0)
+        , m_buffer(nullptr)
+        { }
+
+        /**
          * @brief Move Constructor
          * 
          * @param other 
          */
         device_matrix(device_matrix&& other) noexcept 
-            : m_rows(other.m_rows)
-            , m_cols(other.m_cols)
-            , m_buffer(other.m_buffer)
+        : m_rows(other.m_rows)
+        , m_cols(other.m_cols)
+        , m_buffer(other.m_buffer)
         {
             other.m_rows = 0;
             other.m_cols = 0;
@@ -82,6 +92,7 @@ namespace cuda
             other.m_rows = 0;
             other.m_cols = 0;
             other.m_buffer = nullptr;
+            return *this;
         }
 
         /**
@@ -90,7 +101,7 @@ namespace cuda
          * 
          * @param rows number of rows
          * @param cols number of columns
-         * @param data constigous column major data of size rows*cols*sizeof(T)
+         * @param data constigous column major data of size rows*cols*sizeof(T) to copy to device
          */
         device_matrix(size_t rows, size_t cols, const T* data = nullptr)
         : m_rows(rows)
@@ -118,40 +129,43 @@ namespace cuda
 
         ~device_matrix()
         {
-            if(m_buffer != nullptr)
-            {
-                checkCudaErrors(cudaFree(m_buffer));
-            }
+            checkCudaErrors(cudaFree(m_buffer));
         }
 
-        __host__ __device__ T* Get()
+        __host__ T* Get()
         {
             return m_buffer;
         }
 
-        __host__ __device__ const T* Get() const
+        __host__ const T* Get() const
         {
             return m_buffer;
         }
 
-        __host__ __device__ size_t GetRows() const
+        __host__ size_t GetRows() const
         {
             return m_rows;
         }
 
-        __host__ __device__ size_t GetCols() const
+        __host__ size_t GetCols() const
         {
             return m_cols;
         }
 
-        __host__ __device__ size_t GetCount() const
+        __host__ size_t GetCount() const
         {
             return m_rows * m_cols;
         }
 
-        __host__ __device__ size_t GetSize() const
+        __host__ size_t GetSize() const
         {
             return GetCount() * sizeof(T);
+        }
+
+        __host__ void SetZeroAsync()
+        {
+            size_t byteSize = GetSize();
+            checkCudaErrors(cudaMemsetAsync(m_buffer, 0, byteSize));
         }
 
         /**
@@ -164,11 +178,13 @@ namespace cuda
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpy(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
+#ifndef NDEBUG
             DebugCudaErrors();
+#endif
         }
 
         /**
-         * @brief Set the Data Async object
+         * @brief Copies data from device to host memory
          * 
          * @param data 
          * @return __host__ 
@@ -177,7 +193,6 @@ namespace cuda
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(m_buffer, data, bytes, cudaMemcpyKind::cudaMemcpyHostToDevice));
-            DebugCudaErrors();
         }
 
         __host__ void ToHost(T* out) const
@@ -205,10 +220,40 @@ namespace cuda
             ToHost(out.data());
         }
 
-        __host__ void ToHostASync(T* out) const
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHost() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHost(result.data());
+            return result;
+        }
+
+        __host__ void ToHostAsync(T* out) const
         {
             size_t bytes = GetSize();
             checkCudaErrors(cudaMemcpyAsync(out, m_buffer, bytes, cudaMemcpyKind::cudaMemcpyDeviceToHost));
+        }
+
+        __host__ void ToHostAsync(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& out) const
+        {
+            out.resize(GetRows(), GetCols());
+            ToHostAsync(out.data());
+        }
+
+        __host__ void ToHostVectorAsync(Eigen::Matrix<T, Eigen::Dynamic, 1>& out) const
+        {
+            if(GetCols() != 1)
+            {
+                throw std::runtime_error("columns not 1");
+            }
+            out.resize(GetRows());
+            ToHostAsync(out.data());
+        }
+
+        __host__ Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> ToHostAsync() const
+        {
+            auto result = Eigen::MatrixXd(GetRows(), GetCols());
+            ToHostAsync(result.data());
+            return result;
         }
     };
 }

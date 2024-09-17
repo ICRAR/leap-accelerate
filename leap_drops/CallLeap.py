@@ -13,25 +13,19 @@ from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
 # @brief Call Leap
 # @details A BarrierAppDrop that reads a config file, generates a command line for the LeapAccelerateCLI application, and then executes the application
 # @par EAGLE_START
-# @param gitrepo $(GIT_REPO)
-# @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/measurementSetFilename//String/readwrite
+# @param[in] aparam/measurementSetFilename Measurement Set Filename/""/String/readwrite/False//False/
 #     \~English The file from which the input measurement set should be loaded\n
-#     \~Chinese \n
-#     \~
-# @param[in] param/appclass/leap_nodes.CallLeap.CallLeap/String/readonly
+#     \~Chinese
+# @param[in] cparam/appclass Application Class/leap_nodes.CallLeap.CallLeap/String/readonly/False//False/
 #     \~English The path to the class that implements this app\n
-#     \~Chinese \n
-#     \~
-# @param[in] port/Config
+#     \~Chinese
+# @param[in] port/Config Config/File/
 #     \~English The Config file containing JSON specifying how this instance of LeapAccelerateCLI should be run
-#     \~Chinese \n
-#     \~
-# @param[out] port/Result
+#     \~Chinese
+# @param[out] port/Result Result/File/
 #     \~English The output of the LeapAccelerateCLI application (JSON)
-#     \~Chinese \n
-#     \~
+#     \~Chinese
 # @par EAGLE_END
 
 class CallLeap(BarrierAppDROP):
@@ -43,7 +37,7 @@ class CallLeap(BarrierAppDROP):
 
     # TODO: this measurementSetFilename is not being read by dlg_string_param
     #       hard-coding it for the moment
-    measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-32.ms"
+    measurementSetFilename = "/Users/james/working/leap-accelerate/testdata/1197638568-split.ms"
 
     DEBUG = True
 

@@ -1,0 +1,38 @@
+# This is Dockerfile installs everything from scratch into a Ubuntu 20.04 based container
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata \
+    gnupg2 git wget gcc g++ gdb doxygen cmake libopenblas-dev casacore-dev libboost1.74-all-dev \
+    software-properties-common
+
+# Get LEAP native sources and build
+COPY CMakeLists.txt version.txt .clang-tidy /leap-accelerate/
+COPY src/ /leap-accelerate/src/
+COPY cmake/ /leap-accelerate/cmake/
+COPY external/ /leap-accelerate/external/
+RUN cd /leap-accelerate &&\
+    export CUDA_HOME=/usr/local/cuda &&\
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64 &&\
+    export PATH=$PATH:$CUDA_HOME/bin &&\
+    cmake -B build/linux/Release -DCMAKE_BUILD_TYPE=Release -DCUDA_ENABLED=TRUE -DBUILD_DOCS=FALSE -DBUILD_TESTING=FALSE &&\
+    cmake --build build/linux/Release -j $(nproc) &&\
+    cmake --install build/linux/Release
+
+# Final stage is a fresh layer with only installed files
+FROM nvidia/cuda:12.2.0-base-ubuntu22.04
+COPY --from=0 /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
+COPY --from=0 /etc/alternatives /etc/alternatives
+COPY --from=0 /usr/local/cuda/lib64/libnvJitLink.so.12 /usr/local/cuda/lib64/
+COPY --from=0 /usr/local/cuda/lib64/libcublas.so.12 /usr/local/cuda/lib64/
+COPY --from=0 /usr/local/cuda/lib64/libcusolver.so.11 /usr/local/cuda/lib64/
+COPY --from=0 /usr/local/cuda/lib64/libcublasLt.so.12 /usr/local/cuda/lib64/
+COPY --from=0 /usr/local/cuda/lib64/libcusparse.so.12 /usr/local/cuda/lib64/
+COPY --from=0 /usr/local/lib /usr/local/lib
+COPY --from=0 /usr/local/bin /usr/local/bin
+RUN ln -s /usr/local/cuda/compat/libcuda.so.1 /usr/local/cuda/lib64/libcuda.so.1
+
+# add a user to run this container under rather than root
+RUN useradd leap
+USER leap
+WORKDIR /home/leap
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib:/usr/local/cuda/lib64
+CMD ["LeapAccelerateCLI", "--help"]

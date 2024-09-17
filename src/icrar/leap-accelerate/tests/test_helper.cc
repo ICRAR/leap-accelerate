@@ -4,20 +4,19 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "test_helper.h"
@@ -25,12 +24,12 @@
 #include <icrar/leap-accelerate/math/vector_extensions.h>
 #include <icrar/leap-accelerate/tests/math/eigen_helper.h>
 
-void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu::MetaData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)
+void assert_near_metadata(const icrar::cpu::LeapData& expected, const icrar::cpu::LeapData& actual, const std::string& ln, const std::string& rn, const std::string& file, int line)
 {
     if(expected != actual)
     {
         std::cerr << ln << " != " << rn << "\n";
-        std::cerr << "MetaData not exactly equal at " << file << ":" << line << std::endl;
+        std::cerr << "LeapData not exactly equal at " << file << ":" << line << std::endl;
     }
 
     const double THRESHOLD = 0.001;
@@ -49,10 +48,10 @@ void assert_near_metadata(const icrar::cpu::MetaData& expected, const icrar::cpu
 
 
     ASSERT_MEQD(expected.GetA(), actual.GetA(), THRESHOLD);
-    ASSERT_MEQI(expected.GetI(), actual.GetI(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI(), actual.GetI(), 0);
     ASSERT_MEQD(expected.GetAd(), actual.GetAd(), THRESHOLD);
     ASSERT_MEQD(expected.GetA1(), actual.GetA1(), THRESHOLD);
-    ASSERT_MEQI(expected.GetI1(), actual.GetI1(), THRESHOLD);
+    ASSERT_MEQI(expected.GetI1(), actual.GetI1(), 0);
     ASSERT_MEQD(expected.GetAd1(), actual.GetAd1(), THRESHOLD);
 
     ASSERT_MEQ3D(expected.GetDD(), actual.GetDD(), THRESHOLD);

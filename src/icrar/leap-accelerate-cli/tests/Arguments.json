@@ -1,0 +1,33 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Arguments",
+    "definitions": {},
+    "type": "object",
+    "properties": {
+        "filePath": { "type": "string" },
+        "outputFilePath": { "type": "string" },
+        "autoCorrelations": { "type": "boolean" },
+        "useFileSystemCache": { "type": "boolean" },
+        "minimumBaselineTheshold": { "type": "integer" },
+        "solutionInterval": {
+            "type": ["integer", "array"],
+            "items": { "type": ["number", "null"] },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "referenceAntenna": { "type": "integer" },
+        "computeImplementation": {
+            "type": "string",
+            "enum": ["cpu", "cuda"]
+        },
+        "verbosity": { "type": "string" },
+        "directions": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": { "type": "number" }
+            }
+        }
+    },
+    "required": [ "filePath", "directions" ]
+}

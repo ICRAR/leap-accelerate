@@ -4,29 +4,27 @@
  * Copyright by UWA(in the framework of the ICRAR)
  * All rights reserved
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
- * MA 02111 - 1307  USA
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
 #include "Integration.h"
 #include <icrar/leap-accelerate/math/math_conversion.h>
-#include <icrar/leap-accelerate/ms/utils.h>
 #include <icrar/leap-accelerate/ms/MeasurementSet.h>
 #include <icrar/leap-accelerate/common/Tensor3X.h>
 
-#include <icrar/leap-accelerate/core/ioutils.h>
+#include <icrar/leap-accelerate/core/memory/ioutils.h>
 #include <icrar/leap-accelerate/core/log/logging.h>
 
 namespace icrar
@@ -35,39 +33,50 @@ namespace cpu
 {
     Integration::Integration(
         int integrationNumber,
-        const icrar::MeasurementSet& ms,
-        unsigned int startBaseline,
-        unsigned int channels,
-        unsigned int baselines,
-        unsigned int polarizations)
+        Eigen::Tensor<double, 3>&& uvws,
+        Eigen::Tensor<std::complex<double>, 4>&& visibilities)
     : m_integrationNumber(integrationNumber)
-    , index(startBaseline)
-    , x(baselines)
-    , channels(channels)
-    , baselines(baselines)
+    , m_UVW(std::move(uvws))
+    , m_visibilities(std::move(visibilities))
     {
+    }
+
+    Integration Integration::CreateFromMS(
+        const icrar::MeasurementSet& ms,
+        int integrationNumber,
+        const Slice& timestepSlice,
+        const Slice& polarizationSlice
+    )
+    {
+        //assert(timestepSlice.GetInterval() == 1);
+
+        uint32_t channels = ms.GetNumChannels();
+        uint32_t baselines = ms.GetNumBaselines();
+        uint32_t polarizations = ms.GetNumPols();
+
         constexpr int startChannel = 0;
-        size_t vis_size = (baselines - startBaseline) * (channels - startChannel) * polarizations * sizeof(std::complex<double>);
+        size_t vis_size = baselines * (channels - startChannel) * (polarizations > 1 ? 2 : 1) * sizeof(std::complex<double>);
         LOG(info) << "vis: " << memory_amount(vis_size);
-        size_t uvw_size = (baselines - startBaseline) * 3;
+        size_t uvw_size = baselines * 3 * sizeof(double);
         LOG(info) << "uvw: " << memory_amount(uvw_size);
-        m_data = ms.GetVis(startBaseline, startChannel, channels, baselines, polarizations);
-        m_uvw = ToUVWVector(ms.GetCoords(startBaseline, baselines));
+
+        return Integration(
+            integrationNumber,
+            ms.ReadCoords(timestepSlice),
+            ms.ReadVis(timestepSlice, polarizationSlice)
+        );
     }
 
     bool Integration::operator==(const Integration& rhs) const
     {
-        Eigen::Map<const Eigen::VectorXcd> datav(m_data.data(), m_data.size());
-        Eigen::Map<const Eigen::VectorXcd> rhsdatav(rhs.m_data.data(), rhs.m_data.size());
+        Eigen::Map<const Eigen::ArrayXcd> datav(m_visibilities.data(), m_visibilities.size());
+        Eigen::Map<const Eigen::ArrayXcd> rhsdatav(rhs.m_visibilities.data(), rhs.m_visibilities.size());
         
-        return datav.isApprox(rhsdatav)
-        && m_uvw == rhs.m_uvw
-        && m_integrationNumber == rhs.m_integrationNumber;
-    }
-
-    const std::vector<icrar::MVuvw>& Integration::GetUVW() const
-    {
-        return m_uvw;
+        return 
+            m_integrationNumber == rhs.m_integrationNumber
+            && m_visibilities.dimensions() == rhs.m_visibilities.dimensions()
+            && m_UVW.dimensions() == rhs.m_UVW.dimensions()
+            && datav.isApprox(rhsdatav); //TODO(calgray) compare UVWs
     }
 } // namespace cpu
 } // namespace icrar

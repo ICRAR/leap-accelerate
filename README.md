@@ -1,183 +1,71 @@
 # LEAP Accelerate
 
-![License](https://img.shields.io/badge/license-LGPL_2.1-blue)
-[![Build Status](https://travis-ci.com/ICRAR/leap-accelerate.svg?token=1YzqBsytWggkjwq3sjZP&branch=master)](https://travis-ci.com/ICRAR/leap-accelerate)
+![License](https://img.shields.io/badge/license-GPLv2+-blue)
 
-# This repo has been moved to https://gitlab.com/ska-telescope/icrar-leap-accelerate
+**leap-accelerate** is a calibration tool implementing Low-frequency Excision of the Atmosphere in Parallel ([LEAP](https://arxiv.org/abs/1807.04685)) for low-frequency radio antenna arrays. Leap utilizes GPGPU acceleration for parallel computation across baselines, channels and polarizations and is freely available on [GitLab](https://gitlab.com/ska-telescope/icrar-leap-accelerate) under GPLv2+ [License](LICENSE).
 
-Low-frequency Excision of the Atmosphere in Parallel (LEAP) Calibration using GPU acceleration.
+leap-accelerate includes:
 
-LEAP-Accelerate includes:
+* **leap-accelerate**: a shared library for gpu accelerated direction centering and phase calibration.
+* [leap-accelerate-cli](src/icrar/leap-accelerate-cli/README.md): a CLI interface for I/O datastream or plasma data access.
+* [leap-accelerate-python](python/README.md): python3 bindings to leap-accelerate using pybind11.
+<!---* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server--->
+<!---* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients--->
 
-* [leap-accelerate-lib](src/icrar/leap-accelerate/ReadMe.md): a shared library for gpu accelerated direction centering and phase calibration
-* [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md): a CLI interface for I/O datastream or plasma data access 
-* leap-accelerate-client: a socket client interface for processing data from a LEAP-Cal server
-* leap-accelerate-server: a socket server interface for dispatching data processing to LEAP-Cal clients
+See the [online documentation](https://developer.skatelescope.org/projects/icrar-leap-accelerate/en/latest/) for more information.
 
-## Docker image build
-Due to the size of the CUDA tool chain the build of a LEAP_accelerate docker image has been split into two parts, but there is also a Dockerfile.bootstrap which does most of the build in one go. Trimming the final image down to a reasonable size is another required step.
+## Installation
 
-### Bootstrap build
-The Dockerfile.bootstrap builds the image from scratch, but that takes pretty long. NOTE: Depending on the network connection this build can take a long time. It is downloading the CUDA tool chain which is about 2.7 GB. After the download the unpacking and installation takes significant time in addition.
+### leap-accelerate and leap-accelerate-cli
 
-`docker build --tag icrar/leap_cli:big -f Dockerfile.bootstrap`
+#### Build
 
-NOTE: Replace the `<version>` with the version of leap-accelarate this image had been build from.
+```bash
+cmake -B build -G "Ninja Multi-Config"
+cmake --build build --config Release -j8
+```
 
-### Separate build
-The Dockerfile.base builds an image with the CUDA toolchain, which is the base for the actual leap_accelarate image and needs to be build far less often than the leap_accelarate.
+#### Test
 
-`docker build --tag 20.04cuda:installed -f Dockerfile.base`
+```bash
+ctest --test-dir build -C Release -T test --verbose
+```
 
-To get the leap_accelarate image run
+#### Install
 
-`docker build . --tag icrar/leap_cli:big`
+```bash
+cmake --install build --config Release
+```
 
-### Stripping the image
+## OSI Image
 
-That image is still very large (>5GB). In order to clean this up it is possible to run the tool from https://github.com/mvanholsteijn/strip-docker-image.git
+The latest leap release is published as a debian a docker image available at the following location:
 
-`strip-docker-image -i icrar/leap_cli:big -t icrar/leap_cli:<version> -f /usr/local/bin/LeapAccelerateCLI -f /usr/bin/sh`
+`artefact.skao.int/icrar-leap-accelerate:latest`
 
-NOTE: Replace the `<version>` with the version of leap-accelarate this image had been build from.
+NOTE: It may be necessary to use the image tag rather than just 'latest'.
 
-### Test the image
-Run install.sh in the testdata directory and then in the main directory of leap_accelarate:
+This image can be run locally using the following command:
 
-`docker run -v "$(pwd)"/testdata:/testdata icrar/leap_cli:0.4 LeapAccelerateCLI -f /testdata/1197638568-split.ms -s 126 -i eigen -d "[[-0.4606549305661674,-0.29719233792392513]]"`
+`docker run -it --rm artefact.skao.int/icrar-leap-accelerate:latest LeapAccelerateCLI --help`
 
-The output should be a JSON data structure.
+See the [docker](docs/src/md/Docker.md) documentation for instructions about how to create a docker image.
 
-## Build
-## System Dependencies
+See the [build](docs/src/md/Build.md) documentation for instructions on platform specific compilation.
 
-### Recommended Versions Compatibility
+## Usage
 
-* g++ 9.3.0
-* cuda 10.1
-* boost 1.71.0
-* casacore 3.1.2
+See [leap-accelerate-cli](docs/src/md/LeapAccelerateCLI.md) for instructions on command line arguments and configuration files.
 
-### Minimum Versions Compatibility
+Examples:
 
-* g++ 6.3.0
-* cuda 9.0
-* boost 1.63.0
-* cmake 3.15.1
-* casacore 3.1.2
+`LeapAccelerateCLI --help`
 
-### Ubuntu/Debian Dependencies
+`LeapAccelerateCLI --config "./askap.json"`
 
-20.04 LTS
+## Contributions
 
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.71-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=2004&target_type=deblocal
+Refer to the following style guides for making repository contributions
 
-or
-
-* sudo apt-get install nvidia-cuda-toolkit-gcc
-
-18.04 LTS
-
-* sudo apt-get install gcc g++ gdb doxygen cmake casacore-dev clang-tidy-10 libboost1.65-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-10.1-download-archive-update2?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=deblocal
-
-16.04 LTS
-
-* https://askubuntu.com/questions/355565/how-do-i-install-the-latest-version-of-cmake-from-the-command-line
-* sudo apt-get install gcc-6 g++-6 gdb doxygen casacore-dev libboost1.58-all-dev libgsl-dev
-* https://developer.nvidia.com/cuda-92-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1604&target_type=deblocal
-
-## Compiling from Source
-
-From the repository root folder run:
-
-`git submodule update --init --recursive`
-
-NOTE: pulling exernal submodules via git is required to build. This may change in future.
-
-### Linux
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build/linux/{Debug,Release} && cd build/linux`
-
-#### Debug
-
-`cd Debug`
-
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DCMAKE_BUILD_TYPE=Debug`
-
-(with tracing):
-
-`cmake ../../ -DCMAKE_CXX_FLAGS_DEBUG="-g -O1" -DTRACE=ON -DCMAKE_BUILD_TYPE=Debug`
-
-#### Release
-
-`cd Release`
-
-`cmake ../../ -DCMAKE_BUILD_TYPE=Release`
-
-### Linux Cluster
-
-`module load cmake/3.15.1 gcc/6.3.0 boost/1.66.0 casacore/3.1.2`
-
-`module unload gfortran/default`
-
-`module load isl/default`
-
-`export CUDA_HOME=/usr/local/cuda`
-
-`export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64`
-
-`export PATH=$PATH:$CUDA_HOME/bin`
-
-`mkdir -p build && cd build`
-
-`cmake ../../ -DCUDA_TOOLKIT_ROOT_DIR=$CUDA_HOME -DCUDA_HOST_COMPILER=g++ -DCASACORE_ROOT_DIR=$BLDR_CASACORE_BASE_PATH -DCMAKE_BUILD_TYPE=Release`
-
-## Test
-
-Testing provided via googletest. To test using CTest use the following command in build/linux:
-
-`make test` or `ctest`
-
-for verbose output use:
-
-`ctest --verbose` or `ctest --output-on-failure`
-
-To test using the google test runner, the test binaries can be executed directly using the following commands:
-
-`./src/icrar/leap-accelerate/tests/LeapAccelerate.Tests`
-`./src/icrar/leap-accelerate-cli/tests/LeapAccelerateCLI.Tests`
-
-## Doxygen
-
-Doxygen is generated with the following target:
-
-`make doxygen`
-
-Generated doxygen is available at the following file location:
-
-`src/out/html/index.html`
-
-## Run CLI
-
-See [leap-accelerate-cli](src/icrar/leap-accelerate-cli/ReadMe.md)
-
-Example:
-
-`./bin/LeapAccelerateCLI --help`
-
-`./bin/LeapAccelerateCLI --config "./askap.json"`
-
-## Profiling
-
-* nvprof
-* gprof
-* google-perftools
-
+* [CMake Style Guide](docs/src/md/specs/CMakeStyleGuide.md)
+* [C++ Style Guide](docs/src/md/specs/CPlusPlusStyleGuide.md)

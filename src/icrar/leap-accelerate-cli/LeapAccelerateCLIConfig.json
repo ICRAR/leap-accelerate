@@ -1,0 +1,32 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "LeapAccelerateCLIConfig",
+    "definitions": {},
+    "type": "object",
+    "required": ["filePath", "directions"],
+    "properties": {
+        "filePath": { "type": "string" },
+        "outputFilePath": { "type": "string" },
+        "directions": {
+            "type": "array",
+            "items": {
+                "type":"array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": { "type": "number" }
+            }
+        },
+        "solutionInterval": {
+            "type": ["number", "array"],
+            "minItems": 3,
+            "maxItems": 3,
+            "items": { "type": ["number", "null"] }
+        },
+        "autoCorrelations": { "type": "boolean" },
+        "minimumBaselineThreshold": { "type": "string" },
+        "referenceAntenna": { "type": "integer" },
+        "computeImplementation": { "type": "string" },
+        "useFileSystemCache": { "type": "boolean" },
+        "verbosity": { "type": ["string", "integer"] }
+    }
+}

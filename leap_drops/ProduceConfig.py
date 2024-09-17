@@ -5,8 +5,7 @@ import math
 from dlg.droputils import DROPFile
 from dlg.drop import BarrierAppDROP
 from dlg.meta import dlg_int_param, dlg_float_param, dlg_string_param, \
-    dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input, \
-    dlg_bool_param
+    dlg_component, dlg_batch_input, dlg_batch_output, dlg_streaming_input
 from dlg.droputils import DROPFile
 
 
@@ -14,37 +13,21 @@ from dlg.droputils import DROPFile
 # @brief Produce Config
 # @details A BarrierAppDrop that produces multiple config files suitable for the CallLeap BarrierAppDrop
 # @par EAGLE_START
-# @param gitrepo $(GIT_REPO)
-# @param version $(PROJECT_VERSION)
 # @param category PythonApp
-# @param[in] param/number_of_stations/1/Integer/readwrite
-#     \~English The number of stations from the measurement set that should be processed\n
-#     \~Chinese \n
-#     \~
-# @param[in] param/implementation/cpu/String/readwrite
-#     \~English The implementation of the LEAP algorithm to use (cpu, cuda)\n
-#     \~Chinese \n
-#     \~
-# @param[in] param/auto_correlation/false/String/readwrite
-#     \~English Enable auto correlation in the LEAP algorithm\n
-#     \~Chinese \n
-#     \~
-# @param[in] param/max_directions/false/Integer/readwrite
-#     \~English Maximum number of directions per LEAP instance\n
-#     \~Chinese \n
-#     \~
-# @param[in] param/appclass/leap_nodes.ProduceConfig.ProduceConfig/String/readonly
-#     \~English The path to the class that implements this app\n
-#     \~Chinese \n
-#     \~
-# @param[in] port/Directions
+# @param[in] aparam/filePath File Path//String/readwrite/False//False/
+#     \~English Path to the MS
+# @param[in] aparam/outputFilePath Output File Path//String/readwrite/False//False/
+#     \~English Path for output file
+# @param[in] aparam/implementation Implementation/cpu/Select/readwrite/False/cpu,cuda/False/
+#     \~English The implementation of the LEAP algorithm to use (cpu, cuda)
+# @param[in] aparam/verbosity verbosity/info/Select/readwrite/False/info,debug/False/
+#     \~English The verbosity of the LEAP logging output (info|debug)
+# @param[in] cparam/appclass Application Class/leap_nodes.ProduceConfig.ProduceConfig/String/readonly/False//False/
+#     \~English The path to the class that implements this app
+# @param[in] port/Directions Directions/File/
 #     \~English A CSV file containing directions for calibration
-#     \~Chinese \n
-#     \~
-# @param[out] port/Config
+# @param[out] port/Config Config/File/
 #     \~English A JSON config containing the specification for running an instance of LeapAccelerateCLI
-#     \~Chinese \n
-#     \~
 # @par EAGLE_END
 
 class ProduceConfig(BarrierAppDROP):
@@ -55,10 +38,10 @@ class ProduceConfig(BarrierAppDROP):
                                     [dlg_streaming_input('binary/*')])
 
     # read component parameters
-    numStations = dlg_int_param('number of stations', 1)
+    filePath = dlg_string_param('filePath', '')
+    outputFilePath = dlg_string_param('outputFilePath', '')
     implementation = dlg_string_param('implementation', 'cpu')
-    autoCorrelation = dlg_bool_param('auto correlation', False)
-    maxDirections = dlg_int_param('max directions', 1)
+    verbosity = dlg_string_param('verbosity', 'info')
 
 
     def initialize(self, **kwargs):
@@ -75,7 +58,6 @@ class ProduceConfig(BarrierAppDROP):
 
         # determine number of directions per instance
         numDirectionsPerInstance = float(len(directions)) / float(len(self.outputs))
-        numDirectionsPerInstance = min(numDirectionsPerInstance, self.maxDirections)
 
         startDirectionIndex = 0
         endDirectionIndex = 0
@@ -88,15 +70,13 @@ class ProduceConfig(BarrierAppDROP):
             partDirections = directions[startDirectionIndex:endDirectionIndex]
 
             # build config
-            configJSON = self._createConfig(self.numStations, partDirections, self.implementation, self.autoCorrelation)
+            configJSON = self._createConfig(partDirections)
 
             # stringify config
             config = json.dumps(configJSON)
 
             # write config to output
-            if type(config) is str:
-                config = config.encode()
-            self.outputs[i].write(config)
+            self.outputs[i].write(config.encode())
 
             # continue from here in the next iteration
             startDirectionIndex = endDirectionIndex
@@ -110,25 +90,26 @@ class ProduceConfig(BarrierAppDROP):
         #       inDrop to a string and pass that to csv.reader()
         with DROPFile(inDrop) as f:
             file_data = f.read()
-            if type(file_data) is bytes:
-                file_data=file_data.decode('utf-8')
-            csvreader = csv.reader(file_data.split('\n'))
-            for row in csvreader:
-                # skip rows with incorrect number of values
-                if len(row) is not 2:
-                    continue
+        if type(file_data) == type(b''):
+            file_data = file_data.decode()
+        csvreader = csv.reader(file_data.split('\n'))
+        for row in csvreader:
+            # skip rows with incorrect number of values
+            if len(row) != 2:
+                continue
 
-                x = float(row[0])
-                y = float(row[1])
-                directions.append([x,y])
+            x = float(row[0])
+            y = float(row[1])
+            directions.append([x,y])
 
         return directions
 
 
-    def _createConfig(self, numStations, directions, implementation, autoCorrelation):
+    def _createConfig(self, directions):
         return {
-            'stations': numStations,
+            'filePath': self.filePath,
+            'outputFilePath': self.outputFilePath,
             'directions': directions,
-            'computeImplementation': implementation,
-            'readAutoCorrelations': autoCorrelation
+            'computeImplementation': self.implementation,
+            'verbosity': self.verbosity
         }

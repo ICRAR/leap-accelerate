@@ -1,47 +1,47 @@
-# We need the base CUDA image, just avoiding the CUDA toolkit installation
-# by starting from an image containing that already
-FROM cuda11.0:base
+# This Dockerfile installs everything from scratch into a Ubuntu 20.04 based container
+FROM nvidia/cuda:12.2.0-devel-ubuntu22.04 as buildenv
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata \
+    gnupg2 git wget gcc g++ gdb doxygen cmake pipx pybind11-dev python3-pybind11 python3-numpy libopenblas-dev \
+    casacore-dev libboost1.74-all-dev software-properties-common
+RUN pipx run poetry==1.6.1 config virtualenvs.in-project true
 
-# Should not need that anymore with the new build
-RUN apt update && apt install -y clang-tidy libboost1.71-all-dev libblas-dev liblapack-dev
-RUN groupadd -r leap && useradd --no-log-init -r -g leap leap
+# Get LEAP native sources and build
+COPY CMakeLists.txt version.txt .clang-tidy /leap-accelerate/
+COPY src/ /leap-accelerate/src/
+COPY cmake/ /leap-accelerate/cmake/
+COPY external/ /leap-accelerate/external/
+COPY python/pyproject.toml python/build.py python/poetry.lock python/README.md /leap-accelerate/python/
+COPY python/leap/__init__.py /leap-accelerate/python/leap/
 
-COPY / /leap-accelerate
-RUN cd /leap-accelerate && git submodule update --init --recursive &&\
-    export CUDA_HOME=/usr/local/cuda &&\
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CUDA_HOME}/lib64:${CUDA_HOME}/extras/CUPTI/lib64 &&\
-    export PATH=$PATH:$CUDA_HOME/bin &&\
-    mkdir -p /leap-accelerate/build/linux/Debug &&\
-    cd /leap-accelerate/build/linux/Debug &&\
-    cmake ../../.. -DCMAKE_CXX_FLAGS_DEBUG=-O1 -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=OFF &&\
-    make && make install
+# Python build args
+ENV CUDA_ENABLED=TRUE
+RUN cd /leap-accelerate/python &&\
+    pipx run poetry==1.6.1 build
 
-# Second stage to cleanup the mess to a certain extend
-# Note: This may require quite some disk space on the host temporarily.
-# If it fails try increasing the disk space allocated to docker (MacOSX)
-FROM ubuntu:20.04
-COPY --from=0 /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
-COPY --from=0 /usr/local /usr/local
-COPY --from=0 /bin/bash /bin/bash
-RUN apt update && apt install -y liblapack3
-CMD ["/usr/local/bin/LeapAccelerateCLI"]
+# Get LEAP python sources and bundle into the build
+COPY ./ /leap-accelerate/
+RUN cd /leap-accelerate/python &&\
+    pipx run poetry==1.6.1 build &&\
+    . .venv/bin/activate &&\
+    pip install .
 
-# After this run the brilliant tool from https://github.com/mvanholsteijn/strip-docker-image.git
-# 
-# strip-docker-image -i icrar/20.04leap:clean -t icrar/20.04leap:stripped -f /usr/local/bin/LeapAccelerateCLI
-#
-# which will produce a ~50MB docker image
-#
-# as a basic test run the image against the testdata:
-# cd <leap_source_dir>/testdata
-# ./install.sh    # first install the testdata (just once)
-# docker run -ti --rm -v /var/dlg_home/testdata:/var/dlg_home/testdata icrar/leap_cli:0.7.0 \
-#           /bin/bash -c '/usr/local/bin/LeapAccelerateCLI -c /var/dlg_home/testdata/config_test.json'
-# docker run -v "$(pwd)":/testdata icrar/leap_cli:initial LeapAccelerateCLI \
-#           -f /testdata/1197638568-split.ms -s 126 -i eigen \
-#           -d "[[-0.4606549305661674,-0.29719233792392513],[-0.753231018062671,-0.44387635324622354]]"
+# Final stage is a fresh layer with only installed files
+FROM nvidia/cuda:12.2.0-base-ubuntu22.04 as runtime
+RUN apt-get update && apt-get install -y python3
+COPY --from=buildenv /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu
+COPY --from=buildenv /etc/alternatives /etc/alternatives
+COPY --from=buildenv /usr/local/cuda/lib64/libnvJitLink.so.12 /usr/local/cuda/lib64/
+COPY --from=buildenv /usr/local/cuda/lib64/libcublas.so.12 /usr/local/cuda/lib64/
+COPY --from=buildenv /usr/local/cuda/lib64/libcusolver.so.11 /usr/local/cuda/lib64/
+COPY --from=buildenv /usr/local/cuda/lib64/libcublasLt.so.12 /usr/local/cuda/lib64/
+COPY --from=buildenv /usr/local/cuda/lib64/libcusparse.so.12 /usr/local/cuda/lib64/
+COPY --from=buildenv /leap-accelerate/python/.venv /usr/local/.venv/
+RUN ln -s /usr/local/cuda/compat/libcuda.so.1 /usr/local/cuda/lib64/libcuda.so.1
 
-# AWS run command on instance command gives error presumably because of CUDA version mismatch.
-# docker run --gpus all --rm --mount src=`pwd`,target=/testdata,type=bind icrar/leap_cli:initial 
-# sh -c 'LeapAccelerateCLI -f /testdata/1197638568-split.ms -s 126 -i cuda 
-# -d "[[-0.4606549305661674,-0.29719233792392513]]" > /testdata/leap.out'
+ENV PATH="/usr/local/.venv/bin:${PATH}"
+
+# add a user to run this container rather than using root
+RUN useradd leap
+USER leap
+WORKDIR /home/leap
+CMD ["python3", "-m", "pip", "show", "leap"]
